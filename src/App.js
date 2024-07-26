@@ -57,6 +57,7 @@ const App = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedNode, setSelectedNode] = useState(null);
+  const [copiedNode, setCopiedNode] = useState(null);
 
   const onConnect = useCallback((params) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
 
@@ -207,6 +208,27 @@ const App = () => {
     setSelectedNode(null); // Deselect node when clicking on the canvas
   };
 
+  const copyNode = () => {
+    if (selectedNode) {
+      const nodeToCopy = nodes.find((node) => node.id === selectedNode);
+      setCopiedNode(nodeToCopy);
+    }
+  };
+
+  const pasteNode = () => {
+    if (copiedNode) {
+      const newNode = {
+        ...copiedNode,
+        id: (nodes.length + 1).toString(),
+        position: {
+          x: copiedNode.position.x + 150, // Offset the new node position slightly
+          y: copiedNode.position.y + 50,
+        },
+      };
+      setNodes((nds) => nds.concat(newNode));
+    }
+  };
+
   const memoizedNodeTypes = useMemo(() => nodeTypes, []);
 
   return (
@@ -223,7 +245,9 @@ const App = () => {
           <DownloadButton />
           {selectedNode && (
             <div className="node-controls">
-              <button onClick={() => deleteNode(selectedNode)}>Delete Node</button>
+              <button onClick={copyNode}>Copy Node</button>
+
+              <button style={{marginLeft:10,marginBottom:20,marginTop:40}} onClick={pasteNode} disabled={!copiedNode}>Paste Node</button>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <label>
                   Background Color:
@@ -242,8 +266,12 @@ const App = () => {
                   />
                 </label>
               </div>
+
+          <button style={{marginTop:20}} onClick={() => deleteNode(selectedNode)}>Delete Node</button>
             </div>
           )}
+         
+
         </div>
         <div className="flow-container">
           <ReactFlow
