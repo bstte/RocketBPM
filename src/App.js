@@ -12,6 +12,7 @@ import '@xyflow/react/dist/style.css';
 import './App.css';
 import ResizableNode from './ResizableNode';
 import DownloadButton from './DownloadButton';
+
 const CircleNode = (props) => (
   <ResizableNode {...props} />
 );
@@ -43,7 +44,6 @@ const PentagonNode = (props) => (
 );
 
 const nodeTypes = {
-
   circle: CircleNode,
   triangle: TriangleNode,
   hexagon: HexagonNode,
@@ -52,7 +52,6 @@ const nodeTypes = {
   ellipse: EllipseNode,
   pentagon: PentagonNode,
 };
-
 
 const App = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
@@ -64,6 +63,7 @@ const App = () => {
   const addNode = (type) => {
     let style = {
       backgroundColor: 'lightgray', // Default background color
+      color: 'black', // Default text color
     };
   
     switch (type) {
@@ -176,21 +176,20 @@ const App = () => {
       setNodes((nds) => nds.map((node) => (node.id === newNode.id ? { ...node, isNew: false } : node)));
     }, 1000);
   };
-  
 
   const deleteNode = (nodeId) => {
     setNodes((nds) => nds.filter((node) => node.id !== nodeId));
     setSelectedNode(null);
   };
 
-  const handleColorChange = (color) => {
+  const handleColorChange = (color, type) => {
     if (selectedNode) {
       setNodes((nds) =>
         nds.map((node) => {
           if (node.id === selectedNode) {
             return {
               ...node,
-              style: { ...node.style, backgroundColor: color },
+              style: { ...node.style, [type]: color },
             };
           }
           return node;
@@ -225,11 +224,24 @@ const App = () => {
           {selectedNode && (
             <div className="node-controls">
               <button onClick={() => deleteNode(selectedNode)}>Delete Node</button>
-              <input
-                type="color"
-                onChange={(e) => handleColorChange(e.target.value)}
-                style={{ cursor: 'pointer' }}
-              />
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <label>
+                  Background Color:
+                  <input
+                    type="color"
+                    onChange={(e) => handleColorChange(e.target.value, 'backgroundColor')}
+                    style={{ cursor: 'pointer' }}
+                  />
+                </label>
+                <label>
+                  Text Color:
+                  <input
+                    type="color"
+                    onChange={(e) => handleColorChange(e.target.value, 'color')}
+                    style={{ cursor: 'pointer' }}
+                  />
+                </label>
+              </div>
             </div>
           )}
         </div>
