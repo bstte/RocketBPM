@@ -283,8 +283,7 @@ const App = () => {
             <Background variant="lines" />
             <Controls />
           </ReactFlow>
-             {/* Draggable Popup */}
-             // Inside your App component
+        
 
 {showPopup && (
   <div
