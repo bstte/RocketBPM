@@ -61,39 +61,7 @@ const App = () => {
   );
 
   const addNode = (type, position) => {
-    let style = {
-      backgroundColor: 'lightgray',
-      color: 'black',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      textAlign: 'center',
-      fontWeight: 'bold',
-    };
-
-    switch (type) {
-
-
-      case 'pentagon':
-        style = {
-          ...style,
-          background: 'none', // The ProgressArrowNode has its own styling
-          border: 'none',
-          padding: '0',
-        };
-        break;
-      case 'progressArrow':
-        style = {
-          ...style,
-          background: 'none', // The ProgressArrowNode has its own styling
-          border: 'none',
-          padding: '0',
-        };
-        break;
-
-      default:
-        break;
-    }
+  
 
     const newNode = {
       id: (nodes.length + 1).toString(),
