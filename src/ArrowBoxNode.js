@@ -1,14 +1,12 @@
 import { memo, useState, useEffect, useRef } from 'react';
 import { Handle, Position, NodeResizer } from '@xyflow/react';
-import { FaSyncAlt } from 'react-icons/fa'; // Import a rotation icon
 
 const ArrowBoxNode = ({ data, isNew, onLabelChange }) => {
   const [label, setLabel] = useState(data.label);
   const inputRef = useRef(null);
   const [isResizing, setIsResizing] = useState(false);
   const [isClickable, setIsClickable] = useState(false);
-  const [rotation, setRotation] = useState(0); // Track the rotation angle
-  const [isRotating, setIsRotating] = useState(false); // Track rotation state
+ 
 
   useEffect(() => {
     setLabel(data.label);
@@ -49,47 +47,47 @@ const ArrowBoxNode = ({ data, isNew, onLabelChange }) => {
   };
 
   // Start rotation on mousedown
-  const handleRotationStart = () => {
-    setIsRotating(true);
-  };
+  // const handleRotationStart = () => {
+  //   setIsRotating(true);
+  // };
 
-  // End rotation on mouseup
-  const handleRotationEnd = () => {
-    setIsRotating(false);
-  };
+  // // End rotation on mouseup
+  // const handleRotationEnd = () => {
+  //   setIsRotating(false);
+  // };
 
-  // Handle rotation by mouse movement
-  const handleMouseMove = (e) => {
-    if (isRotating) {
-      const rect = inputRef.current.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
-      const radians = Math.atan2(e.clientY - centerY, e.clientX - centerX);
-      const angle = (radians * 180) / Math.PI;
-      setRotation(angle);
-    }
-  };
+  // // Handle rotation by mouse movement
+  // const handleMouseMove = (e) => {
+  //   if (isRotating) {
+  //     const rect = inputRef.current.getBoundingClientRect();
+  //     const centerX = rect.left + rect.width / 2;
+  //     const centerY = rect.top + rect.height / 2;
+  //     const radians = Math.atan2(e.clientY - centerY, e.clientX - centerX);
+  //     const angle = (radians * 180) / Math.PI;
+  //     setRotation(angle);
+  //   }
+  // };
 
-  useEffect(() => {
-    if (isRotating) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleRotationEnd);
-    } else {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleRotationEnd);
-    }
+  // useEffect(() => {
+  //   if (isRotating) {
+  //     document.addEventListener('mousemove', handleMouseMove);
+  //     document.addEventListener('mouseup', handleRotationEnd);
+  //   } else {
+  //     document.removeEventListener('mousemove', handleMouseMove);
+  //     document.removeEventListener('mouseup', handleRotationEnd);
+  //   }
 
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleRotationEnd);
-    };
-  }, [isRotating]);
+  //   return () => {
+  //     document.removeEventListener('mousemove', handleMouseMove);
+  //     document.removeEventListener('mouseup', handleRotationEnd);
+  //   };
+  // }, [isRotating]);
 
   return (
     <div
       style={{
         ...styles.wrapper, // Rotate the entire wrapper, including node and resizer
-        transform: `rotate(${rotation}deg)`,
+       
       }}
       onClick={handleClick}
     >
@@ -103,12 +101,7 @@ const ArrowBoxNode = ({ data, isNew, onLabelChange }) => {
             onResizeStop={handleResizeStop}
           />
           {/* Rotation Icon */}
-          <div
-            style={styles.rotationIcon}
-            onMouseDown={handleRotationStart}
-          >
-            <FaSyncAlt />
-          </div>
+        
         </>
       )}
 
