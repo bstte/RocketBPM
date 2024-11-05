@@ -103,7 +103,8 @@ const MapLevel = () => {
             setShowPopup(false);
             navigate(`/level/${newLevel}/${NodeId}`,{ state: { id, title: title,Editable:Editable }});
         }
-    }, [currentLevel, navigate]);
+    }, [currentLevel, navigate, Editable, id, title]);
+
 
 
     // Fetch nodes and edges from the backend based on current level
@@ -162,7 +163,7 @@ const MapLevel = () => {
         };
 
         fetchNodes();
-    }, [currentLevel, handleLabelChange, setNodes, setEdges, currentParentId, handleCreateNewNodeByText, user]);
+    }, [currentLevel, handleLabelChange, setNodes, setEdges, currentParentId, handleCreateNewNodeByText, user, Editable, id]);
 
     // Update breadcrumbs when currentLevel or currentParentId changes
     useEffect(() => {
@@ -176,7 +177,7 @@ const MapLevel = () => {
         setHeaderTitle(`${title} (LEVEL ${currentLevel})`);
         // Add the current breadcrumb
         addBreadcrumb(label, path);
-    }, [currentLevel, currentParentId, addBreadcrumb, removeBreadcrumbsAfter]);
+    }, [currentLevel, currentParentId, addBreadcrumb, removeBreadcrumbsAfter,title]);
 
     const memoizedEdgeTypes = useMemo(() => edgeTypes, []);
 
@@ -196,7 +197,7 @@ const MapLevel = () => {
                 }, eds)
             );
         },
-        [setEdges, currentLevel, currentParentId, user]
+        [setEdges, currentLevel, currentParentId, user,id]
     );
 
 
@@ -247,7 +248,7 @@ const MapLevel = () => {
             setShowPopup(false);
             setHeaderTitle(`${title} (LEVEL ${currentLevel})`);
         }
-    }, [selectedNode, setNodes, setEdges, currentLevel]);
+    }, [selectedNode, setNodes, setEdges, currentLevel,title]);
 
     const handleNodeRightClick = (event, node) => {
 
