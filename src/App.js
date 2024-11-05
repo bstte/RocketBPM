@@ -17,7 +17,6 @@ const PrivateRoute = ({ children }) => {
 };
 
 const App = () => {
-<<<<<<< HEAD
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedNode, setSelectedNode] = useState(null);
