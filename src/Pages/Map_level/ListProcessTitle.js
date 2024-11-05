@@ -102,7 +102,7 @@ const ListProcessTitle = () => {
       <CustomDrawer title="List of All Process" />
       <div style={styles.content}>
         <div style={styles.header}>
-          <h1 style={styles.title}></h1>
+         
           <button style={styles.addButton} onClick={() => navigate('/Add-process-title')}>
             Add Process
           </button>
@@ -178,7 +178,7 @@ const styles = {
   },
   header: {
     display: 'flex',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     alignItems: 'center',
     marginBottom: '20px',
     marginTop: '50px',
