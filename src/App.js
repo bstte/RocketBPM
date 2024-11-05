@@ -1,40 +1,23 @@
-import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
-import {
-  ReactFlow,
-  ReactFlowProvider,
-  addEdge,
-  Controls,
-  Background,
-  useEdgesState,
-  useNodesState,
-  SmoothStepEdge,
-  BezierEdge,
-  StraightEdge,
-} from '@xyflow/react'; // Ensure this is the correct import path
-import '@xyflow/react/dist/style.css';
-import './App.css';
+import React, { useCallback, useEffect, useRef } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { setUser } from './redux/userSlice'; // Action to set the user
+import Login from './Pages/Login/Login';
+import { BreadcrumbsProvider } from './context/BreadcrumbsContext';
+import { CurrentUser } from './API/api';
+import Dashboard from './Pages/Dashboard/Dashboard';
+import Profile from './Pages/Profile/Profile';
+import MapLevel from './Pages/Map_level/MapLevel';
+import ProcessTitle from './Pages/Map_level/ProcessTitle';
+import ListProcessTitle from './Pages/Map_level/ListProcessTitle';
 
-import { FaArrowRight, FaChevronDown, FaChevronUp, FaTimes } from 'react-icons/fa';
-import { GiHexagonalNut } from 'react-icons/gi';
-import ArrowBoxNode from './ArrowBoxNode';
-import PentagonNode from './PentagonNode';
-
-const ResizableArrowBoxNode = (props) => <ArrowBoxNode {...props} />;
-const ResizablePentagonNode = (props) => <PentagonNode {...props} />;
-const nodeTypes = {
-
-  pentagon: ResizablePentagonNode,
-  progressArrow: ResizableArrowBoxNode, // Add the new node type
-
-};
-
-const edgeTypes = {
-  smoothstep: SmoothStepEdge,
-  bezier: BezierEdge,
-  straight: StraightEdge,
+const PrivateRoute = ({ children }) => {
+  const { user } = useSelector((state) => state.user);
+  return user ? children : <Navigate to="/login" />;
 };
 
 const App = () => {
+<<<<<<< HEAD
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedNode, setSelectedNode] = useState(null);
@@ -315,120 +298,57 @@ const App = () => {
     </div>
   </ReactFlowProvider>
   
+=======
+  return (
+    <BreadcrumbsProvider>
+      <Router>
+        <AppContent />
+      </Router>
+    </BreadcrumbsProvider>
+>>>>>>> dd83d24 (Update project with latest changes)
   );
 };
 
-const styles = {
-  appContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100vh',
-    backgroundColor: '#f8f9fa',
-    borderLeft: '1px solid rgb(166 160 160)',
-    borderRight: '1px solid rgb(166 160 160)', // Change this to your desired border color and width
+const AppContent = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const hasCheckedToken = useRef(false); // Use a ref to track if checkToken has been called
 
-  },
-  header: {
-    padding: '15px',
-    border: '1px solid rgb(166 160 160)', // Add a border at the bottom
-    color: '#343a40', // Change text color to match the desired theme
-    display: 'flex',
-    justifyContent: 'space-between', // Align items to space out
-    alignItems: 'center', // Center align items vertically
-  },
-  headerTitle: {
-    margin: 0,
-    fontSize: '24px', // Set a larger font size for the title
-    fontWeight: 'bold', // Bold font for emphasis
-  },
-  contentWrapper: {
-    display: 'flex',
-    flex: 1,
-  },
-  sidebar: {
-    width: '200px',
-    padding: '10px',
-    backgroundColor: '#f1f3f5',
-    borderRight: '1px solid #dee2e6',
-  },
-  generalButton: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '8px 10px',
-    backgroundColor: '#007bff',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    marginBottom: '10px',
-  },
-  shapeIcons: {
-    marginTop: '10px',
-  },
-  shapeButton: {
-    display: 'flex',
-    alignItems: 'center',
-    backgroundColor: '#6c757d',
-    color: '#fff',
-    border: 'none',
-    padding: '6px 10px',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    marginBottom: '8px',
-    width: '100%',
-    justifyContent: 'space-between',
-  },
-  iconStyle: {
-    marginRight: '5px',
-  },
-  flowContainer: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-    position: 'relative',
-  },
-  reactFlowStyle: {
-    width: '100%',
-    height: '100%',
-  },
-  popup: {
-    position: 'absolute',
-    background: '#fff',
-    border: '1px solid #007bff',
-    borderRadius: '4px',
-    padding: '1rem',
-    boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
-    zIndex: 1000,
-    minWidth: '200px', // Set a minimum width for better appearance
-  },
-  popupTitle: {
-    margin: '0 0 1rem 0',
-    fontSize: '16px', // Adjust font size for better readability
-  },
-  popupButton: {
-    display: 'block',
-    width: '100%',
-    background: '#007bff',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    padding: '0.5rem',
-    cursor: 'pointer',
-    marginBottom: '0.5rem',
-    transition: 'background 0.2s',
-  },
-  closeIcon: {
-    position: 'absolute',
-    top: '5px',
-    right: '10px',
-    cursor: 'pointer',
-    fontSize: '20px',
-    color: '#007bff', // Icon color
-  },
-  popupButtonHover: {
-    background: '#0056b3', // Hover effect
-  },
+  const checkToken = useCallback(async () => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const response = await CurrentUser(token); // Fetch current user
+        dispatch(setUser(response)); // Save user to Redux
+        navigate('/dashboard'); // Navigate to dashboard after fetching user
+      } catch (error) {
+        console.error('Error fetching current user:', error);
+        localStorage.removeItem('token'); // Clear invalid token
+        navigate('/login'); // Redirect to login page
+      }
+    } else {
+      navigate('/login'); // Redirect to login page if no token
+    }
+  }, [dispatch, navigate]);
+
+  useEffect(() => {
+    if (!hasCheckedToken.current) {
+      checkToken(); // Check token when the app loads
+      hasCheckedToken.current = true; // Set the ref to true after the first check
+    }
+  }, [checkToken]); // Include checkToken in the dependency array
+
+  return (
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/Map_level" element={<PrivateRoute><MapLevel /></PrivateRoute>} />
+      <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} /> 
+      <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} /> 
+      <Route path="/Add-process-title" element={<PrivateRoute><ProcessTitle /></PrivateRoute>} /> 
+      <Route path="/List-process-title" element={<PrivateRoute><ListProcessTitle /></PrivateRoute>} /> 
+      <Route path="/level/:level/:parentId/*" element={<PrivateRoute><MapLevel /></PrivateRoute>} />
+    </Routes>
+  );
 };
 
 export default App;
-
