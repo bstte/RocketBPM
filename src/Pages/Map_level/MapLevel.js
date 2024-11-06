@@ -99,9 +99,9 @@ const MapLevel = () => {
             console.log(NodeId);
             const newLevel = currentLevel + 1;
             setShowPopup(false);
-            navigate(`/level/${newLevel}/${NodeId}`,{ state: { id, title: title,Editable:Editable }});
+            navigate(`/level/${newLevel}/${NodeId}`,{ state: { id, title: title,Editable:Editable,user:user }});
         }
-    }, [currentLevel, navigate, Editable, id, title]);
+    }, [currentLevel, navigate, Editable, id, title,user]);
 
 
 
@@ -110,6 +110,7 @@ const MapLevel = () => {
 
         const fetchNodes = async () => {
             try {
+                console.log("check user ,",user)
                 const levelParam = currentParentId !== null ? `Level${currentLevel}_${currentParentId}` : `Level${currentLevel}`;
                 const user_id = user ? user.id : null;
                 const Process_id = id ? id : null;
@@ -268,10 +269,10 @@ const MapLevel = () => {
 
     const handleCreateNewNode = () => {
         if (selectedNode) {
-            console.log(selectedNode,id,title,Editable)
+            // console.log(selectedNode,id,title,Editable)
             const newLevel = currentLevel + 1;
             setShowPopup(false);
-            navigate(`/level/${newLevel}/${selectedNode}`,{ state: { id, title: title,Editable:Editable }});
+            navigate(`/level/${newLevel}/${selectedNode}`,{ state: { id, title: title,Editable:Editable,user:user }});
         }
     };
 
@@ -300,8 +301,7 @@ const MapLevel = () => {
 
     // Save nodes and edges to backend
     const handleSaveNodes = async () => {
-        // console.log(nodes);
-        // console.log(edges)
+    
         try {
             const response = await api.saveNodes({
                 nodes: nodes.map(({ id, data, type, position, draggable, animated, measured, Level, user_id, Process_id }) => ({
