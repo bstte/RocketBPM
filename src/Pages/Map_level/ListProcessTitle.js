@@ -64,6 +64,7 @@ const ListProcessTitle = () => {
       combined.push({
         ...process,
         assignedBy: null, // No one assigned if self-created
+        assignment_user: null, // No one assigned if self-created
       });
     });
 
@@ -71,6 +72,7 @@ const ListProcessTitle = () => {
       combined.push({
         ...assignment.process,
         assignedBy: assignment.user.email, // Assigning user's name
+        assignment_user:assignment.user
       });
     });
 
@@ -122,14 +124,18 @@ const ListProcessTitle = () => {
                 </tr>
               </thead>
               <tbody>
-                {combineProcesses().map((process, index) => (
+              {combineProcesses().map((process, index) => {
+                // Determine which user to pass based on assignedBy
+                const currentUser = process.assignment_user ? process.assignment_user : user;
+
+                return (
                   <tr key={process.id} style={styles.tr}>
                     <td style={styles.td}>{index + 1}</td>
                     <td style={styles.td}>{process.process_title}</td>
                     <td style={styles.td}>{new Date(process.created_at).toLocaleString()}</td>
-                    <td style={styles.td}>{process.assignedBy || 'Self'}</td> {/* Show assigned user or 'Self' */}
+                    <td style={styles.td}>{process.assignedBy || 'Self'}</td>
                     <td style={styles.td}>
-                      {!(process.assignedBy) ? ( // Check if assignedBy is 'Self'
+                      {!process.assignedBy && (
                         <Select
                           isMulti
                           options={userOptions}
@@ -140,19 +146,20 @@ const ListProcessTitle = () => {
                           placeholder="Select Users"
                           closeMenuOnSelect={false}
                         />
-                      ) : null} {/* Render dropdown only if assignedBy is 'Self' */}
+                      )}
                     </td>
                     <td style={styles.td}>
-                      <button onClick={() => navigate("/Map_level", { state: { id: process.id, title: process.process_title, Editable: false } })} style={styles.actionButton}>
+                      <button onClick={() => navigate("/Map_level", { state: { id: process.id, title: process.process_title, Editable: false, user: currentUser } })} style={styles.actionButton}>
                         <FaEye style={styles.icon} />
                       </button>
-                      <button onClick={() => navigate("/Map_level", { state: { id: process.id, title: process.process_title, Editable: true } })} style={styles.actionButton}>
+                      <button onClick={() => navigate("/Map_level", { state: { id: process.id, title: process.process_title, Editable: true, user: currentUser } })} style={styles.actionButton}>
                         <FaEdit style={styles.icon} />
                       </button>
                     </td>
                   </tr>
-                ))}
-              </tbody>
+                );
+              })}
+            </tbody>
             </table>
           ) : (
             <p>No process available.</p>
