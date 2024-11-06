@@ -16,7 +16,6 @@ import {
 import '@xyflow/react/dist/style.css';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
-import { useSelector } from 'react-redux'; // Import useSelector to access Redux state
 
 import Header from '../../components/Header';
 import Sidebar from '../../components/Sidebar';
@@ -57,13 +56,12 @@ const MapLevel = () => {
     const { level, parentId } = useParams(); // Extract route parameters
 
     const location = useLocation();
-    const { id, title, Editable } = location.state || {}; // Access the ID and title, with a fallback
+    const { id, title, Editable,user } = location.state || {}; // Access the ID and title, with a fallback
 
     const currentLevel = level ? parseInt(level, 10) : 0; // Default to Level 0
     const currentParentId = parentId || null;
 
     const { addBreadcrumb, removeBreadcrumbsAfter } = useContext(BreadcrumbsContext); // Consume BreadcrumbsContext
-    const user = useSelector((state) => state.user.user);
 
 
     const [nodes, setNodes, onNodesChange] = useNodesState([]);
@@ -115,7 +113,6 @@ const MapLevel = () => {
                 const levelParam = currentParentId !== null ? `Level${currentLevel}_${currentParentId}` : `Level${currentLevel}`;
                 const user_id = user ? user.id : null;
                 const Process_id = id ? id : null;
-                console.log(levelParam, user_id, Process_id)
                 const data = await api.getNodes(levelParam, parseInt(user_id), Process_id);
                 console.log("API nodes data:", data);
 
