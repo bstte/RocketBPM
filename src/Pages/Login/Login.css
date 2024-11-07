@@ -16,7 +16,10 @@ body {
     color: #333;
     margin-bottom: 20px;
   }
-  
+    .login-logo {
+    width: 180px; /* Adjust size as needed */
+    margin-bottom: 20px;
+  }
   .login-form {
     background: white;
     padding-top: 20px;
