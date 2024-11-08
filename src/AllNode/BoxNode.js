@@ -222,7 +222,7 @@ const styles = {
   },
  handle: {
     width: '12px',
-    height: '12px',
+    height: '16px',
     backgroundColor: '#99CCFF',
     borderRadius: '50%',
     border: '2px solid #fff',
