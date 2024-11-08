@@ -159,6 +159,14 @@ const styles = {
     whiteSpace: 'pre-wrap',
     lineHeight: '1.4', // Adjust line height for better readability
   },
+ handle: {
+    width: '12px',
+    height: '16px',
+    backgroundColor: '#99CCFF',
+    borderRadius: '50%',
+    border: '2px solid #fff',
+    boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+  },
 };
 
 
