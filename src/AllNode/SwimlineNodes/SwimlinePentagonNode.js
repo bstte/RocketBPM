@@ -9,7 +9,6 @@ const PentagonNode = ({ data }) => {
         <span style={styles.title}>{data.details.title || 'No Details'}</span>
       </div>
 
-      {/* Connection Handles */}
       <Handle
         type="target"
         position={Position.Top}

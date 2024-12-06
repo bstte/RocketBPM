@@ -10,7 +10,7 @@ import Profile from './Pages/Profile/Profile';
 import MapLevel from './Pages/Map_level/MapLevel';
 import ProcessTitle from './Pages/Map_level/ProcessTitle';
 import ListProcessTitle from './Pages/Map_level/ListProcessTitle';
-import Swimlane_model from './Pages/Map_level/Swimlane_model';
+import SwimlaneModel from './Pages/Map_level/Swimlane_model';
 
 const PrivateRoute = ({ children }) => {
   const { user } = useSelector((state) => state.user);
@@ -30,7 +30,7 @@ const App = () => {
 const AppContent = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const hasCheckedToken = useRef(false); // Use a ref to track if checkToken has been called
+  const hasCheckedToken = useRef(false); 
 
   const checkToken = useCallback(async () => {
     const token = localStorage.getItem('token');
@@ -64,7 +64,7 @@ const AppContent = () => {
       <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
       <Route path="/Add-process-title" element={<PrivateRoute><ProcessTitle /></PrivateRoute>} />
       <Route path="/List-process-title" element={<PrivateRoute><ListProcessTitle /></PrivateRoute>} />
-      <Route path="/swimlane/level/:level/:parentId" element={<Swimlane_model />} />
+      <Route path="/swimlane/level/:level/:parentId" element={<SwimlaneModel />} />
 
       <Route path="/level/:level/:parentId/*" element={<PrivateRoute><MapLevel /></PrivateRoute>} />
     </Routes>

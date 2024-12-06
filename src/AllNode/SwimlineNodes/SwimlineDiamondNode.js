@@ -11,7 +11,6 @@ const SwimlineDiamondNode = ({ data }) => {
         </div>
       </div>
 
-      {/* Connection Handles */}
       <Handle
         type="target"
         position={Position.Top}

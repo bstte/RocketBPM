@@ -54,7 +54,7 @@ const MapLevel = () => {
     const { level, parentId } = useParams(); // Extract route parameters
 
     const location = useLocation();
-    const { id, title, Editable, user } = location.state || {}; // Access the ID and title, with a fallback
+    const { id, title, Editable, user } = location.state || {}; 
 
     const currentLevel = level ? parseInt(level, 10) : 0; // Default to Level 0
     const currentParentId = parentId || null;
@@ -67,7 +67,6 @@ const MapLevel = () => {
     const [edges, setEdges, onEdgesChange] = useEdgesState([]);
     const [selectedNode, setSelectedNode] = useState(null);
     const [popupTitle, setPopupTitle] = useState('');
-    const [pageTitle, setPageTitle] = useState('');
 
     const [showPopup, setShowPopup] = useState(false);
     const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
@@ -511,7 +510,6 @@ const handleCreateNewNode = async (type) => {
         pentagon: 'Pentagon Node',
     
         box: 'Box Node',
-        label: 'Label Node',
       };
 
     return (

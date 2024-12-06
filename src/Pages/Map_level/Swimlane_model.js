@@ -95,7 +95,7 @@ const generateNodesAndEdges = (windowWidth, windowHeight) => {
 };
 
 
-function Flow() {
+const SwimlaneModel=()=> {
   const [windowSize, setWindowSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
@@ -127,23 +127,29 @@ function Flow() {
 
   const [nodes, setNodes] = useState(initialNodes);
   const [edges, setEdges] = useState([]);
-
-  const nodeTypes = {
-    pentagon: SwimlinePentagonNode,
-    progressArrow: SwimlineArrowBoxNode,
-    diamond: SwimlineDiamondNode,
-    box: SwimlineBoxNode,
-    SwimlineRightsideBox: SwimlineRightsideBox,
-    label: LabelNode,
-    Yes: YesNode,
-    No: NoNode,
-  };
-
-  const edgeTypes = {
-    smoothstep: SmoothStepEdge,
-    bezier: BezierEdge,
-    straight: StraightEdge,
-  };
+  const nodeTypes = useMemo(
+    () => ({
+      pentagon: SwimlinePentagonNode,
+      progressArrow: SwimlineArrowBoxNode,
+      diamond: SwimlineDiamondNode,
+      box: SwimlineBoxNode,
+      SwimlineRightsideBox: SwimlineRightsideBox,
+      label: LabelNode,
+      Yes: YesNode,
+      No: NoNode,
+    }),
+    [] 
+  );
+  
+  const edgeTypes = useMemo(
+    () => ({
+      smoothstep: SmoothStepEdge,
+      bezier: BezierEdge,
+      straight: StraightEdge,
+    }),
+    [] // Add dependencies if any of the edge types depend on external variables
+  );
+  
 
 
   useEffect(() => {
@@ -413,8 +419,9 @@ function Flow() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const memoizedEdgeTypes = useMemo(() => edgeTypes, []);
-  const memoizedNodeTypes = useMemo(() => nodeTypes, []);
+  const memoizedNodeTypes = useMemo(() => nodeTypes, [nodeTypes]);
+  const memoizedEdgeTypes = useMemo(() => edgeTypes, [edgeTypes]);
+  
 
 
   const handleSaveNodes = async () => {
@@ -692,4 +699,4 @@ function Flow() {
   );
 }
 
-export default Flow;
+export default SwimlaneModel;

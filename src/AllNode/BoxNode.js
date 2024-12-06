@@ -46,7 +46,7 @@ const BoxNode = ({ data, id, isNew }) => {
 
   return (
     <div style={styles.wrapper} onClick={handleClick}>
-      {/* Box Shape */}
+
       <div
         style={{
           ...styles.box,

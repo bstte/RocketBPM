@@ -1,7 +1,7 @@
 import React, { memo, useEffect, useRef, useState } from 'react';
 
 const SwimlineRightsideBox = ({ data, id, isNew }) => {
-  const [label, setLabel] = useState(data.label || ''); // Default to empty if no label is provided
+  const [label, setLabel] = useState(data.label || ''); 
   const textareaRef = useRef(null);
 
   useEffect(() => {

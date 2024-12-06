@@ -1,10 +1,9 @@
-// src/AllNode/LabelNode.jsx
-import React, { memo, useState, useRef } from 'react';
+
+import React, { memo } from 'react';
 
 
 const YesNode = ({ data }) => {
  
-  const [isResizing, setIsResizing] = useState(false);
   
 
   return (
@@ -15,14 +14,11 @@ const YesNode = ({ data }) => {
       }}
    
     >
-    
 
-      {/* Label Box */}
       <div
         style={{
           ...styles.labelBox,
-          minWidth: isResizing ? 'auto' : data.width_height ? data.width_height.width : "100px",
-          minHeight: isResizing ? 'auto' : data.width_height ? data.width_height.height : '50px',
+         
         }}
       >
 

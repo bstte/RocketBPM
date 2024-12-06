@@ -9,7 +9,7 @@ const ArrowBoxNode = ({ data, id, isNew }) => {
   const [isClickable, setIsClickable] = useState(false);
 
   useEffect(() => {
-    setLabel(data.label || ''); // Ensure a fallback value
+    setLabel(data.label || ''); 
   }, [data.label]);
 
   const handleChange = (e) => {

@@ -4,7 +4,7 @@ import { Handle, Position } from '@xyflow/react';
 const BoxNode = ({ data, id, isNew }) => {
   return (
     <div style={styles.wrapper}>
-      {/* Arrow Box */}
+    
       <div className='borderBox' style={styles.box}>
         <span
           style={{

@@ -19,7 +19,6 @@ const ListProcessTitle = () => {
     // Agar data pehle se loaded hai, toh loading ko true mat kijiye
     const fetchProcessTitles = async () => {
       try {
-        console.log("processTitles",processTitles)
         if (processTitles.length === 0) setLoading(true); // Sirf pehli baar loading dikhaye
 
         const user_id = user && user.id;
@@ -49,7 +48,7 @@ const ListProcessTitle = () => {
     };
 
     fetchProcessTitles();
-  }, [user]);
+  }, [user,processTitles.length]);
 
   const fetchAssignedUsers = async (processId) => {
     try {
@@ -115,7 +114,7 @@ const ListProcessTitle = () => {
 
         <div style={styles.tableContainer}>
           {loading && processTitles.length === 0 ? (
-            <p>Loading...</p> // Sirf pehli baar loading text dikhaye
+            <p>Loading...</p> 
           ) : processTitles.length > 0 || processAssignments.length > 0 ? (
             <table style={styles.table}>
               <thead>

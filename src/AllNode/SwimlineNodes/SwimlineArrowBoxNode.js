@@ -1,11 +1,10 @@
-import { memo, useState } from 'react';
+import { memo, } from 'react';
 import { Handle, Position } from '@xyflow/react';
 
 const ArrowBoxNode = ({ data }) => {
-  const [isHovered, setIsHovered] = useState(false);
+
 
   const handleClick = () => {
-    // Handle click logic if needed
   };
 
   return (
@@ -17,8 +16,7 @@ const ArrowBoxNode = ({ data }) => {
       <div
         className='borderBox'
         style={styles.arrowBox}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+    
       >
         <span style={styles.label}>
           {data.details.title || 'No Details'}

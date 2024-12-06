@@ -1,7 +1,7 @@
 // src/api.js
 import axios from 'axios';
-// const baseUrl='https://teamwebdevelopers.com/proto-type/api'
-const baseUrl ='http://localhost:8000/api/'
+const baseUrl='https://teamwebdevelopers.com/proto-type/api'
+// const baseUrl ='http://localhost:8000/api/'
 export const defaultApi = axios.create({
   baseURL: baseUrl, // Use 127.0.0.1 instead of localhost
   headers: {
