@@ -178,6 +178,14 @@ const styles = {
     borderRadius: '50%',
     boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
   },
+    handle: {
+    width: '16px',
+    height: '16px',
+    backgroundColor: '#99CCFF',
+    borderRadius: '50%',
+    border: '2px solid #fff',
+    boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+  },
 };
 
 // Wrap TriangleNode with PlaceholderStyles

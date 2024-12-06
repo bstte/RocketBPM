@@ -109,7 +109,7 @@ const LabelNode = ({ data, isNew }) => {
       }}
       onClick={handleClick}
     >
-      {isClickable && (
+      {isClickable && data.nodeResize&& (
         <>
           {/* Node Resizer */}
           <NodeResizer
@@ -136,8 +136,8 @@ const LabelNode = ({ data, isNew }) => {
           minHeight: isResizing ? 'auto' : data.width_height ? data.width_height.height : '50px',
         }}
       >
-        {isEditing && data.Editable? (
-          <input
+{isEditing && data.Editable || !data.label ? (
+            <input
             ref={inputRef}
             value={label}
             onChange={handleChange}
@@ -169,7 +169,7 @@ const styles = {
     position: 'relative',
     textAlign: 'center',
 
-    color: '#ff4747',
+    color: '#000',
     borderRadius: '3px',
     width: '100%',
     height: '100%',
@@ -183,7 +183,7 @@ const styles = {
     borderRadius: '3px',
     border: '1px solid #ccc',
     outline: 'none',
-
+    textTransform: 'uppercase',    fontFamily: "'Poppins', sans-serif",
     fontSize: '34px', // Adjust font size as needed
     boxSizing: 'border-box',
   },
@@ -195,8 +195,8 @@ const styles = {
     justifyContent: 'center',
     width: '100%',
     height: '100%',
-    fontWeight: 'bold', // **Added for bold text**
-
+    fontWeight: 'medium', // **Added for bold text**
+    textTransform: 'uppercase',    fontFamily: "'Poppins', sans-serif",
     fontSize: '34px', // Ensure font size matches input
     wordBreak: 'break-word', // Allow text to wrap
   },

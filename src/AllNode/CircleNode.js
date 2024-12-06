@@ -92,7 +92,7 @@ const CircleNode = ({ data, isNew }) => {
       }}
       onClick={handleClick}
     >
-      {isClickable && (
+      {isClickable || data.nodeResize && (
         <>
           <NodeResizer
             minWidth={100}
@@ -143,7 +143,7 @@ const styles = {
     justifyContent: 'center',
     position: 'relative',
     textAlign: 'center',
-    backgroundColor: '#3498db',
+    backgroundColor: '#ffffff',
     color: '#fff',
     borderRadius: '50%',
     width: '100%',
@@ -176,6 +176,14 @@ const styles = {
     backgroundColor: '#fff',
     padding: '5px',
     borderRadius: '50%',
+    boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+  },
+  handle: {
+    width: '16px',
+    height: '16px',
+    backgroundColor: '#99CCFF',
+    borderRadius: '50%',
+    border: '2px solid #fff',
     boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
   },
 };

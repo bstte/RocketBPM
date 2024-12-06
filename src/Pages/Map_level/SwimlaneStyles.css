@@ -1,0 +1,197 @@
+/* import React, { useState, useCallback, useMemo } from 'react';
+import {
+    ReactFlow,
+    ReactFlowProvider,
+    addEdge,
+    Background,
+    SmoothStepEdge,
+    BezierEdge,
+    StraightEdge,
+    MarkerType,
+    useEdgesState,
+    useNodesState,
+} from '@xyflow/react'; // Ensure correct import path
+import '@xyflow/react/dist/style.css';
+import { v4 as uuidv4 } from 'uuid';
+import Header from '../../components/Header';
+// Import custom nodes
+import ArrowBoxNode from '../../AllNode/ArrowBoxNode';
+import PentagonNode from '../../AllNode/PentagonNode';
+import DiamondNode from '../../AllNode/DiamondNode';
+import BoxNode from '../../AllNode/BoxNode';
+import LabelNode from '../../AllNode/LabelNode';
+
+function MultiContainerFlow() {
+    const [nodes, setNodes, onNodesChange] = useNodesState([]);
+    const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+
+    const rows = Array.from({ length: 7 }, (_, index) => ({
+        id: `row-${index + 1}`,
+        label: `Row ${index + 1}`,
+        yPos: index * 80, // Dynamically set row position
+        height: 80,
+    }));
+
+    const handleRowClick = (rowId) => alert(`Clicked on ${rowId}`);
+
+    const onConnect = useCallback(
+        (params) => {
+            setEdges((eds) =>
+                addEdge(
+                    {
+                        ...params,
+                        markerEnd: {
+                            type: MarkerType.ArrowClosed,
+                        },
+                        style: { stroke: '#6a82b6', strokeWidth: 3 },
+                        type: 'step',
+                    },
+                    eds
+                )
+            );
+        },
+        [setEdges]
+    );
+
+    const nodeTypes = {
+        pentagon: PentagonNode,
+        progressArrow: ArrowBoxNode,
+        diamond: DiamondNode,
+        box: BoxNode,
+        label: LabelNode,
+    };
+
+    const edgeTypes = {
+        smoothstep: SmoothStepEdge,
+        bezier: BezierEdge,
+        straight: StraightEdge,
+    };
+
+    const handleSaveNodes = () => alert('Nodes saved!');
+    const handleBack = () => alert('Back functionality triggered!');
+
+    const addNode = (type, position) => {
+        const newNodeId = uuidv4();
+        const newNode = {
+            id: `Level_1_${newNodeId}`,
+            data: {
+                label: '',
+                shape: type,
+                onLabelChange: (newLabel) => console.log(`New label: ${newLabel}`),
+            },
+            type,
+            position: position || { x: Math.random() * 500, y: Math.random() * 500 },
+            draggable: true,
+            isNew: true,
+        };
+
+        setNodes((nds) => [...nds, newNode]);
+
+        setTimeout(() => {
+            setNodes((nds) =>
+                nds.map((node) => (node.id === newNode.id ? { ...node, isNew: false } : node))
+            );
+        }, 1000);
+    };
+
+    const memoizedNodeTypes = useMemo(() => nodeTypes, []);
+    const memoizedEdgeTypes = useMemo(() => edgeTypes, []);
+
+    return (
+        <div style={styles.appContainer}>
+            <ReactFlowProvider>
+                <Header
+                    title="Flow Header"
+                    onSave={handleSaveNodes}
+                    addNode={addNode}
+                    handleBackdata={handleBack}
+                />
+                <div style={styles.scrollableWrapper}>
+                    <ReactFlow
+                        nodes={nodes}
+                        edges={edges}
+                        onNodesChange={onNodesChange}
+                        onEdgesChange={onEdgesChange}
+                        onConnect={onConnect}
+                        nodeTypes={memoizedNodeTypes}
+                        edgeTypes={memoizedEdgeTypes}
+                        minZoom={0.1}
+                        zoomOnScroll={false}
+                        zoomOnPinch={false}
+                        panOnDrag={false}
+                        panOnScroll={false}
+                        maxZoom={0.6}
+                        style={styles.reactFlowStyle}
+                    >
+                        {rows.map((row) => (
+                            <div
+                                key={row.id}
+                                style={{
+                                    ...styles.row,
+                                    top: row.yPos,
+                                    height: row.height,
+                                }}
+                                onClick={() => handleRowClick(row.id)}
+                            >
+                                <div style={styles.rowLeft}></div>
+                                <div style={styles.rowRight}></div>
+                            </div>
+                        ))}
+                        <Background color="#aaa" gap={16} />
+                    </ReactFlow>
+                </div>
+            </ReactFlowProvider>
+        </div>
+    );
+}
+
+const styles = {
+    appContainer: {
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100vh',
+        backgroundColor: '#f8f9fa',
+    },
+    scrollableWrapper: {
+        flex: 1,
+        position: 'relative',
+        overflowY: 'auto',
+    },
+    reactFlowStyle: {
+        width: '100%',
+        height: '700px',
+        position: 'relative',
+    },
+    row: {
+        position: 'absolute',
+        width: '100%',
+        display: 'flex',
+        border: '1px solid #002060',
+        backgroundColor: 'rgba(255, 255, 255, 0.6)',
+    },
+    rowLeft: {
+        flex: '0 0 20%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRight: '1px solid #002060',
+        backgroundColor: '#fff',
+    },
+    rowRight: {
+        flex: '0 0 80%',
+        backgroundColor: '#fff',
+    },
+};
+
+export default MultiContainerFlow; */
+
+
+/* .react-flow__node-input,
+.react-flow__node-default,
+.react-flow__node-output,
+.react-flow__node-group {
+    border: 1px solid #ececec !important;
+    border-radius: 0 !important;
+    border-left: 0 !important;
+    border-bottom: 1px solid #022261 !important;
+} */

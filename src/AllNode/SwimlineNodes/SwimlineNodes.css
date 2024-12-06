@@ -1,0 +1,57 @@
+.diamond-shape {
+    background: #fff;
+    width: 50px;
+    height: 50px;
+    position: relative;
+    transform: rotate(45deg);
+    border: 2px solid blue;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .handle {
+    width: 12px;
+    height: 12px;
+    background-color: #99CCFF;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    position: absolute;
+  }
+  
+  .handle.top-handle {
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  .handle.bottom-handle {
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  .handle.left-handle {
+    left: -6px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  
+  .handle.right-handle {
+    right: -6px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  
+  .swimlinetextarea-class {
+    background: transparent;
+    border: none;
+    font-size: 16px;
+    resize: none;
+    outline: none;
+    text-align: center;
+    line-height: 1.4;
+    font-family: 'Poppins', sans-serif;
+    transform: rotate(-45deg);
+  }
+  

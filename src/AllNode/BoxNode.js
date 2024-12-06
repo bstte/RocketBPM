@@ -1,33 +1,28 @@
 // src/AllNode/BoxNode.jsx
-import { memo, useState, useEffect, useRef, useCallback } from 'react';
+import { memo, useState, useEffect, useRef } from 'react';
 import { Handle, Position, NodeResizer } from '@xyflow/react';
-import { FaSyncAlt } from 'react-icons/fa'; // Rotation icon
 
-const BoxNode = ({ data, id,isNew }) => {
-  const [label, setLabel] = useState(data.label);
+const BoxNode = ({ data, id, isNew }) => {
+  const [label, setLabel] = useState(data.label || ''); // Fallback to empty string if undefined
   const textareaRef = useRef(null);
   const [isResizing, setIsResizing] = useState(false);
   const [isClickable, setIsClickable] = useState(false);
-  const [rotation, setRotation] = useState(0); // Rotation angle
-  const [isRotating, setIsRotating] = useState(false); // Rotation state
-  const [isEditing, setIsEditing] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
-    setLabel(data.label);
+    setLabel(data.label || ''); // Update label if data.label changes
   }, [data.label]);
 
   useEffect(() => {
     if (isNew && textareaRef.current) {
-      textareaRef.current.focus();
+      textareaRef.current.focus(); // Focus on the textarea if the node is new
     }
   }, [isNew]);
 
   const handleChange = (e) => {
-    setLabel(e.target.value);
-
+    const newValue = e.target.value || ''; // Prevent undefined
+    setLabel(newValue);
     if (data.onLabelChange) {
-      data.onLabelChange(e.target.value);
+      data.onLabelChange(newValue);
     }
   };
 
@@ -38,12 +33,10 @@ const BoxNode = ({ data, id,isNew }) => {
   };
 
   const handleClick = () => {
-    setIsClickable((prev) => !prev);
-    setIsEditing(true)
+    setIsClickable((prev) => !prev); // Toggle clickable state
   };
 
   const handleResizeStart = () => {
-    if (!isClickable) return;
     setIsResizing(true);
   };
 
@@ -51,124 +44,46 @@ const BoxNode = ({ data, id,isNew }) => {
     setIsResizing(false);
   };
 
-  // Start rotation on mousedown
-  const handleRotationStart = () => {
-    setIsRotating(true);
-  };
-
-  // End rotation on mouseup
-  const handleRotationEnd = useCallback(() => {
-    setIsRotating(false);
-  }, []);
-
-  // Handle rotation by mouse movement
-  const handleMouseMove = useCallback(
-    (e) => {
-      if (isRotating && textareaRef.current) {
-        const rect = textareaRef.current.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-        const radians = Math.atan2(e.clientY - centerY, e.clientX - centerX);
-        const angle = (radians * 180) / Math.PI;
-        setRotation(angle);
-      }
-    },
-    [isRotating]
-  );
-
-  const handleLabelClick = () => {
-  
-    if (data && data.handleCreateNewNode) {
-      data.handleCreateNewNode(id); // Call the function with the node's ID
-    }
-  };
-
-  useEffect(() => {
-    if (isRotating) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleRotationEnd);
-    } else {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleRotationEnd);
-    }
-
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleRotationEnd);
-    };
-  }, [isRotating, handleMouseMove, handleRotationEnd]);
-
   return (
-    <div
-      style={{
-        ...styles.wrapper,
-        transform: `rotate(${rotation}deg)`,
-      }}
-      onClick={handleClick}
-    >
-      {isClickable && (
-        <>
-          {/* Node Resizer */}
-          <NodeResizer
-            minWidth={100}
-            minHeight={50}
-            onResizeStart={handleResizeStart}
-            onResizeStop={handleResizeStop}
-          />
-          {/* Rotation Icon */}
-          <div
-            style={styles.rotationIcon}
-            onMouseDown={handleRotationStart}
-          >
-            <FaSyncAlt />
-          </div>
-        </>
-      )}
-
-<Handle type="target" position={Position.Bottom} id="bottom-target" style={styles.handle} />
-      <Handle type="source" position={Position.Bottom} id="bottom-source" style={styles.handle} />
-
-      <Handle type="target" position={Position.Top} id="top-target" style={styles.handle} />
-      <Handle type="source" position={Position.Top} id="top-source" style={styles.handle} />
-
-      <Handle type="target" position={Position.Left} id="left-target" style={styles.handle} />
-      <Handle type="source" position={Position.Left} id="left-source" style={styles.handle} />
-      
-      <Handle type="target" position={Position.Right} id="right-target" style={styles.handle} />
-      <Handle type="source" position={Position.Right} id="right-source" style={styles.handle} />
-
+    <div style={styles.wrapper} onClick={handleClick}>
       {/* Box Shape */}
       <div
         style={{
           ...styles.box,
-          minWidth: isResizing ? 'auto' : data.width_height ? data.width_height.width : "200px",
-          minHeight: isResizing ? 'auto' : data.width_height ? data.width_height.height : '100px',
+          minWidth: isResizing ? 'auto' : data.width_height ? data.width_height.width : '150px',
+          minHeight: isResizing ? 'auto' : data.width_height ? data.width_height.height : '150px',
         }}
       >
-      
-{isEditing && data.Editable? (
-          <textarea
+        <textarea
           ref={textareaRef}
           value={label}
           onChange={handleChange}
           onBlur={handleBlur}
-          placeholder='Type ....'
-          className="textarea-class" // For placeholder styling
+          placeholder="Type ...."
           style={styles.textarea}
-          rows={3}
-          maxLength={200}
+          rows={1}
+          maxLength={200} // Optional: limit characters
         />
-
-        ) : (
-          <div onClick={handleLabelClick}
-          onMouseEnter={() => setIsHovered(true)}  // Set hover state to true
-          onMouseLeave={() => setIsHovered(false)} // Set hover state to false
-
-           style={{ cursor: 'pointer' }}>
-            <span style={{fontSize:"20px",fontWeight:"bold",color: isHovered ? '#0c0cd6' : 'inherit',}}> {data.label || 'Click to add label'}</span>
-        </div>
-        )}
       </div>
+
+      {isClickable && (
+        <NodeResizer
+          minWidth={100}
+          minHeight={50}
+          onResizeStart={handleResizeStart}
+          onResizeStop={handleResizeStop}
+        />
+      )}
+
+      {/* Handles for connecting nodes */}
+      <Handle type="target" position={Position.Bottom} id="bottom-target" style={styles.handle} />
+      <Handle type="source" position={Position.Bottom} id="bottom-source" style={styles.handle} />
+      <Handle type="target" position={Position.Top} id="top-target" style={styles.handle} />
+      <Handle type="source" position={Position.Top} id="top-source" style={styles.handle} />
+      <Handle type="target" position={Position.Left} id="left-target" style={styles.handle} />
+      <Handle type="source" position={Position.Left} id="left-source" style={styles.handle} />
+      <Handle type="target" position={Position.Right} id="right-target" style={styles.handle} />
+      <Handle type="source" position={Position.Right} id="right-source" style={styles.handle} />
     </div>
   );
 };
@@ -185,11 +100,11 @@ const styles = {
     justifyContent: 'center',
     position: 'relative',
     textAlign: 'center',
-    backgroundColor: '#ff4747', // Blue color
+    backgroundColor: 'red',
     color: '#fff',
+    // border: '2px solid #000',
     width: '100%',
     height: '100%',
-    borderRadius: '5px', // Rounded corners
     boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
     padding: '10px',
     boxSizing: 'border-box',
@@ -199,46 +114,24 @@ const styles = {
     background: 'transparent',
     border: 'none',
     color: 'inherit',
-    fontSize: '16px',
-    fontWeight: 'bold',
+    fontSize: '22px',
     width: '100%',
-    height: '100%',
     resize: 'none',
     outline: 'none',
     textAlign: 'center',
     overflowWrap: 'break-word',
     whiteSpace: 'pre-wrap',
     lineHeight: '1.4',
+    fontFamily: "'Poppins', sans-serif",
   },
-  rotationIcon: {
-    position: 'absolute',
-    top: '-15px',
-    right: '-15px',
-    cursor: 'pointer',
-    backgroundColor: '#fff',
-    padding: '5px',
+  handle: {
+    width: '12px',
+    height: '12px',
+    backgroundColor: 'red',
     borderRadius: '50%',
+    border: '2px solid #fff',
     boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
   },
 };
 
-// Placeholder styling component
-const PlaceholderStyles = () => (
-  <style>
-    {`
-      .textarea-class::placeholder {
-        color: #ccc; /* Placeholder text color */
-      }
-    `}
-  </style>
-);
-
-// Wrap BoxNode with PlaceholderStyles
-const BoxNodeWithPlaceholder = (props) => (
-  <>
-    <PlaceholderStyles />
-    <BoxNode {...props} />
-  </>
-);
-
-export default memo(BoxNodeWithPlaceholder);
+export default memo(BoxNode);

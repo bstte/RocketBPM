@@ -11,15 +11,19 @@ const ListProcessTitle = () => {
   const [AllTypeUsers, setAllTypeUsers] = useState([]);
   const [selectedUsersMap, setSelectedUsersMap] = useState({});
   const [processAssignments, setProcessAssignments] = useState([]);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const user = useSelector((state) => state.user.user);
 
   useEffect(() => {
+    // Agar data pehle se loaded hai, toh loading ko true mat kijiye
     const fetchProcessTitles = async () => {
       try {
+        console.log("processTitles",processTitles)
+        if (processTitles.length === 0) setLoading(true); // Sirf pehli baar loading dikhaye
+
         const user_id = user && user.id;
         const response = await getProcessTitles(user_id);
-        console.log("before",response)
         setAllTypeUsers(response.UsersdData);
         setProcessTitles(response.data);
         setProcessAssignments(response.ProcessAssign);
@@ -27,7 +31,6 @@ const ListProcessTitle = () => {
         const assignedUsersPromises = response.data.map(process =>
           fetchAssignedUsers(process.id)
         );
-       
 
         const assignedUsersResponses = await Promise.all(assignedUsersPromises);
         const assignmentsMap = assignedUsersResponses.reduce((acc, assignedUsers, index) => {
@@ -40,6 +43,8 @@ const ListProcessTitle = () => {
       } catch (error) {
         console.error('Error fetching process titles:', error);
         alert('Failed to fetch process titles.');
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -49,28 +54,28 @@ const ListProcessTitle = () => {
   const fetchAssignedUsers = async (processId) => {
     try {
       const response = await defaultApi.post('/get-assigned-users', { process_id: processId });
-      console.log("after",response.data)
       return response.data.assigned_users;
     } catch (error) {
       console.error('Error fetching assigned users:', error);
-      return []; // Return empty if error
+      return [];
     }
   };
 
   const combineProcesses = () => {
     const combined = [];
-
     processTitles.forEach(process => {
       combined.push({
         ...process,
-        assignedBy: null, // No one assigned if self-created
+        assignedBy: null,
+        assignment_user: null,
       });
     });
 
     processAssignments.forEach(assignment => {
       combined.push({
         ...assignment.process,
-        assignedBy: assignment.user.email, // Assigning user's name
+        assignedBy: assignment.user.email,
+        assignment_user: assignment.user
       });
     });
 
@@ -79,7 +84,6 @@ const ListProcessTitle = () => {
 
   const handleUserSelect = async (processId, selectedOptions) => {
     const selectedUserIds = selectedOptions.map(option => option.value);
-
     setSelectedUsersMap(prevSelectedUsers => ({
       ...prevSelectedUsers,
       [processId]: selectedUserIds,
@@ -102,56 +106,68 @@ const ListProcessTitle = () => {
       <CustomDrawer title="List of All Process" />
       <div style={styles.content}>
         <div style={styles.header}>
-          <h1 style={styles.title}></h1>
-          <button style={styles.addButton} onClick={() => navigate('/Add-process-title')}>
-            Add Process
-          </button>
+          {user && user.type !== "User" ? (
+            <button style={styles.addButton} onClick={() => navigate('/Add-process-title')}>
+              Add Process
+            </button>
+          ) : null}
         </div>
 
         <div style={styles.tableContainer}>
-          {processTitles.length > 0 || processAssignments.length > 0 ? (
+          {loading && processTitles.length === 0 ? (
+            <p>Loading...</p> // Sirf pehli baar loading text dikhaye
+          ) : processTitles.length > 0 || processAssignments.length > 0 ? (
             <table style={styles.table}>
               <thead>
                 <tr>
                   <th style={styles.th}>#</th>
                   <th style={styles.th}>Process Title</th>
                   <th style={styles.th}>Created At</th>
-                  <th style={styles.th}>Assigned By</th> {/* New column for Assigned By */}
-                  <th style={styles.th}>Assign</th>
+                  <th style={styles.th}>Assigned By</th>
+                  {user && user.type !== "User" ? (
+                    <th style={styles.th}>Assign</th>
+                  ) : null}
                   <th style={styles.th}>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {combineProcesses().map((process, index) => (
-                  <tr key={process.id} style={styles.tr}>
-                    <td style={styles.td}>{index + 1}</td>
-                    <td style={styles.td}>{process.process_title}</td>
-                    <td style={styles.td}>{new Date(process.created_at).toLocaleString()}</td>
-                    <td style={styles.td}>{process.assignedBy || 'Self'}</td> {/* Show assigned user or 'Self' */}
-                    <td style={styles.td}>
-                      {!(process.assignedBy) ? ( // Check if assignedBy is 'Self'
-                        <Select
-                          isMulti
-                          options={userOptions}
-                          value={userOptions.filter(option =>
-                            (selectedUsersMap[process.id] || []).includes(option.value)
+                {combineProcesses().map((process, index) => {
+                  const currentUser = process.assignment_user ? process.assignment_user : user;
+                  return (
+                    <tr key={process.id} style={styles.tr}>
+                      <td style={styles.td}>{index + 1}</td>
+                      <td style={styles.td}>{process.process_title}</td>
+                      <td style={styles.td}>{new Date(process.created_at).toLocaleString()}</td>
+                      <td style={styles.td}>{process.assignedBy || 'Self'}</td>
+                      {user && user.type !== "User" ? (
+                        <td style={styles.td}>
+                          {!process.assignedBy && (
+                            <Select
+                              isMulti
+                              options={userOptions}
+                              value={userOptions.filter(option =>
+                                (selectedUsersMap[process.id] || []).includes(option.value)
+                              )}
+                              onChange={(selectedOptions) => handleUserSelect(process.id, selectedOptions)}
+                              placeholder="Select Users"
+                              closeMenuOnSelect={false}
+                            />
                           )}
-                          onChange={(selectedOptions) => handleUserSelect(process.id, selectedOptions)}
-                          placeholder="Select Users"
-                          closeMenuOnSelect={false}
-                        />
-                      ) : null} {/* Render dropdown only if assignedBy is 'Self' */}
-                    </td>
-                    <td style={styles.td}>
-                      <button onClick={() => navigate("/Map_level", { state: { id: process.id, title: process.process_title, Editable: false } })} style={styles.actionButton}>
-                        <FaEye style={styles.icon} />
-                      </button>
-                      <button onClick={() => navigate("/Map_level", { state: { id: process.id, title: process.process_title, Editable: true } })} style={styles.actionButton}>
-                        <FaEdit style={styles.icon} />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                        </td>
+                      ) : null}
+                      <td style={styles.td}>
+                        <button onClick={() => navigate("/Map_level", { state: { id: process.id, title: process.process_title, Editable: false, user: currentUser } })} style={styles.actionButton}>
+                          <FaEye style={styles.icon} />
+                        </button>
+                        {user && user.type !== "User" ? (
+                          <button onClick={() => navigate("/Map_level", { state: { id: process.id, title: process.process_title, Editable: true, user: currentUser } })} style={styles.actionButton}>
+                            <FaEdit style={styles.icon} />
+                          </button>
+                        ) : null}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           ) : (
@@ -162,7 +178,6 @@ const ListProcessTitle = () => {
     </div>
   );
 };
-
 
 const styles = {
   container: {
@@ -178,7 +193,7 @@ const styles = {
   },
   header: {
     display: 'flex',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     alignItems: 'center',
     marginBottom: '20px',
     marginTop: '50px',

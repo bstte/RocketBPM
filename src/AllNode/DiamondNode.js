@@ -107,7 +107,7 @@ const DiamondNode = ({ data, id,isNew }) => {
       }}
       onClick={handleClick}
     >
-      {isClickable && (
+      {isClickable && data.nodeResize && (
         <>
           {/* Node Resizer */}
           <NodeResizer
@@ -142,13 +142,13 @@ const DiamondNode = ({ data, id,isNew }) => {
       <div
         style={{
           ...styles.diamondBox,
-          minWidth: isResizing ? 'auto' : data.width_height ? data.width_height.width : "200px",
-          minHeight: isResizing ? 'auto' : data.width_height ? data.width_height.height : '200px',
+          minWidth: isResizing ? 'auto' : data.width_height ? data.width_height.width : data.defaultwidt,
+          minHeight: isResizing ? 'auto' : data.width_height ? data.width_height.height : data.defaultheight,
         }}
       >
        
 
-{isEditing && data.Editable? (
+       {isEditing && data.Editable || !data.label ? (
          <textarea
          ref={textareaRef}
          value={label}
@@ -157,7 +157,7 @@ const DiamondNode = ({ data, id,isNew }) => {
          placeholder='Type ....'
          className="textarea-class" // For placeholder styling
          style={styles.textarea}
-         rows={3}
+         rows={2}
          maxLength={200}
        />
         ) : (
@@ -166,7 +166,7 @@ const DiamondNode = ({ data, id,isNew }) => {
           onMouseLeave={() => setIsHovered(false)} // Set hover state to false
 
            style={{ cursor: 'pointer' }}>
-            <span style={{fontSize:"20px",fontWeight:"bold",color: isHovered ? '#0c0cd6' : 'inherit',}}> {data.label || 'Click to add label'}</span>
+            <span style={{fontSize:"18px",   textTransform: 'uppercase',    fontFamily: "'Poppins', sans-serif",color: isHovered ? '#0c0cd6' : 'inherit',}}> {data.label || 'Click to add label'}</span>
         </div>
         )}
       </div>
@@ -186,8 +186,10 @@ const styles = {
     justifyContent: 'center',
     position: 'relative',
     textAlign: 'center',
-    backgroundColor: '#ff4747', // Green color
-    color: '#fff',
+    backgroundColor: '#ffffff', // Green color
+    color: '#000000',
+    border: '1px solid #000', // Border outline for the arrow shape
+
     width: '100%',
     height: '100%',
     clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)', // Diamond shape
@@ -200,16 +202,19 @@ const styles = {
     background: 'transparent',
     border: 'none',
     color: 'inherit',
-    fontSize: '16px',
-    fontWeight: 'bold',
+    fontSize: '18px',
+    // fontWeight: 'bold',
     width: '100%',
-    height: '100%',
+    // height: '100%',
     resize: 'none',
     outline: 'none',
     textAlign: 'center',
     overflowWrap: 'break-word',
     whiteSpace: 'pre-wrap',
     lineHeight: '1.4',
+    fontFamily: "'Poppins', sans-serif", // Apply Poppins font
+
+    textTransform: 'uppercase',          // Capitalize text
   },
   rotationIcon: {
     position: 'absolute',
@@ -219,6 +224,14 @@ const styles = {
     backgroundColor: '#fff',
     padding: '5px',
     borderRadius: '50%',
+    boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+  },
+  handle: {
+    width: '12px',
+    height: '12px',
+    backgroundColor: '#99CCFF',
+    borderRadius: '50%',
+    border: '2px solid #fff',
     boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
   },
 };

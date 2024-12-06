@@ -1,9 +1,8 @@
 // Sidebar.js
 import React, { useState } from 'react';
-import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
-import { ProgressArrow, Pentagon, Diamond, Box, Label, Ellipse, HeadingWithText,Parallelogram, Hexagon, Note, Callout, ConnectorWithSymbol, Line } from './Icon'; // Adjust the path as necessary
+import { ProgressArrow, Pentagon, Diamond, Box, Label} from './Icon'; // Adjust the path as necessary
 
-const Sidebar = ({ showShapes, setShowShapes, addNode }) => {
+const Sidebar = ({  addNode }) => {
   const [hoveredIcon, setHoveredIcon] = useState(null);
 
   const iconNames = {
@@ -12,14 +11,8 @@ const Sidebar = ({ showShapes, setShowShapes, addNode }) => {
     diamond: 'Diamond Node',
     box: 'Box Node',
     label: 'Label Node',
-    Ellipse:"Ellipse Node",
-    HeadingWithText:"Heading_With_Text",
-    Parallelogram:"Parallelogram",
-    Hexagon:"Hexagon",
-    Note:"Note",
-    Callout:"Callout",
-    ConnectorWithSymbol:"ConnectorWithSymbol",
-    Line:"Line"
+   
+  
   };
 
   const iconComponents = {
@@ -28,24 +21,13 @@ const Sidebar = ({ showShapes, setShowShapes, addNode }) => {
     diamond: <Diamond />,
     box: <Box />,
     label: <Label />,
-    Ellipse:<Ellipse/>,
-    HeadingWithText:<HeadingWithText/>,
-    Parallelogram:<Parallelogram/>,
-    Hexagon:<Hexagon/>,
-    Note:<Note/>,
-    Callout:<Callout/>,
-    ConnectorWithSymbol:<ConnectorWithSymbol/>,
-    Line:<Line/>
+   
+    
   };
 
   return (
     <aside className="sidebar" onClick={(e) => e.stopPropagation()} style={styles.sidebar}>
-      <button onClick={() => setShowShapes(!showShapes)} style={styles.generalButton}>
-        <span style={styles.generalText}>General</span>
-        {showShapes ? <FaChevronUp /> : <FaChevronDown />}
-      </button>
-
-      {showShapes && (
+   
         <div style={styles.shapeContainer}>
           {Object.keys(iconNames).map((iconKey) => (
             <div key={iconKey} style={styles.iconWrapper}>
@@ -68,7 +50,7 @@ const Sidebar = ({ showShapes, setShowShapes, addNode }) => {
             </div>
           ))}
         </div>
-      )}
+    
     </aside>
   );
 };
@@ -81,21 +63,7 @@ const styles = {
     borderRight: '1px solid #dee2e6',
     boxSizing: 'border-box',
   },
-  generalButton: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '8px 10px',
-    backgroundColor: '#007bff',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    margin: '0 auto 15px auto',
-    fontSize: '16px',
-    transition: 'background-color 0.3s ease',
-    width: '100%',
-  },
+
   shapeContainer: {
     display: 'grid',
     gridTemplateColumns: 'repeat(4, 1fr)',

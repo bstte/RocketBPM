@@ -109,7 +109,7 @@ const EllipseNode = ({ data,id, isNew }) => {
       }}
       onClick={handleClick}
     >
-      {isClickable && (
+      {isClickable || data.nodeResize&& (
         <>
           {/* Node Resizer */}
           <NodeResizer
@@ -147,12 +147,12 @@ const EllipseNode = ({ data,id, isNew }) => {
       <div
         style={{
           ...styles.Ellipse,
-          minWidth: isResizing ? 'auto' : data.width_height ? data.width_height.width : "400px",
-          minHeight: isResizing ? 'auto' : data.width_height ? data.width_height.height : '100px',
+          minWidth: isResizing ? 'auto' : data.width_height ? data.width_height.width :data.defaultwidt,
+          minHeight: isResizing ? 'auto' : data.width_height ? data.width_height.height : data.defaultheight,
         }}
       >
 
-        {isEditing && data.Editable? (
+{isEditing && data.Editable || !data.label ? (
           <textarea
             ref={textareaRef}
             value={label}
@@ -161,7 +161,7 @@ const EllipseNode = ({ data,id, isNew }) => {
             placeholder='Type ....'
 
             style={styles.textarea}
-            rows={3} // Initial number of rows; adjust as needed
+            rows={2} // Initial number of rows; adjust as needed
             maxLength={200} // Optional: limit characters
           />
         ) : (
@@ -170,7 +170,7 @@ const EllipseNode = ({ data,id, isNew }) => {
           onMouseLeave={() => setIsHovered(false)} // Set hover state to false
 
            style={{ cursor: 'pointer' }}>
-            <span style={{fontSize:"20px",fontWeight:"bold",color: isHovered ? '#0c0cd6' : 'inherit',}}> {data.label || 'Click to add label'}</span>
+            <span style={{fontSize:"18px",   textTransform: 'uppercase',    fontFamily: "'Poppins', sans-serif",color: isHovered ? '#0c0cd6' : 'inherit',}}> {data.label || 'Click to add label'}</span>
         </div>
         )}
 
@@ -191,8 +191,8 @@ const styles = {
     justifyContent: 'center',
     position: 'relative',
     textAlign: 'center',
-    backgroundColor: '#ff4747', // Ellipse background color
-    color: '#fff',
+    backgroundColor: '#ffffff', // Ellipse background color
+    color: '#000000',
     borderRadius: '50%', // Make it a full ellipse by using 50% border radius
     width: '100%',
     height: '100%',
@@ -205,16 +205,19 @@ const styles = {
     background: 'transparent',
     border: 'none',
     color: 'inherit',
-    fontSize: '16px',
-    fontWeight: 'bold',
+    fontSize: '18px',
+    // fontWeight: 'bold',
     width: '100%',
-    height: '100%',
+    // height: '100%',
     resize: 'none',
     outline: 'none',
     textAlign: 'center',
     overflowWrap: 'break-word',
     whiteSpace: 'pre-wrap',
     lineHeight: '1.4', // Adjust line height for better readability
+    fontFamily: "'Poppins', sans-serif", // Apply Poppins font
+
+    textTransform: 'uppercase',          // Capitalize text
   },
   rotationIcon: {
     position: 'absolute',
@@ -224,6 +227,14 @@ const styles = {
     backgroundColor: '#fff',
     padding: '5px',
     borderRadius: '50%',
+    boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+  },
+  handle: {
+    width: '16px',
+    height: '16px',
+    backgroundColor: '#99CCFF',
+    borderRadius: '50%',
+    border: '2px solid #fff',
     boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
   },
 };

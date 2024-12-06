@@ -157,8 +157,8 @@ const DocumentNode = ({ data, isNew }) => {
       <div
         style={{
           ...styles.documentBox,
-          minWidth: isResizing ? 'auto' : data.width_height ? data.width_height.width : "400px",
-          minHeight: isResizing ? 'auto' : data.width_height ? data.width_height.height : '100px',
+          minWidth: isResizing ? 'auto' : data.width_height ? data.width_height.width : data.defaultwidt,
+          minHeight: isResizing ? 'auto' : data.width_height ? data.width_height.height : data.defaultheight,
         }}
       >
         <textarea
@@ -223,6 +223,14 @@ const styles = {
     backgroundColor: '#fff',
     padding: '5px',
     borderRadius: '50%',
+    boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+  },
+    handle: {
+    width: '16px',
+    height: '16px',
+    backgroundColor: '#4CAF50',
+    borderRadius: '50%',
+    border: '2px solid #fff',
     boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
   },
 };

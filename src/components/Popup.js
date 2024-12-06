@@ -5,7 +5,6 @@ import { FaTimes } from 'react-icons/fa';
 const Popup = ({
   showPopup,
   popupPosition,
-  popupTitle,
   setShowPopup,
   handleCreateNewNode,
   deleteNode,
@@ -26,13 +25,21 @@ const Popup = ({
       <span onClick={() => setShowPopup(false)} style={styles.closeIcon}>
         <FaTimes />
       </span>
-      <h3 style={styles.popupTitle}>{popupTitle}</h3>
-      <button onClick={handleCreateNewNode} style={styles.popupButton}>
-        {`Create ${popupTitle}`}
+      {/* <h3 style={styles.popupTitle}>{popupTitle}</h3> */}
+      <div style={styles.popupTitle}>
+      <button onClick={()=>handleCreateNewNode('ProcessMap')} style={styles.popupButton}>
+        {`Create Process Map`}
       </button>
+      <button onClick={()=>handleCreateNewNode('Swimlane')} style={styles.popupButton}>
+        {`Create Swim lane Model`}
+      </button>
+   
       <button onClick={deleteNode} style={styles.popupButton}>
-        {`Delete ${popupTitle}`}
+        {`Delete`}
       </button>
+
+      </div>
+   
     </div>
   )
 );
@@ -57,8 +64,7 @@ const styles = {
     color: '#007bff', // Icon color
   },
   popupTitle: {
-    margin: '0 0 1rem 0',
-    fontSize: '16px', // Adjust font size for better readability
+    marginTop: "20px"
   },
   popupButton: {
     display: 'block',
