@@ -155,11 +155,11 @@ const ListProcessTitle = () => {
                         </td>
                       ) : null}
                       <td style={styles.td}>
-                        <button onClick={() => navigate("/Map_level", { state: { id: process.id, title: process.process_title, Editable: false, user: currentUser } })} style={styles.actionButton}>
+                        <button onClick={() => navigate("/Map_level", { state: { id: process.id, title: process.process_title, user: currentUser } })} style={styles.actionButton}>
                           <FaEye style={styles.icon} />
                         </button>
                         {user && user.type !== "User" ? (
-                          <button onClick={() => navigate("/Map_level", { state: { id: process.id, title: process.process_title, Editable: true, user: currentUser } })} style={styles.actionButton}>
+                          <button onClick={() => navigate("/Map_level", { state: { id: process.id, title: process.process_title, user: currentUser } })} style={styles.actionButton}>
                             <FaEdit style={styles.icon} />
                           </button>
                         ) : null}

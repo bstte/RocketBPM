@@ -1,26 +1,46 @@
-import { memo, } from 'react';
+import { memo, useRef, useState, useEffect } from 'react';
 import { Handle, Position } from '@xyflow/react';
+import ContentEditable from 'react-contenteditable';
 
-const ArrowBoxNode = ({ data }) => {
+const ArrowBoxNode = ({ data, onTitleChange }) => {
+  const [title, setTitle] = useState(data.details.title );
+  const contentEditableRef = useRef(null);
 
+  const handleChange = (e) => {
+    setTitle(e.target.value);
+    if (data.onLabelChange) {
+      data.onLabelChange(e.target.value);
+    }
+  };
 
-  const handleClick = () => {
+  useEffect(() => {
+    if (data.autoFocus && contentEditableRef.current) {
+      setTimeout(() => {
+        contentEditableRef.current.focus();
+        data.autoFocus = false; 
+      }, 0);
+    }
+  }, [data.autoFocus]);
+
+  const handleBlur = () => {
+    if (onTitleChange) {
+      onTitleChange(title); 
+    }
   };
 
   return (
-    <div
-      style={styles.wrapper}
-      onClick={handleClick}
-    >
+    <div style={styles.wrapper}>
       {/* Arrow Box */}
-      <div
-        className='borderBox'
-        style={styles.arrowBox}
-    
-      >
-        <span style={styles.label}>
-          {data.details.title || 'No Details'}
-        </span>
+      <div className="borderBox" style={styles.arrowBox}>
+        <ContentEditable
+          innerRef={contentEditableRef}
+          html={title} 
+          onChange={(e) => handleChange({ target: { value: e.target.value } })}
+          onBlur={handleBlur}
+          placeholder="Type title here..."
+          
+          style={styles.label}
+        />
       </div>
 
       {/* Border overlay as a separate div */}
@@ -63,10 +83,14 @@ const styles = {
     overflow: 'hidden',
   },
   label: {
-    fontSize: "15px",
-    textTransform: 'uppercase',
+    fontSize: '12px',
     fontFamily: "'Poppins', sans-serif",
     color: 'white',
+    background: 'transparent',
+    border: 'none',
+    outline: 'none',
+    textAlign: 'center',
+    width: '100%',
   },
   borderOverlay: {
     position: 'absolute',
@@ -76,12 +100,11 @@ const styles = {
     bottom: 0,
     zIndex: 0,
     clipPath: 'polygon(0 0, calc(100% - 20px) 0, 100% 50%, calc(100% - 20px) 100%, 0 100%)',
-    border: '1px solid black', // Set black border
-    pointerEvents: 'none', // Prevent interaction with the overlay
+    border: '1px solid black',
+    pointerEvents: 'none',
     boxSizing: 'border-box',
-    backgroundColor: 'transparent', // Ensure background is transparent
-    // Using padding to create space for the border
-    padding: '2px', // This can be adjusted to your design
+    backgroundColor: 'transparent',
+    padding: '2px',
   },
   handle: {
     backgroundColor: 'red',

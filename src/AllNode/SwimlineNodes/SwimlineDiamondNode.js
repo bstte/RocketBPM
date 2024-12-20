@@ -1,16 +1,34 @@
-import { memo } from 'react';
+import { memo, useState, useRef } from 'react';
 import { Handle, Position } from '@xyflow/react';
+import ContentEditable from 'react-contenteditable';
 
 const SwimlineDiamondNode = ({ data }) => {
+  const [title, setTitle] = useState(data.details.title);
+  const titleRef = useRef(null); // Ref for the title
+
+  const handleChange = (e) => {
+    setTitle(e.target.value);
+    if (data.onLabelChange) {
+      data.onLabelChange(e.target.value); // Notify parent about title change
+    }
+  };
+
   return (
     <div style={styles.wrapper}>
       {/* Diamond Shape */}
       <div style={styles.diamondWrapper}>
         <div style={styles.diamond}>
-          <span style={styles.title}>{data.details.title || 'No Details'}</span>
+          <ContentEditable
+            innerRef={titleRef}
+            html={title}
+            onChange={(e) => handleChange({ target: { value: e.target.value } })}
+            placeholder="Type title here..."
+            style={styles.title}
+          />
         </div>
       </div>
 
+      {/* Handles */}
       <Handle
         type="target"
         position={Position.Top}
@@ -27,13 +45,13 @@ const SwimlineDiamondNode = ({ data }) => {
         type="target"
         position={Position.Left}
         id="left-target"
-        style={{ ...styles.handle, left: '18px', top: '50%', transform: 'translateY(-50%)' }}
+        style={{ ...styles.handle, left: '17px', top: '50%', transform: 'translateY(-50%)' }}
       />
       <Handle
         type="source"
         position={Position.Right}
         id="right-source"
-        style={{ ...styles.handle, right: '18px', top: '50%', transform: 'translateY(-50%)' }}
+        style={{ ...styles.handle, right: '17px', top: '50%', transform: 'translateY(-50%)' }}
       />
     </div>
   );
@@ -42,8 +60,8 @@ const SwimlineDiamondNode = ({ data }) => {
 const styles = {
   wrapper: {
     position: 'relative',
-    width: '120px', // Adjust the size of the node container
-    height: '75px',
+    width: '90%',
+    height: '90%',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -56,22 +74,28 @@ const styles = {
   },
   diamond: {
     position: 'relative',
-    width: '45px', // Reduced diamond width
-    height: '45px', // Reduced diamond height
+    width: '45px',
+    height: '45px',
     backgroundColor: '#ffffff',
     color: '#000000',
     border: '2px solid #000',
-    transform: 'rotate(45deg)', // Creates the diamond shape
+    transform: 'rotate(45deg)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
   },
   title: {
-    transform: 'rotate(-45deg)', // Rotates the text back to normal
-    fontSize: '9px', // Reduced font size
+    transform: 'rotate(-45deg)',
+    fontSize: '9px',
     fontFamily: "'Poppins', sans-serif",
     textAlign: 'center',
+    background: 'transparent',
+    border: 'none',
+    outline: 'none',
+    width: '100%',
+    padding: '0',
+    margin: '0',
   },
   handle: {
     position: 'absolute',

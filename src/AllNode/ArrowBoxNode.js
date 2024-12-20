@@ -1,5 +1,5 @@
 import { memo, useState, useEffect, useRef } from 'react';
-import { Handle, Position, NodeResizer } from '@xyflow/react';
+import { NodeResizer } from '@xyflow/react';
 
 const ArrowBoxNode = ({ data, id, isNew }) => {
   const [label, setLabel] = useState(data.label || ''); 
@@ -13,12 +13,23 @@ const ArrowBoxNode = ({ data, id, isNew }) => {
   }, [data.label]);
 
   const handleChange = (e) => {
-    const newValue = e.target.value || ''; // Prevent undefined
+    const newValue = e.target.value || ''; 
     setLabel(newValue);
     if (data.onLabelChange) {
       data.onLabelChange(newValue);
     }
   };
+
+  
+
+  useEffect(() => {
+    if (data.autoFocus && textareaRef.current) {
+      setTimeout(() => {
+        textareaRef.current.focus();
+        data.autoFocus = false; 
+      }, 0);
+    }
+  }, [data.autoFocus]);
 
   const handleBlur = () => {
     if (data.onLabelChange) {
@@ -40,12 +51,9 @@ const ArrowBoxNode = ({ data, id, isNew }) => {
 
   return (
     <div
-      style={{
-        ...styles.wrapper,
-      }}
+      style={styles.wrapper}
       onClick={handleClick}
     >
-      {/* Arrow Box */}
       <div
         className="borderBox"
         style={{
@@ -55,15 +63,15 @@ const ArrowBoxNode = ({ data, id, isNew }) => {
         }}
       >
         <textarea
-          ref={textareaRef}
-          value={label} // The value to display
-          onChange={handleChange} // Handle text change
+        textareaRef={textareaRef}
+          value={label} 
+          onChange={handleChange} 
           onBlur={handleBlur}
           placeholder="Type ...."
           style={styles.textarea}
           rows={1}
-          maxLength={200} // Optional: limit characters
-
+          maxLength={200} 
+    
         />
       </div>
 
@@ -76,20 +84,6 @@ const ArrowBoxNode = ({ data, id, isNew }) => {
         />
       )}
 
-      <Handle type="target" position={Position.Bottom} id="bottom-target" style={styles.handle} />
-      <Handle type="source" position={Position.Bottom} id="bottom-source" style={styles.handle} />
-
-      <Handle type="target" position={Position.Top} id="top-target" style={styles.handle} />
-      <Handle type="source" position={Position.Top} id="top-source" style={styles.handle} />
-
-      <Handle type="target" position={Position.Left} id="left-target" style={styles.handle} />
-      <Handle type="source" position={Position.Left} id="left-source" style={styles.handle} />
-
-      <Handle type="target" position={Position.Right} id="right-target" style={styles.handle} />
-      <Handle type="source" position={Position.Right} id="right-source" style={styles.handle} />
-
-      {/* Overlay for border effect */}
-      <div style={styles.borderOverlay}></div>
     </div>
   );
 };
@@ -110,43 +104,27 @@ const styles = {
     color: '#000000',
     width: '100%',
     height: '100%',
-    clipPath: 'polygon(0 0, calc(100% - 20px) 0, 100% 50%, calc(100% - 20px) 100%, 0 100%)',
+    clipPath: 'polygon(40px 50%, 0 0, calc(100% - 40px) 0, 100% 50%, calc(100% - 40px) 100%, 0 100%)',
     boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
     padding: '10px',
     boxSizing: 'border-box',
     overflow: 'hidden',
     border: 'none',
   },
-  borderOverlay: {
-    position: 'absolute',
-    top: '-2px',
-    left: '-2px',
-    right: '-2px',
-    bottom: '-2px',
-    zIndex: -1,
-    clipPath: 'polygon(0 0, calc(100% - 20px) 0, 100% 50%, calc(100% - 20px) 100%, 0 100%)',
-    backgroundColor: 'transparent',
-    pointerEvents: 'none',
-  },
+
   textarea: {
     background: 'transparent',
     border: 'none',
     color: 'white',
     fontSize: '20px',
     width: '100%',
-    resize: 'none', // Prevent resizing
+    resize: 'none', 
     outline: 'none',
     textAlign: 'center',
     overflowWrap: 'break-word',
     whiteSpace: 'pre-wrap',
     fontFamily: "'Poppins', sans-serif",
     minHeight: '20px',
-  },
-  handle: {
-    backgroundColor: 'red',
-    width: '15px',
-    height: '15px',
-    borderRadius: '50%',
   },
 };
 

@@ -1,16 +1,15 @@
-// src/components/Popup.jsx
-import React from 'react';
-import { FaTimes } from 'react-icons/fa';
+// Popup.js
+import React from "react";
+import PropTypes from "prop-types";
 
 const Popup = ({
   showPopup,
   popupPosition,
-  setShowPopup,
   handleCreateNewNode,
   deleteNode,
-  popupRef,
-  startDrag,
-}) => (
+  selectedNodeType,
+  switchNodeType,
+}) =>
   showPopup && (
     <div
       className="popup"
@@ -19,65 +18,82 @@ const Popup = ({
         left: `${popupPosition.x}px`,
         top: `${popupPosition.y}px`,
       }}
-      ref={popupRef}
-      onMouseDown={startDrag} // Start dragging on mouse down
     >
-      <span onClick={() => setShowPopup(false)} style={styles.closeIcon}>
-        <FaTimes />
-      </span>
-      {/* <h3 style={styles.popupTitle}>{popupTitle}</h3> */}
       <div style={styles.popupTitle}>
-      <button onClick={()=>handleCreateNewNode('ProcessMap')} style={styles.popupButton}>
-        {`Create Process Map`}
-      </button>
-      <button onClick={()=>handleCreateNewNode('Swimlane')} style={styles.popupButton}>
-        {`Create Swim lane Model`}
-      </button>
-   
-      <button onClick={deleteNode} style={styles.popupButton}>
-        {`Delete`}
-      </button>
+        <button
+          onClick={() => handleCreateNewNode("ProcessMap")}
+          style={styles.popupButton}
+        >
+          {`Create new Process Map model`}
+        </button>
+        <button
+          onClick={() => handleCreateNewNode("Swimlane")}
+          style={styles.popupButton}
+        >
+          {`Create new Swimlane model`}
+        </button>
+        {selectedNodeType === "progressArrow" && (
+          <button
+            onClick={() => switchNodeType("pentagon")}
+            style={styles.popupButton}
+          >
+            {`Switch shape to Steer & Enable Process`}
+          </button>
+        )}
+        {selectedNodeType === "pentagon" && (
+          <button
+            onClick={() => switchNodeType("progressArrow")}
+            style={styles.popupButton}
+          >
+            {`Switch shape to Value Adding Process`}
+          </button>
+        )}
 
+        <button onClick={deleteNode} style={styles.popupButton}>
+          {`Delete`}
+        </button>
       </div>
-   
     </div>
-  )
-);
+  );
 
 const styles = {
   popup: {
-    position: 'absolute',
-    background: '#fff',
-    border: '1px solid #007bff',
-    borderRadius: '4px',
-    padding: '1rem',
-    boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
+    position: "absolute",
+    background: "#f5f5f5",
+    borderRadius: "2px",
+    padding: 5,
+    boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
     zIndex: 1000,
-    minWidth: '200px', // Set a minimum width for better appearance
-  },
-  closeIcon: {
-    position: 'absolute',
-    top: '5px',
-    right: '10px',
-    cursor: 'pointer',
-    fontSize: '20px',
-    color: '#007bff', // Icon color
+    minWidth: "200px",
   },
   popupTitle: {
-    marginTop: "20px"
+    marginTop: "0px",
   },
   popupButton: {
-    display: 'block',
-    width: '100%',
-    background: '#007bff',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    padding: '0.5rem',
-    cursor: 'pointer',
-    marginBottom: '0.5rem',
-    transition: 'background 0.2s',
+    display: "block",
+    width: "100%",
+    background: "none",
+    color: "#007bff",
+    border: "none",
+    borderBottom: "1px solid #fff",
+    padding: "5px",
+    textAlign: "left",
+    cursor: "pointer",
+    marginBottom: "0.5rem",
+    transition: "background 0.2s",
   },
 };
 
+Popup.propTypes = {
+  showPopup: PropTypes.bool.isRequired,
+  popupPosition: PropTypes.shape({
+    x: PropTypes.number.isRequired,
+    y: PropTypes.number.isRequired,
+  }).isRequired,
+  handleCreateNewNode: PropTypes.func.isRequired,
+  deleteNode: PropTypes.func.isRequired,
+  selectedNodeType: PropTypes.string,
+};
+
+// Add the following line
 export default Popup;

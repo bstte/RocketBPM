@@ -1,34 +1,24 @@
-// src/context/BreadcrumbsContext.jsx
 import React, { createContext, useState, useCallback } from 'react';
 
-// Create the BreadcrumbsContext
 export const BreadcrumbsContext = createContext();
 
-// Create a provider component
 export const BreadcrumbsProvider = ({ children }) => {
-  const [breadcrumbs, setBreadcrumbs] = useState([
-    { label: 'Home', path: '/' },
-  ]);
+  const [breadcrumbs, setBreadcrumbs] = useState([]); // Start with an empty state
 
-  // Function to add a new breadcrumb
-  const addBreadcrumb = useCallback((label, path) => {
+  const addBreadcrumb = useCallback((label, path,state) => {
     setBreadcrumbs((prev) => {
-      // Prevent duplicate breadcrumbs
-      if (prev.some((crumb) => crumb.path === path)) {
-        return prev;
-      }
-      return [...prev, { label, path }];
+      // Avoid duplicate breadcrumbs
+      if (prev.some((crumb) => crumb.path === path)) return prev;
+      return [...prev, { label, path ,state}];
     });
   }, []);
 
-  // Function to remove breadcrumbs after a certain index
   const removeBreadcrumbsAfter = useCallback((index) => {
     setBreadcrumbs((prev) => prev.slice(0, index + 1));
   }, []);
 
-  // Function to reset breadcrumbs to initial state
   const resetBreadcrumbs = useCallback(() => {
-    setBreadcrumbs([{ label: 'Home', path: '/' }]);
+    setBreadcrumbs([]); // Reset to an empty state
   }, []);
 
   return (

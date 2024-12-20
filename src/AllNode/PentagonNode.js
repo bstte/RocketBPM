@@ -1,5 +1,5 @@
 import { memo, useState, useEffect, useRef } from 'react';
-import { Handle, Position, NodeResizer } from '@xyflow/react';
+import { NodeResizer } from '@xyflow/react';
 
 const PentagonNode = ({ data, id, isNew }) => {
   const [label, setLabel] = useState(data.label || ''); 
@@ -75,17 +75,7 @@ const PentagonNode = ({ data, id, isNew }) => {
         />
       )}
 
-      {/* Handles for connecting nodes */}
-      <Handle type="target" position={Position.Bottom} id="bottom-target" style={styles.handle} />
-      <Handle type="source" position={Position.Bottom} id="bottom-source" style={styles.handle} />
-      <Handle type="target" position={Position.Top} id="top-target" style={styles.handle} />
-      <Handle type="source" position={Position.Top} id="top-source" style={styles.handle} />
-      <Handle type="target" position={Position.Left} id="left-target" style={styles.handle} />
-      <Handle type="source" position={Position.Left} id="left-source" style={styles.handle} />
-      <Handle type="target" position={Position.Right} id="right-target" style={styles.handle} />
-      <Handle type="source" position={Position.Right} id="right-source" style={styles.handle} />
-
-      {/* <div style={styles.borderOverlay}></div> */}
+    
 
     </div>
   );
@@ -106,7 +96,7 @@ const styles = {
     color: '#000000',
     width: '100%',
     height: '100%',
-    clipPath: 'polygon(50% 0%, 100% 30%, 100% 100%, 0% 100%, 0% 30%)', // Pentagon shape
+    clipPath: 'polygon(50% 0%, 100% 30%, 100% 100%, 0% 100%, 0% 30%)',
     boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
     padding: '10px',
     boxSizing: 'border-box',
@@ -127,12 +117,7 @@ const styles = {
     fontFamily: "'Poppins', sans-serif",
     minHeight: '20px',
   },
-  handle: {
-    backgroundColor: 'red',
-    width: '15px',
-    height: '15px',
-    borderRadius: '50%',
-  },
+  
 };
 
 export default memo(PentagonNode);

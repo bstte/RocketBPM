@@ -1,12 +1,13 @@
-import React, {useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { ProgressArrow, Pentagon, Diamond, Box, Label } from './Icon'; // Adjust the path as necessary
 import { IconButton } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate } from 'react-router-dom';
 import { logoutUser } from '../redux/userSlice';
 import { useDispatch, useSelector } from 'react-redux';
+import { BreadcrumbsContext } from '../context/BreadcrumbsContext';
 
-const Header = ({ title, onSave, addNode, handleBackdata,iconNames }) => {
+const Header = ({ title, onSave, addNode, handleBackdata, iconNames }) => {
   const user = useSelector((state) => state.user.user); // Assuming user contains 'name', 'email', and 'type'
 
   const [hoveredIcon, setHoveredIcon] = useState(null);
@@ -18,6 +19,7 @@ const Header = ({ title, onSave, addNode, handleBackdata,iconNames }) => {
     navigate(-1); // Go back to the previous page
     handleBackdata();
   };
+  const { breadcrumbs } = useContext(BreadcrumbsContext); 
 
 
 
@@ -38,12 +40,16 @@ const Header = ({ title, onSave, addNode, handleBackdata,iconNames }) => {
   };
 
   const formattedDate = user?.created_at
-  ? new Date(user.created_at).toLocaleDateString('en-US', {
+    ? new Date(user.created_at).toLocaleDateString('en-US', {
       year: 'numeric',
-      month: 'short', 
+      month: 'short',
       day: 'numeric',
     })
-  : 'N/A';
+    : 'N/A';
+
+  const handleBreadcrumbClick = (path, state) => {
+    navigate(path, { state });
+  };
 
   return (
     <>
@@ -72,6 +78,21 @@ const Header = ({ title, onSave, addNode, handleBackdata,iconNames }) => {
           </div>
         </div>
       </div>
+
+      <div className="breadcrumbs-container" style={styles.breadcrumbsContainer}>
+        {breadcrumbs.map((crumb, index) => (
+          <span key={index}>
+            <a
+              onClick={() => handleBreadcrumbClick(crumb.path, crumb.state)}
+              style={styles.breadcrumbLink}
+            >
+              {crumb.label}
+            </a>
+            {index < breadcrumbs.length - 1 && " > "}
+          </span>
+        ))}
+      </div>
+
       <header className="app-header" style={styles.header}>
         <h1 style={styles.headerTitle}>
           <IconButton edge="start" color="inherit" aria-label="back" onClick={handleBack}>
@@ -80,7 +101,7 @@ const Header = ({ title, onSave, addNode, handleBackdata,iconNames }) => {
           {title}
         </h1>
 
-   
+
         <div style={styles.iconContainer}>
           {Object.keys(iconNames).map((iconKey) => (
             <div key={iconKey} style={styles.iconWrapper}>
@@ -115,7 +136,7 @@ const Header = ({ title, onSave, addNode, handleBackdata,iconNames }) => {
               onClick={onSave}
               style={{
                 ...styles.saveButton,
-                backgroundColor: '#218838', 
+                backgroundColor: '#218838',
               }}
             >
               Save
@@ -220,6 +241,22 @@ const styles = {
   },
   secondarylogo: {
     width: '12vw',
+  },
+  breadcrumbsContainer: {
+    margin: '10px 0',
+    padding: '5px 10px',
+    backgroundColor: '#f9f9f9', // Light background for breadcrumbs
+    borderRadius: '5px',
+    display: 'flex', // Flexbox for inline items
+    alignItems: 'center', // Center items vertically
+    fontFamily: 'Arial, sans-serif', // Set font for readability
+  },
+  breadcrumbLink: {
+    textDecoration: 'none', // Remove underline
+    color: '#007bff', // Standard blue for links
+    padding: '5px 8px', // Increase clickable area
+    borderRadius: '3px', // Slight rounding on edges
+    transition: 'color 0.3s ease, background-color 0.3s ease', // Smooth transition for hover
   },
 };
 

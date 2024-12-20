@@ -1,12 +1,19 @@
 import React, { memo, useEffect, useRef, useState } from 'react';
+import ContentEditable from 'react-contenteditable';
 
 const SwimlineRightsideBox = ({ data, id, isNew }) => {
   const [label, setLabel] = useState(data.label || ''); 
-  const textareaRef = useRef(null);
+  const contentEditableRef = useRef(null); 
+
 
   useEffect(() => {
-    setLabel(data.label);
-  }, [data.label]);
+    if (data.autoFocus && contentEditableRef.current) {
+      setTimeout(() => {
+        contentEditableRef.current.focus();
+        data.autoFocus = false; 
+      }, 0);
+    }
+  }, [data.autoFocus]);
 
   const handleChange = (e) => {
     setLabel(e.target.value);
@@ -23,14 +30,14 @@ const SwimlineRightsideBox = ({ data, id, isNew }) => {
 
   return (
     <div style={styles.wrapper}>
-      <div className='borderBox' style={styles.box}>
-        <textarea
-          ref={textareaRef}
-          value={label} // The value to display
-          onChange={handleChange}
+      <div className="borderBox" style={styles.box}>
+        <ContentEditable
+          innerRef={contentEditableRef} // Attach the ref to ContentEditable
+          html={label} 
+          onChange={(e) => handleChange({ target: { value: e.target.value } })}
           onBlur={handleBlur}
           placeholder="Type ...."
-          style={styles.textarea}
+          style={styles.contentEditable}
         />
       </div>
     </div>
@@ -59,19 +66,18 @@ const styles = {
     boxSizing: 'border-box',
     overflow: 'hidden',
   },
-  textarea: {
+  contentEditable: {
     background: 'transparent',
     border: 'none',
     color: 'white',
     fontSize: '12px',
     width: '100%',
-    resize: 'none',
     outline: 'none',
     textAlign: 'center',
     overflowWrap: 'break-word',
     whiteSpace: 'pre-wrap',
     fontFamily: "'Poppins', sans-serif",
-    minHeight: '20px', // Ensure there’s some initial height
+    minHeight: '20px',
   },
 };
 
