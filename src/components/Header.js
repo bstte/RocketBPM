@@ -80,18 +80,18 @@ const Header = ({ title, onSave, addNode, handleBackdata, iconNames }) => {
       </div>
 
       <div className="breadcrumbs-container" style={styles.breadcrumbsContainer}>
-        {breadcrumbs.map((crumb, index) => (
-          <span key={index}>
-            <a
-              onClick={() => handleBreadcrumbClick(crumb.path, crumb.state)}
-              style={styles.breadcrumbLink}
-            >
-              {crumb.label}
-            </a>
-            {index < breadcrumbs.length - 1 && " > "}
-          </span>
-        ))}
-      </div>
+  {breadcrumbs.map((crumb, index) => (
+    <span key={index}>
+      <button
+        onClick={() => handleBreadcrumbClick(crumb.path, crumb.state)}
+        style={{ ...styles.breadcrumbLink, background: "none", border: "none", padding: 0, cursor: "pointer", textDecoration: "underline", color: "inherit" }}
+      >
+        {crumb.label}
+      </button>
+      {index < breadcrumbs.length - 1 && " > "}
+    </span>
+  ))}
+</div>
 
       <header className="app-header" style={styles.header}>
         <h1 style={styles.headerTitle}>
