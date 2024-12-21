@@ -22,14 +22,7 @@ const ArrowBoxNode = ({ data, id, isNew }) => {
 
   
 
-  useEffect(() => {
-    if (data.autoFocus && textareaRef.current) {
-      setTimeout(() => {
-        textareaRef.current.focus();
-        data.autoFocus = false; 
-      }, 0);
-    }
-  }, [data.autoFocus]);
+  
 
   const handleBlur = () => {
     if (data.onLabelChange) {

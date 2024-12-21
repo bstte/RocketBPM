@@ -6,14 +6,17 @@ const SwimlineRightsideBox = ({ data, id, isNew }) => {
   const contentEditableRef = useRef(null); 
 
 
+  const [autoFocus, setAutoFocus] = useState(data.autoFocus);
+
+
   useEffect(() => {
-    if (data.autoFocus && contentEditableRef.current) {
+    if (autoFocus && contentEditableRef.current) {
       setTimeout(() => {
         contentEditableRef.current.focus();
-        data.autoFocus = false; 
+        setAutoFocus(false); 
       }, 0);
     }
-  }, [data.autoFocus]);
+  }, [autoFocus]);
 
   const handleChange = (e) => {
     setLabel(e.target.value);
