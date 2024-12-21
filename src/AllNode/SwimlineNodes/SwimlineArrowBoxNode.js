@@ -5,7 +5,7 @@ import ContentEditable from 'react-contenteditable';
 const ArrowBoxNode = ({ data, onTitleChange }) => {
   const [title, setTitle] = useState(data.details.title );
   const contentEditableRef = useRef(null);
-
+  const [autoFocus, setAutoFocus] = useState(data.autoFocus);
   const handleChange = (e) => {
     setTitle(e.target.value);
     if (data.onLabelChange) {
@@ -14,14 +14,13 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
   };
 
   useEffect(() => {
-    if (data.autoFocus && contentEditableRef.current) {
+    if (autoFocus && contentEditableRef.current) {
       setTimeout(() => {
         contentEditableRef.current.focus();
-        data.autoFocus = false; 
+        setAutoFocus(false); 
       }, 0);
     }
-  }, [data.autoFocus]);
-
+  }, [autoFocus]);
   const handleBlur = () => {
     if (onTitleChange) {
       onTitleChange(title); 
