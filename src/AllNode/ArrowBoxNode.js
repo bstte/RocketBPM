@@ -20,9 +20,6 @@ const ArrowBoxNode = ({ data, }) => {
     }
   };
 
-  
-
-
 
   const handleBlur = () => {
     if (data.onLabelChange) {

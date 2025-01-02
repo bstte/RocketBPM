@@ -4,7 +4,9 @@ import ContentEditable from 'react-contenteditable';
 const SwimlineRightsideBox = ({ data}) => {
   const [label, setLabel] = useState(data.label || ''); 
   const contentEditableRef = useRef(null); 
+
   const [autoFocus, setAutoFocus] = useState(data.autoFocus);
+
 
   const handleChange = (e) => {
     setLabel(e.target.value);

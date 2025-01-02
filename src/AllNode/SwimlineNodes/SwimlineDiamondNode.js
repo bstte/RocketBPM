@@ -4,13 +4,25 @@ import ContentEditable from 'react-contenteditable';
 
 const SwimlineDiamondNode = ({ data }) => {
   const [title, setTitle] = useState(data.details.title);
-  const titleRef = useRef(null); // Ref for the title
+
+  const titleRef = useRef(null); 
   const [autoFocus, setAutoFocus] = useState(data.autoFocus);
+
+
+  useEffect(() => {
+    if (autoFocus && titleRef.current) {
+      setTimeout(() => {
+        titleRef.current.focus();
+        setAutoFocus(false); 
+      }, 0);
+    }
+  }, [autoFocus]);
 
   const handleChange = (e) => {
     setTitle(e.target.value);
     if (data.onLabelChange) {
-      data.onLabelChange(e.target.value); 
+      data.onLabelChange(e.target.value);
+
     }
   };
 
@@ -44,25 +56,25 @@ const SwimlineDiamondNode = ({ data }) => {
         type="target"
         position={Position.Top}
         id="top-target"
-        style={{ ...styles.handle, top: '-5px', left: '50%', transform: 'translateX(-50%)' }}
+        style={{ ...styles.handle, top: '0px', left: '50%', transform: 'translateX(-50%)' }}
       />
       <Handle
         type="source"
         position={Position.Bottom}
         id="bottom-source"
-        style={{ ...styles.handle, bottom: '-5px', left: '50%', transform: 'translateX(-50%)' }}
+        style={{ ...styles.handle, bottom: '0px', left: '50%', transform: 'translateX(-50%)' }}
       />
       <Handle
         type="target"
         position={Position.Left}
         id="left-target"
-        style={{ ...styles.handle, left: '17px', top: '50%', transform: 'translateY(-50%)' }}
+        style={{ ...styles.handle, left: '12px', top: '50%', transform: 'translateY(-50%)' }}
       />
       <Handle
         type="source"
         position={Position.Right}
         id="right-source"
-        style={{ ...styles.handle, right: '17px', top: '50%', transform: 'translateY(-50%)' }}
+        style={{ ...styles.handle, right: '12px', top: '50%', transform: 'translateY(-50%)' }}
       />
     </div>
   );

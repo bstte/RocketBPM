@@ -11,6 +11,7 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
 
   const contentEditableRef = useRef(null);
 
+
     const navigate = useNavigate();
 
   const handleBoxClick = () => {

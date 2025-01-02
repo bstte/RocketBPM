@@ -501,12 +501,14 @@ const MapLevel = () => {
     addNode(type, { x: contextMenuPosition.x, y: contextMenuPosition.y });
   };
 
+
   const handlePageClick = useCallback(() => {
     setShowPopup(false);
     if (showContextMenu) {
       setShowContextMenu(false);
     }
   }, [showContextMenu]);
+
 
   const handleGlobalContextMenu = (event) => {
     const targetNode = event.target.closest(".react-flow__node");
@@ -525,13 +527,17 @@ const MapLevel = () => {
     });
   };
 
-useEffect(() => {
-  document.addEventListener("click", handlePageClick);
 
-  return () => {
-    document.removeEventListener("click", handlePageClick);
-  };
-}, [handlePageClick]);
+
+  useEffect(() => {
+    document.addEventListener("click", handlePageClick);
+  
+    return () => {
+      document.removeEventListener("click", handlePageClick);
+    };
+  }, [handlePageClick]);
+  
+ 
 
   const iconNames = {};
 

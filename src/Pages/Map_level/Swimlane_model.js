@@ -259,7 +259,9 @@ const SwimlaneModel = () => {
       setSelectedEdge(null);
       setOptions([]);
     },
-    [] // Remove unnecessary dependencies
+
+    [] 
+
   );
   
   const addNode = (type, position) => {
