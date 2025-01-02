@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState, useEffect } from "react";
+import React, { useCallback, useMemo, useState, useEffect, useContext } from "react";
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -15,13 +15,14 @@ import { applyNodeChanges, applyEdgeChanges } from "@xyflow/react";
 import Header from "../../components/Header";
 import { v4 as uuidv4 } from "uuid";
 import { useLocation, useNavigate } from "react-router-dom";
-import api from "../../API/api";
+import api, { filter_draft } from "../../API/api";
 import CustomContextPopup from "../../components/CustomContextPopup";
 import DetailsPopup from "../../components/DetailsPopup";
 import NodeTypes from "./NodeTypes";
 import generateNodesAndEdges from "../../../src/AllNode/SwimlineNodes/generateNodesAndEdges";
 import styles from "./SwimlaneStyles";
 import AddObjectRole from "../../AllNode/SwimlineNodes/addobjectrole";
+import { BreadcrumbsContext } from "../../context/BreadcrumbsContext";
 
 const rfStyle = {
   width: "100%",
@@ -36,7 +37,7 @@ const SwimlaneModel = () => {
   });
   const location = useLocation();
   const navigate = useNavigate();
-  const { id, title, user, parentId, level } = location.state || {};
+  const { id, title, user, parentId, level,ParentPageGroupId } = location.state || {};
   const headerTitle = `${title} `;
   const currentParentId = parentId || null;
   const currentLevel = level ? parseInt(level, 10) : 0;
@@ -44,6 +45,11 @@ const SwimlaneModel = () => {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [options, setOptions] = useState([]);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+
+  const [isCheckboxPopupOpen, setIsCheckboxPopupOpen] = useState(false);
+  const [LinknodeList, setLinknodeList] = useState([]);
+  const [selectedLinknodeIds, setSelectedLinknodeIds] = useState([]);
+
 
   const { nodes: initialNodes } = useMemo(
     () => generateNodesAndEdges(windowSize.width, windowSize.height),
@@ -77,7 +83,7 @@ const SwimlaneModel = () => {
 
       console.log("confirm data", userConfirmed);
       if (userConfirmed) {
-        navigate("/List-process-title"); // Redirect to the desired route
+        navigate("/List-process-title");
       } else {
         event.preventDefault();
       }
@@ -237,6 +243,7 @@ const SwimlaneModel = () => {
             Process_id: id && id,
             type: "step",
             Page: "Swimlane",
+            status: "draft",
           },
           eds
         )
@@ -252,10 +259,19 @@ const SwimlaneModel = () => {
       setSelectedEdge(null);
       setOptions([]);
     },
-    [setChiledNodes]
+    [] // Remove unnecessary dependencies
   );
-
+  
   const addNode = (type, position) => {
+
+     let PageGroupId;
+    
+        if (ChildNodes.length === 0) {
+           PageGroupId	= uuidv4();
+        } else {
+          PageGroupId = ChildNodes[0]?.PageGroupId; 
+        }
+        
     if (type === "Yes" || type === "No") {
       if (!position) {
         alert("Position not defind");
@@ -287,12 +303,8 @@ const SwimlaneModel = () => {
         isNew: true,
         animated: true,
         Page_Title: "Swimlane",
-        Level:
-          currentParentId !== null
-            ? `Level${currentLevel}_${currentParentId}`
-            : `Level${currentLevel}`,
-        user_id: user && user.id,
-        Process_id: id && id,
+        status: "draft",
+        PageGroupId:PageGroupId
       };
 
       setChiledNodes((nds) => [...nds, newNode]);
@@ -302,7 +314,7 @@ const SwimlaneModel = () => {
       const groupWidth = selectedGroup?.style?.width || 100;
       const groupHeight = selectedGroup?.style?.height || 100;
       const childWidth = groupWidth * 0.9;
-      const childHeight = groupHeight * 0.9; // 80% of the group height
+      const childHeight = groupHeight * 0.9; 
       const newNodeId = uuidv4();
       const newNode = {
         id:
@@ -319,6 +331,7 @@ const SwimlaneModel = () => {
         data: {
           label: "",
           details: { title: "", content: "" },
+          link:"",
           autoFocus: true, 
           shape: type,
           onLabelChange: (newLabel) =>   handleLabelChange(
@@ -341,12 +354,8 @@ const SwimlaneModel = () => {
         isNew: true,
         animated: true,
         Page_Title: "Swimlane",
-        Level:
-          currentParentId !== null
-            ? `Level${currentLevel}_${currentParentId}`
-            : `Level${currentLevel}`,
-        user_id: user && user.id,
-        Process_id: id && id,
+        status: "draft",
+        PageGroupId:PageGroupId,
         style: {
           width: childWidth,
           height: childHeight,
@@ -375,9 +384,34 @@ const SwimlaneModel = () => {
   const memoizedNodeTypes = useMemo(() => nodeTypes, [nodeTypes]);
   const memoizedEdgeTypes = useMemo(() => edgeTypes, [edgeTypes]);
 
-  const handleSaveNodes = async () => {
+  const handleSaveNodes = async (savetype) => {
+ if(savetype==="Published" && currentLevel!==0){
+    
+      try{
+        const response = await filter_draft(ParentPageGroupId);
+        if(response.data===true){
+          alert("First published previous page");
+          return false
+        }
+      }catch(error){
+        console.error("filter draft error",error)
+      }
+    }
+
+    const Level =
+    currentParentId !== null
+      ? `Level${currentLevel}_${currentParentId}`
+      : `Level${currentLevel}`;
+  const user_id = user && user.id;
+  const Process_id = id && id;
+  const datasavetype=savetype;
+
     try {
       const response = await api.saveNodes({
+        Level,
+        user_id,
+        Process_id,
+        datasavetype,
         nodes: ChildNodes.map(
           ({
             id,
@@ -387,11 +421,10 @@ const SwimlaneModel = () => {
             draggable,
             animated,
             measured,
-            Level,
-            user_id,
-            Process_id,
             Page_Title,
             parentId,
+            status,
+            PageGroupId
           }) => ({
             id,
             data,
@@ -400,11 +433,10 @@ const SwimlaneModel = () => {
             draggable,
             animated,
             measured,
-            Level,
-            user_id,
-            Process_id,
             Page_Title,
             parentId,
+            status,
+            PageGroupId
           })
         ),
         edges: edges.map(
@@ -414,12 +446,10 @@ const SwimlaneModel = () => {
             target,
             markerEnd,
             animated,
-            Level,
             sourceHandle,
             targetHandle,
-            user_id,
-            Process_id,
             Page_Title,
+            status,
           }) => ({
             id,
             source,
@@ -428,10 +458,8 @@ const SwimlaneModel = () => {
             targetHandle,
             markerEnd,
             animated,
-            Level,
-            user_id,
-            Process_id,
             Page_Title,
+            status,
           })
         ),
       });
@@ -528,7 +556,7 @@ const SwimlaneModel = () => {
   };
 
   const handleNodeRightClick = (event, node) => {
-    console.log("node", node);
+
     if (node.Page_Title === "Swimlane") {
       setOptions([]);
       setSelectedNodeId(node.node_id);
@@ -587,6 +615,57 @@ const SwimlaneModel = () => {
     }
   };
 
+    const { breadcrumbs } = useContext(BreadcrumbsContext); 
+
+  const linkExistingmodel = async () => {
+
+    const existinglink= ChildNodes.find((node) => node.node_id === selectedNodeId)
+    if(existinglink?.data?.link){
+      setSelectedLinknodeIds(existinglink?.data?.link); 
+    }else{
+      setSelectedLinknodeIds([]); 
+    }
+
+    const fullPath = breadcrumbs[1].path; 
+    const extractedValue = fullPath.split("/").pop(); 
+  
+    const levelParam = "Level0";
+    const user_id = user ? user.id : null;
+    const Process_id = id ? id : null;
+    const data = await api.getNodes(levelParam, parseInt(user_id), Process_id);
+    const filteredNodes = data.nodes.filter((node) => node.node_id !== extractedValue);
+    setLinknodeList(filteredNodes); 
+    setIsCheckboxPopupOpen(true); 
+  };
+  
+const handleCheckboxChange = (nodeId) => {
+  setSelectedLinknodeIds(nodeId); 
+};
+
+const saveSelectedNodes = () => {
+  if (selectedLinknodeIds) {
+    setChiledNodes((nds) =>
+      nds.map((node) => {
+        if (node.id===selectedNodeId) {
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              link: selectedLinknodeIds, 
+            },
+          };
+        }
+        return node; 
+      })
+    );
+
+    setIsCheckboxPopupOpen(false);
+  } else {
+    alert("Please select a node before saving.");
+  }
+};
+
+
 
   const menuItems = [
     ...(detailschecking?.type === "diamond"
@@ -603,7 +682,7 @@ const SwimlaneModel = () => {
           },
         ]
       : []),
-    ...(detailschecking?.type !== "SwimlineRightsideBox"
+    ...(detailschecking?.type !== "SwimlineRightsideBox" && detailschecking?.type !== "progressArrow"
       ? [
           {
             label:
@@ -628,6 +707,15 @@ const SwimlaneModel = () => {
           },
         ]
       : []),
+      ...(detailschecking?.type === "progressArrow"
+        ? [
+            {
+              label: "Link Existing model",
+              action: () => linkExistingmodel(),
+              borderBottom: true,
+            },
+          ]
+        : []),
     {
       label: "Delete",
       action: handleDeleteNode,
@@ -683,18 +771,21 @@ const SwimlaneModel = () => {
         "You have unsaved changes. Do you want to save them before leaving?"
       );
       if (userConfirmed) {
-        handleSaveNodes();
+        handleSaveNodes("draft");
       }
     }
   };
+
   return (
     <div>
       <Header
         title={headerTitle}
         onSave={handleSaveNodes}
+        onPublish={handleSaveNodes}
         addNode={addNode}
         handleBackdata={handleBack}
         iconNames={iconNames}
+        condition={true}
       />
       <div style={styles.appContainer}>
         <ReactFlowProvider>
@@ -741,6 +832,47 @@ const SwimlaneModel = () => {
               }
             />
           </div>
+
+             {/* Checkbox Popup */}
+      {isCheckboxPopupOpen && (
+      <div style={popupStyle.container}>
+      <div style={popupStyle.header}>
+        <span>Existing Model</span>
+        <button
+          style={popupStyle.closeButton}
+          onClick={() => setIsCheckboxPopupOpen(false)}
+          aria-label="Close"
+        >
+          ×
+        </button>
+      </div>
+      <div style={popupStyle.body}>
+        {LinknodeList.map((node) => (
+          <label
+            key={node.node_id}
+            style={{
+              ...popupStyle.label,
+              backgroundColor: selectedLinknodeIds === node.node_id ? "#f0f8ff" : "transparent",
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={selectedLinknodeIds === node.node_id}
+              onChange={() => handleCheckboxChange(node.node_id)}
+              style={popupStyle.checkbox}
+            />
+            {node.data && JSON.parse(node.data).label}
+          </label>
+        ))}
+      </div>
+      <div style={popupStyle.footer}>
+        <button onClick={saveSelectedNodes} style={popupStyle.saveButton}>
+          Save
+        </button>
+      </div>
+    </div>
+ )}
+
           {options.length>0 && (
             <AddObjectRole
               position={position}
@@ -786,3 +918,58 @@ const SwimlaneModel = () => {
 };
 
 export default SwimlaneModel;
+
+
+const popupStyle = {
+  container: {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    backgroundColor: "#fff",
+    borderRadius: "8px",
+    padding: "16px",
+    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+    width: "300px",
+  },
+  header: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "16px",
+    fontWeight: "bold",
+    fontSize: "18px",
+  },
+  closeButton: {
+    background: "none",
+    border: "none",
+    fontSize: "20px",
+    cursor: "pointer",
+  },
+  body: {
+    marginBottom: "16px",
+  },
+  label: {
+    display: "flex",
+    alignItems: "center",
+    marginBottom: "8px",
+    padding: "8px",
+    borderRadius: "4px",
+    cursor: "pointer",
+    transition: "background-color 0.2s",
+  },
+  checkbox: {
+    marginRight: "8px",
+  },
+  footer: {
+    textAlign: "right",
+  },
+  saveButton: {
+    backgroundColor: "#007bff",
+    color: "#fff",
+    border: "none",
+    padding: "8px 16px",
+    borderRadius: "4px",
+    cursor: "pointer",
+  },
+};

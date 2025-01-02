@@ -9,6 +9,7 @@ const Popup = ({
   deleteNode,
   selectedNodeType,
   switchNodeType,
+  condition,
 }) =>
   showPopup && (
     <div
@@ -24,34 +25,42 @@ const Popup = ({
           onClick={() => handleCreateNewNode("ProcessMap")}
           style={styles.popupButton}
         >
-          {`Create new Process Map model`}
+          {condition===true? `Create new Process Map model`: `View Process Map model`}
+         
         </button>
         <button
           onClick={() => handleCreateNewNode("Swimlane")}
           style={styles.popupButton}
         >
-          {`Create new Swimlane model`}
+             {condition===true? `Create new Swimlane model`: `View Swimlane model`}
+         
         </button>
-        {selectedNodeType === "progressArrow" && (
-          <button
-            onClick={() => switchNodeType("pentagon")}
-            style={styles.popupButton}
-          >
-            {`Switch shape to Steer & Enable Process`}
-          </button>
-        )}
-        {selectedNodeType === "pentagon" && (
-          <button
-            onClick={() => switchNodeType("progressArrow")}
-            style={styles.popupButton}
-          >
-            {`Switch shape to Value Adding Process`}
-          </button>
-        )}
+        {condition && (
+          <>
+            {selectedNodeType === "progressArrow" && (
+              <button
+                onClick={() => switchNodeType("pentagon")}
+                style={styles.popupButton}
+              >
+                {`Switch shape to Steer & Enable Process`}
+              </button>
+            )}
+            {selectedNodeType === "pentagon" && (
+              <button
+                onClick={() => switchNodeType("progressArrow")}
+                style={styles.popupButton}
+              >
+                {`Switch shape to Value Adding Process`}
+              </button>
+            )}
 
+            
         <button onClick={deleteNode} style={styles.popupButton}>
           {`Delete`}
         </button>
+          </>
+        )}
+
       </div>
     </div>
   );

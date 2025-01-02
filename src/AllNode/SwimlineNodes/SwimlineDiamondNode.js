@@ -1,17 +1,28 @@
-import { memo, useState, useRef } from 'react';
+import { memo, useState, useRef, useEffect } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import ContentEditable from 'react-contenteditable';
 
 const SwimlineDiamondNode = ({ data }) => {
   const [title, setTitle] = useState(data.details.title);
   const titleRef = useRef(null); // Ref for the title
+  const [autoFocus, setAutoFocus] = useState(data.autoFocus);
 
   const handleChange = (e) => {
     setTitle(e.target.value);
     if (data.onLabelChange) {
-      data.onLabelChange(e.target.value); // Notify parent about title change
+      data.onLabelChange(e.target.value); 
     }
   };
+
+
+  useEffect(() => {
+    if (autoFocus && titleRef.current) {
+      setTimeout(() => {
+        titleRef.current.focus();
+        setAutoFocus(false); 
+      }, 0);
+    }
+  }, [autoFocus]);
 
   return (
     <div style={styles.wrapper}>

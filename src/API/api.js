@@ -3,7 +3,7 @@ import axios from 'axios';
 const baseUrl='https://teamwebdevelopers.com/proto-type/api'
 // const baseUrl ='http://localhost:8000/api/'
 export const defaultApi = axios.create({
-  baseURL: baseUrl, // Use 127.0.0.1 instead of localhost
+  baseURL: baseUrl, 
   headers: {
     'Content-Type': 'application/json',
   },
@@ -27,6 +27,7 @@ export const saveNodes = async (data) => {
   }
 };
 
+
 export const getNodes = async (level = null, user_id = null,Process_id=null) => {
   try {
     const response = await api.get('/nodes', { params: {
@@ -40,6 +41,49 @@ export const getNodes = async (level = null, user_id = null,Process_id=null) => 
     throw error;
   }
 };
+
+
+export const getPublishedNodes = async (level = null, user_id = null,Process_id=null) => {
+  try {
+    const response = await api.get('/Publishnodes', { params: {
+      level, 
+      user_id,
+      Process_id
+    } }); 
+    return response.data; 
+  } catch (error) {
+    console.error('Error fetching nodes:', error);
+    throw error;
+  }
+};
+
+
+export const filter_draft = async (ParentPageGroupId = null) => {
+  try {
+    const response = await api.get('/nodes/filter-draft', {
+      params: { ParentPageGroupId }, 
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching nodes:', error);
+    throw error;
+  }
+};
+
+
+
+export const getdataByNodeId = async (node_id = null,status=null) => {
+  try {
+    const response = await api.get('/nodes/getdataByNodeId', {
+      params: { node_id,status }, 
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching nodes:', error);
+    throw error;
+  }
+};
+
 
 export const Login = async (email, password) => {
   try {
@@ -103,6 +147,6 @@ export const getProcessTitles = async (user_id = null) => {
 
 
 
-const apiExports = { saveNodes, getNodes, Login,saveProcessTitle, defaultApi };
+const apiExports = { saveNodes, getNodes, Login,saveProcessTitle, defaultApi,filter_draft,getPublishedNodes ,getdataByNodeId};
 
 export default apiExports;

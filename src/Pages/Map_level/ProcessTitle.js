@@ -35,8 +35,7 @@ const ProcessTitle = () => {
     <div style={styles.container}>
             <CustomHeader title="Add Process Title" />
       <h1 style={styles.heading}>Process Title</h1>
-      
-      {/* Input for process title */}
+
       <input
         type="text"
         placeholder="Type process title"

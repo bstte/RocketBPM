@@ -3,7 +3,7 @@ import React, { createContext, useState, useCallback } from 'react';
 export const BreadcrumbsContext = createContext();
 
 export const BreadcrumbsProvider = ({ children }) => {
-  const [breadcrumbs, setBreadcrumbs] = useState([]); // Start with an empty state
+  const [breadcrumbs, setBreadcrumbs] = useState([]); 
 
   const addBreadcrumb = useCallback((label, path,state) => {
     setBreadcrumbs((prev) => {

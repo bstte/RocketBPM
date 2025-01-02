@@ -1,14 +1,23 @@
-import React, { useContext, useState } from 'react';
-import { ProgressArrow, Pentagon, Diamond, Box, Label } from './Icon'; // Adjust the path as necessary
-import { IconButton } from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { useNavigate } from 'react-router-dom';
-import { logoutUser } from '../redux/userSlice';
-import { useDispatch, useSelector } from 'react-redux';
-import { BreadcrumbsContext } from '../context/BreadcrumbsContext';
+import React, { useContext, useState } from "react";
+import { ProgressArrow, Pentagon, Diamond, Box, Label } from "./Icon"; // Adjust the path as necessary
+import { IconButton } from "@mui/material";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import HomeIcon from "@mui/icons-material/Home";
+import { useNavigate } from "react-router-dom";
+import { logoutUser } from "../redux/userSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { BreadcrumbsContext } from "../context/BreadcrumbsContext";
 
-const Header = ({ title, onSave, addNode, handleBackdata, iconNames }) => {
-  const user = useSelector((state) => state.user.user); // Assuming user contains 'name', 'email', and 'type'
+const Header = ({
+  title,
+  onSave,
+  onPublish,
+  addNode,
+  handleBackdata,
+  iconNames,
+  condition,
+}) => {
+  const user = useSelector((state) => state.user.user);
 
   const [hoveredIcon, setHoveredIcon] = useState(null);
 
@@ -16,12 +25,10 @@ const Header = ({ title, onSave, addNode, handleBackdata, iconNames }) => {
   const dispatch = useDispatch();
 
   const handleBack = () => {
-    navigate(-1); // Go back to the previous page
+    navigate(-1);
     handleBackdata();
   };
-  const { breadcrumbs } = useContext(BreadcrumbsContext); 
-
-
+  const { breadcrumbs } = useContext(BreadcrumbsContext);
 
   const iconComponents = {
     progressArrow: <ProgressArrow />,
@@ -32,20 +39,20 @@ const Header = ({ title, onSave, addNode, handleBackdata, iconNames }) => {
   };
 
   const handleLogout = () => {
-    const isConfirmed = window.confirm('Are you sure you want to logout?');
+    const isConfirmed = window.confirm("Are you sure you want to logout?");
     if (isConfirmed) {
       dispatch(logoutUser());
-      navigate('/login');
+      navigate("/login");
     }
   };
 
   const formattedDate = user?.created_at
-    ? new Date(user.created_at).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    })
-    : 'N/A';
+    ? new Date(user.created_at).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      })
+    : "N/A";
 
   const handleBreadcrumbClick = (path, state) => {
     navigate(path, { state });
@@ -67,10 +74,14 @@ const Header = ({ title, onSave, addNode, handleBackdata, iconNames }) => {
               <img src="/img/user.png" alt="User" style={styles.loginuserpic} />
             </div>
             <div style={styles.loginusername}>
-              <div>{`Hi, ${user?.name || ''}`}</div>
+              <div>{`Hi, ${user?.name || ""}`}</div>
               <span
                 onClick={handleLogout}
-                style={{ cursor: 'pointer', color: 'blue', textDecoration: 'underline' }}
+                style={{
+                  cursor: "pointer",
+                  color: "blue",
+                  textDecoration: "underline",
+                }}
               >
                 Logout?
               </span>
@@ -79,28 +90,54 @@ const Header = ({ title, onSave, addNode, handleBackdata, iconNames }) => {
         </div>
       </div>
 
-      <div className="breadcrumbs-container" style={styles.breadcrumbsContainer}>
-        {breadcrumbs.map((crumb, index) => (
-          <span key={index}>
-            <a
-              onClick={() => handleBreadcrumbClick(crumb.path, crumb.state)}
-              style={styles.breadcrumbLink}
-            >
-              {crumb.label}
-            </a>
-            {index < breadcrumbs.length - 1 && " > "}
+      <div
+  className="breadcrumbs-container"
+  style={styles.breadcrumbsContainer}
+>
+  {breadcrumbs
+    .filter((crumb) => crumb.label !== title)
+    .map((crumb, index) => (
+      <span key={index}>
+        {index === 0 ? (
+          <span
+            onClick={() => handleBreadcrumbClick(crumb.path, crumb.state)}
+            style={styles.breadcrumbLink}
+          >
+            <HomeIcon
+              style={{
+                width: 22,
+                height: 21,
+                verticalAlign: "middle",
+                marginRight: 5,
+              }}
+            />
           </span>
-        ))}
-      </div>
+        ) : (
+          <span
+            onClick={() => handleBreadcrumbClick(crumb.path, crumb.state)}
+            style={styles.breadcrumbLink}
+          >
+            {crumb.label}
+          </span>
+        )}
+        {index < breadcrumbs.length - 1 && breadcrumbs[index + 1]?.label && " > "}
+      </span>
+    ))}
+</div>
+
 
       <header className="app-header" style={styles.header}>
         <h1 style={styles.headerTitle}>
-          <IconButton edge="start" color="inherit" aria-label="back" onClick={handleBack}>
+          <IconButton
+            edge="start"
+            color="inherit"
+            aria-label="back"
+            onClick={handleBack}
+          >
             <ArrowBackIcon fontSize="medium" />
           </IconButton>
           {title}
         </h1>
-
 
         <div style={styles.iconContainer}>
           {Object.keys(iconNames).map((iconKey) => (
@@ -115,7 +152,8 @@ const Header = ({ title, onSave, addNode, handleBackdata, iconNames }) => {
                 <div
                   style={{
                     ...styles.iconStyle,
-                    transform: hoveredIcon === iconKey ? 'scale(1.5)' : 'scale(0.9)',
+                    transform:
+                      hoveredIcon === iconKey ? "scale(1.5)" : "scale(0.9)",
                   }}
                 >
                   {iconComponents[iconKey]}
@@ -127,21 +165,38 @@ const Header = ({ title, onSave, addNode, handleBackdata, iconNames }) => {
         <div style={styles.flexbox}>
           <div style={styles.pdate}>
             <div>
-              Published<br />
+              Published
+              <br />
               {formattedDate}
             </div>
           </div>
-          <div>
-            <button
-              onClick={onSave}
-              style={{
-                ...styles.saveButton,
-                backgroundColor: '#218838',
-              }}
-            >
-              Save
-            </button>
-          </div>
+          {condition && (
+            <>
+              <div>
+                <button
+                  onClick={() => onSave("draft")}
+                  style={{
+                    ...styles.saveButton,
+                    backgroundColor: "#218838",
+                  }}
+                >
+                  Draft
+                </button>
+              </div>
+
+              <div>
+                <button
+                  onClick={() => onPublish("Published")}
+                  style={{
+                    ...styles.saveButton,
+                    backgroundColor: "#218838",
+                  }}
+                >
+                  Publish
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </header>
     </>
@@ -150,113 +205,114 @@ const Header = ({ title, onSave, addNode, handleBackdata, iconNames }) => {
 
 const styles = {
   header: {
-    padding: '0.7vw 15px',
-    border: '1px solid #002060',
-    color: '#343a40',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#ffffff',
+    padding: "0.7vw 15px",
+    border: "1px solid #002060",
+    color: "#343a40",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "#ffffff",
   },
   headerTitle: {
     margin: 0,
-    fontSize: '1.2vw',
-    fontWeight: '300',
-    color: '#002060',
-    textTransform: 'uppercase',
+    fontSize: "1.2vw",
+    fontWeight: "300",
+    color: "#002060",
+    textTransform: "uppercase",
   },
   iconContainer: {
-    display: 'flex',
-    gap: '15px',
+    display: "flex",
+    gap: "15px",
   },
   iconButton: {
-    width: '2.7vw',
-    height: '2.7vw',
-    backgroundColor: 'transparent',
-    border: 'none',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    cursor: 'pointer',
-    padding: '0',
-    transition: 'background-color 0.3s ease',
+    width: "2.7vw",
+    height: "2.7vw",
+    backgroundColor: "transparent",
+    border: "none",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    cursor: "pointer",
+    padding: "0",
+    transition: "background-color 0.3s ease",
   },
   iconWrapper: {
-    position: 'relative',
+    position: "relative",
   },
   iconStyle: {
-    width: '32px',
-    height: '32px',
-    color: '#000',
-    transition: 'transform 0.3s ease',
+    width: "32px",
+    height: "32px",
+    color: "#000",
+    transition: "transform 0.3s ease",
   },
   saveButton: {
-    padding: '10px 20px',
-    backgroundColor: '#28a745', // Green color for visibility
-    color: '#fff',
-    border: 'none',
-    borderRadius: '5px',
-    cursor: 'pointer',
-    fontSize: '16px',
-    transition: 'background-color 0.3s ease',
+    padding: "10px 20px",
+    backgroundColor: "#28a745", // Green color for visibility
+    color: "#fff",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+    fontSize: "16px",
+    transition: "background-color 0.3s ease",
   },
   mainheader: {
-    width: '100%',
-    display: 'flex',
-    marginBottom: '15px',
+    width: "100%",
+    display: "flex",
+    marginBottom: "15px",
   },
   mainlogo: {
-    width: '15vw',
+    width: "15vw",
   },
   mhcolleft: {
-    width: '50%',
-    display: 'flex',
-    alignItems: 'center',
+    width: "50%",
+    display: "flex",
+    alignItems: "center",
   },
   mhcolright: {
-    width: '50%',
-    display: 'flex',
-    justifyContent: 'flex-end',
+    width: "50%",
+    display: "flex",
+    justifyContent: "flex-end",
   },
   loginuserbox: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
   },
   loginuserpic: {
-    width: '2vw',
+    width: "2vw",
   },
   loginusername: {
-    fontSize: '1vw',
+    fontSize: "1vw",
   },
   pdate: {
-    textTransform: 'uppercase',
-    textAlign: 'center',
-    fontSize: '0.8rem',
+    textTransform: "uppercase",
+    textAlign: "center",
+    fontSize: "0.8rem",
   },
   flexbox: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '15px',
+    display: "flex",
+    alignItems: "center",
+    gap: "15px",
   },
   secondarylogo: {
-    width: '12vw',
+    width: "12vw",
   },
   breadcrumbsContainer: {
-    margin: '10px 0',
-    padding: '5px 10px',
-    backgroundColor: '#f9f9f9', // Light background for breadcrumbs
-    borderRadius: '5px',
-    display: 'flex', // Flexbox for inline items
-    alignItems: 'center', // Center items vertically
-    fontFamily: 'Arial, sans-serif', // Set font for readability
+    margin: "10px 0",
+    padding: "5px 10px",
+    backgroundColor: "#f9f9f9", // Light background for breadcrumbs
+
+    display: "flex", // Flexbox for inline items
+    alignItems: "center", // Center items vertically
+    fontFamily: "Arial, sans-serif", // Set font for readability
   },
   breadcrumbLink: {
-    textDecoration: 'none', // Remove underline
-    color: '#007bff', // Standard blue for links
-    padding: '5px 8px', // Increase clickable area
-    borderRadius: '3px', // Slight rounding on edges
-    transition: 'color 0.3s ease, background-color 0.3s ease', // Smooth transition for hover
+    textDecoration: "none",
+    color: "#007bff", // Standard blue for links
+    cursor: "pointer", // Change the cursor to indicate it's clickable
+    padding: "5px 8px", // Increase clickable area if needed
+    backgroundColor: "transparent", // Transparent background to look like a link
+    border: "none", // Remove border if it's a button
   },
 };
 

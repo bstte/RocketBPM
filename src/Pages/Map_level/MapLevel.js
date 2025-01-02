@@ -8,7 +8,6 @@ import React, {
 import {
   ReactFlow,
   ReactFlowProvider,
-  addEdge,
   useEdgesState,
   useNodesState,
   SmoothStepEdge,
@@ -24,7 +23,7 @@ import Header from "../../components/Header";
 import Popup from "../../components/Popup";
 import ArrowBoxNode from "../../AllNode/ArrowBoxNode";
 import PentagonNode from "../../AllNode/PentagonNode";
-import api from "../../API/api";
+import api, { filter_draft } from "../../API/api";
 import { BreadcrumbsContext } from "../../context/BreadcrumbsContext";
 import CustomContextMenu from "../../components/CustomContextMenu";
 
@@ -43,7 +42,7 @@ const MapLevel = () => {
   const navigate = useNavigate();
   const { level, parentId } = useParams();
   const location = useLocation();
-  const { id, title, user } = location.state || {};
+  const { id, title, user,ParentPageGroupId } = location.state || {};
   const currentLevel = level ? parseInt(level, 10) : 0;
   const currentParentId = parentId || null;
   const { addBreadcrumb, removeBreadcrumbsAfter } =
@@ -60,9 +59,7 @@ const MapLevel = () => {
   });
   const [showPopup, setShowPopup] = useState(false);
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
-  const [headerTitle, setHeaderTitle] = useState(
-    `${title} `
-  );
+  const [headerTitle, setHeaderTitle] = useState(`${title} `);
   const handleLabelChange = useCallback(
     (nodeId, newLabel) => {
       setNodes((nds) =>
@@ -70,11 +67,8 @@ const MapLevel = () => {
           node.id === nodeId
             ? { ...node, data: { ...node.data, label: newLabel } }
             : node
-        ),
-  
+        )
       );
-  
-    
     },
     [setNodes]
   );
@@ -107,7 +101,7 @@ const MapLevel = () => {
                 handleLabelChange(node.node_id, newLabel),
 
               width_height: parsedMeasured,
-              autoFocus:true,
+              autoFocus: true,
               nodeResize: true,
             },
             type: node.type,
@@ -150,8 +144,7 @@ const MapLevel = () => {
   ]);
 
   useEffect(() => {
-    const label =
-      currentLevel === 0 ? title :title;
+    const label = currentLevel === 0 ? title : title;
     const path =
       currentLevel === 0
         ? "/Map_level"
@@ -167,37 +160,22 @@ const MapLevel = () => {
       removeBreadcrumbsAfter(currentLevel - 1);
     }
     addBreadcrumb(label, path, state);
-  }, [currentLevel, currentParentId, addBreadcrumb, removeBreadcrumbsAfter,id,title,user]);
+  }, [
+    currentLevel,
+    currentParentId,
+    addBreadcrumb,
+    removeBreadcrumbsAfter,
+    id,
+    title,
+    user,
+  ]);
 
   const memoizedEdgeTypes = useMemo(() => edgeTypes, []);
 
-  const onConnect = useCallback(
-    (params) => {
-      setEdges((eds) =>
-        addEdge(
-          {
-            ...params,
-            markerEnd: {
-              type: MarkerType.ArrowClosed,
-            },
-            style: { stroke: "#000", strokeWidth: 2 },
-            Level:
-              currentParentId !== null
-                ? `Level${currentLevel}_${currentParentId}`
-                : `Level${currentLevel}`,
-            user_id: user && user.id,
-            Process_id: id && id,
-            type: "step",
-            Page_Title: "ProcessMap",
-          },
-          eds
-        )
-      );
-      setHasUnsavedChanges(true);
-    },
-
-    [setEdges, currentLevel, currentParentId, user, id]
-  );
+  const onConnect = useCallback((connection) => {
+  // Your callback logic here
+  console.log('Connected:', connection);
+}, []);
 
   useEffect(() => {
     const handleRefresh = (event) => {
@@ -221,8 +199,14 @@ const MapLevel = () => {
 
   const addNode = (type, position) => {
     const newNodeId = uuidv4();
+  let PageGroupId;
 
-    console.log("type", type);
+    if (nodes.length === 0) {
+       PageGroupId	= uuidv4();
+    } else {
+      PageGroupId = nodes[0]?.PageGroupId; 
+    }
+
     const newNode = {
       id:
         currentParentId !== null
@@ -245,22 +229,17 @@ const MapLevel = () => {
         autoFocus: true,
       },
       type: type,
+      status: "draft",
       position: position || { x: Math.random() * 250, y: Math.random() * 250 },
       draggable: true,
       isNew: true,
       animated: true,
       Page_Title: "ProcessMap",
-      Level:
-        currentParentId !== null
-          ? `Level${currentLevel}_${currentParentId}`
-          : `Level${currentLevel}`,
-      user_id: user && user.id,
-      Process_id: id && id,
+      PageGroupId:PageGroupId
     };
 
     setNodes((nds) => nds.concat(newNode));
     setHasUnsavedChanges(true);
-    // Remove the 'isNew' flag after a short delay
     setTimeout(() => {
       setNodes((nds) =>
         nds.map((node) =>
@@ -315,8 +294,10 @@ const MapLevel = () => {
       const selectedNodeData = nodes.find((node) => node.id === selectedNode);
       const selectedLabel = selectedNodeData?.data?.label || "";
 
+      console.log("selectedNode",selectedNode)
+
       const newLevel = currentLevel + 1;
-      setShowPopup(false); 
+      setShowPopup(false);
       const levelParam =
         selectedNode !== null
           ? `Level${newLevel}_${selectedNode}`
@@ -347,16 +328,16 @@ const MapLevel = () => {
         if (hasSwimlane) {
           alert("You have already created a Swimlane.");
         } else {
-            await handleBack();
+          await handleBack();
           navigate(`/level/${newLevel}/${selectedNode}`, {
-            state: { id, title: selectedLabel, user },
+            state: { id, title: selectedLabel, user, ParentPageGroupId : nodes[0]?.PageGroupId  },
           });
         }
       } else if (type === "Swimlane") {
         if (hasProcessMap) {
           alert("You have already created a Process Map.");
         } else {
-            await handleBack();
+          await handleBack();
           addBreadcrumb(
             `${selectedLabel} `,
             `/swimlane/level/${newLevel}/${selectedNode}`,
@@ -370,6 +351,7 @@ const MapLevel = () => {
               user,
               parentId: selectedNode,
               level: newLevel,
+              ParentPageGroupId : nodes[0]?.PageGroupId
             },
           });
         }
@@ -378,9 +360,33 @@ const MapLevel = () => {
   };
 
   // Save nodes and edges to backend
-  const handleSaveNodes = async () => {
+  const handleSaveNodes = async (savetype) => {
+    if(savetype==="Published" && currentLevel!==0){
+    
+      try{
+        const response = await filter_draft(ParentPageGroupId);
+        if(response.data===true){
+          alert("First published previous page");
+          return false
+        }
+      }catch(error){
+        console.error("filter draft error",error)
+      }
+    }
+
+    const Level =
+      currentParentId !== null
+        ? `Level${currentLevel}_${currentParentId}`
+        : `Level${currentLevel}`;
+    const user_id = user && user.id;
+    const Process_id = id && id;
+    const datasavetype=savetype;
     try {
       const response = await api.saveNodes({
+        Level,
+        user_id,
+        Process_id,
+        datasavetype,
         nodes: nodes.map(
           ({
             id,
@@ -390,10 +396,9 @@ const MapLevel = () => {
             draggable,
             animated,
             measured,
-            Level,
-            user_id,
-            Process_id,
             Page_Title,
+            status,
+            PageGroupId
           }) => ({
             id,
             data,
@@ -402,10 +407,9 @@ const MapLevel = () => {
             draggable,
             animated,
             measured,
-            Level,
-            user_id,
-            Process_id,
             Page_Title,
+            status,
+            PageGroupId
           })
         ),
         edges: edges.map(
@@ -415,11 +419,8 @@ const MapLevel = () => {
             target,
             markerEnd,
             animated,
-            Level,
             sourceHandle,
             targetHandle,
-            user_id,
-            Process_id,
             Page_Title,
           }) => ({
             id,
@@ -429,13 +430,11 @@ const MapLevel = () => {
             targetHandle,
             markerEnd,
             animated,
-            Level,
-            user_id,
-            Process_id,
             Page_Title,
           })
         ),
       });
+      // console.log("response",response)
       alert(response.message);
       setHasUnsavedChanges(false);
     } catch (error) {
@@ -449,6 +448,7 @@ const MapLevel = () => {
       }
     }
   };
+
 
   const memoizedNodeTypes = useMemo(() => nodeTypes, []);
 
@@ -470,7 +470,7 @@ const MapLevel = () => {
         "You have unsaved changes. Do you want to save them before leaving?"
       );
       if (userConfirmed) {
-        handleSaveNodes();
+        handleSaveNodes("draft");
       }
     }
   };
@@ -482,7 +482,7 @@ const MapLevel = () => {
           node.id === selectedNode
             ? {
                 ...node,
-                type:type,
+                type: type,
                 data: {
                   ...node.data,
                   shape: type,
@@ -501,13 +501,12 @@ const MapLevel = () => {
     addNode(type, { x: contextMenuPosition.x, y: contextMenuPosition.y });
   };
 
-  const handlePageClick = () => {
-  
-        setShowPopup(false)
+  const handlePageClick = useCallback(() => {
+    setShowPopup(false);
     if (showContextMenu) {
       setShowContextMenu(false);
     }
-  };
+  }, [showContextMenu]);
 
   const handleGlobalContextMenu = (event) => {
     const targetNode = event.target.closest(".react-flow__node");
@@ -515,51 +514,54 @@ const MapLevel = () => {
       return;
     }
     event.preventDefault();
-    
+
     const flowContainer = document.querySelector(".flow-container");
     const containerRect = flowContainer.getBoundingClientRect();
-    
+
     setShowContextMenu(true);
     setContextMenuPosition({
       x: event.clientX - containerRect.left,
       y: event.clientY - containerRect.top,
     });
   };
-  
 
-  useEffect(() => {
+useEffect(() => {
+  document.addEventListener("click", handlePageClick);
 
-    document.addEventListener("click", handlePageClick);
-
-
-    return () => {
-      document.removeEventListener("click", handlePageClick);
-    };
-  }, [showContextMenu]);
-
-  const iconNames = {
-
+  return () => {
+    document.removeEventListener("click", handlePageClick);
   };
+}, [handlePageClick]);
+
+  const iconNames = {};
 
   // Called when edge is reconnected
-  const onReconnect = useCallback((oldEdge, newConnection) => {
-    setEdges((prevEdges) => reconnectEdge(oldEdge, newConnection, prevEdges));
-  }, [setEdges]);
+  const onReconnect = useCallback(
+    (oldEdge, newConnection) => {
+      setEdges((prevEdges) => reconnectEdge(oldEdge, newConnection, prevEdges));
+    },
+    [setEdges]
+  );
 
   return (
     <div>
-          <Header
-            title={headerTitle}
-            onSave={handleSaveNodes}
-            addNode={addNode}
-            handleBackdata={handleBack}
-            iconNames={iconNames}
-          />
+      <Header
+        title={headerTitle}
+        onSave={handleSaveNodes}
+        onPublish={handleSaveNodes}
+        addNode={addNode}
+        handleBackdata={handleBack}
+        iconNames={iconNames}
+        condition={true}
+      />
       <ReactFlowProvider>
-        <div className="app-container" style={styles.appContainer} >
-        
+        <div className="app-container" style={styles.appContainer}>
           <div className="content-wrapper" style={styles.contentWrapper}>
-            <div className="flow-container" style={styles.flowContainer} onContextMenu={handleGlobalContextMenu}>
+            <div
+              className="flow-container"
+              style={styles.flowContainer}
+              onContextMenu={handleGlobalContextMenu}
+            >
               <ReactFlow
                 nodes={nodes}
                 edges={edges}
@@ -588,10 +590,13 @@ const MapLevel = () => {
                 showPopup={showPopup}
                 popupPosition={popupPosition}
                 popupTitle={popupTitle}
-                selectedNodeType={nodes.find(node => node.id === selectedNode)?.type}
+                selectedNodeType={
+                  nodes.find((node) => node.id === selectedNode)?.type
+                }
                 switchNodeType={switchNodeType}
                 handleCreateNewNode={handleCreateNewNode}
                 deleteNode={deleteNode}
+                condition={true}
               />
             </div>
           </div>

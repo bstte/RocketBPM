@@ -11,6 +11,8 @@ import MapLevel from './Pages/Map_level/MapLevel';
 import ProcessTitle from './Pages/Map_level/ProcessTitle';
 import ListProcessTitle from './Pages/Map_level/ListProcessTitle';
 import SwimlaneModel from './Pages/Map_level/Swimlane_model';
+import PublishedMapLevel from './Pages/Map_level/PublishedProcess/PublishedMapLevel';
+import PublishedSwimlaneModel from './Pages/Map_level/PublishedProcess/PublishedSwimlaneModel';
 
 const PrivateRoute = ({ children }) => {
   const { user } = useSelector((state) => state.user);
@@ -67,6 +69,10 @@ const AppContent = () => {
       <Route path="/swimlane/level/:level/:parentId" element={<SwimlaneModel />} />
 
       <Route path="/level/:level/:parentId/*" element={<PrivateRoute><MapLevel /></PrivateRoute>} />
+
+      <Route path="/Published_Map_level" element={<PrivateRoute><PublishedMapLevel /></PrivateRoute>} />
+      <Route path="/PublishedMapLevel/:level/:parentId/*" element={<PrivateRoute><PublishedMapLevel /></PrivateRoute>} />
+      <Route path="/Published_swimlane/level/:level/:parentId" element={<PublishedSwimlaneModel />} />
     </Routes>
   );
 };

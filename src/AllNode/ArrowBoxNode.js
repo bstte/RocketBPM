@@ -1,7 +1,7 @@
 import { memo, useState, useEffect, useRef } from 'react';
 import { NodeResizer } from '@xyflow/react';
 
-const ArrowBoxNode = ({ data, id, isNew }) => {
+const ArrowBoxNode = ({ data, }) => {
   const [label, setLabel] = useState(data.label || ''); 
   const textareaRef = useRef(null);
 
@@ -10,7 +10,7 @@ const ArrowBoxNode = ({ data, id, isNew }) => {
 
   useEffect(() => {
     setLabel(data.label || ''); 
-  }, [data.label]);
+  }, [data]);
 
   const handleChange = (e) => {
     const newValue = e.target.value || ''; 
@@ -22,14 +22,7 @@ const ArrowBoxNode = ({ data, id, isNew }) => {
 
   
 
-  useEffect(() => {
-    if (data.autoFocus && textareaRef.current) {
-      setTimeout(() => {
-        textareaRef.current.focus();
-        data.autoFocus = false; 
-      }, 0);
-    }
-  }, [data.autoFocus]);
+
 
   const handleBlur = () => {
     if (data.onLabelChange) {

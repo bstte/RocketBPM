@@ -9,15 +9,16 @@ const BoxNode = ({ data, id, isNew }) => {
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 }); // Popup position
   const [title, setTitle] = useState(data.details.title);
   const boxRef = useRef(null); // Ref for the box node
+  const [autoFocus, setAutoFocus] = useState(data.autoFocus);
 
- useEffect(() => {
-  if (data.autoFocus && boxRef.current) {
+useEffect(() => {
+  if (autoFocus && boxRef.current) {
     setTimeout(() => {
       boxRef.current.focus();
-      data.autoFocus = false; 
+      setAutoFocus(false); 
     }, 0);
   }
-}, [data.autoFocus]);
+}, [autoFocus]);
 
 
   const handleMouseEnter = () => {

@@ -1,10 +1,10 @@
 // src/components/Breadcrumbs.jsx
 import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
-import { BreadcrumbsContext } from '../context/BreadcrumbsContext'; // Import BreadcrumbsContext
+import { BreadcrumbsContext } from '../context/BreadcrumbsContext'; 
 
 const Breadcrumbs = () => {
-  const { breadcrumbs } = useContext(BreadcrumbsContext); // Consume BreadcrumbsContext
+  const { breadcrumbs } = useContext(BreadcrumbsContext); 
 
   return (
     <div style={styles.breadcrumbs}>

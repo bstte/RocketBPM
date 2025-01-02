@@ -1,19 +1,10 @@
 import React, { memo, useEffect, useRef, useState } from 'react';
 import ContentEditable from 'react-contenteditable';
 
-const SwimlineRightsideBox = ({ data, id, isNew }) => {
+const SwimlineRightsideBox = ({ data}) => {
   const [label, setLabel] = useState(data.label || ''); 
   const contentEditableRef = useRef(null); 
-
-
-  useEffect(() => {
-    if (data.autoFocus && contentEditableRef.current) {
-      setTimeout(() => {
-        contentEditableRef.current.focus();
-        data.autoFocus = false; 
-      }, 0);
-    }
-  }, [data.autoFocus]);
+  const [autoFocus, setAutoFocus] = useState(data.autoFocus);
 
   const handleChange = (e) => {
     setLabel(e.target.value);
@@ -21,6 +12,15 @@ const SwimlineRightsideBox = ({ data, id, isNew }) => {
       data.onLabelChange(e.target.value);
     }
   };
+
+  useEffect(() => {
+    if (autoFocus && contentEditableRef.current) {
+      setTimeout(() => {
+        contentEditableRef.current.focus();
+        setAutoFocus(false); 
+      }, 0);
+    }
+  }, [autoFocus]);
 
   const handleBlur = () => {
     if (data.onLabelChange) {
@@ -32,7 +32,7 @@ const SwimlineRightsideBox = ({ data, id, isNew }) => {
     <div style={styles.wrapper}>
       <div className="borderBox" style={styles.box}>
         <ContentEditable
-          innerRef={contentEditableRef} // Attach the ref to ContentEditable
+          innerRef={contentEditableRef} 
           html={label} 
           onChange={(e) => handleChange({ target: { value: e.target.value } })}
           onBlur={handleBlur}
