@@ -16,6 +16,7 @@ const Header = ({
   handleBackdata,
   iconNames,
   condition,
+  currentLevel
 }) => {
   const user = useSelector((state) => state.user.user);
 
@@ -24,10 +25,15 @@ const Header = ({
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const handleBack = () => {
-    navigate(-1);
+  // const handleBack = () => {
+  //   navigate(-1);
+  //   handleBackdata();
+  // };
+
+  const handlehomeBack = ()=>{
+    navigate('/List-process-title');
     handleBackdata();
-  };
+  }
   const { breadcrumbs } = useContext(BreadcrumbsContext);
 
   const iconComponents = {
@@ -128,15 +134,21 @@ const Header = ({
 
 
       <header className="app-header" style={styles.header}>
+ 
+     
         <h1 style={styles.headerTitle}>
+        {
+        currentLevel===0 &&(
           <IconButton
             edge="start"
             color="inherit"
             aria-label="back"
-            onClick={handleBack}
+            onClick={handlehomeBack}
           >
             <ArrowBackIcon fontSize="medium" />
           </IconButton>
+             )
+            }
           {title}
         </h1>
 

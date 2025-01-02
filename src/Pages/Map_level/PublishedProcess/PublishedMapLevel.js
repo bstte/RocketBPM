@@ -138,8 +138,8 @@ const PublishedMapLevel = () => {
     const label = currentLevel === 0 ? title : title;
     const path =
       currentLevel === 0
-        ? "/Map_level"
-        : `/level/${currentLevel}/${currentParentId}`;
+        ? "/Published_Map_level"
+        : `/PublishedMapLevel/${currentLevel}/${currentParentId}`;
 
     const state = {
       id: id,
@@ -290,6 +290,7 @@ const PublishedMapLevel = () => {
         handleBackdata={() => console.log("handle back")}
         iconNames={iconNames}
         condition={false}
+        currentLevel={currentLevel}
       />
       <ReactFlowProvider>
         <div className="app-container" style={styles.appContainer}>

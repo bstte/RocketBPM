@@ -559,6 +559,7 @@ const MapLevel = () => {
         handleBackdata={handleBack}
         iconNames={iconNames}
         condition={true}
+        currentLevel={currentLevel}
       />
       <ReactFlowProvider>
         <div className="app-container" style={styles.appContainer}>
