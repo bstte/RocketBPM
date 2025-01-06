@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { defaultApi, getProcessTitles, ProcessAssign } from '../../API/api';
-import { FaEye, FaEdit } from 'react-icons/fa';
+import {FaEdit } from 'react-icons/fa';
 import CustomDrawer from '../../components/CustomDrawer';
 import { useSelector } from 'react-redux';
 import Select from 'react-select';
