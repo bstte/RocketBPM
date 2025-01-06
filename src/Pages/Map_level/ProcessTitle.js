@@ -19,7 +19,7 @@ const ProcessTitle = () => {
        const user_id=user && user.id;
        const response= await saveProcessTitle(title,user_id);
       
-       navigate("/Map_level",{replace: true,state: {id:response.data.id,title:response.data.process_title,user:user }})
+       navigate("/Map-level",{replace: true,state: {id:response.data.id,title:response.data.process_title,user:user }})
        
 
  

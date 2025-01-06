@@ -155,18 +155,16 @@ const ListProcessTitle = () => {
                         </td>
                       ) : null}
                       <td style={styles.td}>
-                        {/* <button onClick={() => navigate("/Map_level", { state: { id: process.id, title: process.process_title, user: currentUser } })} style={styles.actionButton}>
-                      <FaEye style={styles.icon} />
-                       
-                        </button> */}
+                      
                         {user && user.type !== "User" ? (
-                          <button onClick={() => navigate("/Map_level", { state: { id: process.id, title: process.process_title, user: currentUser } })} style={styles.actionButton}>
+                          <button onClick={() => navigate("/Map-level", { state: { id: process.id, title: process.process_title, user: currentUser } })} style={styles.actionButton}>
                             <FaEdit style={styles.icon} />
                           </button>
                         ) : null}
 
-                      <button onClick={() => navigate("/Published_Map_level", { state: { id: process.id, title: process.process_title, user: currentUser } })} style={styles.actionButton}>
-                      <FaEye style={styles.icon} />
+                      <button onClick={() => navigate("/Published_Map_level", { state: { id: process.id, title: process.process_title, user: currentUser } })} style={styles.PublishactionButton}>
+                   
+                      Publish Version
                         </button>
                       </td>
                     </tr>
@@ -243,6 +241,18 @@ const styles = {
     border: 'none',
     cursor: 'pointer',
     marginRight: '10px',
+  },
+  PublishactionButton: {
+    backgroundColor: '#4CAF50',  // Green background color
+    color: 'white',              // White text
+    border: 'none',              // No border
+    borderRadius: '5px',         // Rounded corners
+    padding: '10px 20px',        // Adequate padding
+    fontSize: '16px',            // Slightly larger text for better readability
+    fontWeight: 'bold',          // Make the text bold
+    cursor: 'pointer',          // Pointer cursor on hover
+    transition: 'background-color 0.3s, transform 0.2s', // Smooth transition for hover
+    marginRight: '10px',  
   },
   icon: {
     fontSize: '18px',

@@ -147,7 +147,7 @@ const MapLevel = () => {
     const label = currentLevel === 0 ? title : title;
     const path =
       currentLevel === 0
-        ? "/Map_level"
+        ? "/Map-level"
         : `/level/${currentLevel}/${currentParentId}`;
 
     const state = {
