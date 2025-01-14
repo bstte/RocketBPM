@@ -20,7 +20,7 @@ const CustomContextPopup = ({
         borderRadius: '4px',
         boxShadow: '0 2px 5px rgba(0,0,0,0.3)',
         zIndex: 10,
-        minWidth: '150px', // Set a minimum width
+        minWidth: '150px', 
       }}
     >
       <div style={{
@@ -29,7 +29,7 @@ const CustomContextPopup = ({
         alignItems: 'center',
         padding: '8px 12px',
         borderBottom: '1px solid #ccc',
-        backgroundColor: '#f8f8f8', // Light background for the header
+        backgroundColor: '#f8f8f8',
       }}>
         <span style={{
           fontWeight: 'bold',

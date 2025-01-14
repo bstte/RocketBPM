@@ -5,6 +5,7 @@ import SwimlineRightsideBox from '../../AllNode/SwimlineNodes/SwimlineRightsideB
 import LabelNode from '../../AllNode/LabelNode';
 import YesNode from '../../AllNode/YesNode';
 import NoNode from '../../AllNode/NoNode';
+import FreeTextNode from '../../AllNode/FreeTextNode';
 
 const NodeTypes = {
   progressArrow: SwimlineArrowBoxNode,
@@ -14,6 +15,7 @@ const NodeTypes = {
   label: LabelNode,
   Yes: YesNode,
   No: NoNode,
+  FreeText: FreeTextNode,
 };
 
 export default NodeTypes;

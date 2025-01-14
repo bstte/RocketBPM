@@ -13,6 +13,8 @@ import ListProcessTitle from './Pages/Map_level/ListProcessTitle';
 import SwimlaneModel from './Pages/Map_level/Swimlane_model';
 import PublishedMapLevel from './Pages/Map_level/PublishedProcess/PublishedMapLevel';
 import PublishedSwimlaneModel from './Pages/Map_level/PublishedProcess/PublishedSwimlaneModel';
+import DraftProcesMapLevel from './Pages/Map_level/DraftProcessView/DraftProcesMapLevel';
+import DraftSwimlineLevel from './Pages/Map_level/DraftProcessView/DraftSwimlineLevel';
 
 const PrivateRoute = ({ children }) => {
   const { user } = useSelector((state) => state.user);
@@ -73,6 +75,10 @@ const AppContent = () => {
       <Route path="/Published_Map_level" element={<PrivateRoute><PublishedMapLevel /></PrivateRoute>} />
       <Route path="/PublishedMapLevel/:level/:parentId/*" element={<PrivateRoute><PublishedMapLevel /></PrivateRoute>} />
       <Route path="/Published_swimlane/level/:level/:parentId" element={<PublishedSwimlaneModel />} />
+
+      <Route path="/Draft-Process-View" element={<PrivateRoute><DraftProcesMapLevel /></PrivateRoute>} />
+      <Route path="/Draft-Process-View/:level/:parentId/*" element={<PrivateRoute><DraftProcesMapLevel /></PrivateRoute>} />
+      <Route path="/Draft-Swim-lanes-View/level/:level/:parentId" element={<DraftSwimlineLevel />} />
     </Routes>
   );
 };

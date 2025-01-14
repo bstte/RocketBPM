@@ -18,39 +18,41 @@ import {
 import "@xyflow/react/dist/style.css";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Header from "../../../components/Header";
-import Popup from "../../../components/Popup";
 import api from "../../../API/api";
 import { BreadcrumbsContext } from "../../../context/BreadcrumbsContext";
 import PublishArrowBoxNode from "../../../AllNode/PublishAllNode/PublishArrowBoxNode";
 import PublishPentagonNode from "../../../AllNode/PublishAllNode/PublishPentagonNode";
 
-const nodeTypes = {
-  progressArrow: PublishArrowBoxNode,
-  pentagon: PublishPentagonNode,
-};
-
-const edgeTypes = {
-  smoothstep: SmoothStepEdge,
-  bezier: BezierEdge,
-  straight: StraightEdge,
-};
-
 const PublishedMapLevel = () => {
   const navigate = useNavigate();
   const { level, parentId } = useParams();
   const location = useLocation();
-  const { id, title, user, } = location.state || {};
+  const { id, title, user } = location.state || {};
   const currentLevel = level ? parseInt(level, 10) : 0;
   const currentParentId = parentId || null;
-  const { addBreadcrumb, removeBreadcrumbsAfter } =
+  const { addBreadcrumb, removeBreadcrumbsAfter,breadcrumbs } =
     useContext(BreadcrumbsContext);
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-  const [selectedNode, setSelectedNode] = useState(null);
-  const [popupTitle, setPopupTitle] = useState("");
-  const [showPopup, setShowPopup] = useState(false);
-  const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   const [headerTitle, setHeaderTitle] = useState(`${title} `);
+  const [getPublishedDate, setgetPublishedDate] = useState("");
+ const [isNavigating, setIsNavigating] = useState(false);
+  const memoizedNodeTypes = useMemo(
+    () => ({
+      progressArrow: PublishArrowBoxNode,
+      pentagon: PublishPentagonNode,
+    }),
+    []
+  );
+
+  const memoizedEdgeTypes = useMemo(
+    () => ({
+      smoothstep: SmoothStepEdge,
+      bezier: BezierEdge,
+      straight: StraightEdge,
+    }),
+    []
+  );
   const handleLabelChange = useCallback(
     (nodeId, newLabel) => {
       setNodes((nds) =>
@@ -73,11 +75,24 @@ const PublishedMapLevel = () => {
             : `Level${currentLevel}`;
         const user_id = user ? user.id : null;
         const Process_id = id ? id : null;
+        const publishedStatus = "Published";
+
         const data = await api.getPublishedNodes(
           levelParam,
           parseInt(user_id),
           Process_id
         );
+        const getPublishedDate = await api.GetPublishedDate(
+          levelParam,
+          parseInt(user_id),
+          Process_id,
+          publishedStatus
+        );
+        if (getPublishedDate.status === true) {
+          setgetPublishedDate(getPublishedDate.created_at);
+        } else {
+          setgetPublishedDate("");
+        }
 
         const parsedNodes = data.nodes.map((node) => {
           const parsedData = JSON.parse(node.data);
@@ -93,6 +108,7 @@ const PublishedMapLevel = () => {
 
               width_height: parsedMeasured,
               autoFocus: true,
+              node_id: node.node_id,
               nodeResize: true,
             },
             type: node.type,
@@ -147,12 +163,18 @@ const PublishedMapLevel = () => {
       user: user,
     };
 
-    if (currentLevel >= 0) {
-      removeBreadcrumbsAfter(currentLevel - 1);
+    if (currentLevel >= 0 && isNavigating) {
+      // Ensure the 0th breadcrumb is not removed
+      const safeIndex = Math.max(1, currentLevel - 1);
+      removeBreadcrumbsAfter(safeIndex);
     }
+    
     addBreadcrumb(label, path, state);
+
+    setIsNavigating(false);
   }, [
     currentLevel,
+    isNavigating,
     currentParentId,
     addBreadcrumb,
     removeBreadcrumbsAfter,
@@ -161,140 +183,106 @@ const PublishedMapLevel = () => {
     user,
   ]);
 
-  const memoizedEdgeTypes = useMemo(() => edgeTypes, []);
+  const handlenodeClick=async (event, node) => {
+    event.preventDefault();
+    const selectedLabel = node.data.label || "";
+    const PageGroupId=node.PageGroupId;
+    const newLevel = currentLevel + 1;
+    console.log("newLevel",newLevel)
+    const levelParam =
+    node.id !== null
+      ? `Level${newLevel}_${node.id}`
+      : `Level${currentLevel}`;
+  const user_id = user ? user.id : null;
+  const Process_id = id ? id : null;
+  const data = await api.checkPublishRecord(
+    levelParam,
+    parseInt(user_id),
+    Process_id
+  );
+
+  if (data.status === true) {
+    if (data.Page_Title === "ProcessMap") {
+      navigate(`/PublishedMapLevel/${newLevel}/${node.id}`, {
+        state: {
+          id: id,
+          title: selectedLabel,
+          user,
+          ParentPageGroupId: PageGroupId,
+        },
+      });
+    }
+
+    if (data.Page_Title === "Swimlane") {
+      addBreadcrumb(
+        `${selectedLabel} `,
+        `/Published_swimlane/level/${newLevel}/${node.id}`,
+        { id: id, title, user, parentId: node.id, level: newLevel }
+      );
+
+      navigate(
+        `/Published_swimlane/level/${newLevel}/${node.id}`,
+        {
+          state: {
+            id: id,
+            title: selectedLabel,
+            user,
+            parentId: node.id,
+            level: newLevel,
+            ParentPageGroupId: PageGroupId,
+          },
+        }
+      );
+    }
+  }else{
+    alert("Next level not Published")
+  }
+
+  }
+
 
   const onConnect = useCallback((connection) => {
     // Your callback logic here
-    console.log('Connected:', connection);
+    console.log("Connected:", connection);
   }, []);
-
-  const handleNodeRightClick = (event, node) => {
-    event.preventDefault();
-    setSelectedNode(node.id);
-    setPopupTitle(node.data.label || "Node Actions");
-    const { clientX, clientY } = event;
-    const flowContainer = document.querySelector(".flow-container");
-    const containerRect = flowContainer.getBoundingClientRect();
-
-    setPopupPosition({
-      x: clientX - containerRect.left,
-      y: clientY - containerRect.top,
-    });
-    setShowPopup(true);
-  };
 
   useEffect(() => {
     const stateTitle = location.state?.title || title;
     setHeaderTitle(`${stateTitle}`);
   }, [location.state, currentLevel, title]);
 
-  const handleCreateNewNode = async (type) => {
-    if (selectedNode) {
-      const selectedNodeData = nodes.find((node) => node.id === selectedNode);
-      const selectedLabel = selectedNodeData?.data?.label || "";
-
-      const newLevel = currentLevel + 1;
-      setShowPopup(false);
-      const levelParam =
-        selectedNode !== null
-          ? `Level${newLevel}_${selectedNode}`
-          : `Level${currentLevel}`;
-      const user_id = user ? user.id : null;
-      const Process_id = id ? id : null;
-      const data = await api.getPublishedNodes(
-        levelParam,
-        parseInt(user_id),
-        Process_id
-      );
-
-      const existingNodes = data.nodes || [];
-
-      if (existingNodes.length === 0) {
-        alert(`Next page not exist`);
-        return false;
-      }
-
-      let hasSwimlane = false;
-      let hasProcessMap = false;
-
-      existingNodes.forEach((node) => {
-        if (node.Page_Title === "Swimlane") {
-          hasSwimlane = true;
-        }
-        if (node.Page_Title === "ProcessMap") {
-          hasProcessMap = true;
-        }
-      });
-
-      if (type === "ProcessMap") {
-        if (hasSwimlane) {
-          alert("Your next page is Swimlane.");
-        } else {
-          navigate(`/PublishedMapLevel/${newLevel}/${selectedNode}`, {
-            state: {
-              id,
-              title: selectedLabel,
-              user,
-              ParentPageGroupId: nodes[0]?.PageGroupId,
-            },
-          });
-        }
-      } else if (type === "Swimlane") {
-        if (hasProcessMap) {
-          alert("Your next page is Process Map.");
-        } else {
-          addBreadcrumb(
-            `${selectedLabel} `,
-            `/swimlane/level/${newLevel}/${selectedNode}`,
-            { id, title, user, parentId: selectedNode, level: newLevel }
-          );
-
-          navigate(`/Published_swimlane/level/${newLevel}/${selectedNode}`, {
-            state: {
-              id,
-              title: selectedLabel,
-              user,
-              parentId: selectedNode,
-              level: newLevel,
-              ParentPageGroupId: nodes[0]?.PageGroupId,
-            },
-          });
-        }
-      }
-    }
-  };
-
-  const memoizedNodeTypes = useMemo(() => nodeTypes, []);
-
-  const handlePageClick = () => {
-    setShowPopup(false);
-  };
-
-  useEffect(() => {
-    document.addEventListener("click", handlePageClick);
-
-    return () => {
-      document.removeEventListener("click", handlePageClick);
-    };
-  }, []);
 
   const iconNames = {};
+const navigateOnDraft=()=>{
+  const id=breadcrumbs[1].state?breadcrumbs[1].state.id:''
+  const user=breadcrumbs[1].state?breadcrumbs[1].state.user:''
+  const title=breadcrumbs[1].state?breadcrumbs[1].state.title:''
+  if(id && user){
+    navigate('/Draft-Process-View',{ state: { id:id, title:title, user: user } })
+    removeBreadcrumbsAfter(0);
+  }else{
+    alert("Currently not navigate on draft mode")
+  }
 
+}
   return (
     <div>
       <Header
         title={headerTitle}
-        onSave={() => console.log("save function ")}
+        onSave={navigateOnDraft}
         onPublish={() => console.log("save publish")}
         addNode={() => console.log("add node")}
         handleBackdata={() => console.log("handle back")}
         iconNames={iconNames}
-        condition={false}
         currentLevel={currentLevel}
+        getPublishedDate={getPublishedDate}
+        setIsNavigating={setIsNavigating}
+        Page={"Published"}
       />
       <ReactFlowProvider>
         <div className="app-container" style={styles.appContainer}>
           <div className="content-wrapper" style={styles.contentWrapper}>
+            
             <div className="flow-container" style={styles.flowContainer}>
               <ReactFlow
                 nodes={nodes}
@@ -302,6 +290,7 @@ const PublishedMapLevel = () => {
                 onNodesChange={onNodesChange}
                 onEdgesChange={onEdgesChange}
                 onConnect={onConnect}
+                onNodeClick={handlenodeClick}
                 nodeTypes={memoizedNodeTypes}
                 edgeTypes={memoizedEdgeTypes}
                 minZoom={0.1}
@@ -309,23 +298,10 @@ const PublishedMapLevel = () => {
                 zoomOnPinch={false}
                 panOnDrag={false}
                 panOnScroll={false}
+                proOptions={{hideAttribution: true }}
                 maxZoom={0.6}
-                onNodeContextMenu={handleNodeRightClick}
                 style={styles.reactFlowStyle}
               ></ReactFlow>
-
-              <Popup
-                showPopup={showPopup}
-                popupPosition={popupPosition}
-                popupTitle={popupTitle}
-                selectedNodeType={
-                  nodes.find((node) => node.id === selectedNode)?.type
-                }
-                switchNodeType={() => console.log("switch shape function")}
-                handleCreateNewNode={handleCreateNewNode}
-                deleteNode={() => console.log("delete")}
-                condition={false}
-              />
             </div>
           </div>
         </div>

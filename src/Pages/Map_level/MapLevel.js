@@ -27,16 +27,6 @@ import api, { filter_draft } from "../../API/api";
 import { BreadcrumbsContext } from "../../context/BreadcrumbsContext";
 import CustomContextMenu from "../../components/CustomContextMenu";
 
-const nodeTypes = {
-  progressArrow: ArrowBoxNode,
-  pentagon: PentagonNode,
-};
-
-const edgeTypes = {
-  smoothstep: SmoothStepEdge,
-  bezier: BezierEdge,
-  straight: StraightEdge,
-};
 
 const MapLevel = () => {
   const navigate = useNavigate();
@@ -53,6 +43,9 @@ const MapLevel = () => {
   const [selectedNode, setSelectedNode] = useState(null);
   const [popupTitle, setPopupTitle] = useState("");
   const [showContextMenu, setShowContextMenu] = useState(false);
+  const [checkRecord, setcheckRecord] = useState(null);
+  const [getPublishedDate, setgetPublishedDate] = useState("");
+  const [getDraftedDate, setDraftedDate] = useState("");
   const [contextMenuPosition, setContextMenuPosition] = useState({
     x: 0,
     y: 0,
@@ -60,18 +53,49 @@ const MapLevel = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   const [headerTitle, setHeaderTitle] = useState(`${title} `);
+  const [isNavigating, setIsNavigating] = useState(false);
+
+
+
+ const memoizedNodeTypes = useMemo(
+    () => ({
+      progressArrow:ArrowBoxNode,
+      pentagon: PentagonNode,
+    }),
+    []
+  );
+
+ const memoizedEdgeTypes = useMemo(
+    () => ({
+      smoothstep: SmoothStepEdge,
+      bezier: BezierEdge,
+      straight: StraightEdge,
+    }),
+    []
+  );
+
   const handleLabelChange = useCallback(
     (nodeId, newLabel) => {
-      setNodes((nds) =>
-        nds.map((node) =>
+      setNodes((prevNodes) => {
+        const updatedNodes = prevNodes.map((node) =>
           node.id === nodeId
             ? { ...node, data: { ...node.data, label: newLabel } }
             : node
-        )
-      );
+        );
+  
+        // Check if the label has changed to set unsaved changes
+        const changedNode = prevNodes.find((n) => n.id === nodeId);
+        if (changedNode && changedNode.data.label !== newLabel) {
+          setHasUnsavedChanges(true);
+        }
+  
+        return updatedNodes;
+      });
     },
-    [setNodes]
+    [setNodes, setHasUnsavedChanges]
   );
+  
+  
 
   useEffect(() => {
     const fetchNodes = async () => {
@@ -82,11 +106,30 @@ const MapLevel = () => {
             : `Level${currentLevel}`;
         const user_id = user ? user.id : null;
         const Process_id = id ? id : null;
-        const data = await api.getNodes(
-          levelParam,
-          parseInt(user_id),
-          Process_id
-        );
+
+        const publishedStatus = "Published";
+        const draftStatus = "Draft";
+
+         const [publishedResponse, draftResponse, data] = await Promise.all([
+          api.GetPublishedDate(levelParam, parseInt(user_id), Process_id, publishedStatus),
+          api.GetPublishedDate(levelParam, parseInt(user_id), Process_id, draftStatus),
+          api.getNodes(levelParam, parseInt(user_id), Process_id),
+        ]);
+
+  
+        // Set Published date
+        if (publishedResponse.status === true) {
+          setgetPublishedDate(publishedResponse.created_at || "");
+        } else {
+          setgetPublishedDate("");
+        }
+  
+        // Set Draft date
+        if (draftResponse.status === true) {
+          setDraftedDate(draftResponse.created_at || "");
+        } else {
+          setDraftedDate("");
+        }
 
         const parsedNodes = data.nodes.map((node) => {
           const parsedData = JSON.parse(node.data);
@@ -103,6 +146,7 @@ const MapLevel = () => {
               width_height: parsedMeasured,
               autoFocus: true,
               nodeResize: true,
+              node_id:node.node_id,
             },
             type: node.type,
             id: node.node_id,
@@ -123,14 +167,15 @@ const MapLevel = () => {
           style: { stroke: "#000", strokeWidth: 2 },
           type: "step",
         }));
-
         setNodes(parsedNodes);
         setEdges(parsedEdges);
       } catch (error) {
         console.error("Error fetching nodes:", error);
-        alert("Failed to fetch nodes. Please try again.");
+        alert("Failed to fetch object. Please refresh this page.");
       }
     };
+
+
 
     fetchNodes();
   }, [
@@ -156,12 +201,19 @@ const MapLevel = () => {
       user: user,
     };
 
-    if (currentLevel >= 0) {
-      removeBreadcrumbsAfter(currentLevel - 1);
+    if (currentLevel >= 0 && isNavigating) {
+      // Ensure the 0th breadcrumb is not removed
+      const safeIndex = Math.max(1, currentLevel - 1);
+      removeBreadcrumbsAfter(safeIndex);
     }
+    
     addBreadcrumb(label, path, state);
+    // console.log("isNavigating",isNavigating)
+
+    setIsNavigating(false);
   }, [
     currentLevel,
+    isNavigating,
     currentParentId,
     addBreadcrumb,
     removeBreadcrumbsAfter,
@@ -170,7 +222,7 @@ const MapLevel = () => {
     user,
   ]);
 
-  const memoizedEdgeTypes = useMemo(() => edgeTypes, []);
+
 
   const onConnect = useCallback((connection) => {
   // Your callback logic here
@@ -269,8 +321,23 @@ const MapLevel = () => {
     }
   }, [selectedNode, setNodes, setEdges, title]);
 
-  const handleNodeRightClick = (event, node) => {
+  const handleNodeRightClick =async (event, node) => {
     event.preventDefault();
+    const newLevel = currentLevel + 1;
+    const levelParam =
+    node.id !== null
+      ? `Level${newLevel}_${node.id}`
+      : `Level${currentLevel}`;
+  const user_id = user ? user.id : null;
+  const Process_id = id ? id : null;
+  const data = await api.checkRecord(
+    levelParam,
+    parseInt(user_id),
+    Process_id
+  );
+  setcheckRecord(data)
+ 
+
     setSelectedNode(node.id);
     setPopupTitle(node.data.label || "Node Actions");
     const { clientX, clientY } = event;
@@ -294,56 +361,25 @@ const MapLevel = () => {
       const selectedNodeData = nodes.find((node) => node.id === selectedNode);
       const selectedLabel = selectedNodeData?.data?.label || "";
 
-      console.log("selectedNode",selectedNode)
-
       const newLevel = currentLevel + 1;
+    
       setShowPopup(false);
-      const levelParam =
-        selectedNode !== null
-          ? `Level${newLevel}_${selectedNode}`
-          : `Level${currentLevel}`;
-      const user_id = user ? user.id : null;
-      const Process_id = id ? id : null;
-      const data = await api.getNodes(
-        levelParam,
-        parseInt(user_id),
-        Process_id
-      );
 
-      const existingNodes = data.nodes || [];
-
-      let hasSwimlane = false;
-      let hasProcessMap = false;
-
-      existingNodes.forEach((node) => {
-        if (node.Page_Title === "Swimlane") {
-          hasSwimlane = true;
-        }
-        if (node.Page_Title === "ProcessMap") {
-          hasProcessMap = true;
-        }
-      });
-
-      if (type === "ProcessMap") {
-        if (hasSwimlane) {
-          alert("You have already created a Swimlane.");
-        } else {
-          await handleBack();
+      const confirmcondition= handleBack();
+      if(confirmcondition===undefined){
+        if (type === "ProcessMap") {
           navigate(`/level/${newLevel}/${selectedNode}`, {
             state: { id, title: selectedLabel, user, ParentPageGroupId : nodes[0]?.PageGroupId  },
           });
         }
-      } else if (type === "Swimlane") {
-        if (hasProcessMap) {
-          alert("You have already created a Process Map.");
-        } else {
-          await handleBack();
+  
+        if (type === "Swimlane") {
           addBreadcrumb(
             `${selectedLabel} `,
             `/swimlane/level/${newLevel}/${selectedNode}`,
             { id, title, user, parentId: selectedNode, level: newLevel }
           );
-
+  
           navigate(`/swimlane/level/${newLevel}/${selectedNode}`, {
             state: {
               id,
@@ -356,6 +392,9 @@ const MapLevel = () => {
           });
         }
       }
+
+      
+
     }
   };
 
@@ -449,9 +488,6 @@ const MapLevel = () => {
     }
   };
 
-
-  const memoizedNodeTypes = useMemo(() => nodeTypes, []);
-
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === "Delete" && selectedNode) {
@@ -464,16 +500,7 @@ const MapLevel = () => {
     };
   }, [selectedNode, deleteNode]);
 
-  const handleBack = () => {
-    if (hasUnsavedChanges) {
-      const userConfirmed = window.confirm(
-        "You have unsaved changes. Do you want to save them before leaving?"
-      );
-      if (userConfirmed) {
-        handleSaveNodes("draft");
-      }
-    }
-  };
+ 
 
   const switchNodeType = (type) => {
     if (selectedNode) {
@@ -549,6 +576,24 @@ const MapLevel = () => {
     [setEdges]
   );
 
+const handleBack = () => {
+  if (hasUnsavedChanges) {
+    const userConfirmed = window.confirm(
+      "You have unsaved changes. Do you want to save them before leaving?"
+    );
+    if (!userConfirmed) {
+    
+      return userConfirmed;
+    }
+    handleSaveNodes("draft"); 
+  }
+};
+
+// const checkbreadcrums=()=>{
+// console.log("breadcrumbs",breadcrumbs)
+// }
+
+
   return (
     <div>
       <Header
@@ -558,9 +603,15 @@ const MapLevel = () => {
         addNode={addNode}
         handleBackdata={handleBack}
         iconNames={iconNames}
-        condition={true}
         currentLevel={currentLevel}
+        getPublishedDate={getPublishedDate}
+        getDraftedDate={getDraftedDate}
+        setIsNavigating={setIsNavigating}
+        Page={"Draft"}
       />
+      {/* <button onClick={checkbreadcrums}>
+        Test
+      </button> */}
       <ReactFlowProvider>
         <div className="app-container" style={styles.appContainer}>
           <div className="content-wrapper" style={styles.contentWrapper}>
@@ -584,6 +635,7 @@ const MapLevel = () => {
                 panOnDrag={false}
                 panOnScroll={false}
                 maxZoom={0.6}
+                proOptions={{hideAttribution: true }}
                 onNodeContextMenu={handleNodeRightClick}
                 style={styles.reactFlowStyle}
               ></ReactFlow>
@@ -603,7 +655,7 @@ const MapLevel = () => {
                 switchNodeType={switchNodeType}
                 handleCreateNewNode={handleCreateNewNode}
                 deleteNode={deleteNode}
-                condition={true}
+                condition={checkRecord}
               />
             </div>
           </div>

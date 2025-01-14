@@ -1,4 +1,11 @@
-import React, { useCallback, useMemo, useState, useEffect, useContext } from "react";
+import React, {
+  useCallback,
+  useMemo,
+  useState,
+  useEffect,
+  useContext,
+  useRef,
+} from "react";
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -37,7 +44,8 @@ const SwimlaneModel = () => {
   });
   const location = useLocation();
   const navigate = useNavigate();
-  const { id, title, user, parentId, level,ParentPageGroupId } = location.state || {};
+  const { id, title, user, parentId, level, ParentPageGroupId } =
+    location.state || {};
   const headerTitle = `${title} `;
   const currentParentId = parentId || null;
   const currentLevel = level ? parseInt(level, 10) : 0;
@@ -45,11 +53,10 @@ const SwimlaneModel = () => {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [options, setOptions] = useState([]);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-
   const [isCheckboxPopupOpen, setIsCheckboxPopupOpen] = useState(false);
   const [LinknodeList, setLinknodeList] = useState([]);
   const [selectedLinknodeIds, setSelectedLinknodeIds] = useState([]);
-
+  const [getDraftedDate, setDraftedDate] = useState("");
 
   const { nodes: initialNodes } = useMemo(
     () => generateNodesAndEdges(windowSize.width, windowSize.height),
@@ -58,13 +65,15 @@ const SwimlaneModel = () => {
   const [selectedGroupId, setSelectedGroupId] = useState(null);
   const [ChildNodes, setChiledNodes] = useState([]);
   const [contextMenu, setContextMenu] = useState(null);
+  const [MenuVisible, setMenuVisible] = useState(false);
   const [selectedNode, setSelectedNode] = useState(null);
   const [selectedNodeId, setSelectedNodeId] = useState(null);
   const [selectedEdge, setSelectedEdge] = useState(null);
-
+  const [getPublishedDate, setgetPublishedDate] = useState("");
   const [detailschecking, setdetailschecking] = useState(null);
   const [nodes, setNodes] = useState(initialNodes);
   const [edges, setEdges] = useState([]);
+  const isInitialLoad = useRef(true);
   const nodeTypes = NodeTypes;
   const edgeTypes = useMemo(
     () => ({
@@ -101,37 +110,26 @@ const SwimlaneModel = () => {
       setChiledNodes((nds) =>
         nds.map((node) => {
           if (node.id === nodeId) {
-            if (node.type === "SwimlineRightsideBox") {
-              // Update the label if the node type is SwimlineRightsideBox
-              return {
-                ...node,
-                data: {
-                  ...node.data,
-                  label: newLabel,
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                details: {
+                  ...node.data.details,
+                  title: newLabel,
                 },
-              };
-            } else {
-              // Otherwise, update the details.title
-              return {
-                ...node,
-                data: {
-                  ...node.data,
-                  details: {
-                    ...node.data.details,
-                    title: newLabel,
-                  },
-                },
-              };
-            }
+              },
+            };
           }
-          return node; // No changes for other nodes
+          return node;
         })
       );
-      console.log("Label changed for node:", nodeId, "New label:", newLabel);
+      if (!isInitialLoad.current) {
+        setHasUnsavedChanges(true);
+      }
     },
-    [setChiledNodes]
+    [setChiledNodes, setHasUnsavedChanges]
   );
-  
 
   useEffect(() => {
     const fetchNodes = async () => {
@@ -143,11 +141,40 @@ const SwimlaneModel = () => {
             : `Level${currentLevel}`;
         const user_id = user ? user.id : null;
         const Process_id = id ? id : null;
-        const data = await api.getNodes(
-          levelParam,
-          parseInt(user_id),
-          Process_id
-        );
+
+        const publishedStatus = "Published";
+        const draftStatus = "Draft";
+
+        const [publishedResponse, draftResponse, data] = await Promise.all([
+          api.GetPublishedDate(
+            levelParam,
+            parseInt(user_id),
+            Process_id,
+            publishedStatus
+          ),
+          api.GetPublishedDate(
+            levelParam,
+            parseInt(user_id),
+            Process_id,
+            draftStatus
+          ),
+          api.getNodes(levelParam, parseInt(user_id), Process_id),
+        ]);
+
+        // Set Published date
+        if (publishedResponse.status === true) {
+          setgetPublishedDate(publishedResponse.created_at || "");
+        } else {
+          setgetPublishedDate("");
+        }
+
+        // Set Draft date
+        if (draftResponse.status === true) {
+          setDraftedDate(draftResponse.created_at || "");
+        } else {
+          setDraftedDate("");
+        }
+
         const totalRows = 8;
         const totalColumns = 11;
         const groupWidth = windowSize.width / totalColumns - 14;
@@ -194,7 +221,7 @@ const SwimlaneModel = () => {
           style: { stroke: "#000", strokeWidth: 2 },
           type: "step",
         }));
-
+        isInitialLoad.current = false;
         setChiledNodes(parsedNodes);
         setEdges(parsedEdges);
       } catch (error) {
@@ -248,7 +275,7 @@ const SwimlaneModel = () => {
           eds
         )
       );
-      setHasUnsavedChanges(true)
+      setHasUnsavedChanges(true);
     },
 
     [setEdges, currentLevel, currentParentId, user, id]
@@ -260,21 +287,19 @@ const SwimlaneModel = () => {
       setOptions([]);
     },
 
-    [] 
-
+    []
   );
-  
-  const addNode = (type, position) => {
 
-     let PageGroupId;
-    
-        if (ChildNodes.length === 0) {
-           PageGroupId	= uuidv4();
-        } else {
-          PageGroupId = ChildNodes[0]?.PageGroupId; 
-        }
-        
-    if (type === "Yes" || type === "No") {
+  const addNode = (type, position,label = "") => {
+    let PageGroupId;
+
+    if (ChildNodes.length === 0) {
+      PageGroupId = uuidv4();
+    } else {
+      PageGroupId = ChildNodes[0]?.PageGroupId;
+    }
+
+    if (type === "Yes" || type === "No" || type==="FreeText") {
       if (!position) {
         alert("Position not defind");
         return;
@@ -288,7 +313,7 @@ const SwimlaneModel = () => {
             : `Level${currentLevel}_${newNodeId}`,
 
         data: {
-          label: "",
+          label: type === "FreeText" ? label : "",
           shape: type,
           onLabelChange: (newLabel) => handleLabelChange(newNodeId, newLabel),
 
@@ -306,17 +331,17 @@ const SwimlaneModel = () => {
         animated: true,
         Page_Title: "Swimlane",
         status: "draft",
-        PageGroupId:PageGroupId
+        PageGroupId: PageGroupId,
       };
 
       setChiledNodes((nds) => [...nds, newNode]);
-      setHasUnsavedChanges(true)
+      setHasUnsavedChanges(true);
     } else if (selectedGroupId) {
       const selectedGroup = nodes.find((node) => node.id === selectedGroupId);
       const groupWidth = selectedGroup?.style?.width || 100;
       const groupHeight = selectedGroup?.style?.height || 100;
       const childWidth = groupWidth * 0.9;
-      const childHeight = groupHeight * 0.9; 
+      const childHeight = groupHeight * 0.9;
       const newNodeId = uuidv4();
       const newNode = {
         id:
@@ -333,15 +358,16 @@ const SwimlaneModel = () => {
         data: {
           label: "",
           details: { title: "", content: "" },
-          link:"",
-          autoFocus: true, 
+          link: "",
+          autoFocus: true,
           shape: type,
-          onLabelChange: (newLabel) =>   handleLabelChange(
-            currentParentId !== null
-            ? `Level${currentLevel}_${newNodeId}_${currentParentId}`
-            : `Level${currentLevel}_${newNodeId}`,
-            newLabel
-          ),
+          onLabelChange: (newLabel) =>
+            handleLabelChange(
+              currentParentId !== null
+                ? `Level${currentLevel}_${newNodeId}_${currentParentId}`
+                : `Level${currentLevel}_${newNodeId}`,
+              newLabel
+            ),
 
           defaultwidt: "40px",
           defaultheight: "40px",
@@ -357,7 +383,7 @@ const SwimlaneModel = () => {
         animated: true,
         Page_Title: "Swimlane",
         status: "draft",
-        PageGroupId:PageGroupId,
+        PageGroupId: PageGroupId,
         style: {
           width: childWidth,
           height: childHeight,
@@ -365,7 +391,7 @@ const SwimlaneModel = () => {
       };
 
       setChiledNodes((nds) => [...nds, newNode]);
-      setHasUnsavedChanges(true)
+      setHasUnsavedChanges(true);
     } else {
       alert("Please select a group node first!");
     }
@@ -387,26 +413,27 @@ const SwimlaneModel = () => {
   const memoizedEdgeTypes = useMemo(() => edgeTypes, [edgeTypes]);
 
   const handleSaveNodes = async (savetype) => {
- if(savetype==="Published" && currentLevel!==0){
-    
-      try{
+    if (savetype === "Published" && currentLevel !== 0) {
+      try {
         const response = await filter_draft(ParentPageGroupId);
-        if(response.data===true){
+        if (response.data === true) {
           alert("First published previous page");
-          return false
+          return false;
         }
-      }catch(error){
-        console.error("filter draft error",error)
+      } catch (error) {
+        console.error("filter draft error", error);
       }
     }
 
+    console.log("ChildNodes", ChildNodes);
+
     const Level =
-    currentParentId !== null
-      ? `Level${currentLevel}_${currentParentId}`
-      : `Level${currentLevel}`;
-  const user_id = user && user.id;
-  const Process_id = id && id;
-  const datasavetype=savetype;
+      currentParentId !== null
+        ? `Level${currentLevel}_${currentParentId}`
+        : `Level${currentLevel}`;
+    const user_id = user && user.id;
+    const Process_id = id && id;
+    const datasavetype = savetype;
 
     try {
       const response = await api.saveNodes({
@@ -426,7 +453,7 @@ const SwimlaneModel = () => {
             Page_Title,
             parentId,
             status,
-            PageGroupId
+            PageGroupId,
           }) => ({
             id,
             data,
@@ -438,7 +465,7 @@ const SwimlaneModel = () => {
             Page_Title,
             parentId,
             status,
-            PageGroupId
+            PageGroupId,
           })
         ),
         edges: edges.map(
@@ -467,7 +494,7 @@ const SwimlaneModel = () => {
       });
 
       alert(response.message);
-      setHasUnsavedChanges(false)
+      setHasUnsavedChanges(false);
     } catch (error) {
       console.error("Error saving nodes:", error);
       if (error.response && error.response.data) {
@@ -511,27 +538,14 @@ const SwimlaneModel = () => {
     if (selectedNodeId) {
       updateNodeDetails(selectedNodeId, details);
       setSelectedNodeId(null);
-      setHasUnsavedChanges(true)
+      setHasUnsavedChanges(true);
     }
     closePopup();
   };
 
-  const handlePopupAction = (action) => {
-    const { x, y } = contextMenu;
-
-    if (action === "Yes") {
-      addNode("Yes", { x: x - 30, y: y - 125 });
-    } else if (action === "No") {
-      addNode("No", { x: x - 70, y: y - 125 });
-
-    } else if (action === "addDetails") {
-      openPopup();
-    }
-    setContextMenu(null);
-  };
-
   const handleClosePopup = () => {
     setContextMenu(null);
+    setMenuVisible(false);
     setSelectedNode(null);
     setdetailschecking(null);
   };
@@ -552,13 +566,13 @@ const SwimlaneModel = () => {
             edge.source !== selectedNode.id && edge.target !== selectedNode.id
         )
       );
-      setHasUnsavedChanges(true)
+      setHasUnsavedChanges(true);
       handleClosePopup();
     }
   };
 
   const handleNodeRightClick = (event, node) => {
-
+    setSelectedEdge(null);
     if (node.Page_Title === "Swimlane") {
       setOptions([]);
       setSelectedNodeId(node.node_id);
@@ -566,7 +580,7 @@ const SwimlaneModel = () => {
       event.preventDefault();
       setSelectedNode(node);
       setPosition({ x: event.clientX, y: event.clientY });
-
+      setMenuVisible(true);
       setContextMenu({
         x: event.clientX,
         y: event.clientY,
@@ -578,21 +592,17 @@ const SwimlaneModel = () => {
       let options = [];
       if (row === 6 && col === 0) {
         options = [];
-      }
-      else if (col === 0 && row < 6) {
-        options = ["Add Role"]; 
-      }
-      else if (row === 6 && col > 0) {
+      } else if (col === 0 && row < 6) {
+        options = ["Add Role"];
+      } else if (row === 6 && col > 0) {
         options = ["Add Process"];
-      }
-      else {
+      } else {
         options = ["Add Activities", "Add Decision"];
       }
       setPosition({ x: event.clientX, y: event.clientY });
       setOptions(options);
       setSelectedGroupId(node.id);
       setSelectedNode(node);
-
     }
   };
 
@@ -603,7 +613,7 @@ const SwimlaneModel = () => {
           node.id === selectedNodeId
             ? {
                 ...node,
-                type:type,
+                type: type,
                 data: {
                   ...node.data,
                   shape: type,
@@ -612,79 +622,92 @@ const SwimlaneModel = () => {
             : node
         )
       );
-      setHasUnsavedChanges(true)
-
+      setHasUnsavedChanges(true);
     }
   };
 
-    const { breadcrumbs } = useContext(BreadcrumbsContext); 
+  const { breadcrumbs, removeBreadcrumbsAfter } =
+    useContext(BreadcrumbsContext);
 
   const linkExistingmodel = async () => {
-
-    const existinglink= ChildNodes.find((node) => node.node_id === selectedNodeId)
-    if(existinglink?.data?.link){
-      setSelectedLinknodeIds(existinglink?.data?.link); 
-    }else{
-      setSelectedLinknodeIds([]); 
+    const existinglink = ChildNodes.find(
+      (node) => node.node_id === selectedNodeId
+    );
+    if (existinglink?.data?.link) {
+      setSelectedLinknodeIds(existinglink?.data?.link);
+    } else {
+      setSelectedLinknodeIds([]);
     }
 
-    const fullPath = breadcrumbs[1].path; 
-    const extractedValue = fullPath.split("/").pop(); 
-  
+    const fullPath = breadcrumbs[2].path;
+    const extractedValue = fullPath.split("/").pop();
+
     const levelParam = "Level0";
     const user_id = user ? user.id : null;
     const Process_id = id ? id : null;
     const data = await api.getNodes(levelParam, parseInt(user_id), Process_id);
-    const filteredNodes = data.nodes.filter((node) => node.node_id !== extractedValue);
-    setLinknodeList(filteredNodes); 
-    setIsCheckboxPopupOpen(true); 
-  };
-  
-const handleCheckboxChange = (nodeId) => {
-  setSelectedLinknodeIds(nodeId); 
-};
-
-const saveSelectedNodes = () => {
-  if (selectedLinknodeIds) {
-    setChiledNodes((nds) =>
-      nds.map((node) => {
-        if (node.id===selectedNodeId) {
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              link: selectedLinknodeIds, 
-            },
-          };
-        }
-        return node; 
-      })
+    const filteredNodes = data.nodes.filter(
+      (node) => node.node_id !== extractedValue
     );
+    setLinknodeList(filteredNodes);
+    setIsCheckboxPopupOpen(true);
+  };
 
-    setIsCheckboxPopupOpen(false);
-  } else {
-    alert("Please select a node before saving.");
-  }
-};
+  const handleCheckboxChange = (nodeId) => {
+    setSelectedLinknodeIds(nodeId);
+  };
 
+  const saveSelectedNodes = () => {
+    if (selectedLinknodeIds) {
+      setChiledNodes((nds) =>
+        nds.map((node) => {
+          if (node.id === selectedNodeId) {
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                link: selectedLinknodeIds,
+              },
+            };
+          }
+          return node;
+        })
+      );
 
+      setIsCheckboxPopupOpen(false);
+      setHasUnsavedChanges(true);
+    } else {
+      alert("Please select a node before saving.");
+    }
+  };
+
+  const handlePopupAction = (action) => {
+    const { x, y } = contextMenu;
+    console.log("contextMenu", contextMenu);
+
+    if (action === "Yes") {
+      addNode("Yes", { x: x - 30, y: y - 125 });
+    } else if (action === "No") {
+      addNode("No", { x: x - 70, y: y - 125 });
+    }else if (action === "addFreeText") {
+      const userInput = prompt("Enter text for the new node:");
+      if (userInput) {
+        addNode("FreeText", { x: x - 70, y: y - 125 }, userInput);
+      }
+    } 
+    
+    else if (action === "addDetails") {
+      openPopup();
+    }
+    setContextMenu(null);
+    setSelectedEdge(null);
+  };
 
   const menuItems = [
-    ...(detailschecking?.type === "diamond"
-      ? [
-          {
-            label: "Add yes label",
-            action: () => handlePopupAction("Yes"),
-            borderBottom: true,
-          },
-          {
-            label: "Add no label",
-            action: () => handlePopupAction("No"),
-            borderBottom: true,
-          },
-        ]
-      : []),
-    ...(detailschecking?.type !== "SwimlineRightsideBox" && detailschecking?.type !== "progressArrow"
+    ...(detailschecking?.type !== "SwimlineRightsideBox" &&
+    detailschecking?.type !== "progressArrow" &&
+    detailschecking?.type !== "Yes" &&
+    detailschecking?.type !== "No"
       ? [
           {
             label:
@@ -709,62 +732,64 @@ const saveSelectedNodes = () => {
           },
         ]
       : []),
-      ...(detailschecking?.type === "progressArrow"
-        ? [
-            {
-              label: "Link Existing model",
-              action: () => linkExistingmodel(),
-              borderBottom: true,
-            },
-          ]
-        : []),
+    ...(detailschecking?.type === "progressArrow"
+      ? [
+          {
+            label: "Link Existing model",
+            action: () => linkExistingmodel(),
+            borderBottom: true,
+          },
+        ]
+      : []),
     {
       label: "Delete",
       action: handleDeleteNode,
       borderBottom: false,
     },
   ];
-  
-  const iconNames = {
 
-  };
+  const iconNames = {};
 
   const deleteEdge = () => {
     setEdges((eds) => eds.filter((e) => e.id !== selectedEdge.id));
     setSelectedEdge(null);
-    setHasUnsavedChanges(true)
+    setHasUnsavedChanges(true);
   };
 
   const onReconnect = useCallback((oldEdge, newConnection) => {
     setEdges((prevEdges) => reconnectEdge(oldEdge, newConnection, prevEdges));
-    setHasUnsavedChanges(true)
+    setHasUnsavedChanges(true);
   }, []);
 
   const onEdgeClick = useCallback((event, edge) => {
     const { clientX, clientY } = event;
     setPosition({ x: clientX, y: clientY });
+    setMenuVisible(false);
+    setOptions([]);
     setSelectedEdge(edge);
+    setContextMenu({
+      x: event.clientX,
+      y: event.clientY,
+      edgeId: edge.id,
+    });
   }, []);
 
   const handleOptionClick = (option) => {
-    if(option==="Add Role"){
+    if (option === "Add Role") {
       addNode("SwimlineRightsideBox");
-    }else if(option==="Add Activities"){
+    } else if (option === "Add Activities") {
       addNode("box");
-    }
-    else if(option==="Add Decision"){
+    } else if (option === "Add Decision") {
       addNode("diamond");
-    }
-    else if(option==="Add Process"){
+    } else if (option === "Add Process") {
       addNode("progressArrow");
     }
 
-    setOptions([])
+    setOptions([]);
   };
 
   const handleContextMenu = (event) => {
     event.preventDefault();
-
   };
 
   const handleBack = () => {
@@ -772,9 +797,10 @@ const saveSelectedNodes = () => {
       const userConfirmed = window.confirm(
         "You have unsaved changes. Do you want to save them before leaving?"
       );
-      if (userConfirmed) {
-        handleSaveNodes("draft");
+      if (!userConfirmed) {
+        return userConfirmed;
       }
+      handleSaveNodes("draft");
     }
   };
 
@@ -787,8 +813,12 @@ const saveSelectedNodes = () => {
         addNode={addNode}
         handleBackdata={handleBack}
         iconNames={iconNames}
-        condition={true}
+        getPublishedDate={getPublishedDate}
+        getDraftedDate={getDraftedDate}
+        setIsNavigating={() => removeBreadcrumbsAfter(currentLevel - 1)}
+        Page={"Draft"}
       />
+
       <div style={styles.appContainer}>
         <ReactFlowProvider>
           <div style={styles.scrollableWrapper}>
@@ -803,6 +833,7 @@ const saveSelectedNodes = () => {
               onReconnect={onReconnect}
               onContextMenu={handleContextMenu}
               onEdgeContextMenu={onEdgeClick}
+              proOptions={{ hideAttribution: true }}
               nodeTypes={memoizedNodeTypes}
               edgeTypes={memoizedEdgeTypes}
               minZoom={0}
@@ -817,8 +848,76 @@ const saveSelectedNodes = () => {
               <Background color="#fff" gap={16} />
             </ReactFlow>
 
+            {selectedEdge && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: position.y,
+                  left: position.x,
+                  backgroundColor: "#fff",
+                  border: "1px solid #ccc",
+                  borderRadius: "4px",
+                  boxShadow: "0 2px 5px rgba(0,0,0,0.3)",
+                  zIndex: 10,
+                  minWidth: "180px",
+                }}
+              >
+                {/* Menu Items */}
+
+                {[
+                  { label: "Add yes label", action: "Yes" },
+                  { label: "Add no label", action: "No" },
+                  { label: "Add free text", action: "addFreeText" },
+                ].map((item, index) => (
+                  <div
+                    key={index}
+                    style={{
+                      padding: "8px 12px",
+                      cursor: "pointer",
+                      borderBottom: index === 0 ? "1px solid #f0f0f0" : "none",
+                      transition: "background-color 0.2s ease",
+                    }}
+                    onClick={() => handlePopupAction(item.action)}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.backgroundColor = "#f1f1f1")
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.backgroundColor = "transparent")
+                    }
+                  >
+                    {item.label}
+                  </div>
+                ))}
+                <div
+                  style={{
+                    padding: "8px 12px",
+                    cursor: "pointer",
+                    transition: "background-color 0.2s ease",
+                  }}
+                  onClick={() => {
+                    if (
+                      window.confirm(
+                        "Are you sure you want to delete this arrow?"
+                      )
+                    ) {
+                      deleteEdge();
+                    }
+                  }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.backgroundColor = "#f1f1f1")
+                  }
+                  onMouseLeave={(e) =>
+                    
+                    (e.currentTarget.style.backgroundColor = "transparent")
+                  }
+                >
+                  Delete Arrow
+                </div>
+              </div>
+            )}
+
             <CustomContextPopup
-              isVisible={!!contextMenu}
+              isVisible={!!MenuVisible}
               position={contextMenu || { x: 0, y: 0 }}
               menuItems={menuItems}
               onClose={handleClosePopup}
@@ -835,83 +934,59 @@ const saveSelectedNodes = () => {
             />
           </div>
 
-             {/* Checkbox Popup */}
-      {isCheckboxPopupOpen && (
-      <div style={popupStyle.container}>
-      <div style={popupStyle.header}>
-        <span>Existing Model</span>
-        <button
-          style={popupStyle.closeButton}
-          onClick={() => setIsCheckboxPopupOpen(false)}
-          aria-label="Close"
-        >
-          ×
-        </button>
-      </div>
-      <div style={popupStyle.body}>
-        {LinknodeList.map((node) => (
-          <label
-            key={node.node_id}
-            style={{
-              ...popupStyle.label,
-              backgroundColor: selectedLinknodeIds === node.node_id ? "#f0f8ff" : "transparent",
-            }}
-          >
-            <input
-              type="checkbox"
-              checked={selectedLinknodeIds === node.node_id}
-              onChange={() => handleCheckboxChange(node.node_id)}
-              style={popupStyle.checkbox}
-            />
-            {node.data && JSON.parse(node.data).label}
-          </label>
-        ))}
-      </div>
-      <div style={popupStyle.footer}>
-        <button onClick={saveSelectedNodes} style={popupStyle.saveButton}>
-          Save
-        </button>
-      </div>
-    </div>
- )}
+          {/* Checkbox Popup */}
+          {isCheckboxPopupOpen && (
+            <div style={popupStyle.container}>
+              <div style={popupStyle.header}>
+                <span>Existing Model</span>
+                <button
+                  style={popupStyle.closeButton}
+                  onClick={() => setIsCheckboxPopupOpen(false)}
+                  aria-label="Close"
+                >
+                  ×
+                </button>
+              </div>
+              <div style={popupStyle.body}>
+                {LinknodeList.map((node) => (
+                  <label
+                    key={node.node_id}
+                    style={{
+                      ...popupStyle.label,
+                      backgroundColor:
+                        selectedLinknodeIds === node.node_id
+                          ? "#f0f8ff"
+                          : "transparent",
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedLinknodeIds === node.node_id}
+                      onChange={() => handleCheckboxChange(node.node_id)}
+                      style={popupStyle.checkbox}
+                    />
+                    {node.data && JSON.parse(node.data).label}
+                  </label>
+                ))}
+              </div>
+              <div style={popupStyle.footer}>
+                <button
+                  onClick={saveSelectedNodes}
+                  style={popupStyle.saveButton}
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          )}
 
-          {options.length>0 && (
+          {options.length > 0 && (
             <AddObjectRole
               position={position}
               options={options}
               onOptionClick={handleOptionClick}
               onClose={() => setIsPopupOpen(false)}
             />
-          )}
-
-          {selectedEdge && (
-            <div
-              style={{
-                position: "absolute",
-                top: position.y,
-                left: position.x,
-                transform: "translate(-50%, -50%)",
-                backgroundColor: "white",
-                padding: "8px",
-                border: "1px solid gray",
-                borderRadius: "4px",
-                boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
-              }}
-            >
-              <button
-                onClick={deleteEdge}
-                style={{
-                  padding: "6px 12px",
-                  cursor: "pointer",
-                  backgroundColor: "red",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                }}
-              >
-                Delete Arrow
-              </button>
-            </div>
           )}
         </ReactFlowProvider>
       </div>
@@ -920,7 +995,6 @@ const saveSelectedNodes = () => {
 };
 
 export default SwimlaneModel;
-
 
 const popupStyle = {
   container: {

@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { defaultApi, getProcessTitles, ProcessAssign } from '../../API/api';
-import {FaEdit } from 'react-icons/fa';
+// import {FaEdit } from 'react-icons/fa';
 import CustomDrawer from '../../components/CustomDrawer';
 import { useSelector } from 'react-redux';
 import Select from 'react-select';
+import { BreadcrumbsContext } from '../../context/BreadcrumbsContext';
 
 const ListProcessTitle = () => {
   const [processTitles, setProcessTitles] = useState([]);
@@ -15,7 +16,21 @@ const ListProcessTitle = () => {
   const navigate = useNavigate();
   const user = useSelector((state) => state.user.user);
 
+  const { addBreadcrumb,resetBreadcrumbs } =useContext(BreadcrumbsContext);
+
   useEffect(() => {
+
+    const addHomeBreadCrums=()=>{
+      const label = "Home"
+      const path ='/List-process-title'
+  
+      const state = {
+      
+      };
+      resetBreadcrumbs()
+
+      addBreadcrumb(label, path, state);
+    }
     // Agar data pehle se loaded hai, toh loading ko true mat kijiye
     const fetchProcessTitles = async () => {
       try {
@@ -48,7 +63,8 @@ const ListProcessTitle = () => {
     };
 
     fetchProcessTitles();
-  }, [user,processTitles.length]);
+    addHomeBreadCrums();
+  }, [user,resetBreadcrumbs,addBreadcrumb,processTitles.length]);
 
   const fetchAssignedUsers = async (processId) => {
     try {
@@ -111,6 +127,7 @@ const ListProcessTitle = () => {
             </button>
           ) : null}
         </div>
+      
 
         <div style={styles.tableContainer}>
           {loading && processTitles.length === 0 ? (
@@ -157,15 +174,21 @@ const ListProcessTitle = () => {
                       <td style={styles.td}>
                       
                         {user && user.type !== "User" ? (
-                          <button onClick={() => navigate("/Map-level", { state: { id: process.id, title: process.process_title, user: currentUser } })} style={styles.actionButton}>
-                            <FaEdit style={styles.icon} />
+                          <button onClick={() => navigate("/Map-level", { state: { id: process.id, title: process.process_title, user: currentUser } })} style={styles.PublishactionButton}>
+                            Draft
                           </button>
                         ) : null}
 
                       <button onClick={() => navigate("/Published_Map_level", { state: { id: process.id, title: process.process_title, user: currentUser } })} style={styles.PublishactionButton}>
                    
-                      Publish Version
+                      Published
                         </button>
+
+                        
+                      <button onClick={() => navigate("/Draft-Process-View", { state: { id: process.id, title: process.process_title, user: currentUser } })} style={styles.PublishactionButton}>
+                   
+                   View Draft
+                     </button>
                       </td>
                     </tr>
                   );

@@ -1,6 +1,6 @@
 import React, { memo } from "react";
 
-const YesNode = ({ data }) => {
+const FreeTextNode = ({ data }) => {
   return (
     <div
       style={{
@@ -14,7 +14,7 @@ const YesNode = ({ data }) => {
       >
         <span style={styles.text}>
 
-          Yes
+        {data.label}
         </span>
       </div>
     </div>
@@ -23,39 +23,25 @@ const YesNode = ({ data }) => {
 
 const styles = {
   wrapper: {
-    position: "relative",
-    width: "100%",
-    height: "100%",
+
   },
   labelBox: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    position: "relative",
-    textAlign: "center",
-
-    color: "#000",
-    borderRadius: "3px",
-    width: "100%",
-    height: "100%",
-    padding: "5px",
-    boxSizing: "border-box",
-    overflow: "hidden",
+  
   },
 
   text: {
-    cursor: "pointer",
-    padding: "5px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    width: "100%",
-    height: "100%",
-    fontWeight: "medium", // **Added for bold text**
-    textTransform: "uppercase",
-    fontFamily: "'Poppins', sans-serif",
+    // cursor: "pointer",
+    // padding: "5px",
+    // display: "flex",
+    // alignItems: "center",
+    // justifyContent: "center",
+    // width: "100%",
+    // height: "100%",
+    // fontWeight: "medium", // **Added for bold text**
+    // textTransform: "uppercase",
+    // fontFamily: "'Poppins', sans-serif",
     fontSize: "16px", // Ensure font size matches input
-    wordBreak: "break-word", // Allow text to wrap
+    // wordBreak: "break-word", // Allow text to wrap
   },
 };
 
@@ -74,7 +60,7 @@ const PlaceholderStyles = () => (
 const LabelNodeWithPlaceholder = (props) => (
   <>
     <PlaceholderStyles />
-    <YesNode {...props} />
+    <FreeTextNode {...props} />
   </>
 );
 

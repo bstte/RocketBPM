@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useContext } from "react";
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -10,11 +10,13 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import Header from "../../../components/Header";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import api from "../../../API/api";
-import NodeTypes from "../NodeTypes";
+
 import generateNodesAndEdges from "../../../../src/AllNode/SwimlineNodes/generateNodesAndEdges";
 import styles from "../SwimlaneStyles";
+import PublishNodeType from "./PublishNodeType";
+import { BreadcrumbsContext } from "../../../context/BreadcrumbsContext";
 
 
 
@@ -38,11 +40,12 @@ const PublishedSwimlaneModel = () => {
     () => generateNodesAndEdges(windowSize.width, windowSize.height),
     [windowSize]
   );
-
+ const [getPublishedDate, setgetPublishedDate] = useState("");
+  const navigate = useNavigate();
   const [ChildNodes, setChiledNodes] = useState([]);
   const [nodes, setNodes] = useState(initialNodes);
   const [edges, setEdges] = useState([]);
-  const nodeTypes = NodeTypes;
+  const nodeTypes = PublishNodeType;
   const edgeTypes = useMemo(
     () => ({
       smoothstep: SmoothStepEdge,
@@ -51,6 +54,8 @@ const PublishedSwimlaneModel = () => {
     }),
     []
   );
+
+  const { removeBreadcrumbsAfter,breadcrumbs } = useContext(BreadcrumbsContext); 
 
   useEffect(() => {
     const fetchNodes = async () => {
@@ -61,11 +66,23 @@ const PublishedSwimlaneModel = () => {
             : `Level${currentLevel}`;
         const user_id = user ? user.id : null;
         const Process_id = id ? id : null;
+        const publishedStatus = "Published";
         const data = await api.getPublishedNodes(
           levelParam,
           parseInt(user_id),
           Process_id
         );
+        const getPublishedDate = await api.GetPublishedDate(
+          levelParam,
+          parseInt(user_id),
+          Process_id,
+          publishedStatus
+        );
+        if(getPublishedDate.status===true){
+          setgetPublishedDate(getPublishedDate.created_at)
+        }else{
+          setgetPublishedDate("")
+        }
         const totalRows = 8;
         const totalColumns = 11;
         const groupWidth = windowSize.width / totalColumns - 14;
@@ -137,18 +154,31 @@ const PublishedSwimlaneModel = () => {
 
   };
 
-
+  const navigateOnDraft=()=>{
+    const id=breadcrumbs[1].state?breadcrumbs[1].state.id:''
+    const user=breadcrumbs[1].state?breadcrumbs[1].state.user:''
+    const title=breadcrumbs[1].state?breadcrumbs[1].state.title:''
+    if(id && user){
+      navigate('/Draft-Process-View',{ state: { id:id, title:title, user: user } })
+      removeBreadcrumbsAfter(0);
+    }else{
+      alert("Currently not navigate on draft mode")
+    }
+  
+  }
 
   return (
     <div>
         <Header
         title={headerTitle}
-        onSave={() => console.log("save function ")}
+        onSave={navigateOnDraft}
         onPublish={() => console.log("save publish")}
         addNode={() => console.log("add node")}
         handleBackdata={() => console.log("handle back")}
         iconNames={iconNames}
-        condition={false}
+        getPublishedDate={getPublishedDate}
+        setIsNavigating={()=>  removeBreadcrumbsAfter(currentLevel-1)}
+        Page={"Published"}
       />
       <div style={styles.appContainer}>
         <ReactFlowProvider>
@@ -165,6 +195,7 @@ const PublishedSwimlaneModel = () => {
               panOnDrag={false}
               panOnScroll={false}
               maxZoom={1}
+              proOptions={{hideAttribution: true }}
               defaultEdgeOptions={{ zIndex: 1 }}
               style={rfStyle}
             >

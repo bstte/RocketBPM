@@ -1,5 +1,5 @@
 import React, { useContext, useState } from "react";
-import { ProgressArrow, Pentagon, Diamond, Box, Label } from "./Icon"; // Adjust the path as necessary
+import { ProgressArrow, Pentagon, Diamond, Box, Label } from "./Icon";
 import { IconButton } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import HomeIcon from "@mui/icons-material/Home";
@@ -15,8 +15,11 @@ const Header = ({
   addNode,
   handleBackdata,
   iconNames,
-  condition,
-  currentLevel
+  currentLevel,
+  getPublishedDate,
+  getDraftedDate,
+  setIsNavigating,
+  Page,
 }) => {
   const user = useSelector((state) => state.user.user);
 
@@ -25,15 +28,13 @@ const Header = ({
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // const handleBack = () => {
-  //   navigate(-1);
-  //   handleBackdata();
-  // };
-
-  const handlehomeBack = ()=>{
-    navigate('/List-process-title');
-    handleBackdata();
-  }
+  const handlehomeBack = () => {
+    const confirmcondition = handleBackdata();
+    console.log("confirmcondition", confirmcondition);
+    if (confirmcondition === undefined) {
+      navigate("/List-process-title");
+    }
+  };
   const { breadcrumbs } = useContext(BreadcrumbsContext);
 
   const iconComponents = {
@@ -52,16 +53,27 @@ const Header = ({
     }
   };
 
-  const formattedDate = user?.created_at
-    ? new Date(user.created_at).toLocaleDateString("en-US", {
+  const formattedDate = getPublishedDate
+    ? new Date(getPublishedDate).toLocaleDateString("en-US", {
         year: "numeric",
         month: "short",
         day: "numeric",
       })
-    : "N/A";
+    : "";
+    const formattedDatedraft = getDraftedDate
+    ? new Date(getDraftedDate).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      })
+    : "";
 
   const handleBreadcrumbClick = (path, state) => {
-    navigate(path, { state });
+    const confirmcondition = handleBackdata();
+    if (confirmcondition === undefined) {
+      setIsNavigating(true);
+      navigate(path, { state });
+    }
   };
 
   return (
@@ -97,58 +109,54 @@ const Header = ({
       </div>
 
       <div
-  className="breadcrumbs-container"
-  style={styles.breadcrumbsContainer}
->
-  {breadcrumbs
-    .filter((crumb) => crumb.label !== title)
-    .map((crumb, index) => (
-      <span key={index}>
-        {index === 0 ? (
-          <span
-            onClick={() => handleBreadcrumbClick(crumb.path, crumb.state)}
-            style={styles.breadcrumbLink}
-          >
-            <HomeIcon
-              style={{
-                width: 22,
-                height: 21,
-                verticalAlign: "middle",
-                marginRight: 5,
-              }}
-            />
-          </span>
-        ) : (
-          <span
-            onClick={() => handleBreadcrumbClick(crumb.path, crumb.state)}
-            style={styles.breadcrumbLink}
-          >
-            {crumb.label}
-          </span>
-        )}
-        {index < breadcrumbs.length - 1 && breadcrumbs[index + 1]?.label && " > "}
-      </span>
-    ))}
-</div>
-
-
+        className="breadcrumbs-container"
+        style={styles.breadcrumbsContainer}
+      >
+        {breadcrumbs
+          .filter((crumb) => crumb.label !== title)
+          .map((crumb, index, array) => (
+            <span key={index}>
+              {index === 0 ? (
+                <span
+                  onClick={() => handleBreadcrumbClick(crumb.path, crumb.state)}
+                  style={styles.breadcrumbLink}
+                >
+                  <HomeIcon
+                    style={{
+                      width: 22,
+                      height: 21,
+                      verticalAlign: "middle",
+                      marginRight: 5,
+                    }}
+                  />
+                </span>
+              ) : (
+                <span
+                  onClick={() => handleBreadcrumbClick(crumb.path, crumb.state)}
+                  style={styles.breadcrumbLink}
+                >
+                  {crumb.label}
+                </span>
+              )}
+              {index < array.length - 1 && (
+                <span style={styles.separator}> {">"} </span>
+              )}
+            </span>
+          ))}
+      </div>
 
       <header className="app-header" style={styles.header}>
- 
-     
         <h1 style={styles.headerTitle}>
-        {
-        currentLevel===0 &&(
-          <IconButton
-            edge="start"
-            color="inherit"
-            aria-label="back"
-            onClick={handlehomeBack}
-          >
-            <ArrowBackIcon fontSize="medium" />
-          </IconButton>
-             )
-            }
+          {currentLevel === 0 && (
+            <IconButton
+              edge="start"
+              color="inherit"
+              aria-label="back"
+              onClick={handlehomeBack}
+            >
+              <ArrowBackIcon fontSize="medium" />
+            </IconButton>
+          )}
           {title}
         </h1>
 
@@ -176,14 +184,8 @@ const Header = ({
           ))}
         </div>
         <div style={styles.flexbox}>
-          <div style={styles.pdate}>
-            <div>
-              Published
-              <br />
-              {formattedDate}
-            </div>
-          </div>
-          {condition && (
+         
+          {Page === "Draft" && (
             <>
               <div>
                 <button
@@ -193,10 +195,16 @@ const Header = ({
                     backgroundColor: "#218838",
                   }}
                 >
-               Save as Draft
-
+                  Save as Draft
                 </button>
               </div>
+              <div style={styles.pdate}>
+            <div>
+              Draft On
+              <br />
+              {formattedDatedraft}
+            </div>
+          </div>
 
               <div>
                 <button
@@ -207,6 +215,57 @@ const Header = ({
                   }}
                 >
                   Publish
+                </button>
+              </div>
+              <div style={styles.pdate}>
+            <div>
+              Published
+              <br />
+              {formattedDate}
+            </div>
+          </div>
+            </>
+          )}
+
+          {
+            Page==="Published" &&(
+              <>
+               <div style={styles.pdate}>
+            <div>
+              Published
+              <br />
+              {formattedDate}
+            </div>
+          </div>
+              </>
+            )
+          }
+
+{
+            Page==="ViewDraft" &&(
+              <>
+                <div style={styles.pdate}>
+            <div>
+            Draft On
+              <br />
+              {formattedDatedraft}
+            </div>
+          </div>
+              </>
+            )
+          }
+
+          {Page === "Published" && (
+            <>
+              <div>
+                <button
+                  onClick={() => onSave("draft")}
+                  style={{
+                    ...styles.saveButton,
+                    backgroundColor: "#218838",
+                  }}
+                >
+                  View Draft
                 </button>
               </div>
             </>

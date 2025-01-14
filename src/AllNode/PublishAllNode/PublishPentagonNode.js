@@ -1,16 +1,8 @@
-import { memo, useState } from 'react';
-const PublishPentagonNode = ({ data, }) => {
-
-
-  const [isClickable, setIsClickable] = useState(false);
-
-
-  const handleClick = () => {
-    setIsClickable(!isClickable);
-  };
+import { memo } from 'react';
+const PublishPentagonNode = ({ data }) => {
 
   return (
-    <div style={styles.wrapper} onClick={handleClick}>
+    <div style={styles.wrapper} >
       {/* Pentagon Box */}
       <div
         style={{

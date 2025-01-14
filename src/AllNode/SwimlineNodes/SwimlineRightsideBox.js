@@ -2,14 +2,14 @@ import React, { memo, useEffect, useRef, useState } from 'react';
 import ContentEditable from 'react-contenteditable';
 
 const SwimlineRightsideBox = ({ data}) => {
-  const [label, setLabel] = useState(data.label || ''); 
+  const [title, setTitle] = useState(data.details.title);
   const contentEditableRef = useRef(null); 
 
   const [autoFocus, setAutoFocus] = useState(data.autoFocus);
 
 
   const handleChange = (e) => {
-    setLabel(e.target.value);
+    setTitle(e.target.value);
     if (data.onLabelChange) {
       data.onLabelChange(e.target.value);
     }
@@ -25,9 +25,9 @@ const SwimlineRightsideBox = ({ data}) => {
   }, [autoFocus]);
 
   const handleBlur = () => {
-    if (data.onLabelChange) {
-      data.onLabelChange(label);
-    }
+    // if (data.onLabelChange) {
+    //   data.onLabelChange(title);
+    // }
   };
 
   return (
@@ -35,7 +35,7 @@ const SwimlineRightsideBox = ({ data}) => {
       <div className="borderBox" style={styles.box}>
         <ContentEditable
           innerRef={contentEditableRef} 
-          html={label} 
+          html={title} 
           onChange={(e) => handleChange({ target: { value: e.target.value } })}
           onBlur={handleBlur}
           placeholder="Type ...."

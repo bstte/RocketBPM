@@ -1,17 +1,11 @@
-import { memo, useState } from 'react';
+import { memo } from 'react';
 
-const PublishArrowBoxNode = ({ data,}) => {
+const PublishArrowBoxNode = ({ data}) => {
 
-  const [isClickable, setIsClickable] = useState(false);
-
-  const handleClick = () => {
-    setIsClickable(!isClickable);
-  };
 
   return (
     <div
       style={styles.wrapper}
-      onClick={handleClick}
     >
       <div
         className="borderBox"

@@ -1,16 +1,26 @@
 import { memo, useState, useEffect, useRef } from 'react';
 import { NodeResizer } from '@xyflow/react';
 
-const ArrowBoxNode = ({ data, }) => {
+const ArrowBoxNode = ({ data }) => {
   const [label, setLabel] = useState(data.label || ''); 
-  const textareaRef = useRef(null);
 
   const [isResizing, setIsResizing] = useState(false);
   const [isClickable, setIsClickable] = useState(false);
+  const arrowref = useRef(null); 
+  const [autoFocus, setAutoFocus] = useState(data.autoFocus);
 
   useEffect(() => {
     setLabel(data.label || ''); 
   }, [data]);
+
+  useEffect(() => {
+    if (autoFocus && arrowref.current) {
+      setTimeout(() => {
+        arrowref.current.focus();
+        setAutoFocus(false); 
+      }, 0);
+    }
+  }, [autoFocus]);
 
   const handleChange = (e) => {
     const newValue = e.target.value || ''; 
@@ -39,6 +49,8 @@ const ArrowBoxNode = ({ data, }) => {
     setIsClickable(!isClickable);
   };
 
+
+
   return (
     <div
       style={styles.wrapper}
@@ -53,7 +65,7 @@ const ArrowBoxNode = ({ data, }) => {
         }}
       >
         <textarea
-        textareaRef={textareaRef}
+        ref={arrowref}
           value={label} 
           onChange={handleChange} 
           onBlur={handleBlur}

@@ -42,6 +42,51 @@ export const getNodes = async (level = null, user_id = null,Process_id=null) => 
   }
 };
 
+export const checkRecord = async (level = null, user_id = null,Process_id=null) => {
+  try {
+    const response = await api.get('/check-record', { params: {
+      level, 
+      user_id,
+      Process_id
+    } }); 
+    return response.data; 
+  } catch (error) {
+    console.error('Error fetching nodes:', error);
+    throw error;
+  }
+};
+
+export const checkPublishRecord = async (level = null, user_id = null,Process_id=null) => {
+  try {
+    const response = await api.get('/checkPublishRecord', { params: {
+      level, 
+      user_id,
+      Process_id
+    } }); 
+    return response.data; 
+  } catch (error) {
+    console.error('Error fetching nodes:', error);
+    throw error;
+  }
+};
+
+
+export const GetPublishedDate = async (level = null, user_id = null,Process_id=null,status=null) => {
+  try {
+    const response = await api.get('/GetPublishedDate', { params: {
+      level, 
+      user_id,
+      Process_id,
+      status
+    } }); 
+    return response.data; 
+  } catch (error) {
+    console.error('Error fetching nodes:', error);
+    throw error;
+  }
+};
+
+
 
 export const getPublishedNodes = async (level = null, user_id = null,Process_id=null) => {
   try {
@@ -147,6 +192,6 @@ export const getProcessTitles = async (user_id = null) => {
 
 
 
-const apiExports = { saveNodes, getNodes, Login,saveProcessTitle, defaultApi,filter_draft,getPublishedNodes ,getdataByNodeId};
+const apiExports = { saveNodes, getNodes,checkPublishRecord,GetPublishedDate, checkRecord,Login,saveProcessTitle, defaultApi,filter_draft,getPublishedNodes ,getdataByNodeId};
 
 export default apiExports;

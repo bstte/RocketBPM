@@ -1,9 +1,10 @@
 import { memo, useState, useEffect, useRef } from 'react';
 import { NodeResizer } from '@xyflow/react';
 
-const PentagonNode = ({ data, id, isNew }) => {
+const PentagonNode = ({ data }) => {
   const [label, setLabel] = useState(data.label || ''); 
-  const textareaRef = useRef(null);
+  const arrowref = useRef(null); 
+  const [autoFocus, setAutoFocus] = useState(data.autoFocus);
   const [isResizing, setIsResizing] = useState(false);
   const [isClickable, setIsClickable] = useState(false);
 
@@ -12,10 +13,15 @@ const PentagonNode = ({ data, id, isNew }) => {
   }, [data.label]);
 
   useEffect(() => {
-    if (isNew && textareaRef.current) {
-      textareaRef.current.focus(); // Focus on the textarea if the node is new
+    if (autoFocus && arrowref.current) {
+      setTimeout(() => {
+        arrowref.current.focus();
+        setAutoFocus(false); 
+      }, 0);
     }
-  }, [isNew]);
+  }, [autoFocus]);
+
+  
 
   const handleChange = (e) => {
     const newValue = e.target.value || ''; // Prevent undefined
@@ -54,7 +60,7 @@ const PentagonNode = ({ data, id, isNew }) => {
         }}
       >
         <textarea
-          ref={textareaRef}
+          ref={arrowref}
           value={label}
           onChange={handleChange}
           onBlur={handleBlur}

@@ -1,59 +1,30 @@
-import { memo, useRef, useState, useEffect, useContext } from "react";
+import { memo, useContext } from "react";
 import { Handle, Position } from "@xyflow/react";
-import ContentEditable from "react-contenteditable";
 import api, { getdataByNodeId } from "../../API/api";
 import { useNavigate } from "react-router-dom";
 import { BreadcrumbsContext } from "../../context/BreadcrumbsContext";
 
-const ArrowBoxNode = ({ data, onTitleChange }) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [title, setTitle] = useState(data.details.title);
-  const [autoFocus, setAutoFocus] = useState(data.autoFocus);
+const ArrowBoxNode = ({ data }) => {
+  const title=data.details.title
+
  const { addBreadcrumb, removeBreadcrumbsAfter } =
     useContext(BreadcrumbsContext);
-  const contentEditableRef = useRef(null);
-
   const navigate = useNavigate();
 
-  const handleBoxClick = () => {
-    setIsEditing(true);
-    setTimeout(() => {
-      contentEditableRef.current?.focus();
-    }, 0);
-  };
+  
 
-  const handleChange = (e) => {
-    setTitle(e.target.value);
-    if (data.onLabelChange) {
-      data.onLabelChange(e.target.value);
-    }
-  };
-
-  const handleBlur = () => {
-    setIsEditing(false);
-    if (onTitleChange) {
-      onTitleChange(title);
-    }
-  };
-  useEffect(() => {
-    if (autoFocus && contentEditableRef.current) {
-      setTimeout(() => {
-        contentEditableRef.current.focus();
-        setAutoFocus(false);
-      }, 0);
-    }
-  }, [autoFocus]);
 
   const handleLinkClick = async () => {
     if (data.link) {
       try {
+        const response = await getdataByNodeId(data.link, "Published");
+       
 
-        const response = await getdataByNodeId(data.link, "draft");
         if (response.data && response.data.length > 0) {
           const user_id = response.data[0].user_id;
           const Process_id = response.data[0].Process_id;
           const id = response.data[0].Process_id;
-
+       
           const user = {
             id: response.data[0].user_id,
           };
@@ -64,16 +35,18 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
               ? `Level${newLevel}_${data.link}`
               : `Level${newLevel}`;
 
-          const nodeData = await api.checkRecord(
+          const nodeData = await api.checkPublishRecord(
             levelParam,
             parseInt(user_id),
             Process_id
           );
+         
+
           const nodeDataParsed = JSON.parse(response.data[0].data);
           if (nodeData.status === true) {
             removeBreadcrumbsAfter(1);
             if (nodeData.Page_Title === "ProcessMap") {
-              navigate(`/level/${newLevel}/${data.link}`, {
+              navigate(`/PublishedMapLevel/${newLevel}/${data.link}`, {
                 state: {
                   id,
                   title: nodeDataParsed.label || "",
@@ -82,21 +55,19 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
                 },
               });
             }
-            if (nodeData.Page_Title === "Swimlane") {
-            addBreadcrumb(
-              `${nodeDataParsed.label || ""} `,
-              `/swimlane/level/${newLevel}/${data.link}`,
-              {
-                id,
-                title: nodeDataParsed.label || "",
-                user,
-                parentId: data.link,
-                level: newLevel,
-                ParentPageGroupId: response.data[0]?.PageGroupId,
-              }
-            );
+            if (nodeData.Page_Title === "Swimlane") { 
+                addBreadcrumb(
+                    `${nodeDataParsed.label || ""} `,
+                    `/Published_swimlane/level/${newLevel}/${data.link}`,
+                    {    id,
+                        title: nodeDataParsed.label || "",
+                        user,
+                        parentId: data.link,
+                        level: newLevel,
+                        ParentPageGroupId: response.data[0]?.PageGroupId, }
+                  );
 
-              navigate(`/swimlane/level/${newLevel}/${data.link}`, {
+              navigate(`/Published_swimlane/level/${newLevel}/${data.link}`, {
                 state: {
                   id,
                   title: nodeDataParsed.label || "",
@@ -108,7 +79,7 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
               });
             }
           }else{
-            alert("First create next model of this existing model")
+            alert("This model is not published")
           }
         } else {
           console.error("No data found in response.data");
@@ -122,39 +93,36 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
   return (
     <div
       style={styles.wrapper}
-      onClick={!isEditing ? handleBoxClick : undefined}
     >
       {/* Arrow Box */}
       <div className="borderBox" style={styles.arrowBox}>
-        {!isEditing && data.link ? (
+    
           <div style={styles.textView}>
-            {data.link && (
+            {data.link ? (
               <div>
                 <button style={styles.linkButton} onClick={handleLinkClick}>
                   {title}
                 </button>
               </div>
+            ):(
+              <>
+               <div>
+                <button style={styles.withoutlinkButton} >
+                  {title}
+                </button>
+              </div>
+              </>
             )}
+
           </div>
-        ) : (
-          <ContentEditable
-            innerRef={contentEditableRef}
-            html={title}
-            onChange={(e) =>
-              handleChange({ target: { value: e.target.value } })
-            }
-            onBlur={handleBlur}
-            placeholder="Type title here..."
-            style={styles.label}
-          />
-        )}
+    
       </div>
 
       {/* Border overlay as a separate div */}
       <div style={styles.borderOverlay}></div>
 
       {/* Handles */}
-      {/* <Handle
+      <Handle
         type="target"
         position={Position.Bottom}
         id="bottom-target"
@@ -165,7 +133,7 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
         position={Position.Bottom}
         id="bottom-source"
         style={styles.handle}
-      /> */}
+      />
       <Handle
         type="target"
         position={Position.Top}
@@ -178,7 +146,7 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
         id="top-source"
         style={styles.handle}
       />
-      {/* <Handle
+      <Handle
         type="target"
         position={Position.Left}
         id="left-target"
@@ -189,8 +157,8 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
         position={Position.Left}
         id="left-source"
         style={styles.handle}
-      /> */}
-      {/* <Handle
+      />
+      <Handle
         type="target"
         position={Position.Right}
         id="right-target"
@@ -201,7 +169,7 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
         position={Position.Right}
         id="right-source"
         style={styles.handle}
-      /> */}
+      />
     </div>
   );
 };
@@ -262,24 +230,32 @@ const styles = {
     zIndex: 0,
     clipPath:
       "polygon(0 0, calc(100% - 20px) 0, 100% 50%, calc(100% - 20px) 100%, 0 100%)",
-    // border: "1px solid black",
+    border: "1px solid black",
     pointerEvents: "none",
     boxSizing: "border-box",
     backgroundColor: "transparent",
     padding: "2px",
   },
   handle: {
-    backgroundColor: "red",
-    width: "8px",
-    height: "8px",
-    borderRadius: "50%",
+    backgroundColor: "transparent",
+    border: "none",
+    width: "0px",
+    height: "0px",
+    pointerEvents: "none" ,
   },
   linkButton: {
-    fontSize: "10px",
+    fontSize: "12px",
     color: "white",
     background: "none",
     border: "none",
     textDecoration: "underline",
+    cursor: "pointer",
+  },
+ withoutlinkButton: {
+    fontSize: "12px",
+    color: "white",
+    background: "none",
+    border: "none",
     cursor: "pointer",
   },
 };

@@ -21,22 +21,32 @@ const Popup = ({
       }}
     >
       <div style={styles.popupTitle}>
-        <button
-          onClick={() => handleCreateNewNode("ProcessMap")}
-          style={styles.popupButton}
-        >
-          {condition===true? `Create new Process Map model`: `View Process Map model`}
-         
-        </button>
-        <button
-          onClick={() => handleCreateNewNode("Swimlane")}
-          style={styles.popupButton}
-        >
-             {condition===true? `Create new Swimlane model`: `View Swimlane model`}
-         
-        </button>
-        {condition && (
-          <>
+      {condition.status === true ? (
+  <button
+    onClick={() => handleCreateNewNode(condition.Page_Title)}
+    style={styles.popupButton}
+  >
+    Open Model
+  </button>
+) : (
+  <>
+    <button
+      onClick={() => handleCreateNewNode("ProcessMap")}
+      style={styles.popupButton}
+    >
+      Create New Process Map Model
+    </button>
+    <button
+      onClick={() => handleCreateNewNode("Swimlane")}
+      style={styles.popupButton}
+    >
+      Create New Swimlane Model
+    </button>
+  </>
+)}
+
+   
+      
             {selectedNodeType === "progressArrow" && (
               <button
                 onClick={() => switchNodeType("pentagon")}
@@ -58,8 +68,7 @@ const Popup = ({
         <button onClick={deleteNode} style={styles.popupButton}>
           {`Delete`}
         </button>
-          </>
-        )}
+        
 
       </div>
     </div>
