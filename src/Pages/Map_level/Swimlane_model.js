@@ -31,12 +31,6 @@ import styles from "./SwimlaneStyles";
 import AddObjectRole from "../../AllNode/SwimlineNodes/addobjectrole";
 import { BreadcrumbsContext } from "../../context/BreadcrumbsContext";
 
-const rfStyle = {
-  width: "100%",
-  height: "100%",
-  backgroundColor: "#fff",
-};
-
 const SwimlaneModel = () => {
   const [windowSize, setWindowSize] = useState({
     width: window.innerWidth,
@@ -62,6 +56,11 @@ const SwimlaneModel = () => {
     () => generateNodesAndEdges(windowSize.width, windowSize.height),
     [windowSize]
   );
+
+  useEffect(() => {
+    setNodes(initialNodes); // Update nodes dynamically
+  }, [initialNodes]);
+
   const [selectedGroupId, setSelectedGroupId] = useState(null);
   const [ChildNodes, setChiledNodes] = useState([]);
   const [contextMenu, setContextMenu] = useState(null);
@@ -219,7 +218,7 @@ const SwimlaneModel = () => {
           markerEnd: {
             type: MarkerType.ArrowClosed,
           },
-          style: { stroke: "#000", strokeWidth: 2 },
+          style: { stroke: "#000", strokeWidth: "0.29vh" },
           type: "step",
         }));
         isInitialLoad.current = false;
@@ -858,6 +857,7 @@ const SwimlaneModel = () => {
         handleBackdata={handleBack}
         iconNames={iconNames}
         getPublishedDate={getPublishedDate}
+        
         getDraftedDate={getDraftedDate}
         setIsNavigating={() => removeBreadcrumbsAfter(currentLevel - 1)}
         Page={"Draft"}
@@ -887,7 +887,7 @@ const SwimlaneModel = () => {
               panOnScroll={false}
               maxZoom={1}
               defaultEdgeOptions={{ zIndex: 1 }}
-              style={rfStyle}
+              style={styles.rfStyle}
             >
               <Background color="#fff" gap={16} />
             </ReactFlow>
