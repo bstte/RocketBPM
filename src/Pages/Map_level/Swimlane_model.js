@@ -74,6 +74,7 @@ const SwimlaneModel = () => {
   const [nodes, setNodes] = useState(initialNodes);
   const [edges, setEdges] = useState([]);
   const isInitialLoad = useRef(true);
+  const [cutNode, setCutNode] = useState(null);
   const nodeTypes = NodeTypes;
   const edgeTypes = useMemo(
     () => ({
@@ -290,7 +291,7 @@ const SwimlaneModel = () => {
     []
   );
 
-  const addNode = (type, position,label = "") => {
+  const addNode = (type, position, label = "") => {
     let PageGroupId;
 
     if (ChildNodes.length === 0) {
@@ -299,7 +300,7 @@ const SwimlaneModel = () => {
       PageGroupId = ChildNodes[0]?.PageGroupId;
     }
 
-    if (type === "Yes" || type === "No" || type==="FreeText") {
+    if (type === "Yes" || type === "No" || type === "FreeText") {
       if (!position) {
         alert("Position not defind");
         return;
@@ -590,14 +591,26 @@ const SwimlaneModel = () => {
       const [, row, col] = node.row_id.split("_").map(Number);
 
       let options = [];
+
+      // Determine options based on the node position
       if (row === 6 && col === 0) {
         options = [];
       } else if (col === 0 && row < 6) {
         options = ["Add Role"];
+        if (cutNode && cutNode.type === "SwimlineRightsideBox") {
+          options.push("Paste");
+        }
       } else if (row === 6 && col > 0) {
         options = ["Add Process"];
+        if (cutNode && cutNode.type === "progressArrow") {
+          options.push("Paste");
+        }
       } else {
         options = ["Add Activities", "Add Decision"];
+        // Check for the cutNode and its type for Paste option
+        if (cutNode && (cutNode.type === "box" || cutNode.type === "diamond")) {
+          options.push("Paste");
+        }
       }
       setPosition({ x: event.clientX, y: event.clientY });
       setOptions(options);
@@ -689,20 +702,43 @@ const SwimlaneModel = () => {
       addNode("Yes", { x: x - 30, y: y - 125 });
     } else if (action === "No") {
       addNode("No", { x: x - 70, y: y - 125 });
-    }else if (action === "addFreeText") {
+    } else if (action === "addFreeText") {
       const userInput = prompt("Enter text for the new node:");
       if (userInput) {
         addNode("FreeText", { x: x - 70, y: y - 125 }, userInput);
       }
-    } 
-    
-    else if (action === "addDetails") {
+    } else if (action === "addDetails") {
       openPopup();
     }
     setContextMenu(null);
     setSelectedEdge(null);
   };
 
+  const handleCut = () => {
+    if(cutNode){
+      alert("you have alredy cut object first paste this then you can cut object")
+      return 
+    }
+    if (selectedNode) {
+      setCutNode(selectedNode);
+
+      setChiledNodes((nodes) =>
+        nodes.filter((node) => node.id !== selectedNode.id)
+      );
+    }
+  };
+
+  const handlePaste = () => {
+    if(selectedGroupId && cutNode){
+      const newNode = { ...cutNode, parentId: selectedGroupId };
+      setChiledNodes((nodes) => [...nodes, newNode]);
+      setCutNode(null); 
+      setHasUnsavedChanges(true);
+    }else {
+      alert("No object to paste.");
+  }
+   
+  };
   const menuItems = [
     ...(detailschecking?.type !== "SwimlineRightsideBox" &&
     detailschecking?.type !== "progressArrow" &&
@@ -741,6 +777,12 @@ const SwimlaneModel = () => {
           },
         ]
       : []),
+
+    {
+      label: "Cut",
+      action: handleCut,
+      borderBottom: false,
+    },
     {
       label: "Delete",
       action: handleDeleteNode,
@@ -783,6 +825,8 @@ const SwimlaneModel = () => {
       addNode("diamond");
     } else if (option === "Add Process") {
       addNode("progressArrow");
+    } else if (option === "Paste") {
+      handlePaste()
     }
 
     setOptions([]);
@@ -907,7 +951,6 @@ const SwimlaneModel = () => {
                     (e.currentTarget.style.backgroundColor = "#f1f1f1")
                   }
                   onMouseLeave={(e) =>
-                    
                     (e.currentTarget.style.backgroundColor = "transparent")
                   }
                 >

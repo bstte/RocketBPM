@@ -250,6 +250,7 @@ const MapLevel = () => {
   }, [navigate]);
 
   const addNode = (type, position) => {
+    console.log("position",position);
     const newNodeId = uuidv4();
   let PageGroupId;
 
@@ -525,7 +526,7 @@ const MapLevel = () => {
 
   const handleContextMenuOptionClick = (type) => {
     setShowContextMenu(false);
-    addNode(type, { x: contextMenuPosition.x, y: contextMenuPosition.y });
+    addNode(type, { x: contextMenuPosition.x+110, y: contextMenuPosition.y+100 });
   };
 
 
@@ -589,9 +590,6 @@ const handleBack = () => {
   }
 };
 
-// const checkbreadcrums=()=>{
-// console.log("breadcrumbs",breadcrumbs)
-// }
 
 
   return (
@@ -600,7 +598,7 @@ const handleBack = () => {
         title={headerTitle}
         onSave={handleSaveNodes}
         onPublish={handleSaveNodes}
-        addNode={addNode}
+        addNode={()=>console.log("add node")}
         handleBackdata={handleBack}
         iconNames={iconNames}
         currentLevel={currentLevel}

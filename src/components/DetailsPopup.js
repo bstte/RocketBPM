@@ -10,7 +10,7 @@ const DetailsPopup = ({ isOpen, onClose, onSave,Details }) => {
 
   useEffect(() => {
     if (isOpen && Details) {
-      console.log("popup testing", Details)
+      
       setTitle(Details.data.details.title || ""); // Set title if exists
       setContent(Details.data.details.content || ""); // Set content if exists
     }
