@@ -15,7 +15,7 @@ import PublishedMapLevel from './Pages/Map_level/PublishedProcess/PublishedMapLe
 import PublishedSwimlaneModel from './Pages/Map_level/PublishedProcess/PublishedSwimlaneModel';
 import DraftProcesMapLevel from './Pages/Map_level/DraftProcessView/DraftProcesMapLevel';
 import DraftSwimlineLevel from './Pages/Map_level/DraftProcessView/DraftSwimlineLevel';
-import Testdraganddrop from './Pages/Map_level/Testdraganddrop';
+// import Testdraganddrop from './Pages/Map_level/Testdraganddrop';
 
 const PrivateRoute = ({ children }) => {
   const { user } = useSelector((state) => state.user);
@@ -66,7 +66,7 @@ const AppContent = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/Map-level" element={<PrivateRoute><MapLevel /></PrivateRoute>} />
       <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-      <Route path="/Testdraganddrop" element={<PrivateRoute><Testdraganddrop /></PrivateRoute>} />
+      {/* <Route path="/Testdraganddrop" element={<PrivateRoute><Testdraganddrop /></PrivateRoute>} /> */}
       <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
       <Route path="/Add-process-title" element={<PrivateRoute><ProcessTitle /></PrivateRoute>} />
       <Route path="/List-process-title" element={<PrivateRoute><ListProcessTitle /></PrivateRoute>} />
