@@ -179,41 +179,38 @@ const SwimlaneModel = () => {
         const totalColumns = 11;
         const groupWidth = windowSize.width / totalColumns - 14;
         const groupHeight = windowSize.height / totalRows - 14;
-        const childWidth = groupWidth * 0.9;
-        const childHeight = groupHeight * 0.9;
-        console.log("data ", data);
+
         const parsedNodes = data.nodes.map((node) => {
-          const { parentId, ...remainingNodeProps } = node; // Destructure to remove parentId
           const parsedData = JSON.parse(node.data);
           const parsedPosition = JSON.parse(node.position);
           const parsedMeasured = JSON.parse(node.measured);
-        
+
           return {
-            ...remainingNodeProps, // Spread remaining properties (without parentId)
-            id: node.node_id, // Ensure the id is set to node_id
-            parentNode: parentId, // Set parentNode using parentId
+            ...node,
             data: {
               ...parsedData,
-              onLabelChange: (newLabel) => handleLabelChange(node.node_id, newLabel),
+              onLabelChange: (newLabel) =>
+                handleLabelChange(node.node_id, newLabel),
               width_height: parsedMeasured,
+
               defaultwidt: "40px",
               defaultheight: "40px",
               nodeResize: false,
             },
             type: node.type,
+            id: node.node_id,
+            parentId: node.parentId,
             extent: "parent",
             measured: parsedMeasured,
             position: parsedPosition,
-            draggable: true,
-            isNew: true,
-            animated: true,
+            draggable: Boolean(node.draggable),
+            animated: Boolean(node.animated),
             style: {
-              width: childWidth,
-              height: childHeight,
+              width: groupWidth,
+              height: groupHeight,
             },
           };
         });
-        
 
         const parsedEdges = data.edges.map((edge) => ({
           ...edge,
@@ -361,8 +358,8 @@ const SwimlaneModel = () => {
             ? `Level${currentLevel}_${newNodeId}_${currentParentId}`
             : `Level${currentLevel}_${newNodeId}`,
 
-        parentNode: selectedGroupId,
-        extent: "parent",
+            parentNode: selectedGroupId,
+            extent: "parent",
         data: {
           label: "",
           details: { title: "", content: "" },
@@ -382,7 +379,7 @@ const SwimlaneModel = () => {
           nodeResize: false,
         },
         type: type,
-        position: centeredPosition,
+        position:centeredPosition,
         draggable: true,
         isNew: true,
         animated: true,
@@ -418,7 +415,6 @@ const SwimlaneModel = () => {
   const memoizedEdgeTypes = useMemo(() => edgeTypes, [edgeTypes]);
 
   const handleSaveNodes = async (savetype) => {
-    console.log("ChildNodes", ChildNodes);
     if (savetype === "Published" && currentLevel !== 0) {
       try {
         const response = await filter_draft(ParentPageGroupId);
@@ -431,7 +427,7 @@ const SwimlaneModel = () => {
       }
     }
 
-  
+    console.log("ChildNodes", ChildNodes);
 
     const Level =
       currentParentId !== null
@@ -457,7 +453,7 @@ const SwimlaneModel = () => {
             animated,
             measured,
             Page_Title,
-            parentNode,
+            parentId,
             status,
             PageGroupId,
           }) => ({
@@ -469,7 +465,7 @@ const SwimlaneModel = () => {
             animated,
             measured,
             Page_Title,
-            parentNode,
+            parentId,
             status,
             PageGroupId,
           })
@@ -626,49 +622,40 @@ const SwimlaneModel = () => {
 
   const handleNodeDragStop = (event, node) => {
     console.log("Drag stopped:", node);
+    // const [, row, col] = node.row_id.split("_").map(Number);
+    // console.log("row, col",row, col);
 
     if (node.id.startsWith("Level")) {
-      const nearestParentNode = nodes.find(
-        (n) =>
-          node.position.x >= n.position.x &&
-          node.position.x <= n.position.x + n.style.width &&
-          node.position.y >= n.position.y &&
-          node.position.y <= n.position.y + n.style.height
+      const nearestParentNode = nodes.find(n => 
+        node.position.x >= n.position.x && 
+        node.position.x <= n.position.x + n.style.width &&
+        node.position.y >= n.position.y && 
+        node.position.y <= n.position.y + n.style.height
       );
       console.log("new Drag stopped:", nearestParentNode);
       if (nearestParentNode) {
         setChiledNodes((prev) =>
           prev.map((child) =>
             child.id === node.id
-              ? {
-                  ...child,
-                  parentNode: nearestParentNode.id,
-                  position: node.position,
-                }
+              ? { ...child, parentNode: nearestParentNode.id, position: node.position }
               : child
           )
         );
       }
     } else {
       // When dragging a parent node, update the positions of its child nodes
-      const affectedChildren = ChildNodes.filter(
-        (child) => child.parentNode === node.id
-      );
-      const newChildNodes = affectedChildren.map((child) => ({
+      const affectedChildren = ChildNodes.filter(child => child.parentNode === node.id);
+      const newChildNodes = affectedChildren.map(child => ({
         ...child,
         position: {
           x: node.position.x + node.style.width / 2 - 40,
           y: node.position.y + node.style.height / 2 - 20,
         },
       }));
-      setChiledNodes((prev) =>
-        prev.map(
-          (child) => newChildNodes.find((n) => n.id === child.id) || child
-        )
-      );
+      setChiledNodes(prev => prev.map(child => newChildNodes.find(n => n.id === child.id) || child));
     }
   };
-
+  
   const switchNodeType = (type) => {
     if (selectedNodeId) {
       setChiledNodes((nds) =>
@@ -765,11 +752,9 @@ const SwimlaneModel = () => {
   };
 
   const handleCut = () => {
-    if (cutNode) {
-      alert(
-        "you have alredy cut object first paste this then you can cut object"
-      );
-      return;
+    if(cutNode){
+      alert("you have alredy cut object first paste this then you can cut object")
+      return 
     }
     if (selectedNode) {
       setCutNode(selectedNode);
@@ -781,14 +766,15 @@ const SwimlaneModel = () => {
   };
 
   const handlePaste = () => {
-    if (selectedGroupId && cutNode) {
-      const newNode = { ...cutNode, parentNode: selectedGroupId };
+    if(selectedGroupId && cutNode){
+      const newNode = { ...cutNode, parentId: selectedGroupId };
       setChiledNodes((nodes) => [...nodes, newNode]);
-      setCutNode(null);
+      setCutNode(null); 
       setHasUnsavedChanges(true);
-    } else {
+    }else {
       alert("No object to paste.");
-    }
+  }
+   
   };
   const menuItems = [
     ...(detailschecking?.type !== "SwimlineRightsideBox" &&
@@ -877,7 +863,7 @@ const SwimlaneModel = () => {
     } else if (option === "Add Process") {
       addNode("progressArrow");
     } else if (option === "Paste") {
-      handlePaste();
+      handlePaste()
     }
 
     setOptions([]);
@@ -909,6 +895,7 @@ const SwimlaneModel = () => {
         handleBackdata={handleBack}
         iconNames={iconNames}
         getPublishedDate={getPublishedDate}
+        
         getDraftedDate={getDraftedDate}
         setIsNavigating={() => removeBreadcrumbsAfter(currentLevel - 1)}
         Page={"Draft"}
