@@ -66,7 +66,7 @@ const BoxNode = ({ data }) => {
 
     
         {/* Bottom Handles */}
-        {[30, 60, 90].map((leftOffset, index) => (
+        {[20, 50, 80].map((leftOffset, index) => (
           <>
         <Handle
           key={`bottom-target-${index}`}
