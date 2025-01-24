@@ -971,6 +971,10 @@ const SwimlaneModel = () => {
               panOnScroll={false}
               zoomOnDoubleClick={false} 
               maxZoom={1}
+              translateExtent={[
+                [0, 0], 
+                [windowSize.width, windowSize.height], 
+              ]}
               defaultEdgeOptions={{ zIndex: 1 }}
               style={styles.rfStyle}
             >
