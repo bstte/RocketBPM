@@ -135,7 +135,7 @@ const styles = {
     width: "100%",
     height: "100%",
     boxShadow: "0 2px 5px rgba(0, 0, 0, 0.3)",
-    padding: "10px",
+    padding: "0px",
     boxSizing: "border-box",
     overflow: "hidden",
   },

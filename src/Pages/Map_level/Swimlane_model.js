@@ -84,26 +84,7 @@ const SwimlaneModel = () => {
     []
   );
 
-  useEffect(() => {
-    const handleRefresh = (event) => {
-      const userConfirmed = window.confirm(
-        "You have unsaved changes. Do you really want to leave?"
-      );
 
-      console.log("confirm data", userConfirmed);
-      if (userConfirmed) {
-        navigate("/List-process-title");
-      } else {
-        event.preventDefault();
-      }
-    };
-
-    window.addEventListener("beforeunload", handleRefresh);
-
-    return () => {
-      window.removeEventListener("beforeunload", handleRefresh);
-    };
-  }, [navigate]);
 
   const handleLabelChange = useCallback(
     (nodeId, newLabel) => {
@@ -130,9 +111,6 @@ const SwimlaneModel = () => {
     },
     [setChiledNodes, setHasUnsavedChanges]
   );
-
-    
-
 
   useEffect(() => {
     const fetchNodes = async () => {
@@ -189,12 +167,34 @@ const SwimlaneModel = () => {
           const parsedData = JSON.parse(node.data);
           const parsedPosition = JSON.parse(node.position);
           const parsedMeasured = JSON.parse(node.measured);
-
+        
+          let centeredPosition = parsedPosition;
+        
+          if (parentId) {
+            const parentNode = data.nodes.find((n) => n.node_id === parentId);
+        
+            if (parentNode) {
+              const parentWidth = windowSize.width / totalColumns - 14;
+              const parentHeight = windowSize.height / totalRows - 14;
+        
+              const childWidth = parentWidth * 0.9;
+              const childHeight = parentHeight * 0.9;
+        
+              const parentCenterX = parentNode.position.x + parentWidth / 2;
+              const parentCenterY = parentNode.position.y + parentHeight / 2;
+        
+              centeredPosition = {
+                x: parentCenterX - childWidth / 2,
+                y: parentCenterY - childHeight / 2,
+              };
+            }
+          }
+        
           return {
             ...remainingNodeProps,
             id: node.node_id,
             parentNode: parentId,
-            parentId: parentId, 
+            parentId: parentId,
             data: {
               ...parsedData,
               onLabelChange: (newLabel) =>
@@ -207,19 +207,19 @@ const SwimlaneModel = () => {
             type: node.type,
             extent: "parent",
             measured: parsedMeasured,
-            position: parsedPosition,
+            position: centeredPosition, // Updated position
             draggable: true,
             isNew: true,
             animated: Boolean(node.animated),
             style: {
               width: groupWidth,
               height: groupHeight,
-              childWidth:childWidth,
-              childHeight:childHeight
+              childWidth: childWidth,
+              childHeight: childHeight,
             },
           };
         });
-
+        
         const parsedEdges = data.edges.map((edge) => ({
           ...edge,
           animated: Boolean(edge.animated),
@@ -230,7 +230,7 @@ const SwimlaneModel = () => {
           type: "step",
         }));
         isInitialLoad.current = false;
-        console.log("on load time parsedNodes",parsedNodes)
+        console.log("on load time parsedNodes", parsedNodes);
         setChiledNodes(parsedNodes);
         setEdges(parsedEdges);
       } catch (error) {
@@ -251,6 +251,27 @@ const SwimlaneModel = () => {
     windowSize,
   ]);
 
+  useEffect(() => {
+    const handleRefresh = (event) => {
+      const userConfirmed = window.confirm(
+        "You have unsaved changes. Do you really want to leave?"
+      );
+
+      console.log("confirm data", userConfirmed);
+      if (userConfirmed) {
+        navigate("/List-process-title");
+      } else {
+        event.preventDefault();
+      }
+    };
+
+    window.addEventListener("beforeunload", handleRefresh);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleRefresh);
+    };
+  }, [navigate]);
+  
   const onNodesChange = useCallback(
     (changes) => setChiledNodes((nds) => applyNodeChanges(changes, nds)),
     [setChiledNodes]
@@ -397,10 +418,12 @@ const SwimlaneModel = () => {
         PageGroupId: PageGroupId,
         style: {
           width: childWidth,
+          childWidth: childWidth,
+          childHeight: childHeight,
           height: childHeight,
-          display:"flex",
-          alignItems:"center",
-          justifyContent:"center"
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
         },
       };
 
@@ -703,6 +726,13 @@ const SwimlaneModel = () => {
         }
       }
 
+      if (
+        node.type === "Yes" ||
+        node.type === "No" ||
+        node.type === "FreeText"
+      ) {
+        return;
+      }
       console.log("new nodes position", nearestParentNode);
 
       if (nearestParentNode) {
@@ -978,11 +1008,11 @@ const SwimlaneModel = () => {
               zoomOnPinch={false}
               panOnDrag={false}
               panOnScroll={false}
-              zoomOnDoubleClick={false} 
+              zoomOnDoubleClick={false}
               maxZoom={1}
               translateExtent={[
-                [0, 0], 
-                [windowSize.width, windowSize.height], 
+                [0, 0],
+                [windowSize.width, windowSize.height],
               ]}
               defaultEdgeOptions={{ zIndex: 1 }}
               style={styles.rfStyle}

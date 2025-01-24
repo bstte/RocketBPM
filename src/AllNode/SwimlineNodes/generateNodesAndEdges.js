@@ -26,6 +26,7 @@ const generateNodesAndEdges = (windowWidth, windowHeight) => {
             borderBottom: '1.5px solid #022261',
             borderRight: col === 0 ? '2.5px solid #022261' : '#ececec',
             borderRadius: '0',
+            
           },
         });
       }
