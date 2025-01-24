@@ -131,6 +131,9 @@ const SwimlaneModel = () => {
     [setChiledNodes, setHasUnsavedChanges]
   );
 
+    
+
+
   useEffect(() => {
     const fetchNodes = async () => {
       try {
@@ -179,19 +182,17 @@ const SwimlaneModel = () => {
         const totalColumns = 11;
         const groupWidth = windowSize.width / totalColumns - 14;
         const groupHeight = windowSize.height / totalRows - 14;
-        const childWidth = groupWidth * 0.9;
-        const childHeight = groupHeight * 0.9;
         const parsedNodes = data.nodes.map((node) => {
           const { parentId, ...remainingNodeProps } = node;
           const parsedData = JSON.parse(node.data);
           const parsedPosition = JSON.parse(node.position);
           const parsedMeasured = JSON.parse(node.measured);
-
+console.log("on loop time",node.position)
           return {
             ...remainingNodeProps,
             id: node.node_id,
             parentNode: parentId,
-            parentId: parentId, // Set parentNode using parentId
+            parentId: parentId, 
             data: {
               ...parsedData,
               onLabelChange: (newLabel) =>
@@ -208,9 +209,10 @@ const SwimlaneModel = () => {
             draggable: true,
             isNew: true,
             animated: true,
+            animated: Boolean(node.animated),
             style: {
-              width: childWidth,
-              height: childHeight,
+              width: groupWidth,
+              height: groupHeight,
             },
           };
         });
@@ -225,6 +227,7 @@ const SwimlaneModel = () => {
           type: "step",
         }));
         isInitialLoad.current = false;
+        console.log("on load time parsedNodes",parsedNodes)
         setChiledNodes(parsedNodes);
         setEdges(parsedEdges);
       } catch (error) {
@@ -392,6 +395,9 @@ const SwimlaneModel = () => {
         style: {
           width: childWidth,
           height: childHeight,
+          display:"flex",
+          alignItems:"center",
+          justifyContent:"center"
         },
       };
 
