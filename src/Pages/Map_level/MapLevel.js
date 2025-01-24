@@ -631,6 +631,7 @@ const handleBack = () => {
                 zoomOnScroll={false}
                 zoomOnPinch={false}
                 panOnDrag={false}
+              
                 panOnScroll={false}
                 maxZoom={0.6}
                 proOptions={{hideAttribution: true }}
