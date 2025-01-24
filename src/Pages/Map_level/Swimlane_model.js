@@ -182,12 +182,14 @@ const SwimlaneModel = () => {
         const totalColumns = 11;
         const groupWidth = windowSize.width / totalColumns - 14;
         const groupHeight = windowSize.height / totalRows - 14;
+        const childWidth = groupWidth * 0.9;
+        const childHeight = groupHeight * 0.9;
         const parsedNodes = data.nodes.map((node) => {
           const { parentId, ...remainingNodeProps } = node;
           const parsedData = JSON.parse(node.data);
           const parsedPosition = JSON.parse(node.position);
           const parsedMeasured = JSON.parse(node.measured);
-console.log("on loop time",node.position)
+
           return {
             ...remainingNodeProps,
             id: node.node_id,
@@ -208,11 +210,12 @@ console.log("on loop time",node.position)
             position: parsedPosition,
             draggable: true,
             isNew: true,
-            animated: true,
             animated: Boolean(node.animated),
             style: {
               width: groupWidth,
               height: groupHeight,
+              childWidth:childWidth,
+              childHeight:childHeight
             },
           };
         });
@@ -622,8 +625,8 @@ console.log("on loop time",node.position)
     const parentCenterX = parentNode.position.x + parentNode.style.width / 2;
     const parentCenterY = parentNode.position.y + parentNode.style.height / 2;
     const updatedChildPosition = {
-      x: parentCenterX - childNode.style.width / 2,
-      y: parentCenterY - childNode.style.height / 2,
+      x: parentCenterX - childNode.style.childWidth / 2,
+      y: parentCenterY - childNode.style.childHeight / 2,
     };
     return updatedChildPosition;
   };
