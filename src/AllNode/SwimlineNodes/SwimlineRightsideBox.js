@@ -24,18 +24,41 @@ const SwimlineRightsideBox = ({ data}) => {
     }
   }, [autoFocus]);
 
+
+  const handleBoxClick = () => {
+  
+    setTimeout(() => {
+      contentEditableRef.current?.focus();
+    }, 0);
+  };
+
+
   const handleBlur = () => {
     // if (data.onLabelChange) {
     //   data.onLabelChange(title);
     // }
   };
 
+  const handleFocus = (e) => {
+    const selection = window.getSelection();
+    const range = document.createRange();
+  
+    if (e.target.firstChild) {
+      range.setStart(e.target.firstChild, e.target.selectionStart || 0);
+      range.collapse(true);
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+  };
+  
+
   return (
-    <div style={styles.wrapper}>
+    <div style={styles.wrapper} onClick={handleBoxClick}>
       <div className="borderBox" style={styles.box}>
         <ContentEditable
           innerRef={contentEditableRef} 
           html={title} 
+          onFocus={handleFocus}
           onChange={(e) => handleChange({ target: { value: e.target.value } })}
           onBlur={handleBlur}
           placeholder="Type ...."

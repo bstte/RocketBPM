@@ -254,12 +254,19 @@ const PublishedMapLevel = () => {
 
   const iconNames = {};
 const navigateOnDraft=()=>{
+  // console.log("current map level",currentLevel)
   const id=breadcrumbs[1].state?breadcrumbs[1].state.id:''
   const user=breadcrumbs[1].state?breadcrumbs[1].state.user:''
   const title=breadcrumbs[1].state?breadcrumbs[1].state.title:''
   if(id && user){
-    navigate('/Draft-Process-View',{ state: { id:id, title:title, user: user } })
-    removeBreadcrumbsAfter(0);
+    if(currentLevel===0){
+      navigate('/Draft-Process-View',{ state: { id:id, title:title, user: user } })
+      // removeBreadcrumbsAfter(0);
+    }else{
+       navigate(`/Draft-Process-View/${currentLevel}/${currentParentId}`,{ state: { id:id, title:title, user: user } })
+    // removeBreadcrumbsAfter(0);
+    }
+   
   }else{
     alert("Currently not navigate on draft mode")
   }

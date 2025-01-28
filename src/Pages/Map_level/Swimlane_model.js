@@ -552,6 +552,7 @@ const SwimlaneModel = () => {
   };
 
   const updateNodeDetails = (nodeId, newDetails) => {
+
     setChiledNodes((nodes) =>
       nodes.map((node) =>
         node.node_id === nodeId
@@ -560,7 +561,7 @@ const SwimlaneModel = () => {
               data: {
                 ...node.data,
                 details: {
-                  title: newDetails.title,
+                  title: "newDetails.title",
                   content: newDetails.content,
                 },
               },
@@ -733,7 +734,7 @@ const SwimlaneModel = () => {
       ) {
         return;
       }
-      console.log("new nodes position", nearestParentNode);
+
 
       if (nearestParentNode) {
         const updatedPosition = centerChildInParent(nearestParentNode, node);
@@ -896,6 +897,15 @@ const SwimlaneModel = () => {
           },
         ]
       : []),
+      ...(detailschecking?.type === "diamond"
+        ? [
+            {
+              label: "Switch shape to Activity",
+              action: () => switchNodeType("box"),
+              borderBottom: true,
+            },
+          ]
+        : []),
     ...(detailschecking?.type === "progressArrow"
       ? [
           {

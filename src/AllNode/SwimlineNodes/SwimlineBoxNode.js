@@ -7,6 +7,7 @@ const BoxNode = ({ data }) => {
   const [title, setTitle] = useState(data.details.title);
   const boxRef = useRef(null);
   const [autoFocus, setAutoFocus] = useState(data.autoFocus);
+  // const [isHovered, setIsHovered] = useState(false); // State to track hover
 
   useEffect(() => {
     if (autoFocus && boxRef.current) {
@@ -17,7 +18,26 @@ const BoxNode = ({ data }) => {
     }
   }, [autoFocus]);
 
-  const handleFocus = () => {};
+  const handleBoxClick = () => {
+    setTimeout(() => {
+      boxRef.current?.focus();
+    }, 0);
+  };
+
+
+ const handleFocus = (e) => {
+  const selection = window.getSelection();
+  const range = document.createRange();
+
+  if (e.target.firstChild) {
+    range.setStart(e.target.firstChild, e.target.selectionStart || 0);
+    range.collapse(true);
+    selection.removeAllRanges();
+    selection.addRange(range);
+  }
+};
+
+  
 
   const handleBlur = () => {};
 
@@ -29,7 +49,10 @@ const BoxNode = ({ data }) => {
   };
 
   return (
-    <div style={styles.wrapper}>
+    <div style={styles.wrapper} onClick={handleBoxClick}
+        // onMouseEnter={() => setIsHovered(true)} 
+    // onMouseLeave={() => setIsHovered(false)} 
+    >
       <div className="borderBox" style={styles.box}>
         <ContentEditable
           innerRef={boxRef}

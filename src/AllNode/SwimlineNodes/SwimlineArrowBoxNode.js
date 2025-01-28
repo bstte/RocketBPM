@@ -29,6 +29,19 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
     }
   };
 
+  const handleFocus = (e) => {
+     const selection = window.getSelection();
+    const range = document.createRange();
+  
+    if (e.target.firstChild) {
+      range.setStart(e.target.firstChild, e.target.selectionStart || 0);
+      range.collapse(true);
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+  };
+  
+  
   const handleBlur = () => {
     setIsEditing(false);
     if (onTitleChange) {
@@ -140,6 +153,7 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
           <ContentEditable
             innerRef={contentEditableRef}
             html={title}
+            onFocus={handleFocus}
             onChange={(e) =>
               handleChange({ target: { value: e.target.value } })
             }

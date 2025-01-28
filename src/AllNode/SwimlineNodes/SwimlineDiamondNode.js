@@ -6,8 +6,10 @@ const SwimlineDiamondNode = ({ data }) => {
   const [title, setTitle] = useState(data.details.title);
   const titleRef = useRef(null);
   const [autoFocus, setAutoFocus] = useState(data.autoFocus);
+  // const [isHovered, setIsHovered] = useState(false); 
 
   useEffect(() => {
+    
     if (autoFocus && titleRef.current) {
       setTimeout(() => {
         titleRef.current.focus();
@@ -32,11 +34,32 @@ const SwimlineDiamondNode = ({ data }) => {
     }
   }, [autoFocus]);
 
-  const handleFocus = () => {};
+  const handleBoxClick = () => {
+    setTimeout(() => {
+      titleRef.current?.focus();
+    }, 0);
+  };
+
+
+  const handleFocus = (e) => {
+    const selection = window.getSelection();
+    const range = document.createRange();
+  
+    if (e.target.firstChild) {
+      range.setStart(e.target.firstChild, e.target.selectionStart || 0);
+      range.collapse(true);
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+  };
+  
   const handleBlur = () => {};
 
   return (
-    <div style={styles.wrapper}>
+    <div style={styles.wrapper} onClick={handleBoxClick}
+    // onMouseEnter={() => setIsHovered(true)} 
+    // onMouseLeave={() => setIsHovered(false)} 
+    >
       {/* Diamond Shape */}
       <div style={styles.diamondWrapper}>
         <div style={styles.diamond}>
@@ -53,6 +76,7 @@ const SwimlineDiamondNode = ({ data }) => {
           />
         </div>
       </div>
+      
 
       <Handle type="target" position={Position.Top} id="top-target" style={styles.handle} />
         <Handle type="source" position={Position.Top} id="top-source" style={styles.handle} />
