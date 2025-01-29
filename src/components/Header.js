@@ -55,17 +55,17 @@ const Header = ({
 
   const formattedDate = getPublishedDate
     ? new Date(getPublishedDate).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      })
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    })
     : "";
-    const formattedDatedraft = getDraftedDate
+  const formattedDatedraft = getDraftedDate
     ? new Date(getDraftedDate).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      })
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    })
     : "";
 
   const handleBreadcrumbClick = (path, state) => {
@@ -184,7 +184,7 @@ const Header = ({
           ))}
         </div>
         <div style={styles.flexbox}>
-         
+
           {Page === "Draft" && (
             <>
               <div>
@@ -199,12 +199,12 @@ const Header = ({
                 </button>
               </div>
               <div style={styles.pdate}>
-            <div>
-              Draft On
-              <br />
-              {formattedDatedraft}
-            </div>
-          </div>
+                <div>
+                  Draft On
+                  <br />
+                  {formattedDatedraft}
+                </div>
+              </div>
 
               <div>
                 <button
@@ -218,39 +218,48 @@ const Header = ({
                 </button>
               </div>
               <div style={styles.pdate}>
-            <div>
-              Published
-              <br />
-              {formattedDate}
-            </div>
-          </div>
+                <div>
+                  Published
+                  <br />
+                  {formattedDate}
+                </div>
+              </div>
+              <button
+                  onClick={() => alert("Work going on ")}
+                  style={{
+                    ...styles.saveButton,
+                    backgroundColor: "#218838",
+                  }}
+                >
+                  Exit
+                </button>
             </>
           )}
 
           {
-            Page==="Published" &&(
+            Page === "Published" && (
               <>
-               <div style={styles.pdate}>
-            <div>
-              Published
-              <br />
-              {formattedDate}
-            </div>
-          </div>
+                <div style={styles.pdate}>
+                  <div>
+                    Published
+                    <br />
+                    {formattedDate}
+                  </div>
+                </div>
               </>
             )
           }
 
-{
-            Page==="ViewDraft" &&(
+          {
+            Page === "ViewDraft" && (
               <>
                 <div style={styles.pdate}>
-            <div>
-            Draft On
-              <br />
-              {formattedDatedraft}
-            </div>
-          </div>
+                  <div>
+                    Draft On
+                    <br />
+                    {formattedDatedraft}
+                  </div>
+                </div>
               </>
             )
           }
@@ -266,6 +275,22 @@ const Header = ({
                   }}
                 >
                   View Draft
+                </button>
+              </div>
+            </>
+          )}
+
+          {Page === "ViewDraft" && (
+            <>
+              <div>
+                <button
+                  onClick={() => onSave("draft")}
+                  style={{
+                    ...styles.saveButton,
+                    backgroundColor: "#218838",
+                  }}
+                >
+                  Edit Draft
                 </button>
               </div>
             </>

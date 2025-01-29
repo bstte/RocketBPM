@@ -7,8 +7,13 @@ const BoxNode = ({ data }) => {
   const [title, setTitle] = useState(data.details.title);
   const boxRef = useRef(null);
   const [autoFocus, setAutoFocus] = useState(data.autoFocus);
-  // const [isHovered, setIsHovered] = useState(false); // State to track hover
+  const [isHovered, setIsHovered] = useState(false); // State to track hover
 
+  useEffect(() => {
+    setTitle(data.details.title);
+  }, [data.details.title]);
+
+  
   useEffect(() => {
     if (autoFocus && boxRef.current) {
       setTimeout(() => {
@@ -50,8 +55,8 @@ const BoxNode = ({ data }) => {
 
   return (
     <div style={styles.wrapper} onClick={handleBoxClick}
-        // onMouseEnter={() => setIsHovered(true)} 
-    // onMouseLeave={() => setIsHovered(false)} 
+        onMouseEnter={() => setIsHovered(true)} 
+    onMouseLeave={() => setIsHovered(false)} 
     >
       <div className="borderBox" style={styles.box}>
         <ContentEditable
@@ -73,7 +78,7 @@ const BoxNode = ({ data }) => {
             type="target"
             position={Position.Top}
             id={`top-target-${index}`}
-            style={{ ...styles.handle, top: "0px", left: `${leftOffset}%` }}
+            style={isHovered ? { ...styles.hoverhandle, top: "0px", left: `${leftOffset}%` } : { ...styles.handle, top: "0px", left: `${leftOffset}%` }}
           />
 
 
@@ -82,7 +87,8 @@ const BoxNode = ({ data }) => {
             type="source"
             position={Position.Top}
             id={`top-source-${index}`}
-            style={{ ...styles.handle, top: "0px", left: `${leftOffset}%` }}
+            style={isHovered ? { ...styles.hoverhandle, top: "0px", left: `${leftOffset}%` } : { ...styles.handle, top: "0px", left: `${leftOffset}%` }}
+
           />
         </>
       ))}
@@ -96,7 +102,7 @@ const BoxNode = ({ data }) => {
           type="target"
           position={Position.Bottom}
           id={`bottom-target-${index}`}
-          style={{ ...styles.handle, bottom: '0px', left: `${leftOffset}%` }}
+          style={isHovered ? { ...styles.hoverhandle, bottom: "0px", left: `${leftOffset}%` } : { ...styles.handle, bottom: "0px", left: `${leftOffset}%` }}
         />
 
         <Handle
@@ -104,7 +110,7 @@ const BoxNode = ({ data }) => {
         type="source"
         position={Position.Bottom}
         id={`bottom-source-${index}`}
-        style={{ ...styles.handle, bottom: '0px', left: `${leftOffset}%` }}
+        style={isHovered ? { ...styles.hoverhandle, bottom: "0px", left: `${leftOffset}%` } : { ...styles.handle, bottom: "0px", left: `${leftOffset}%` }}
       />
       </>
       ))}
@@ -114,25 +120,26 @@ const BoxNode = ({ data }) => {
         type="target"
         position={Position.Left}
         id="left-target"
-        style={styles.handle}
+        style={isHovered ? styles.hoverhandle:styles.handle}
+     
       />
       <Handle
         type="source"
         position={Position.Left}
         id="left-source"
-        style={styles.handle}
+        style={isHovered ? styles.hoverhandle:styles.handle}
       />
       <Handle
         type="target"
         position={Position.Right}
         id="right-target"
-        style={styles.handle}
+          style={isHovered ? styles.hoverhandle:styles.handle}
       />
       <Handle
         type="source"
         position={Position.Right}
         id="right-source"
-        style={styles.handle}
+          style={isHovered ? styles.hoverhandle:styles.handle}
       />
       <div style={styles.borderOverlay}></div>
     </div>
@@ -182,11 +189,18 @@ const styles = {
     textAlign: "center",
     width: "100%",
   },
-  handle: {
+  hoverhandle: {
     backgroundColor: "red",
     width: "8px",
     height: "8px",
     borderRadius: "50%",
+  },
+  handle: {
+    backgroundColor: "transparent",
+    border: "none",
+    width: "0px",
+    height: "0px",
+    pointerEvents: "none" ,
   },
   popup: {
     position: "fixed",
@@ -217,3 +231,5 @@ const styles = {
 };
 
 export default memo(BoxNode);
+
+

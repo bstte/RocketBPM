@@ -10,7 +10,7 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import Header from "../../../components/Header";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import api from "../../../API/api";
 
 import generateNodesAndEdges from "../../../../src/AllNode/SwimlineNodes/generateNodesAndEdges";
@@ -41,7 +41,7 @@ const DraftSwimlineLevel = () => {
     [windowSize]
   );
  const [getPublishedDate, setgetPublishedDate] = useState("");
-
+ const navigate = useNavigate();
   const [ChildNodes, setChiledNodes] = useState([]);
   const [nodes, setNodes] = useState(initialNodes);
   const [edges, setEdges] = useState([]);
@@ -55,7 +55,7 @@ const DraftSwimlineLevel = () => {
     []
   );
 
-  const { removeBreadcrumbsAfter } = useContext(BreadcrumbsContext); 
+  const { removeBreadcrumbsAfter ,breadcrumbs} = useContext(BreadcrumbsContext); 
 
   useEffect(() => {
     const fetchNodes = async () => {
@@ -156,12 +156,24 @@ const DraftSwimlineLevel = () => {
   };
 
 
+  const navigateOnDraft=()=>{
+   
+    const id=breadcrumbs[1].state?breadcrumbs[1].state.id:''
+    const user=breadcrumbs[1].state?breadcrumbs[1].state.user:''
+    if(id && user){
+      navigate(`/swimlane/level/${currentLevel}/${currentParentId}`,{ state: { id:id, title:title, user: user , parentId:currentParentId, level: currentLevel} })
+      // removeBreadcrumbsAfter(0);
+    }else{
+      alert("Currently not navigate on draft mode")
+    }
+  
+  }
 
   return (
     <div>
         <Header
         title={headerTitle}
-        onSave={() => console.log("save function ")}
+        onSave={navigateOnDraft}
         onPublish={() => console.log("save publish")}
         addNode={() => console.log("add node")}
         handleBackdata={() => console.log("handle back")}

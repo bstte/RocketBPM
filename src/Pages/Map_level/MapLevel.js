@@ -29,6 +29,38 @@ import CustomContextMenu from "../../components/CustomContextMenu";
 
 
 const MapLevel = () => {
+
+  const [totalHeight, setTotalHeight] = useState(0);
+  const [windowHeight, setWindowHeight] = useState(window.innerHeight);
+  const windowSize = {
+    width: window.innerWidth - 300,
+    height: window.innerHeight - 300,
+};
+
+  
+
+  useEffect(() => {
+    const calculateHeight = () => {
+      const breadcrumbsElement = document.querySelector(".breadcrumbs-container");
+      const appHeaderElement = document.querySelector(".app-header");
+
+      if (breadcrumbsElement && appHeaderElement) {
+        const combinedHeight = breadcrumbsElement.offsetHeight + appHeaderElement.offsetHeight + 100;
+        setTotalHeight(combinedHeight);
+      }
+    };
+    calculateHeight();
+    const handleResize = () => {
+      setWindowHeight(window.innerHeight);
+      calculateHeight();
+    };
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  
   const navigate = useNavigate();
   const { level, parentId } = useParams();
   const location = useLocation();
@@ -591,6 +623,31 @@ const handleBack = () => {
 };
 
 
+const styles = {
+  appContainer: {
+    display: "flex",
+    flexDirection: "column",
+    height: totalHeight > 0 ? `${windowHeight - totalHeight}px` : "auto",
+    marginTop: "0px",
+    backgroundColor: "#f8f9fa",
+  },
+  contentWrapper: {
+    display: "flex",
+    flex: 1,
+    borderLeft: "1px solid #002060",
+    borderRight: "1px solid #002060",
+    borderBottom: "1px solid #002060",
+  },
+  flowContainer: {
+    flex: 1,
+    backgroundColor: "#ffffff",
+    position: "relative",
+  },
+  reactFlowStyle: {
+    width: "100%",
+    height: "100%",
+  },
+};
 
   return (
     <div>
@@ -631,7 +688,11 @@ const handleBack = () => {
                 zoomOnScroll={false}
                 zoomOnPinch={false}
                 panOnDrag={false}
-              
+                fitView
+                translateExtent={[
+                  [1240, 410], 
+                  [windowSize.width, windowSize.height], 
+                ]}
                 panOnScroll={false}
                 maxZoom={0.6}
                 proOptions={{hideAttribution: true }}
@@ -664,30 +725,6 @@ const handleBack = () => {
   );
 };
 
-const styles = {
-  appContainer: {
-    display: "flex",
-    flexDirection: "column",
-    height: "100vh",
-    marginTop: "0px",
-    backgroundColor: "#f8f9fa",
-  },
-  contentWrapper: {
-    display: "flex",
-    flex: 1,
-    borderLeft: "1px solid #002060",
-    borderRight: "1px solid #002060",
-    borderBottom: "1px solid #002060",
-  },
-  flowContainer: {
-    flex: 1,
-    backgroundColor: "#ffffff",
-    position: "relative",
-  },
-  reactFlowStyle: {
-    width: "100%",
-    height: "100%",
-  },
-};
+
 
 export default MapLevel;

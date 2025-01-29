@@ -2,11 +2,17 @@ import { memo, useState, useRef } from "react";
 import { Handle, Position } from "@xyflow/react";
 import ReactDOM from "react-dom";
 
+const decodeHtmlEntities = (str) => {
+  const textArea = document.createElement("textarea");
+  textArea.innerHTML = str;
+  return textArea.value;
+};
+
 const BoxNode = ({ data }) => {
   const [isPopupVisible, setIsPopupVisible] = useState(false);
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
 
-  const title=data.details.title
+  const title = decodeHtmlEntities(data.details.title);
   const boxRef = useRef(null); // Reference to the node element
 
   const handleBoxClick = () => {
@@ -32,7 +38,7 @@ const BoxNode = ({ data }) => {
       }}
     >
       <div style={styles.popupHeader}>
-        <h3 style={styles.popupTitle}>{data.details.title}</h3>
+        <h3 style={styles.popupTitle}>{title}</h3>
         <button
           style={styles.closeButton}
           onClick={handleClosePopup}

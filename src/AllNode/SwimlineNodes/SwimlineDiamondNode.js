@@ -6,7 +6,10 @@ const SwimlineDiamondNode = ({ data }) => {
   const [title, setTitle] = useState(data.details.title);
   const titleRef = useRef(null);
   const [autoFocus, setAutoFocus] = useState(data.autoFocus);
-  // const [isHovered, setIsHovered] = useState(false); 
+  const [isHovered, setIsHovered] = useState(false); 
+  useEffect(() => {
+    setTitle(data.details.title);
+  }, [data.details.title]);
 
   useEffect(() => {
     
@@ -57,8 +60,8 @@ const SwimlineDiamondNode = ({ data }) => {
 
   return (
     <div style={styles.wrapper} onClick={handleBoxClick}
-    // onMouseEnter={() => setIsHovered(true)} 
-    // onMouseLeave={() => setIsHovered(false)} 
+    onMouseEnter={() => setIsHovered(true)} 
+    onMouseLeave={() => setIsHovered(false)} 
     >
       {/* Diamond Shape */}
       <div style={styles.diamondWrapper}>
@@ -78,15 +81,19 @@ const SwimlineDiamondNode = ({ data }) => {
       </div>
       
 
-      <Handle type="target" position={Position.Top} id="top-target" style={styles.handle} />
-        <Handle type="source" position={Position.Top} id="top-source" style={styles.handle} />
-        <Handle type="target" position={Position.Bottom} id="bottom-target" style={styles.handle} />
-        <Handle type="source" position={Position.Bottom} id="bottom-source" style={styles.handle} />
+      <Handle type="target" position={Position.Top} id="top-target" style={isHovered ? styles.hoverhandle:styles.handle} />
+        <Handle type="source" position={Position.Top} id="top-source" style={isHovered ? styles.hoverhandle:styles.handle} />
+        <Handle type="target" position={Position.Bottom} id="bottom-target" style={isHovered ? styles.hoverhandle:styles.handle} />
+        <Handle type="source" position={Position.Bottom} id="bottom-source" style={isHovered ? styles.hoverhandle:styles.handle} />
 
-        <Handle type="target" position={Position.Left} id="left-target" style={{...styles.handle,left:'18px'}} />
-        <Handle type="source" position={Position.Left} id="left-source" style={{...styles.handle,left:'18px'}} />
-        <Handle type="target" position={Position.Right} id="right-target" style={{...styles.handle,right:'20px'}} />
-        <Handle type="source" position={Position.Right} id="right-source" style={{...styles.handle,right:'20px'}} />
+        <Handle type="target" position={Position.Left} id="left-target"
+          style={isHovered ? { ...styles.hoverhandle, left:'18px' } : { ...styles.handle, left:'18px'}}
+      />
+        <Handle type="source" position={Position.Left} id="left-source"   style={isHovered ? { ...styles.hoverhandle, left:'18px' } : { ...styles.handle, left:'18px'}} />
+        <Handle type="target" position={Position.Right} id="right-target" 
+          style={isHovered ? { ...styles.hoverhandle, right:'20px' } : { ...styles.handle, right:'20px'}}
+      />
+        <Handle type="source" position={Position.Right} id="right-source"           style={isHovered ? { ...styles.hoverhandle, right:'20px' } : { ...styles.handle, right:'20px'}} />
     </div>
   );
 };
@@ -131,12 +138,22 @@ const styles = {
     padding: "0",
     margin: "0",
   },
-  handle: {
-    position: "absolute",
+
+
+  hoverhandle: {
+    backgroundColor: "red",
     width: "8px",
     height: "8px",
-    backgroundColor: "red",
     borderRadius: "50%",
+    position: "absolute",
+  },
+  handle: {
+    backgroundColor: "transparent",
+    position: "absolute",
+    border: "none",
+    width: "0px",
+    height: "0px",
+    pointerEvents: "none" ,
   },
 };
 

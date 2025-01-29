@@ -24,13 +24,44 @@ import React, {
   import PublishPentagonNode from "../../../AllNode/PublishAllNode/PublishPentagonNode";
   
   const DraftProcesMapLevel = () => {
+
+    const [totalHeight, setTotalHeight] = useState(0);
+    const [windowHeight, setWindowHeight] = useState(window.innerHeight);
+    const windowSize = {
+      width: window.innerWidth - 300,
+      height: window.innerHeight - 300,
+  };
+  
+    
+  
+    useEffect(() => {
+      const calculateHeight = () => {
+        const breadcrumbsElement = document.querySelector(".breadcrumbs-container");
+        const appHeaderElement = document.querySelector(".app-header");
+  
+        if (breadcrumbsElement && appHeaderElement) {
+          const combinedHeight = breadcrumbsElement.offsetHeight + appHeaderElement.offsetHeight + 100;
+          setTotalHeight(combinedHeight);
+        }
+      };
+      calculateHeight();
+      const handleResize = () => {
+        setWindowHeight(window.innerHeight);
+        calculateHeight();
+      };
+      window.addEventListener("resize", handleResize);
+      return () => {
+        window.removeEventListener("resize", handleResize);
+      };
+    }, []);
+  
     const navigate = useNavigate();
     const { level, parentId } = useParams();
     const location = useLocation();
     const { id, title, user } = location.state || {};
     const currentLevel = level ? parseInt(level, 10) : 0;
     const currentParentId = parentId || null;
-    const { addBreadcrumb, removeBreadcrumbsAfter } =
+    const { addBreadcrumb, removeBreadcrumbsAfter,breadcrumbs } =
       useContext(BreadcrumbsContext);
     const [nodes, setNodes, onNodesChange] = useNodesState([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -252,12 +283,57 @@ import React, {
   
   
     const iconNames = {};
+
+    const navigateOnDraft=()=>{
+      // console.log("current map level",currentLevel)
+      const id=breadcrumbs[1].state?breadcrumbs[1].state.id:''
+      const user=breadcrumbs[1].state?breadcrumbs[1].state.user:''
+      const title=breadcrumbs[1].state?breadcrumbs[1].state.title:''
+      if(id && user){
+        if(currentLevel===0){
+          navigate('/Map-level',{ state: { id:id, title:title, user: user } })
+        }else{
+           navigate(`/level/${currentLevel}/${currentParentId}`,{ state: { id:id, title:title, user: user } })
+        }
+       
+      }else{
+        alert("Currently not navigate on draft mode")
+      }
+    
+    }
+
+    const styles = {
+      appContainer: {
+        display: "flex",
+        flexDirection: "column",
+        height: totalHeight > 0 ? `${windowHeight - totalHeight}px` : "auto",
+        marginTop: "0px",
+        backgroundColor: "#f8f9fa",
+      },
+      contentWrapper: {
+        display: "flex",
+        flex: 1,
+        borderLeft: "1px solid #002060",
+        borderRight: "1px solid #002060",
+        borderBottom: "1px solid #002060",
+      },
+      flowContainer: {
+        flex: 1,
+        backgroundColor: "#ffffff",
+        position: "relative",
+      },
+      reactFlowStyle: {
+        width: "100%",
+        height: "100%",
+      },
+    };
+    
   
     return (
       <div>
         <Header
           title={headerTitle}
-          onSave={() => console.log("save function ")}
+          onSave={navigateOnDraft}
           onPublish={() => console.log("save publish")}
           addNode={() => console.log("add node")}
           handleBackdata={() => console.log("handle back")}
@@ -282,6 +358,11 @@ import React, {
                   nodeTypes={memoizedNodeTypes}
                   edgeTypes={memoizedEdgeTypes}
                   minZoom={0.1}
+                  fitView
+                  translateExtent={[
+                    [1240, 410], 
+                    [windowSize.width, windowSize.height], 
+                  ]}
                   zoomOnScroll={false}
                   zoomOnPinch={false}
                   panOnDrag={false}
@@ -298,31 +379,7 @@ import React, {
     );
   };
   
-  const styles = {
-    appContainer: {
-      display: "flex",
-      flexDirection: "column",
-      height: "100vh",
-      marginTop: "0px",
-      backgroundColor: "#f8f9fa",
-    },
-    contentWrapper: {
-      display: "flex",
-      flex: 1,
-      borderLeft: "1px solid #002060",
-      borderRight: "1px solid #002060",
-      borderBottom: "1px solid #002060",
-    },
-    flowContainer: {
-      flex: 1,
-      backgroundColor: "#ffffff",
-      position: "relative",
-    },
-    reactFlowStyle: {
-      width: "100%",
-      height: "100%",
-    },
-  };
+  
   
   export default DraftProcesMapLevel;
   

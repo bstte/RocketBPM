@@ -561,7 +561,7 @@ const SwimlaneModel = () => {
               data: {
                 ...node.data,
                 details: {
-                  title: "newDetails.title",
+                  title: newDetails.title,
                   content: newDetails.content,
                 },
               },
