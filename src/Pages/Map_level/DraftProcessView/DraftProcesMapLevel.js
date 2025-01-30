@@ -61,7 +61,7 @@ import React, {
     const { id, title, user } = location.state || {};
     const currentLevel = level ? parseInt(level, 10) : 0;
     const currentParentId = parentId || null;
-    const { addBreadcrumb, removeBreadcrumbsAfter,breadcrumbs } =
+    const { addBreadcrumb, removeBreadcrumbsAfter } =
       useContext(BreadcrumbsContext);
     const [nodes, setNodes, onNodesChange] = useNodesState([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -285,10 +285,9 @@ import React, {
     const iconNames = {};
 
     const navigateOnDraft=()=>{
-      // console.log("current map level",currentLevel)
-      const id=breadcrumbs[1].state?breadcrumbs[1].state.id:''
-      const user=breadcrumbs[1].state?breadcrumbs[1].state.user:''
-      const title=breadcrumbs[1].state?breadcrumbs[1].state.title:''
+      // const id=breadcrumbs[1].state?breadcrumbs[1].state.id:''
+      // const user=breadcrumbs[1].state?breadcrumbs[1].state.user:''
+      // const title=breadcrumbs[1].state?breadcrumbs[1].state.title:''
       if(id && user){
         if(currentLevel===0){
           navigate('/Map-level',{ state: { id:id, title:title, user: user } })

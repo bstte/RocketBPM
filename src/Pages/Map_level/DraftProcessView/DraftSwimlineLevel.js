@@ -18,7 +18,7 @@ import styles from "../SwimlaneStyles";
 import PublishNodeType from "./DraftNodeType";
 import { BreadcrumbsContext } from "../../../context/BreadcrumbsContext";
 
-
+import '../../../Css/Swimlane.css'
 
 const rfStyle = {
   width: "100%",
@@ -55,7 +55,7 @@ const DraftSwimlineLevel = () => {
     []
   );
 
-  const { removeBreadcrumbsAfter ,breadcrumbs} = useContext(BreadcrumbsContext); 
+  const { removeBreadcrumbsAfter } = useContext(BreadcrumbsContext); 
 
   useEffect(() => {
     const fetchNodes = async () => {
@@ -158,8 +158,8 @@ const DraftSwimlineLevel = () => {
 
   const navigateOnDraft=()=>{
    
-    const id=breadcrumbs[1].state?breadcrumbs[1].state.id:''
-    const user=breadcrumbs[1].state?breadcrumbs[1].state.user:''
+    // const id=breadcrumbs[1].state?breadcrumbs[1].state.id:''
+    // const user=breadcrumbs[1].state?breadcrumbs[1].state.user:''
     if(id && user){
       navigate(`/swimlane/level/${currentLevel}/${currentParentId}`,{ state: { id:id, title:title, user: user , parentId:currentParentId, level: currentLevel} })
       // removeBreadcrumbsAfter(0);
@@ -182,7 +182,7 @@ const DraftSwimlineLevel = () => {
         setIsNavigating={()=>  removeBreadcrumbsAfter(currentLevel-1)}
         Page={"ViewDraft"}
       />
-      <div style={styles.appContainer}>
+      <div style={styles.appContainer} className="custom_swimlane">
         <ReactFlowProvider>
           <div style={styles.scrollableWrapper}>
             <ReactFlow
@@ -192,6 +192,10 @@ const DraftSwimlineLevel = () => {
               nodeTypes={memoizedNodeTypes}
               edgeTypes={memoizedEdgeTypes}
               minZoom={0}
+              translateExtent={[
+                [0, 0],
+                [windowSize.width, windowSize.height],
+              ]}
               zoomOnScroll={false}
               zoomOnPinch={false}
               panOnDrag={false}

@@ -35,9 +35,9 @@ const MapLevel = () => {
   const windowSize = {
     width: window.innerWidth - 300,
     height: window.innerHeight - 300,
-};
+  };
 
-  
+
 
   useEffect(() => {
     const calculateHeight = () => {
@@ -60,11 +60,11 @@ const MapLevel = () => {
     };
   }, []);
 
-  
+
   const navigate = useNavigate();
   const { level, parentId } = useParams();
   const location = useLocation();
-  const { id, title, user,ParentPageGroupId } = location.state || {};
+  const { id, title, user, ParentPageGroupId } = location.state || {};
   const currentLevel = level ? parseInt(level, 10) : 0;
   const currentParentId = parentId || null;
   const { addBreadcrumb, removeBreadcrumbsAfter } =
@@ -89,15 +89,15 @@ const MapLevel = () => {
 
 
 
- const memoizedNodeTypes = useMemo(
+  const memoizedNodeTypes = useMemo(
     () => ({
-      progressArrow:ArrowBoxNode,
+      progressArrow: ArrowBoxNode,
       pentagon: PentagonNode,
     }),
     []
   );
 
- const memoizedEdgeTypes = useMemo(
+  const memoizedEdgeTypes = useMemo(
     () => ({
       smoothstep: SmoothStepEdge,
       bezier: BezierEdge,
@@ -114,20 +114,20 @@ const MapLevel = () => {
             ? { ...node, data: { ...node.data, label: newLabel } }
             : node
         );
-  
+
         // Check if the label has changed to set unsaved changes
         const changedNode = prevNodes.find((n) => n.id === nodeId);
         if (changedNode && changedNode.data.label !== newLabel) {
           setHasUnsavedChanges(true);
         }
-  
+
         return updatedNodes;
       });
     },
     [setNodes, setHasUnsavedChanges]
   );
-  
-  
+
+
 
   useEffect(() => {
     const fetchNodes = async () => {
@@ -142,20 +142,20 @@ const MapLevel = () => {
         const publishedStatus = "Published";
         const draftStatus = "Draft";
 
-         const [publishedResponse, draftResponse, data] = await Promise.all([
+        const [publishedResponse, draftResponse, data] = await Promise.all([
           api.GetPublishedDate(levelParam, parseInt(user_id), Process_id, publishedStatus),
           api.GetPublishedDate(levelParam, parseInt(user_id), Process_id, draftStatus),
           api.getNodes(levelParam, parseInt(user_id), Process_id),
         ]);
 
-  
+
         // Set Published date
         if (publishedResponse.status === true) {
           setgetPublishedDate(publishedResponse.created_at || "");
         } else {
           setgetPublishedDate("");
         }
-  
+
         // Set Draft date
         if (draftResponse.status === true) {
           setDraftedDate(draftResponse.created_at || "");
@@ -178,7 +178,7 @@ const MapLevel = () => {
               width_height: parsedMeasured,
               autoFocus: true,
               nodeResize: true,
-              node_id:node.node_id,
+              node_id: node.node_id,
             },
             type: node.type,
             id: node.node_id,
@@ -238,7 +238,7 @@ const MapLevel = () => {
       const safeIndex = Math.max(1, currentLevel - 1);
       removeBreadcrumbsAfter(safeIndex);
     }
-    
+
     addBreadcrumb(label, path, state);
     // console.log("isNavigating",isNavigating)
 
@@ -257,9 +257,9 @@ const MapLevel = () => {
 
 
   const onConnect = useCallback((connection) => {
-  // Your callback logic here
-  console.log('Connected:', connection);
-}, []);
+    // Your callback logic here
+    console.log('Connected:', connection);
+  }, []);
 
   useEffect(() => {
     const handleRefresh = (event) => {
@@ -282,14 +282,14 @@ const MapLevel = () => {
   }, [navigate]);
 
   const addNode = (type, position) => {
-    console.log("position",position);
+    console.log("position", position);
     const newNodeId = uuidv4();
-  let PageGroupId;
+    let PageGroupId;
 
     if (nodes.length === 0) {
-       PageGroupId	= uuidv4();
+      PageGroupId = uuidv4();
     } else {
-      PageGroupId = nodes[0]?.PageGroupId; 
+      PageGroupId = nodes[0]?.PageGroupId;
     }
 
     const newNode = {
@@ -320,7 +320,7 @@ const MapLevel = () => {
       isNew: true,
       animated: true,
       Page_Title: "ProcessMap",
-      PageGroupId:PageGroupId
+      PageGroupId: PageGroupId
     };
 
     setNodes((nds) => nds.concat(newNode));
@@ -354,22 +354,22 @@ const MapLevel = () => {
     }
   }, [selectedNode, setNodes, setEdges, title]);
 
-  const handleNodeRightClick =async (event, node) => {
+  const handleNodeRightClick = async (event, node) => {
     event.preventDefault();
     const newLevel = currentLevel + 1;
     const levelParam =
-    node.id !== null
-      ? `Level${newLevel}_${node.id}`
-      : `Level${currentLevel}`;
-  const user_id = user ? user.id : null;
-  const Process_id = id ? id : null;
-  const data = await api.checkRecord(
-    levelParam,
-    parseInt(user_id),
-    Process_id
-  );
-  setcheckRecord(data)
- 
+      node.id !== null
+        ? `Level${newLevel}_${node.id}`
+        : `Level${currentLevel}`;
+    const user_id = user ? user.id : null;
+    const Process_id = id ? id : null;
+    const data = await api.checkRecord(
+      levelParam,
+      parseInt(user_id),
+      Process_id
+    );
+    setcheckRecord(data)
+
 
     setSelectedNode(node.id);
     setPopupTitle(node.data.label || "Node Actions");
@@ -390,59 +390,82 @@ const MapLevel = () => {
   }, [location.state, currentLevel, title]);
 
   const handleCreateNewNode = async (type) => {
+
     if (selectedNode) {
       const selectedNodeData = nodes.find((node) => node.id === selectedNode);
       const selectedLabel = selectedNodeData?.data?.label || "";
 
       const newLevel = currentLevel + 1;
-    
+
       setShowPopup(false);
 
-      const confirmcondition= handleBack();
-      if(confirmcondition===undefined){
+      const confirmcondition = await handleBack();
+      if (confirmcondition) {
         if (type === "ProcessMap") {
-          navigate(`/level/${newLevel}/${selectedNode}`, {
-            state: { id, title: selectedLabel, user, ParentPageGroupId : nodes[0]?.PageGroupId  },
-          });
+          if (checkRecord.status === true) {
+           
+            navigate(`/Draft-Process-View/${newLevel}/${selectedNode}`, {
+              state: { id, title: selectedLabel, user, ParentPageGroupId: nodes[0]?.PageGroupId },
+            });
+          } else {
+            navigate(`/level/${newLevel}/${selectedNode}`, {
+              state: { id, title: selectedLabel, user, ParentPageGroupId: nodes[0]?.PageGroupId },
+            });
+          }
+
         }
-  
+
         if (type === "Swimlane") {
-          addBreadcrumb(
-            `${selectedLabel} `,
-            `/swimlane/level/${newLevel}/${selectedNode}`,
-            { id, title, user, parentId: selectedNode, level: newLevel }
-          );
-  
-          navigate(`/swimlane/level/${newLevel}/${selectedNode}`, {
-            state: {
-              id,
-              title: selectedLabel,
-              user,
-              parentId: selectedNode,
-              level: newLevel,
-              ParentPageGroupId : nodes[0]?.PageGroupId
-            },
-          });
+          if (checkRecord.status === true) {
+            navigate(`/Draft-Swim-lanes-View/level/${newLevel}/${selectedNode}`, {
+              state: {
+                id,
+                title: selectedLabel,
+                user,
+                parentId: selectedNode,
+                level: newLevel,
+                ParentPageGroupId: nodes[0]?.PageGroupId
+              },
+            });
+          } else {
+            addBreadcrumb(
+              `${selectedLabel} `,
+              `/swimlane/level/${newLevel}/${selectedNode}`,
+              { id, title, user, parentId: selectedNode, level: newLevel }
+            );
+
+            navigate(`/swimlane/level/${newLevel}/${selectedNode}`, {
+              state: {
+                id,
+                title: selectedLabel,
+                user,
+                parentId: selectedNode,
+                level: newLevel,
+                ParentPageGroupId: nodes[0]?.PageGroupId
+              },
+            });
+          }
+
         }
       }
 
-      
+
 
     }
   };
 
   // Save nodes and edges to backend
   const handleSaveNodes = async (savetype) => {
-    if(savetype==="Published" && currentLevel!==0){
-    
-      try{
+    if (savetype === "Published" && currentLevel !== 0) {
+
+      try {
         const response = await filter_draft(ParentPageGroupId);
-        if(response.data===true){
+        if (response.data === true) {
           alert("First published previous page");
           return false
         }
-      }catch(error){
-        console.error("filter draft error",error)
+      } catch (error) {
+        console.error("filter draft error", error)
       }
     }
 
@@ -452,7 +475,7 @@ const MapLevel = () => {
         : `Level${currentLevel}`;
     const user_id = user && user.id;
     const Process_id = id && id;
-    const datasavetype=savetype;
+    const datasavetype = savetype;
     try {
       const response = await api.saveNodes({
         Level,
@@ -533,7 +556,7 @@ const MapLevel = () => {
     };
   }, [selectedNode, deleteNode]);
 
- 
+
 
   const switchNodeType = (type) => {
     if (selectedNode) {
@@ -541,13 +564,13 @@ const MapLevel = () => {
         nds.map((node) =>
           node.id === selectedNode
             ? {
-                ...node,
-                type: type,
-                data: {
-                  ...node.data,
-                  shape: type,
-                },
-              }
+              ...node,
+              type: type,
+              data: {
+                ...node.data,
+                shape: type,
+              },
+            }
             : node
         )
       );
@@ -558,7 +581,7 @@ const MapLevel = () => {
 
   const handleContextMenuOptionClick = (type) => {
     setShowContextMenu(false);
-    addNode(type, { x: contextMenuPosition.x+110, y: contextMenuPosition.y+100 });
+    addNode(type, { x: contextMenuPosition.x + 110, y: contextMenuPosition.y + 100 });
   };
 
 
@@ -591,13 +614,13 @@ const MapLevel = () => {
 
   useEffect(() => {
     document.addEventListener("click", handlePageClick);
-  
+
     return () => {
       document.removeEventListener("click", handlePageClick);
     };
   }, [handlePageClick]);
-  
- 
+
+
 
   const iconNames = {};
 
@@ -609,53 +632,69 @@ const MapLevel = () => {
     [setEdges]
   );
 
-const handleBack = () => {
-  if (hasUnsavedChanges) {
-    const userConfirmed = window.confirm(
-      "You have unsaved changes. Do you want to save them before leaving?"
-    );
-    if (!userConfirmed) {
-    
-      return userConfirmed;
+  const handleBack = async () => {
+    if (hasUnsavedChanges) {
+      const userConfirmed = window.confirm(
+        "You have unsaved changes. Do you want to save them before leaving?"
+      );
+      if (!userConfirmed) {
+        return false;
+      }
+      await handleSaveNodes("draft"); // Wait for saving to complete
     }
-    handleSaveNodes("draft"); 
+    return true;
+  };
+
+
+  const styles = {
+    appContainer: {
+      display: "flex",
+      flexDirection: "column",
+      height: totalHeight > 0 ? `${windowHeight - totalHeight}px` : "auto",
+      marginTop: "0px",
+      backgroundColor: "#f8f9fa",
+    },
+    contentWrapper: {
+      display: "flex",
+      flex: 1,
+      borderLeft: "1px solid #002060",
+      borderRight: "1px solid #002060",
+      borderBottom: "1px solid #002060",
+    },
+    flowContainer: {
+      flex: 1,
+      backgroundColor: "#ffffff",
+      position: "relative",
+    },
+    reactFlowStyle: {
+      width: "100%",
+      height: "100%",
+    },
+  };
+
+
+  const ExitNavigation = async () => {
+    const confirmcondition = await handleBack();
+    if (confirmcondition) {
+      if (id && user) {
+        if (currentLevel === 0) {
+          navigate('/Draft-Process-View', { state: { id: id, title: title, user: user } })
+        } else {
+          navigate(`/Draft-Process-View/${currentLevel}/${currentParentId}`, { state: { id: id, title: title, user: user } })
+        }
+
+      } else {
+        alert("Currently not navigate on draft mode")
+      }
+    }
   }
-};
-
-
-const styles = {
-  appContainer: {
-    display: "flex",
-    flexDirection: "column",
-    height: totalHeight > 0 ? `${windowHeight - totalHeight}px` : "auto",
-    marginTop: "0px",
-    backgroundColor: "#f8f9fa",
-  },
-  contentWrapper: {
-    display: "flex",
-    flex: 1,
-    borderLeft: "1px solid #002060",
-    borderRight: "1px solid #002060",
-    borderBottom: "1px solid #002060",
-  },
-  flowContainer: {
-    flex: 1,
-    backgroundColor: "#ffffff",
-    position: "relative",
-  },
-  reactFlowStyle: {
-    width: "100%",
-    height: "100%",
-  },
-};
-
   return (
     <div>
       <Header
         title={headerTitle}
         onSave={handleSaveNodes}
         onPublish={handleSaveNodes}
-        addNode={()=>console.log("add node")}
+        addNode={() => console.log("add node")}
         handleBackdata={handleBack}
         iconNames={iconNames}
         currentLevel={currentLevel}
@@ -663,6 +702,7 @@ const styles = {
         getDraftedDate={getDraftedDate}
         setIsNavigating={setIsNavigating}
         Page={"Draft"}
+        onExit={ExitNavigation}
       />
       {/* <button onClick={checkbreadcrums}>
         Test
@@ -690,12 +730,12 @@ const styles = {
                 panOnDrag={false}
                 fitView
                 translateExtent={[
-                  [1240, 410], 
-                  [windowSize.width, windowSize.height], 
+                  [1240, 410],
+                  [windowSize.width, windowSize.height],
                 ]}
                 panOnScroll={false}
                 maxZoom={0.6}
-                proOptions={{hideAttribution: true }}
+                proOptions={{ hideAttribution: true }}
                 onNodeContextMenu={handleNodeRightClick}
                 style={styles.reactFlowStyle}
               ></ReactFlow>

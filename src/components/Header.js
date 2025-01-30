@@ -11,6 +11,7 @@ import { BreadcrumbsContext } from "../context/BreadcrumbsContext";
 const Header = ({
   title,
   onSave,
+  onExit,
   onPublish,
   addNode,
   handleBackdata,
@@ -28,12 +29,13 @@ const Header = ({
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const handlehomeBack = () => {
-    const confirmcondition = handleBackdata();
-    console.log("confirmcondition", confirmcondition);
-    if (confirmcondition === undefined) {
+  const handlehomeBack = async() => {
+    const confirmcondition = await handleBackdata(); 
+    if (confirmcondition) {
       navigate("/List-process-title");
     }
+  
+   
   };
   const { breadcrumbs } = useContext(BreadcrumbsContext);
 
@@ -68,12 +70,13 @@ const Header = ({
     })
     : "";
 
-  const handleBreadcrumbClick = (path, state) => {
-    const confirmcondition = handleBackdata();
-    if (confirmcondition === undefined) {
+  const handleBreadcrumbClick = async(path, state) => {
+    const confirmcondition = await handleBackdata(); 
+    console.log("confirmcondition click",confirmcondition)
+    // if (confirmcondition) {
       setIsNavigating(true);
       navigate(path, { state });
-    }
+    // }
   };
 
   return (
@@ -225,7 +228,7 @@ const Header = ({
                 </div>
               </div>
               <button
-                  onClick={() => alert("Work going on ")}
+                  onClick={() =>onExit("exit")}
                   style={{
                     ...styles.saveButton,
                     backgroundColor: "#218838",

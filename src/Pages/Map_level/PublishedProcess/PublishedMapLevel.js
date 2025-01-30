@@ -55,14 +55,13 @@ const PublishedMapLevel = () => {
     };
   }, []);
 
-  
   const navigate = useNavigate();
   const { level, parentId } = useParams();
   const location = useLocation();
   const { id, title, user } = location.state || {};
   const currentLevel = level ? parseInt(level, 10) : 0;
   const currentParentId = parentId || null;
-  const { addBreadcrumb, removeBreadcrumbsAfter,breadcrumbs } =
+  const { addBreadcrumb, removeBreadcrumbsAfter } =
     useContext(BreadcrumbsContext);
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -287,9 +286,8 @@ const PublishedMapLevel = () => {
   const iconNames = {};
 const navigateOnDraft=()=>{
   // console.log("current map level",currentLevel)
-  const id=breadcrumbs[1].state?breadcrumbs[1].state.id:''
-  const user=breadcrumbs[1].state?breadcrumbs[1].state.user:''
-  const title=breadcrumbs[1].state?breadcrumbs[1].state.title:''
+  // const id=breadcrumbs[1].state?breadcrumbs[1].state.id:''
+  // const user=breadcrumbs[1].state?breadcrumbs[1].state.user:''
   if(id && user){
     if(currentLevel===0){
       navigate('/Draft-Process-View',{ state: { id:id, title:title, user: user } })

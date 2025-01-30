@@ -18,7 +18,7 @@ import styles from "../SwimlaneStyles";
 import PublishNodeType from "./PublishNodeType";
 import { BreadcrumbsContext } from "../../../context/BreadcrumbsContext";
 
-
+import '../../../Css/Swimlane.css'
 
 const rfStyle = {
   width: "100%",
@@ -55,7 +55,7 @@ const PublishedSwimlaneModel = () => {
     []
   );
 
-  const { removeBreadcrumbsAfter,breadcrumbs } = useContext(BreadcrumbsContext); 
+  const { removeBreadcrumbsAfter } = useContext(BreadcrumbsContext); 
 
   useEffect(() => {
     const fetchNodes = async () => {
@@ -156,8 +156,8 @@ const PublishedSwimlaneModel = () => {
 
   const navigateOnDraft=()=>{
    
-    const id=breadcrumbs[1].state?breadcrumbs[1].state.id:''
-    const user=breadcrumbs[1].state?breadcrumbs[1].state.user:''
+    // const id=breadcrumbs[1].state?breadcrumbs[1].state.id:''
+    // const user=breadcrumbs[1].state?breadcrumbs[1].state.user:''
     if(id && user){
       navigate(`/Draft-Swim-lanes-View/level/${currentLevel}/${currentParentId}`,{ state: { id:id, title:title, user: user , parentId:currentParentId, level: currentLevel} })
       // removeBreadcrumbsAfter(0);
@@ -180,7 +180,7 @@ const PublishedSwimlaneModel = () => {
         setIsNavigating={()=>  removeBreadcrumbsAfter(currentLevel-1)}
         Page={"Published"}
       />
-      <div style={styles.appContainer}>
+      <div style={styles.appContainer} className="custom_swimlane">
         <ReactFlowProvider>
           <div style={styles.scrollableWrapper}>
             <ReactFlow
@@ -195,6 +195,10 @@ const PublishedSwimlaneModel = () => {
               panOnDrag={false}
               panOnScroll={false}
               maxZoom={1}
+              translateExtent={[
+                [0, 0],
+                [windowSize.width, windowSize.height],
+              ]}
               proOptions={{hideAttribution: true }}
               defaultEdgeOptions={{ zIndex: 1 }}
               style={rfStyle}

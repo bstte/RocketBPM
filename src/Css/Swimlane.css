@@ -1,0 +1,3 @@
+.custom_swimlane .react-flow__viewport.xyflow__viewport.react-flow__container {
+    transform: none !important;
+}

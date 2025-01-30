@@ -30,6 +30,7 @@ import generateNodesAndEdges from "../../../src/AllNode/SwimlineNodes/generateNo
 import styles from "./SwimlaneStyles";
 import AddObjectRole from "../../AllNode/SwimlineNodes/addobjectrole";
 import { BreadcrumbsContext } from "../../context/BreadcrumbsContext";
+import '../../Css/Swimlane.css'
 
 const SwimlaneModel = () => {
   const [windowSize, setWindowSize] = useState({
@@ -967,18 +968,33 @@ const SwimlaneModel = () => {
     event.preventDefault();
   };
 
-  const handleBack = () => {
+  const handleBack = async () => {
     if (hasUnsavedChanges) {
       const userConfirmed = window.confirm(
         "You have unsaved changes. Do you want to save them before leaving?"
       );
       if (!userConfirmed) {
-        return userConfirmed;
+        return false;
       }
-      handleSaveNodes("draft");
+      await handleSaveNodes("draft"); // Wait for saving to complete
+    }
+    return true;
+  };
+  
+  const ExitNavigation = async () => {
+    const confirmcondition = await handleBack(); // Wait for confirmation
+    if (confirmcondition) {
+      if (id && user) {
+        navigate(`/Draft-Swim-lanes-View/level/${currentLevel}/${currentParentId}`, {
+          state: { id: id, title: title, user: user, parentId: currentParentId, level: currentLevel }
+        });
+      } else {
+        alert("Currently not navigate on draft mode");
+      }
     }
   };
-
+  
+  
   return (
     <div>
       <Header
@@ -992,9 +1008,10 @@ const SwimlaneModel = () => {
         getDraftedDate={getDraftedDate}
         setIsNavigating={() => removeBreadcrumbsAfter(currentLevel - 1)}
         Page={"Draft"}
+        onExit={ExitNavigation}
       />
 
-      <div style={styles.appContainer}>
+      <div style={styles.appContainer} className="custom_swimlane">
         <ReactFlowProvider>
           <div style={styles.scrollableWrapper}>
             <ReactFlow
