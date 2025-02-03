@@ -21,7 +21,7 @@ const SwimlineDiamondNode = ({ data }) => {
 
 
   const renderPopup = () => (
-    <div
+    <div className="popupPosition_fix"
       style={{
         ...styles.popup,
         left: popupPosition.x,
@@ -29,7 +29,7 @@ const SwimlineDiamondNode = ({ data }) => {
         zIndex: 1001,
       }}
     >
-      <div style={styles.popupHeader}>
+      <div style={styles.popupHeader} >
         <h3 style={styles.popupTitle}>{data.details.title}</h3>
         <button
           style={styles.closeButton}
@@ -39,7 +39,7 @@ const SwimlineDiamondNode = ({ data }) => {
 
         </button>
       </div>
-      <div
+      <div className="popupContent_content"
         style={styles.popupContent}
         dangerouslySetInnerHTML={{ __html: data.details.content }}
       />
@@ -102,12 +102,11 @@ const styles = {
     height: "45px",
     backgroundColor: "#ffffff",
     color: "#000000",
-    border: "2px solid #000",
+    border: "2px solid #002060",
     transform: "rotate(45deg)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    boxShadow: "0 2px 5px rgba(0, 0, 0, 0.3)",
   },
   title: {
     transform: "rotate(-45deg)",
@@ -133,12 +132,12 @@ const styles = {
   },
   popup: {
     position: "fixed",
-    transform: "translate(-50%, -100%)",
+    transform: "translate(-50%, -50%)",
     width: "auto",
     maxWidth: "500px",
     padding: "20px",
     backgroundColor: "#ffffff",
-    border: "1px solid #000",
+    border: "1px solid #002060",
     borderRadius: "5px",
     boxShadow: "0 2px 5px rgba(0, 0, 0, 0.3)",
     overflow: "hidden",
@@ -151,17 +150,29 @@ const styles = {
   },
   popupTitle: {
     fontSize: "16px",
-    fontWeight: "600",
-    color: "#333",
+    fontWeight: "400",
+    color: "#002060",
     margin: "0 0 10px 0",
+
   },
   popupContent: {
     fontSize: "14px",
-    color: "#333",
+    color: "#002060",
     whiteSpace: "normal",
     maxHeight: "200px",
     overflowY: "auto",
     paddingRight: "10px",
+  },
+  closeButton: {
+    position: "absolute",
+    top: "5px",
+    right: "5px",
+    background: "transparent",
+    color: "#002060",
+    border: "none",
+    cursor: "pointer",
+    fontSize: "18px",
+    fontWeight: "bold",
   },
 };
 

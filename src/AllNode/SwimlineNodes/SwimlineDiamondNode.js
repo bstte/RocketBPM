@@ -1,7 +1,7 @@
 import { memo, useState, useRef, useEffect } from "react";
 import { Handle, Position } from "@xyflow/react";
 import ContentEditable from "react-contenteditable";
-
+import './SwimlineNodes.css';
 const SwimlineDiamondNode = ({ data }) => {
   const [title, setTitle] = useState(data.details.title);
   const titleRef = useRef(null);
@@ -59,13 +59,13 @@ const SwimlineDiamondNode = ({ data }) => {
   const handleBlur = () => {};
 
   return (
-    <div style={styles.wrapper} onClick={handleBoxClick}
+    <div className="diamond_Wrapper_custom" style={styles.wrapper} onClick={handleBoxClick}
     onMouseEnter={() => setIsHovered(true)} 
     onMouseLeave={() => setIsHovered(false)} 
     >
       {/* Diamond Shape */}
-      <div style={styles.diamondWrapper}>
-        <div style={styles.diamond}>
+      <div style={styles.diamondWrapper} className="diamond_Wrapper">
+        <div style={styles.diamond} className="diamond_header">
           <ContentEditable
             innerRef={titleRef}
             html={title}
@@ -87,13 +87,13 @@ const SwimlineDiamondNode = ({ data }) => {
         <Handle type="source" position={Position.Bottom} id="bottom-source" style={isHovered ? styles.hoverhandle:styles.handle} />
 
         <Handle type="target" position={Position.Left} id="left-target"
-          style={isHovered ? { ...styles.hoverhandle, left:'18px' } : { ...styles.handle, left:'18px'}}
+          style={isHovered ? { ...styles.hoverhandle, left:'-5px' } : { ...styles.handle, left:'-5px'}}
       />
-        <Handle type="source" position={Position.Left} id="left-source"   style={isHovered ? { ...styles.hoverhandle, left:'18px' } : { ...styles.handle, left:'18px'}} />
+        <Handle type="source" position={Position.Left} id="left-source"   style={isHovered ? { ...styles.hoverhandle, left:'-5px' } : { ...styles.handle, left:'-5px'}} />
         <Handle type="target" position={Position.Right} id="right-target" 
-          style={isHovered ? { ...styles.hoverhandle, right:'20px' } : { ...styles.handle, right:'20px'}}
+          style={isHovered ? { ...styles.hoverhandle, right:'-5px' } : { ...styles.handle, right:'-5px'}}
       />
-        <Handle type="source" position={Position.Right} id="right-source"           style={isHovered ? { ...styles.hoverhandle, right:'20px' } : { ...styles.handle, right:'20px'}} />
+        <Handle type="source" position={Position.Right} id="right-source"           style={isHovered ? { ...styles.hoverhandle, right:'-5px' } : { ...styles.handle, right:'-5px'}} />
     </div>
   );
 };
@@ -119,7 +119,7 @@ const styles = {
     height: "45px",
     backgroundColor: "#ffffff",
     color: "#000000",
-    border: "2px solid #000",
+    border: "2px solid #002060",
     transform: "rotate(45deg)",
     display: "flex",
     alignItems: "center",

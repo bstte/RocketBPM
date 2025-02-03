@@ -54,4 +54,14 @@
     font-family: 'Poppins', sans-serif;
     transform: rotate(-45deg);
   }
-  
+  .diamond_Wrapper_custom {
+    max-width: fit-content;
+    margin: auto;
+    min-height: min-content;
+}
+.diamond_Wrapper_custom .react-flow__handle-top {
+  top: 1px;
+}
+.diamond_Wrapper_custom .react-flow__handle-bottom {
+  bottom: 1px;
+}

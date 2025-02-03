@@ -29,7 +29,7 @@ const BoxNode = ({ data }) => {
 
   
   const renderPopup = () => (
-    <div
+    <div className="popupPosition_fix"
       style={{
         ...styles.popup,
         left: popupPosition.x,
@@ -37,7 +37,7 @@ const BoxNode = ({ data }) => {
         zIndex: 1001,
       }}
     >
-      <div style={styles.popupHeader}>
+      <div style={styles.popupHeader} >
         <h3 style={styles.popupTitle}>{title}</h3>
         <button
           style={styles.closeButton}
@@ -47,7 +47,7 @@ const BoxNode = ({ data }) => {
 
         </button>
       </div>
-      <div
+      <div className="popupContent_content"
         style={styles.popupContent}
         dangerouslySetInnerHTML={{ __html: data.details.content }}
       />
@@ -58,7 +58,7 @@ const BoxNode = ({ data }) => {
 
   return (
     <>
-    <div
+    <div 
       style={styles.wrapper}
       onClick={handleBoxClick} 
       ref={boxRef} 
@@ -181,15 +181,17 @@ const styles = {
   },
   popup: {
     position: "fixed",
-    transform: "translate(-50%, -100%)",
+    transform: "translate(-50%, -50%)",
     width: "auto",
     maxWidth: "500px",
     padding: "20px",
     backgroundColor: "#ffffff",
     border: "1px solid #000",
     borderRadius: "5px",
-    boxShadow: "0 2px 5px rgba(0, 0, 0, 0.3)",
+    boxShadow: "0 2px 5px #002060",
     overflow: "hidden",
+    left: '50%',
+    top: '50%',
   },
   popupHeader: {
     display: "flex",
@@ -199,13 +201,14 @@ const styles = {
   },
   popupTitle: {
     fontSize: "16px",
-    fontWeight: "600",
-    color: "#333",
-    margin: "0", // Remove default margins
+    fontWeight: "500",
+    color: "#002060",
+    margin: "0",
+    texttransform: "capitalize", // Remove default margins
   },
   popupContent: {
     fontSize: "14px",
-    color: "#333",
+    color: "#002060",
     whiteSpace: "normal",
     maxHeight: "200px",
     overflowY: "auto",
@@ -213,7 +216,7 @@ const styles = {
   },
   withoutlinkButton: {
     fontSize: "12px",
-    color: "#333",
+    color: "#002060",
     background: "none",
     border: "none",
     cursor: "pointer",
@@ -224,6 +227,7 @@ const styles = {
     top: "5px",
     right: "5px",
     background: "transparent",
+    color: "#002060",
     border: "none",
     cursor: "pointer",
     fontSize: "18px",

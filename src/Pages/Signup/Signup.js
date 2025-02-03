@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import './Login.css'; // Import the CSS file for styling
+import './Signup.css'; // Import the CSS file for styling
 import { loginUser } from '../../redux/userSlice';
 
-const Login = () => {
+const Signup = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -32,8 +32,22 @@ const Login = () => {
         className="login-logo"
       />
       </div>
-      <h2>Log in to your account</h2>
+      <h2>Join RocketBPM.com</h2>
       <form onSubmit={handleLogin} className="login-form">
+      <input
+          type="text"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="First Name"
+          className="login-input"
+        />
+         <input
+          type="text"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Last Name"
+          className="login-input"
+        />
         <input
           type="email"
           value={email}
@@ -50,12 +64,11 @@ const Login = () => {
         />
         {error && <p className="error-message">{error}</p>}
         <button type="submit" className="login-button">SIGN IN</button>
-        <p>Not a member?<button className="btn_form" type='button' onClick={()=> navigate('/signup')}>Sign up</button></p>
-        <button className="btn_form" type='button' onClick={()=> navigate('/forgotpassword')}>Forgot your password?</button>
+        <p>Already a member?<button className="btn_form" type='button' onClick={()=> navigate('/login')}>Sign in</button></p>
       </form>
       </div>
     </div>
   );
 };
 
-export default Login;
+export default Signup;

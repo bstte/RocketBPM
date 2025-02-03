@@ -1,3 +1,43 @@
 .custom_swimlane .react-flow__viewport.xyflow__viewport.react-flow__container {
     transform: none !important;
 }
+.custom_swimlane .react-flow__node-group {
+    border-top: 0;
+    border-bottom: 2px solid #002060 !important;
+    /* border-color: #002060 !important; */
+    /* width: 136.636px!important; */
+}
+.react-flow__edge-path {
+    stroke: #002060 !important;
+}
+.custom_swimlane .borderBox{
+    border-color: #002060 !important;
+}
+
+.popupPosition_fix {
+    top: 50% !important;
+    left: 50% !important;
+}
+.popupPosition_fix button {
+    border: 0;
+    background-color: transparent;
+    font-size: 20px;
+}
+.popupPosition_fix > * {
+    color: #002060 !important;
+    font-family: 'Poppins', sans-serif !important;
+    font-weight: normal !important;
+}
+.popupContent_content::-webkit-scrollbar, .ql-editor::-webkit-scrollbar-thumb{
+    width: 5px;
+    height:20px;
+}
+.ql-editor::-webkit-scrollbar-thumb{
+	background-color: #002060;
+}
+.popupPosition_fix h3 {
+    text-transform: capitalize;
+}
+.popupContent_content::-webkit-scrollbar-thumb{
+	background-color: #002060;
+}

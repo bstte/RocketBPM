@@ -15,6 +15,9 @@ import PublishedMapLevel from './Pages/Map_level/PublishedProcess/PublishedMapLe
 import PublishedSwimlaneModel from './Pages/Map_level/PublishedProcess/PublishedSwimlaneModel';
 import DraftProcesMapLevel from './Pages/Map_level/DraftProcessView/DraftProcesMapLevel';
 import DraftSwimlineLevel from './Pages/Map_level/DraftProcessView/DraftSwimlineLevel';
+import Signup from './Pages/Signup/Signup';
+import Forgotpassword from './Pages/Forgotpassword/Forgotpassword';
+import Account from './Pages/Accountsettings/Account';
 // import Testdraganddrop from './Pages/Map_level/Testdraganddrop';
 
 const PrivateRoute = ({ children }) => {
@@ -64,6 +67,9 @@ const AppContent = () => {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route path="/Account" element={<Account />} />
+      <Route path="/forgotpassword" element={<Forgotpassword />} />
       <Route path="/Map-level" element={<PrivateRoute><MapLevel /></PrivateRoute>} />
       <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
       {/* <Route path="/Testdraganddrop" element={<PrivateRoute><Testdraganddrop /></PrivateRoute>} /> */}

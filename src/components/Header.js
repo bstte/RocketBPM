@@ -73,10 +73,10 @@ const Header = ({
   const handleBreadcrumbClick = async(path, state) => {
     const confirmcondition = await handleBackdata(); 
     console.log("confirmcondition click",confirmcondition)
-    // if (confirmcondition) {
+    if (confirmcondition!==false) {
       setIsNavigating(true);
       navigate(path, { state });
-    // }
+    }
   };
 
   return (
@@ -405,7 +405,7 @@ const styles = {
 
     display: "flex", // Flexbox for inline items
     alignItems: "center", // Center items vertically
-    fontFamily: "Arial, sans-serif", // Set font for readability
+    fontFamily: "'Poppins', sans-serif",
   },
   breadcrumbLink: {
     textDecoration: "none",

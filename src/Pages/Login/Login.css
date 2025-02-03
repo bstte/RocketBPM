@@ -1,7 +1,7 @@
 /* src/pages/Login.css */
 body {
   background-color: #fff;
-  font-family: Arial, sans-serif;
+  font-family: 'Poppins', sans-serif;
   padding: 20px;
   margin: 0;
 }
@@ -18,25 +18,36 @@ h2 {
   color: #333;
   margin-bottom: 20px;
 }
+.login-wrapper {
+  background: white;
+  box-shadow: 0 2px 10px #002060;
+  padding: 40px 20px;
+  border-color: #002060;
+  border: 1px solid;
+}
 
 .login-form {
   background: white;
-  padding-top: 20px;
+  /* padding-top: 20px ;
   padding-right: 30px;
 padding-left: 20px;
-padding-bottom: 20px;
+padding-bottom: 20px; */
   border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  /* box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); */
   width: 300px;
+  text-align: center;
 }
 
 .login-input {
-  width: 100%;
+  width: -webkit-fill-available !important;
   padding: 10px;
   margin-bottom: 15px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  border: 2px solid #002060;
+  /* border-radius: 4px; */
   font-size: 14px;
+}
+.login-input::placeholder {
+  color: #002060;
 }
 
 .login-input:focus {
@@ -45,30 +56,49 @@ padding-bottom: 20px;
 }
 
 .login-logo {
-  width: 180px; /* Adjust size as needed */
-  margin-bottom: 20px;
+  width: 220px; /* Adjust size as needed */
+  /* margin-bottom: 20px; */
 }
-
-
+.login-wrapper h2 {
+  text-align: center;
+  color: #002060;
+  font-weight: normal;
+}
+.login-wrapper p {
+  color: #002060;
+  margin: 0 0 10px 0;
+}
+.login-wrapper a{
+  color: #FF364A;
+  margin: 0;
+}
+.login-image {
+  width: 100%;
+  margin: 0 auto;
+  text-align: center;
+  margin-bottom: 30px;
+}
 .error-message {
-  color: red;
+  color: #FF364A;
   font-size: 12px;
   margin-bottom: 15px;
 }
+button.login-button {
+  margin-bottom: 25px;
+}
 
 .login-button {
-  width: 100%;
-  padding: 10px;
-  background-color: #007bff;
-  color: white;
+  width: auto;
+  padding: 11px 40px;
+  background-color: #FF364A;
+  color: #fff;
   border: none;
   border-radius: 4px;
   font-size: 16px;
   cursor: pointer;
-  margin-left: 10px;
   transition: background-color 0.3s ease;
+  text-align: center;
 }
-
 .login-button:hover {
-  background-color: #0056b3;
+  background-color: #FF364A;
 }

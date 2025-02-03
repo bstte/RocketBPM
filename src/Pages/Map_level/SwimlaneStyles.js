@@ -12,9 +12,8 @@ const styles = {
     flex: 1,
     overflowY: 'auto', 
     overflowX: 'hidden', 
-    borderLeft: '2px solid red',
-    borderRight: '2px solid red',
-    borderBottom: '2px solid red',
+    border: '2px solid #FF364A',
+
   },
   reactFlowNodeGroup: {
     borderRadius: 0,
