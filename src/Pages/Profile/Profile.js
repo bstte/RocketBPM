@@ -22,14 +22,14 @@ const Profile = () => {
                                         bgcolor: '#3f51b5', // Profile avatar background color
                                     }}
                                 >
-                                    {user.name.charAt(0).toUpperCase()}
+                                    {user.first_name.charAt(0).toUpperCase()}
                                 </Avatar>
                             </Grid>
 
                             {/* Right Side: User Details */}
                             <Grid item xs={9}>
                                 <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-                                    {`Name: ${user.name}`}
+                                    {`Name: ${user.first_name}`}
                                 </Typography>
                                 <Typography variant="body1" color="textSecondary" sx={{ mt: 1 }}>
                                     {`Email: ${user.email}`}

@@ -23,9 +23,11 @@ import Header from "../../components/Header";
 import Popup from "../../components/Popup";
 import ArrowBoxNode from "../../AllNode/ArrowBoxNode";
 import PentagonNode from "../../AllNode/PentagonNode";
-import api, { filter_draft } from "../../API/api";
+import api, { addFavProcess, checkFavProcess, filter_draft } from "../../API/api";
 import { BreadcrumbsContext } from "../../context/BreadcrumbsContext";
 import CustomContextMenu from "../../components/CustomContextMenu";
+import CustomAlert from "../../components/CustomAlert";
+import { useSelector } from "react-redux";
 
 
 const MapLevel = () => {
@@ -64,6 +66,8 @@ const MapLevel = () => {
   const navigate = useNavigate();
   const { level, parentId } = useParams();
   const location = useLocation();
+  const LoginUser = useSelector((state) => state.user.user);
+
   const { id, title, user, ParentPageGroupId } = location.state || {};
   const currentLevel = level ? parseInt(level, 10) : 0;
   const currentParentId = parentId || null;
@@ -78,6 +82,8 @@ const MapLevel = () => {
   const [checkRecord, setcheckRecord] = useState(null);
   const [getPublishedDate, setgetPublishedDate] = useState("");
   const [getDraftedDate, setDraftedDate] = useState("");
+    const [process_img, setprocess_img] = useState("");
+  
   const [contextMenuPosition, setContextMenuPosition] = useState({
     x: 0,
     y: 0,
@@ -87,6 +93,7 @@ const MapLevel = () => {
   const [headerTitle, setHeaderTitle] = useState(`${title} `);
   const [isNavigating, setIsNavigating] = useState(false);
 
+  const [isFavorite, setIsFavorite] = useState(false);
 
 
   const memoizedNodeTypes = useMemo(
@@ -130,6 +137,25 @@ const MapLevel = () => {
 
 
   useEffect(() => {
+    const checkfav=async()=>{
+      const user_id = LoginUser ? LoginUser.id : null;
+      const process_id = id ? id : null;
+    
+    
+      if (!user_id || !process_id) {
+        console.error("Missing required fields:", { user_id, process_id });
+        return; // Stop execution if any field is missing
+      }
+    
+      try {
+        console.log("Sending data:", { user_id, process_id });
+        const response = await checkFavProcess(user_id, process_id);
+        console.log("Response:", response);
+        setIsFavorite(response.exists)
+      } catch (error) {
+        console.error("check fav error:", error);
+      }
+    }
     const fetchNodes = async () => {
       try {
         const levelParam =
@@ -162,6 +188,7 @@ const MapLevel = () => {
         } else {
           setDraftedDate("");
         }
+        setprocess_img(data.process_img)
 
         const parsedNodes = data.nodes.map((node) => {
           const parsedData = JSON.parse(node.data);
@@ -208,10 +235,11 @@ const MapLevel = () => {
     };
 
 
-
+    checkfav()
     fetchNodes();
   }, [
     currentLevel,
+    LoginUser,
     handleLabelChange,
     setNodes,
     setEdges,
@@ -268,7 +296,7 @@ const MapLevel = () => {
       );
       console.log("confirm data", userConfirmed);
       if (userConfirmed) {
-        navigate("/List-process-title");
+        navigate("/dashboard");
       } else {
         event.preventDefault();
       }
@@ -334,25 +362,29 @@ const MapLevel = () => {
     }, 1000);
   };
 
+ 
+
   const deleteNode = useCallback(() => {
     if (selectedNode) {
-      const confirmDeletion = window.confirm(
-        "Are you sure you want to delete this nodes?"
+      CustomAlert.confirm(
+        "Delete Node",
+        "Are you sure you want to delete this node?",
+        () => {
+          setNodes((nds) => nds.filter((node) => node.id !== selectedNode));
+          setEdges((eds) =>
+            eds.filter(
+              (edge) => edge.source !== selectedNode && edge.target !== selectedNode
+            )
+          );
+          setSelectedNode(null);
+          setShowPopup(false);
+          setHasUnsavedChanges(true);
+          setHeaderTitle(`${title}`);
+        }
       );
-      if (!confirmDeletion) return;
-
-      setNodes((nds) => nds.filter((node) => node.id !== selectedNode));
-      setEdges((eds) =>
-        eds.filter(
-          (edge) => edge.source !== selectedNode && edge.target !== selectedNode
-        )
-      );
-      setSelectedNode(null);
-      setShowPopup(false);
-      setHasUnsavedChanges(true);
-      setHeaderTitle(`${title}`);
     }
   }, [selectedNode, setNodes, setEdges, title]);
+  
 
   const handleNodeRightClick = async (event, node) => {
     event.preventDefault();
@@ -671,7 +703,26 @@ const MapLevel = () => {
       height: "100%",
     },
   };
-
+  const handleFav = async () => {
+    const user_id = LoginUser ? LoginUser.id : null;
+    const process_id = id ? id : null;
+    const type = user ? user.type : null;
+  
+    if (!user_id || !process_id || !type) {
+      console.error("Missing required fields:", { user_id, process_id, type });
+      return; // Stop execution if any field is missing
+    }
+  
+    try {
+      console.log("Sending data:", { user_id, process_id, type });
+      const response = await addFavProcess(user_id, process_id, type);
+      setIsFavorite(true)
+      console.log("Response:", response);
+    } catch (error) {
+      console.error("Add fav error:", error);
+    }
+  };
+  
 
   const ExitNavigation = async () => {
     const confirmcondition = await handleBack();
@@ -703,6 +754,10 @@ const MapLevel = () => {
         setIsNavigating={setIsNavigating}
         Page={"Draft"}
         onExit={ExitNavigation}
+        savefav={handleFav}
+        isFavorite={isFavorite}
+        Process_img={process_img}
+
       />
       {/* <button onClick={checkbreadcrums}>
         Test

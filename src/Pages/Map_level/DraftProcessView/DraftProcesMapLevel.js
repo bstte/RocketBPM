@@ -18,15 +18,18 @@ import React, {
   import "@xyflow/react/dist/style.css";
   import { useLocation, useNavigate, useParams } from "react-router-dom";
   import Header from "../../../components/Header";
-  import api from "../../../API/api";
+  import api, { checkFavProcess } from "../../../API/api";
   import { BreadcrumbsContext } from "../../../context/BreadcrumbsContext";
   import PublishArrowBoxNode from "../../../AllNode/PublishAllNode/PublishArrowBoxNode";
   import PublishPentagonNode from "../../../AllNode/PublishAllNode/PublishPentagonNode";
+import { useSelector } from "react-redux";
   
   const DraftProcesMapLevel = () => {
 
     const [totalHeight, setTotalHeight] = useState(0);
     const [windowHeight, setWindowHeight] = useState(window.innerHeight);
+      const [process_img, setprocess_img] = useState("");
+    
     const windowSize = {
       width: window.innerWidth - 300,
       height: window.innerHeight - 300,
@@ -58,6 +61,8 @@ import React, {
     const navigate = useNavigate();
     const { level, parentId } = useParams();
     const location = useLocation();
+    const LoginUser = useSelector((state) => state.user.user);
+
     const { id, title, user } = location.state || {};
     const currentLevel = level ? parseInt(level, 10) : 0;
     const currentParentId = parentId || null;
@@ -67,6 +72,8 @@ import React, {
     const [edges, setEdges, onEdgesChange] = useEdgesState([]);
     const [headerTitle, setHeaderTitle] = useState(`${title} `);
     const [getPublishedDate, setgetPublishedDate] = useState("");
+      const [isFavorite, setIsFavorite] = useState(false);
+    
    const [isNavigating, setIsNavigating] = useState(false);
     const memoizedNodeTypes = useMemo(
       () => ({
@@ -98,6 +105,25 @@ import React, {
     );
   
     useEffect(() => {
+        const checkfav=async()=>{
+            const user_id = LoginUser ? LoginUser.id : null;
+            const process_id = id ? id : null;
+          
+          
+            if (!user_id || !process_id) {
+              console.error("Missing required fields:", { user_id, process_id });
+              return; // Stop execution if any field is missing
+            }
+          
+            try {
+              console.log("Sending data:", { user_id, process_id });
+              const response = await checkFavProcess(user_id, process_id);
+              console.log("Response:", response);
+              setIsFavorite(response.exists)
+            } catch (error) {
+              console.error("check fav error:", error);
+            }
+          }
       const fetchNodes = async () => {
         try {
           const levelParam =
@@ -124,7 +150,10 @@ import React, {
           } else {
             setgetPublishedDate("");
           }
-  
+          console.log( levelParam,
+            parseInt(user_id),
+            Process_id)
+            setprocess_img(data.process_img)
           const parsedNodes = data.nodes.map((node) => {
             const parsedData = JSON.parse(node.data);
             const parsedPosition = JSON.parse(node.position);
@@ -169,13 +198,14 @@ import React, {
           alert("Failed to fetch nodes. Please try again.");
         }
       };
-  
+      checkfav()
       fetchNodes();
     }, [
       currentLevel,
       handleLabelChange,
       setNodes,
       setEdges,
+      LoginUser,
       currentParentId,
       user,
       id,
@@ -284,15 +314,17 @@ import React, {
   
     const iconNames = {};
 
-    const navigateOnDraft=()=>{
+    const navigateOnDraft=(page)=>{
       // const id=breadcrumbs[1].state?breadcrumbs[1].state.id:''
       // const user=breadcrumbs[1].state?breadcrumbs[1].state.user:''
       // const title=breadcrumbs[1].state?breadcrumbs[1].state.title:''
+      
       if(id && user){
         if(currentLevel===0){
-          navigate('/Map-level',{ state: { id:id, title:title, user: user } })
+          page==="editdraft"?  navigate('/Map-level',{ state: { id:id, title:title, user: user } }):  navigate('/Published_Map_level',{ state: { id:id, title:title, user: user } })
+        
         }else{
-           navigate(`/level/${currentLevel}/${currentParentId}`,{ state: { id:id, title:title, user: user } })
+          page==="editdraft"?navigate(`/level/${currentLevel}/${currentParentId}`,{ state: { id:id, title:title, user: user } }): navigate(`/PublishedMapLevel/${currentLevel}/${currentParentId}`,{ state: { id:id, title:title, user: user } }) 
         }
        
       }else{
@@ -340,7 +372,10 @@ import React, {
           currentLevel={currentLevel}
           getDraftedDate={getPublishedDate}
           setIsNavigating={setIsNavigating}
-          Page={"ViewDraft"}
+          Page={"ViewDraftmodel"}
+          isFavorite={isFavorite}
+          Process_img={process_img}
+          Procesuser={user}
         />
         <ReactFlowProvider>
           <div className="app-container" style={styles.appContainer}>

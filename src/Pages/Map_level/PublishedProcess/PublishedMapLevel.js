@@ -18,10 +18,11 @@ import {
 import "@xyflow/react/dist/style.css";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Header from "../../../components/Header";
-import api from "../../../API/api";
+import api, { checkFavProcess } from "../../../API/api";
 import { BreadcrumbsContext } from "../../../context/BreadcrumbsContext";
 import PublishArrowBoxNode from "../../../AllNode/PublishAllNode/PublishArrowBoxNode";
 import PublishPentagonNode from "../../../AllNode/PublishAllNode/PublishPentagonNode";
+import { useSelector } from "react-redux";
 
 const PublishedMapLevel = () => {
 
@@ -31,8 +32,9 @@ const PublishedMapLevel = () => {
     width: window.innerWidth - 300,
     height: window.innerHeight - 300,
 };
+const LoginUser = useSelector((state) => state.user.user);
 
-  
+    const [isFavorite, setIsFavorite] = useState(false);
 
   useEffect(() => {
     const calculateHeight = () => {
@@ -67,6 +69,7 @@ const PublishedMapLevel = () => {
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [headerTitle, setHeaderTitle] = useState(`${title} `);
   const [getPublishedDate, setgetPublishedDate] = useState("");
+  const [process_img, setprocess_img] = useState("");
  const [isNavigating, setIsNavigating] = useState(false);
   const memoizedNodeTypes = useMemo(
     () => ({
@@ -98,6 +101,26 @@ const PublishedMapLevel = () => {
   );
 
   useEffect(() => {
+    const checkfav=async()=>{
+                const user_id = LoginUser ? LoginUser.id : null;
+                const process_id = id ? id : null;
+              
+              
+                if (!user_id || !process_id) {
+                  console.error("Missing required fields:", { user_id, process_id });
+                  return; // Stop execution if any field is missing
+                }
+              
+                try {
+                  console.log("Sending data:", { user_id, process_id });
+                  const response = await checkFavProcess(user_id, process_id);
+                  console.log("Response:", response);
+                  setIsFavorite(response.exists)
+                } catch (error) {
+                  console.error("check fav error:", error);
+                }
+              }
+
     const fetchNodes = async () => {
       try {
         const levelParam =
@@ -125,6 +148,7 @@ const PublishedMapLevel = () => {
           setgetPublishedDate("");
         }
 
+        setprocess_img(data.process_img)
         const parsedNodes = data.nodes.map((node) => {
           const parsedData = JSON.parse(node.data);
           const parsedPosition = JSON.parse(node.position);
@@ -161,7 +185,7 @@ const PublishedMapLevel = () => {
           style: { stroke: "#000", strokeWidth: 2 },
           type: "step",
         }));
-
+        checkfav()
         setNodes(parsedNodes);
         setEdges(parsedEdges);
       } catch (error) {
@@ -173,6 +197,7 @@ const PublishedMapLevel = () => {
     fetchNodes();
   }, [
     currentLevel,
+    LoginUser,
     handleLabelChange,
     setNodes,
     setEdges,
@@ -343,6 +368,9 @@ const styles = {
         getPublishedDate={getPublishedDate}
         setIsNavigating={setIsNavigating}
         Page={"Published"}
+        isFavorite={isFavorite}
+        Process_img={process_img}
+        Procesuser={user}
       />
       <ReactFlowProvider>
         <div className="app-container" style={styles.appContainer}>

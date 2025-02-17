@@ -48,7 +48,7 @@ const CustomDrawer = ({ title }) => {
             <Grid container alignItems="center">
               <Grid item xs={8}>
                 <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                  {user.name}
+                  {user.first_name}
                 </Typography>
                 <Typography variant="body2" color="textSecondary">
                   {user.email}
@@ -63,7 +63,7 @@ const CustomDrawer = ({ title }) => {
                     marginLeft: 'auto',
                   }}
                 >
-                  {user.name.charAt(0).toUpperCase()}
+                  {user.first_name.charAt(0).toUpperCase()}
                 </Avatar>
               </Grid>
             </Grid>
@@ -82,9 +82,9 @@ const CustomDrawer = ({ title }) => {
               </ListItem>
               <ListItem 
                 button 
-                onClick={() => navigate('/profile')} 
-                selected={location.pathname === '/profile'} // Highlight if active
-                sx={{ backgroundColor: location.pathname === '/profile' ? '#e0e0e0' : 'transparent', mb: 1 }}
+                onClick={() => navigate('/Account')} 
+                selected={location.pathname === '/Account'} // Highlight if active
+                sx={{ backgroundColor: location.pathname === '/Account' ? '#e0e0e0' : 'transparent', mb: 1 }}
               >
                 <ListItemText primary="Profile" />
               </ListItem>

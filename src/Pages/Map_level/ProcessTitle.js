@@ -32,9 +32,14 @@ const ProcessTitle = () => {
   };
 
   return (
-    <div style={styles.container}>
-            <CustomHeader title="Add Process Title" />
-      <h1 style={styles.heading}>Process Title</h1>
+    <div>
+              <div className="ss_title_bar"> <CustomHeader title="Add Process Title" /></div>
+
+              <div className="ss_body_div ss_add_title">
+      <div className="ss_add_user_bx">
+      <div className="ss_add_user_img_dv1"><img src="https://newprocesslab.com/wp-content/uploads/2021/12/cropped-Logo_NewProcessLab_60x523-1-1.png" alt=''/></div>
+     
+      <h1>Process Title</h1>
 
       <input
         type="text"
@@ -45,9 +50,11 @@ const ProcessTitle = () => {
       />
 
       {/* Next button */}
-      <button onClick={handleNext} style={styles.button}>
+      <button onClick={handleNext}>
         Next
       </button>
+      </div>
+      </div>
     </div>
   );
 };

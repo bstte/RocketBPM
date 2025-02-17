@@ -22,7 +22,7 @@ import { applyNodeChanges, applyEdgeChanges } from "@xyflow/react";
 import Header from "../../components/Header";
 import { v4 as uuidv4 } from "uuid";
 import { useLocation, useNavigate } from "react-router-dom";
-import api, { filter_draft } from "../../API/api";
+import api, { checkFavProcess, filter_draft } from "../../API/api";
 import CustomContextPopup from "../../components/CustomContextPopup";
 import DetailsPopup from "../../components/DetailsPopup";
 import NodeTypes from "./NodeTypes";
@@ -31,6 +31,7 @@ import styles from "./SwimlaneStyles";
 import AddObjectRole from "../../AllNode/SwimlineNodes/addobjectrole";
 import { BreadcrumbsContext } from "../../context/BreadcrumbsContext";
 import '../../Css/Swimlane.css'
+import { useSelector } from "react-redux";
 
 const SwimlaneModel = () => {
   const [windowSize, setWindowSize] = useState({
@@ -53,7 +54,10 @@ const SwimlaneModel = () => {
   const [selectedLinknodeIds, setSelectedLinknodeIds] = useState([]);
   const [getDraftedDate, setDraftedDate] = useState("");
   const [KeepOldPosition, setKeepOldPosition] = useState(null);
-
+  const [isFavorite, setIsFavorite] = useState(false);
+    const [process_img, setprocess_img] = useState("");
+  
+  const LoginUser = useSelector((state) => state.user.user);
   const { nodes: initialNodes } = useMemo(
     () => generateNodesAndEdges(windowSize.width, windowSize.height),
     [windowSize]
@@ -113,6 +117,29 @@ const SwimlaneModel = () => {
     [setChiledNodes, setHasUnsavedChanges]
   );
 
+   useEffect(() => {
+      const checkfav = async () => {
+        const user_id = LoginUser ? LoginUser.id : null;
+        const process_id = id ? id : null;
+  
+  
+        if (!user_id || !process_id) {
+          console.error("Missing required fields:", { user_id, process_id });
+          return; // Stop execution if any field is missing
+        }
+  
+        try {
+          console.log("Sending data:", { user_id, process_id });
+          const response = await checkFavProcess(user_id, process_id);
+          console.log("Response:", response);
+          setIsFavorite(response.exists)
+        } catch (error) {
+          console.error("check fav error:", error);
+        }
+      }
+      checkfav()
+    }, [LoginUser,id])
+
   useEffect(() => {
     const fetchNodes = async () => {
       try {
@@ -156,6 +183,7 @@ const SwimlaneModel = () => {
         } else {
           setDraftedDate("");
         }
+        setprocess_img(data.process_img)
 
         const totalRows = 8;
         const totalColumns = 11;
@@ -260,7 +288,7 @@ const SwimlaneModel = () => {
 
       console.log("confirm data", userConfirmed);
       if (userConfirmed) {
-        navigate("/List-process-title");
+        navigate("/dashboard");
       } else {
         event.preventDefault();
       }
@@ -1009,6 +1037,9 @@ const SwimlaneModel = () => {
         setIsNavigating={() => removeBreadcrumbsAfter(currentLevel - 1)}
         Page={"Draft"}
         onExit={ExitNavigation}
+        isFavorite={isFavorite}
+        Process_img={process_img}
+
       />
 
       <div style={styles.appContainer} className="custom_swimlane">

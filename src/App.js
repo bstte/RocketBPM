@@ -18,6 +18,10 @@ import DraftSwimlineLevel from './Pages/Map_level/DraftProcessView/DraftSwimline
 import Signup from './Pages/Signup/Signup';
 import Forgotpassword from './Pages/Forgotpassword/Forgotpassword';
 import Account from './Pages/Accountsettings/Account';
+import ManageAssignedUsers from './Pages/Manage Assigned Users/ManageAssignedUsers';
+import AddUser from './Pages/Manage Assigned Users/AddUser';
+import Setting from './Setting/Setting';
+
 // import Testdraganddrop from './Pages/Map_level/Testdraganddrop';
 
 const PrivateRoute = ({ children }) => {
@@ -41,21 +45,25 @@ const AppContent = () => {
   const hasCheckedToken = useRef(false); 
 
   const checkToken = useCallback(async () => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      try {
-        const response = await CurrentUser(token); // Fetch current user
-        dispatch(setUser(response)); // Save user to Redux
-        navigate('/List-process-title'); // Navigate to dashboard after fetching user
-      } catch (error) {
-        console.error('Error fetching current user:', error);
-        localStorage.removeItem('token'); // Clear invalid token
-        navigate('/login'); // Redirect to login page
+  const token = localStorage.getItem('token');
+  if (token) {
+    try {
+      const response = await CurrentUser(token); // Fetch current user
+      dispatch(setUser(response)); // Save user to Redux
+      // Agar user already kisi page pe hai to waha hi rehne dein
+      if (window.location.pathname === "/login") {
+        navigate('/dashboard'); 
       }
-    } else {
-      navigate('/login'); // Redirect to login page if no token
+    } catch (error) {
+      console.error('Error fetching current user:', error);
+      localStorage.removeItem('token'); // Clear invalid token
+      navigate('/login'); // Redirect to login page
     }
-  }, [dispatch, navigate]);
+  } else {
+    navigate('/login'); // Redirect to login page if no token
+  }
+}, [dispatch, navigate]);
+
 
   useEffect(() => {
     if (!hasCheckedToken.current) {
@@ -69,7 +77,10 @@ const AppContent = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/Account" element={<Account />} />
+      <Route path="/Setting" element={<Setting />} />
       <Route path="/forgotpassword" element={<Forgotpassword />} />
+      <Route path="/User-Management" element={<PrivateRoute><ManageAssignedUsers /></PrivateRoute>} />
+      <Route path="/Add-User" element={<PrivateRoute><AddUser /></PrivateRoute>} />
       <Route path="/Map-level" element={<PrivateRoute><MapLevel /></PrivateRoute>} />
       <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
       {/* <Route path="/Testdraganddrop" element={<PrivateRoute><Testdraganddrop /></PrivateRoute>} /> */}

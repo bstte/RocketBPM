@@ -1,36 +1,36 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { defaultApi, getProcessTitles, ProcessAssign } from '../../API/api';
+import {  getProcessTitles } from '../../API/api';
 // import {FaEdit } from 'react-icons/fa';
 import CustomDrawer from '../../components/CustomDrawer';
 import { useSelector } from 'react-redux';
-import Select from 'react-select';
+// import Select from 'react-select';
 import { BreadcrumbsContext } from '../../context/BreadcrumbsContext';
 
 const ListProcessTitle = () => {
   const [processTitles, setProcessTitles] = useState([]);
-  const [AllTypeUsers, setAllTypeUsers] = useState([]);
-  const [selectedUsersMap, setSelectedUsersMap] = useState({});
+  // const [AllTypeUsers, setAllTypeUsers] = useState([]);
+  // const [selectedUsersMap, setSelectedUsersMap] = useState({});
   const [processAssignments, setProcessAssignments] = useState([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const user = useSelector((state) => state.user.user);
 
-  const { addBreadcrumb,resetBreadcrumbs } =useContext(BreadcrumbsContext);
+  const { addBreadcrumb, resetBreadcrumbs } = useContext(BreadcrumbsContext);
 
   useEffect(() => {
 
-    const addHomeBreadCrums=()=>{
-      const label = "Home"
-      const path ='/List-process-title'
-  
-      const state = {
-      
-      };
-      resetBreadcrumbs()
+    // const addHomeBreadCrums = () => {
+    //   const label = "Home"
+    //   const path = '/List-process-title'
 
-      addBreadcrumb(label, path, state);
-    }
+    //   const state = {
+
+    //   };
+    //   resetBreadcrumbs()
+
+    //   addBreadcrumb(label, path, state);
+    // }
     // Agar data pehle se loaded hai, toh loading ko true mat kijiye
     const fetchProcessTitles = async () => {
       try {
@@ -38,22 +38,22 @@ const ListProcessTitle = () => {
 
         const user_id = user && user.id;
         const response = await getProcessTitles(user_id);
-        setAllTypeUsers(response.UsersdData);
+        // setAllTypeUsers(response.UsersdData);
         setProcessTitles(response.data);
         setProcessAssignments(response.ProcessAssign);
 
-        const assignedUsersPromises = response.data.map(process =>
-          fetchAssignedUsers(process.id)
-        );
+        // const assignedUsersPromises = response.data.map(process =>
+        //   fetchAssignedUsers(process.id)
+        // );
 
-        const assignedUsersResponses = await Promise.all(assignedUsersPromises);
-        const assignmentsMap = assignedUsersResponses.reduce((acc, assignedUsers, index) => {
-          const processId = response.data[index].id;
-          acc[processId] = assignedUsers.map(user => user.assign_id);
-          return acc;
-        }, {});
+        // const assignedUsersResponses = await Promise.all(assignedUsersPromises);
+        // const assignmentsMap = assignedUsersResponses.reduce((acc, assignedUsers, index) => {
+        //   const processId = response.data[index].id;
+        //   acc[processId] = assignedUsers.map(user => user.assign_id);
+        //   return acc;
+        // }, {});
 
-        setSelectedUsersMap(assignmentsMap);
+        // setSelectedUsersMap(assignmentsMap);
       } catch (error) {
         console.error('Error fetching process titles:', error);
         alert('Failed to fetch process titles.');
@@ -63,18 +63,18 @@ const ListProcessTitle = () => {
     };
 
     fetchProcessTitles();
-    addHomeBreadCrums();
-  }, [user,resetBreadcrumbs,addBreadcrumb,processTitles.length]);
+    // addHomeBreadCrums();
+  }, [user, resetBreadcrumbs, addBreadcrumb, processTitles.length]);
 
-  const fetchAssignedUsers = async (processId) => {
-    try {
-      const response = await defaultApi.post('/get-assigned-users', { process_id: processId });
-      return response.data.assigned_users;
-    } catch (error) {
-      console.error('Error fetching assigned users:', error);
-      return [];
-    }
-  };
+  // const fetchAssignedUsers = async (processId) => {
+  //   try {
+  //     const response = await defaultApi.post('/get-assigned-users', { process_id: processId });
+  //     return response.data.assigned_users;
+  //   } catch (error) {
+  //     console.error('Error fetching assigned users:', error);
+  //     return [];
+  //   }
+  // };
 
   const combineProcesses = () => {
     const combined = [];
@@ -97,24 +97,24 @@ const ListProcessTitle = () => {
     return combined;
   };
 
-  const handleUserSelect = async (processId, selectedOptions) => {
-    const selectedUserIds = selectedOptions.map(option => option.value);
-    setSelectedUsersMap(prevSelectedUsers => ({
-      ...prevSelectedUsers,
-      [processId]: selectedUserIds,
-    }));
+  // const handleUserSelect = async (processId, selectedOptions) => {
+  //   const selectedUserIds = selectedOptions.map(option => option.value);
+  //   setSelectedUsersMap(prevSelectedUsers => ({
+  //     ...prevSelectedUsers,
+  //     [processId]: selectedUserIds,
+  //   }));
 
-    try {
-      await ProcessAssign(user.id, processId, selectedUserIds);
-    } catch (error) {
-      console.error('Error saving user assignments:', error);
-    }
-  };
+  //   try {
+  //     await ProcessAssign(user.id, processId, selectedUserIds);
+  //   } catch (error) {
+  //     console.error('Error saving user assignments:', error);
+  //   }
+  // };
 
-  const userOptions = AllTypeUsers.map((user) => ({
-    value: user.id,
-    label: `${user.name} (${user.type})`,
-  }));
+  // const userOptions = AllTypeUsers.map((user) => ({
+  //   value: user.id,
+  //   label: `${user.first_name} (${user.type})`,
+  // }));
 
   return (
     <div style={styles.container}>
@@ -127,11 +127,11 @@ const ListProcessTitle = () => {
             </button>
           ) : null}
         </div>
-      
+
 
         <div style={styles.tableContainer}>
           {loading && processTitles.length === 0 ? (
-            <p>Loading...</p> 
+            <p>Loading...</p>
           ) : processTitles.length > 0 || processAssignments.length > 0 ? (
             <table style={styles.table}>
               <thead>
@@ -140,9 +140,10 @@ const ListProcessTitle = () => {
                   <th style={styles.th}>Process Title</th>
                   <th style={styles.th}>Created At</th>
                   <th style={styles.th}>Assigned By</th>
-                  {user && user.type !== "User" ? (
+                  <th style={styles.th}></th>
+                  {/* {user && user.type !== "User" ? (
                     <th style={styles.th}>Assign</th>
-                  ) : null}
+                  ) : null} */}
                   <th style={styles.th}>Actions</th>
                 </tr>
               </thead>
@@ -155,7 +156,13 @@ const ListProcessTitle = () => {
                       <td style={styles.td}>{process.process_title}</td>
                       <td style={styles.td}>{new Date(process.created_at).toLocaleString()}</td>
                       <td style={styles.td}>{process.assignedBy || 'Self'}</td>
-                      {user && user.type !== "User" ? (
+                      <td style={styles.td}>
+                        <button onClick={()=>navigate("/User-Management",{state:{process:process}})}>
+                          Managed users
+                        </button>
+
+                      </td>
+                      {/* {user && user.type !== "User" ? (
                         <td style={styles.td}>
                           {!process.assignedBy && (
                             <Select
@@ -170,28 +177,28 @@ const ListProcessTitle = () => {
                             />
                           )}
                         </td>
-                      ) : null}
+                      ) : null} */}
                       <td style={styles.td}>
-                      
+
                         {user && user.type !== "User" ? (
                           <button onClick={() => navigate("/Map-level", { state: { id: process.id, title: process.process_title, user: currentUser } })} style={styles.PublishactionButton}>
                             Draft
                           </button>
                         ) : null}
 
-                      <button onClick={() => navigate("/Published_Map_level", { state: { id: process.id, title: process.process_title, user: currentUser } })} style={styles.PublishactionButton}>
-                   
-                      Published
+                        <button onClick={() => navigate("/Published_Map_level", { state: { id: process.id, title: process.process_title, user: currentUser } })} style={styles.PublishactionButton}>
+
+                          Published
                         </button>
 
-                        
-                      <button onClick={() => navigate("/Draft-Process-View", { state: { id: process.id, title: process.process_title, user: currentUser } })} style={styles.PublishactionButton}>
-                   
-                   View Draft
-                     </button>
 
-                           
-                     {/* <button onClick={() => navigate("/Testdraganddrop", { state: { id: process.id, title: process.process_title, user: currentUser } })} style={styles.PublishactionButton}>
+                        <button onClick={() => navigate("/Draft-Process-View", { state: { id: process.id, title: process.process_title, user: currentUser } })} style={styles.PublishactionButton}>
+
+                          View Draft
+                        </button>
+
+
+                        {/* <button onClick={() => navigate("/Testdraganddrop", { state: { id: process.id, title: process.process_title, user: currentUser } })} style={styles.PublishactionButton}>
                    
 testdrag                     </button> */}
                       </td>
@@ -280,7 +287,7 @@ const styles = {
     fontWeight: 'bold',          // Make the text bold
     cursor: 'pointer',          // Pointer cursor on hover
     transition: 'background-color 0.3s, transform 0.2s', // Smooth transition for hover
-    marginRight: '10px',  
+    marginRight: '10px',
   },
   icon: {
     fontSize: '18px',

@@ -15,7 +15,7 @@ const Login = () => {
     e.preventDefault();
     try {
       await dispatch(loginUser({ email, password })).unwrap();
-      navigate('/List-process-title'); // Redirect to home after successful login
+      navigate('/dashboard', { replace: true });
     } catch (err) {
       setError('Invalid credentials');
     }
@@ -50,7 +50,7 @@ const Login = () => {
         />
         {error && <p className="error-message">{error}</p>}
         <button type="submit" className="login-button">SIGN IN</button>
-        <p>Not a member?<button className="btn_form" type='button' onClick={()=> navigate('/signup')}>Sign up</button></p>
+        {/* <p>Not a member?<button className="btn_form" type='button' onClick={()=> navigate('/signup')}>Sign up</button></p> */}
         <button className="btn_form" type='button' onClick={()=> navigate('/forgotpassword')}>Forgot your password?</button>
       </form>
       </div>

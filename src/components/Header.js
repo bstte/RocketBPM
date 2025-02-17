@@ -7,6 +7,9 @@ import { useNavigate } from "react-router-dom";
 import { logoutUser } from "../redux/userSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { BreadcrumbsContext } from "../context/BreadcrumbsContext";
+import StarIcon from "@mui/icons-material/Star";
+import { ImageBaseUrl } from "../API/api";
+
 
 const Header = ({
   title,
@@ -21,6 +24,7 @@ const Header = ({
   getDraftedDate,
   setIsNavigating,
   Page,
+  savefav, isFavorite, Process_img, Procesuser
 }) => {
   const user = useSelector((state) => state.user.user);
 
@@ -29,16 +33,18 @@ const Header = ({
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const handlehomeBack = async() => {
-    const confirmcondition = await handleBackdata(); 
-    if (confirmcondition) {
-      navigate("/List-process-title");
+  const handlehomeBack = async () => {
+    const confirmcondition = await handleBackdata();
+    console.log(confirmcondition)
+    if (confirmcondition === undefined) {
+      navigate("/dashboard");
     }
-  
-   
-  };
-  const { breadcrumbs } = useContext(BreadcrumbsContext);
 
+
+  };
+
+
+  const { breadcrumbs } = useContext(BreadcrumbsContext);
   const iconComponents = {
     progressArrow: <ProgressArrow />,
     pentagon: <Pentagon />,
@@ -46,6 +52,7 @@ const Header = ({
     box: <Box />,
     label: <Label />,
   };
+
 
   const handleLogout = () => {
     const isConfirmed = window.confirm("Are you sure you want to logout?");
@@ -70,10 +77,10 @@ const Header = ({
     })
     : "";
 
-  const handleBreadcrumbClick = async(path, state) => {
-    const confirmcondition = await handleBackdata(); 
-    console.log("confirmcondition click",confirmcondition)
-    if (confirmcondition!==false) {
+  const handleBreadcrumbClick = async (path, state) => {
+    const confirmcondition = await handleBackdata();
+    console.log("confirmcondition click", confirmcondition)
+    if (confirmcondition !== false) {
       setIsNavigating(true);
       navigate(path, { state });
     }
@@ -81,21 +88,172 @@ const Header = ({
 
   return (
     <>
-      <div style={styles.mainheader}>
-        <div style={styles.mhcolleft}>
-          <img
-            src="https://sp-ao.shortpixel.ai/client/to_auto,q_glossy,ret_img/https://newprocesslab.com/wp-content/uploads/2021/12/cropped-Logo_NewProcessLab_60x523-1-1.png"
-            alt="RocketBPM"
-            style={styles.mainlogo}
-          />
+      <div style={styles.mainheader} className="ss_new_hed">
+
+
+        <div
+          className="breadcrumbs-container"
+          style={styles.mhcolleft}
+        >
+          {breadcrumbs
+            .filter((crumb) => crumb.label !== title)
+            .map((crumb, index, array) => (
+              <span key={index}>
+                {index === 0 ? (
+                  <span
+                    onClick={() => handleBreadcrumbClick(crumb.path, crumb.state)}
+                    style={styles.breadcrumbLink}
+                  >
+                    <HomeIcon
+                      style={{
+                        width: 22,
+                        height: 21,
+                        verticalAlign: "middle",
+                        marginRight: 5,
+                        color: "#FF364A"
+                      }}
+                    />
+                  </span>
+                ) : (
+                  <span
+                    onClick={() => handleBreadcrumbClick(crumb.path, crumb.state)}
+                    style={styles.breadcrumbLink}
+                  >
+                    {crumb.label}
+                  </span>
+                )}
+                {index < array.length - 1 && (
+                  <span style={styles.separator}> {">"} </span>
+                )}
+              </span>
+            ))}
         </div>
-        <div style={styles.mhcolright}>
+
+        <div style={styles.mhcolright} className="ss_header_new_right">
+
+
           <div style={styles.loginuserbox}>
-            <div style={styles.loginuserpics}>
-              <img src="/img/user.png" alt="User" style={styles.loginuserpic} />
+            {Page === "Published" && Procesuser.role !== "User" && (
+              <>
+                <div>
+                  <IconButton
+                    edge="start"
+                    color="inherit"
+                    aria-label="favorite"
+                  >
+                    <StarIcon fontSize="large" style={{ color: isFavorite ? "red" : "gray" }} />
+                  </IconButton>
+
+                  <button
+                    onClick={() => onSave("draft")}
+                    style={{
+                      ...styles.saveButton,
+                      backgroundColor: "#002060",
+                    }}
+                  >
+                    View Draft
+                  </button>
+                </div>
+
+
+              </>
+            )}
+
+            {(Page === "ViewDraftmodel" || Page === "ViewDraftswimlane") && (
+              <>
+                {Procesuser?.type !== "assign" && (
+                  <div>
+                    <IconButton
+                      edge="start"
+                      color="inherit"
+                      aria-label="favorite"
+                    >
+                      <StarIcon fontSize="large" style={{ color: isFavorite ? "red" : "gray" }} />
+                    </IconButton>
+                    <button
+                      onClick={() => onSave("editdraft")}
+                      style={{
+                        ...styles.saveButton,
+                        backgroundColor: "#002060",
+                      }}
+                    >
+                      {Page === "ViewDraftmodel" ? " EDIT MODEL" : " EDIT SWIMLANE MODEL"}
+                    </button>
+                  </div>
+                )}
+
+
+                <div>
+                  <button
+                    onClick={() => onSave("published")}
+                    style={{
+                      ...styles.saveButton,
+                      backgroundColor: "#002060",
+                    }}
+                  >
+                    VIEW PUBLISHED
+                  </button>
+                </div>
+              </>
+            )}
+
+            {Page === "Draft" && (
+              <>
+                <div>
+                  <IconButton
+                    edge="start"
+                    color="inherit"
+                    aria-label="favorite"
+                    onClick={savefav}
+                  >
+                    <StarIcon fontSize="large" style={{ color: isFavorite ? "red" : "gray" }} />
+                  </IconButton>
+                  <button
+                    onClick={() => onSave("draft")}
+                    style={{
+                      ...styles.saveButton,
+                      backgroundColor: "#002060",
+                    }}
+                  >
+                    Save as Draft
+                  </button>
+                </div>
+
+
+                <div>
+                  <button
+                    onClick={() => onPublish("Published")}
+                    style={{
+                      ...styles.saveButton,
+                      backgroundColor: "#002060",
+                    }}
+                  >
+                    Publish
+                  </button>
+                </div>
+
+                <button
+                  onClick={() => onExit("exit")}
+                  style={{
+                    ...styles.saveButton,
+                    backgroundColor: "#002060",
+                  }}
+                >
+                  Exit
+                </button>
+              </>
+            )}
+
+            <div className="ss_profile_rit_div">
+              {user?.Profile_image ? (
+                <img src={`${ImageBaseUrl}uploads/profile_images/${user?.Profile_image}`} alt="Profile" onClick={() => navigate('/Account')} />
+              ) : (
+                <img src="/img/user.png" alt="User" style={styles.loginuserpic} />
+              )}
+
             </div>
             <div style={styles.loginusername}>
-              <div>{`Hi, ${user?.name || ""}`}</div>
+              <div>{` ${user?.first_name || ""}`}</div>
               <span
                 onClick={handleLogout}
                 style={{
@@ -111,42 +269,7 @@ const Header = ({
         </div>
       </div>
 
-      <div
-        className="breadcrumbs-container"
-        style={styles.breadcrumbsContainer}
-      >
-        {breadcrumbs
-          .filter((crumb) => crumb.label !== title)
-          .map((crumb, index, array) => (
-            <span key={index}>
-              {index === 0 ? (
-                <span
-                  onClick={() => handleBreadcrumbClick(crumb.path, crumb.state)}
-                  style={styles.breadcrumbLink}
-                >
-                  <HomeIcon
-                    style={{
-                      width: 22,
-                      height: 21,
-                      verticalAlign: "middle",
-                      marginRight: 5,
-                    }}
-                  />
-                </span>
-              ) : (
-                <span
-                  onClick={() => handleBreadcrumbClick(crumb.path, crumb.state)}
-                  style={styles.breadcrumbLink}
-                >
-                  {crumb.label}
-                </span>
-              )}
-              {index < array.length - 1 && (
-                <span style={styles.separator}> {">"} </span>
-              )}
-            </span>
-          ))}
-      </div>
+
 
       <header className="app-header" style={styles.header}>
         <h1 style={styles.headerTitle}>
@@ -186,21 +309,11 @@ const Header = ({
             </div>
           ))}
         </div>
-        <div style={styles.flexbox}>
+        <div style={styles.flexbox} className="ss_hed_box_mn">
 
           {Page === "Draft" && (
             <>
-              <div>
-                <button
-                  onClick={() => onSave("draft")}
-                  style={{
-                    ...styles.saveButton,
-                    backgroundColor: "#218838",
-                  }}
-                >
-                  Save as Draft
-                </button>
-              </div>
+
               <div style={styles.pdate}>
                 <div>
                   Draft On
@@ -209,17 +322,7 @@ const Header = ({
                 </div>
               </div>
 
-              <div>
-                <button
-                  onClick={() => onPublish("Published")}
-                  style={{
-                    ...styles.saveButton,
-                    backgroundColor: "#218838",
-                  }}
-                >
-                  Publish
-                </button>
-              </div>
+
               <div style={styles.pdate}>
                 <div>
                   Published
@@ -227,77 +330,93 @@ const Header = ({
                   {formattedDate}
                 </div>
               </div>
-              <button
-                  onClick={() =>onExit("exit")}
-                  style={{
-                    ...styles.saveButton,
-                    backgroundColor: "#218838",
-                  }}
-                >
-                  Exit
-                </button>
+              <div style={styles.mhcolleft} className="ss_wid_auto">
+
+                {
+                  Process_img ? (
+                    <img
+                      src={`${ImageBaseUrl}/${Process_img}`}
+                      alt="RocketBPM"
+                      style={styles.mainlogo}
+                    />
+                  ) : (
+                    <img
+                      src="https://sp-ao.shortpixel.ai/client/to_auto,q_glossy,ret_img/https://newprocesslab.com/wp-content/uploads/2021/12/cropped-Logo_NewProcessLab_60x523-1-1.png"
+                      alt="RocketBPM"
+                      style={styles.mainlogo}
+                    />
+                  )
+                }
+              </div>
             </>
           )}
 
           {
             Page === "Published" && (
               <>
-                <div style={styles.pdate}>
+                <div style={styles.pdate} class="ss_box_hed_right_1">
                   <div>
                     Published
                     <br />
                     {formattedDate}
                   </div>
+
+                </div>
+                <div style={styles.mhcolleft} className="ss_box_hed_right_1_img">
+                  {
+                    Process_img ? (
+                      <img
+                        src={`${ImageBaseUrl}/${Process_img}`}
+                        alt="RocketBPM"
+                        style={styles.mainlogo}
+                      />
+                    ) : (
+                      <img
+                        src="https://sp-ao.shortpixel.ai/client/to_auto,q_glossy,ret_img/https://newprocesslab.com/wp-content/uploads/2021/12/cropped-Logo_NewProcessLab_60x523-1-1.png"
+                        alt="RocketBPM"
+                        style={styles.mainlogo}
+                      />
+                    )
+                  }
+
                 </div>
               </>
             )
           }
 
-          {
-            Page === "ViewDraft" && (
-              <>
-                <div style={styles.pdate}>
-                  <div>
-                    Draft On
-                    <br />
-                    {formattedDatedraft}
-                  </div>
+          {(Page === "ViewDraftmodel" || Page === "ViewDraftswimlane") && (
+            <>
+              <div style={styles.pdate} className="ss_box_hed_right_2">
+                <div>
+                  Draft On
+                  <br />
+                  {formattedDatedraft}
                 </div>
-              </>
-            )
+              </div>
+              <div style={styles.mhcolleft} className="ss_box_hed_right_img">
+                {
+                  Process_img ? (
+                    <img
+                      src={`${ImageBaseUrl}/${Process_img}`}
+                      alt="RocketBPM"
+                      style={styles.mainlogo}
+                    />
+                  ) : (
+                    <img
+                      src="https://sp-ao.shortpixel.ai/client/to_auto,q_glossy,ret_img/https://newprocesslab.com/wp-content/uploads/2021/12/cropped-Logo_NewProcessLab_60x523-1-1.png"
+                      alt="RocketBPM"
+                      style={styles.mainlogo}
+                    />
+                  )
+                }
+              </div>
+            </>
+          )
           }
 
-          {Page === "Published" && (
-            <>
-              <div>
-                <button
-                  onClick={() => onSave("draft")}
-                  style={{
-                    ...styles.saveButton,
-                    backgroundColor: "#218838",
-                  }}
-                >
-                  View Draft
-                </button>
-              </div>
-            </>
-          )}
 
-          {Page === "ViewDraft" && (
-            <>
-              <div>
-                <button
-                  onClick={() => onSave("draft")}
-                  style={{
-                    ...styles.saveButton,
-                    backgroundColor: "#218838",
-                  }}
-                >
-                  Edit Draft
-                </button>
-              </div>
-            </>
-          )}
+
+
         </div>
       </header>
     </>
@@ -409,7 +528,7 @@ const styles = {
   },
   breadcrumbLink: {
     textDecoration: "none",
-    color: "#007bff", // Standard blue for links
+    color: "#002060", // Standard blue for links
     cursor: "pointer", // Change the cursor to indicate it's clickable
     padding: "5px 8px", // Increase clickable area if needed
     backgroundColor: "transparent", // Transparent background to look like a link
