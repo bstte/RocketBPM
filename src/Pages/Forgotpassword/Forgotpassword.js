@@ -25,7 +25,7 @@ const Forgotpassword = () => {
           className="login-input"
         />
         <button type="submit" className="login-button">RESET</button>
-        <p>Not a member?<button className="btn_form" type='button' onClick={()=> navigate('/Account')}> Sign up</button></p>
+        {/* <p>Not a member?<button className="btn_form" type='button' onClick={()=> navigate('/Account')}> Sign up</button></p> */}
         <p>Already a member?<button className="btn_form" type='button' onClick={()=> navigate('/login')}> Sign in</button></p>
       </form>
       </div>
