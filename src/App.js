@@ -44,33 +44,33 @@ const AppContent = () => {
   const navigate = useNavigate();
   const hasCheckedToken = useRef(false); 
 
-  const checkToken = useCallback(async () => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    try {
-      const response = await CurrentUser(token); // Fetch current user
-      dispatch(setUser(response)); // Save user to Redux
-      // Agar user already kisi page pe hai to waha hi rehne dein
-      if (window.location.pathname === "/login") {
-        navigate('/dashboard'); 
-      }
-    } catch (error) {
-      console.error('Error fetching current user:', error);
-      localStorage.removeItem('token'); // Clear invalid token
-      navigate('/login'); // Redirect to login page
-    }
-  } else {
-    navigate('/login'); // Redirect to login page if no token
-  }
-}, [dispatch, navigate]);
+//   const checkToken = useCallback(async () => {
+//   const token = localStorage.getItem('token');
+//   if (token) {
+//     try {
+//       const response = await CurrentUser(token); // Fetch current user
+//       dispatch(setUser(response)); // Save user to Redux
+//       // Agar user already kisi page pe hai to waha hi rehne dein
+//       if (window.location.pathname === "/login") {
+//         navigate('/dashboard'); 
+//       }
+//     } catch (error) {
+//       console.error('Error fetching current user:', error);
+//       localStorage.removeItem('token'); // Clear invalid token
+//       navigate('/login'); // Redirect to login page
+//     }
+//   } else {
+//     navigate('/login'); // Redirect to login page if no token
+//   }
+// }, [dispatch, navigate]);
 
 
-  useEffect(() => {
-    if (!hasCheckedToken.current) {
-      checkToken(); // Check token when the app loads
-      hasCheckedToken.current = true; // Set the ref to true after the first check
-    }
-  }, [checkToken]); // Include checkToken in the dependency array
+//   useEffect(() => {
+//     if (!hasCheckedToken.current) {
+//       checkToken(); // Check token when the app loads
+//       hasCheckedToken.current = true; // Set the ref to true after the first check
+//     }
+//   }, [checkToken]); // Include checkToken in the dependency array
 
   return (
     <Routes>
