@@ -289,25 +289,7 @@ const MapLevel = () => {
     console.log('Connected:', connection);
   }, []);
 
-  useEffect(() => {
-    const handleRefresh = (event) => {
-      const userConfirmed = window.confirm(
-        "You have unsaved changes. Do you really want to leave?"
-      );
-      console.log("confirm data", userConfirmed);
-      if (userConfirmed) {
-        navigate("/dashboard");
-      } else {
-        event.preventDefault();
-      }
-    };
-
-    window.addEventListener("beforeunload", handleRefresh);
-
-    return () => {
-      window.removeEventListener("beforeunload", handleRefresh);
-    };
-  }, [navigate]);
+ 
 
   const addNode = (type, position) => {
     console.log("position", position);

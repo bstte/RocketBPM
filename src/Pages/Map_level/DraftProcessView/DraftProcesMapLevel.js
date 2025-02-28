@@ -321,10 +321,10 @@ import { useSelector } from "react-redux";
       
       if(id && user){
         if(currentLevel===0){
-          page==="editdraft"?  navigate('/Map-level',{ state: { id:id, title:title, user: user } }):  navigate('/Published_Map_level',{ state: { id:id, title:title, user: user } })
+          page==="editdraft"?  navigate('/Map-level',{ state: { id:id, title:title, user: user } }):  navigate('/published-map-level',{ state: { id:id, title:title, user: user } })
         
         }else{
-          page==="editdraft"?navigate(`/level/${currentLevel}/${currentParentId}`,{ state: { id:id, title:title, user: user } }): navigate(`/PublishedMapLevel/${currentLevel}/${currentParentId}`,{ state: { id:id, title:title, user: user } }) 
+          page==="editdraft"?navigate(`/level/${currentLevel}/${currentParentId}`,{ state: { id:id, title:title, user: user } }): navigate(`/published-map-level/${currentLevel}/${currentParentId}`,{ state: { id:id, title:title, user: user } }) 
         }
        
       }else{

@@ -186,7 +186,7 @@ const ListProcessTitle = () => {
                           </button>
                         ) : null}
 
-                        <button onClick={() => navigate("/Published_Map_level", { state: { id: process.id, title: process.process_title, user: currentUser } })} style={styles.PublishactionButton}>
+                        <button onClick={() => navigate("/published-map-level", { state: { id: process.id, title: process.process_title, user: currentUser } })} style={styles.PublishactionButton}>
 
                           Published
                         </button>

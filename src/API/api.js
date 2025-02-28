@@ -1,7 +1,7 @@
 // src/api.js
 import axios from 'axios';
-const baseUrl = 'https://admin.rocketbpm.com/api'
-export const ImageBaseUrl = 'https://admin.rocketbpm.com/public/'
+const baseUrl = 'https://teamwebdevelopers.com/proto-type/api'
+export const ImageBaseUrl = 'https://teamwebdevelopers.com/proto-type/public/'
 // const baseUrl ='http://localhost:8000/api/'
 export const defaultApi = axios.create({
   baseURL: baseUrl,

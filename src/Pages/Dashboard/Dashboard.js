@@ -197,16 +197,18 @@ const Dashboard = () => {
     dots: false,
     infinite: true,
     speed: 500,
-    slidesToShow: 2, // Show 3 cards at a time
+    slidesToShow: Math.min(2, filteredNodes.length),
     slidesToScroll: 1,
     autoplay: true,
     autoplaySpeed: 3000,
     arrows: true,
     centerMode: false,
     centerPadding: "20px",
+    adaptiveHeight: true,
+  
     responsive: [
-      { breakpoint: 1024, settings: { slidesToShow: 2 } }, // Show 2 cards on medium screens
-      { breakpoint: 600, settings: { slidesToShow: 1 } },  // Show 1 card on small screens
+      { breakpoint: 1024, settings: { slidesToShow: Math.min(2, filteredNodes.length) } },
+      { breakpoint: 600, settings: { slidesToShow: 1 } },
     ],
   };
 
@@ -228,14 +230,7 @@ const Dashboard = () => {
       <div className="ss_title_bar"> <CustomHeader title="My Process Worlds" /></div>
 
       <div className="ss_dash_slider_bx">
-        {user && user.type !== "User" ? (
-          <div className="ss_add_process_div">
-            <p>
-              Add process world
-            </p>
-            <div className="ss_add_proces_img" onClick={() => navigate('/Add-process-title')}> <img src="../../../img/plus.png" alt="profile img" /></div>
-          </div>
-        ) : null}
+       
         <div className="ss_dash_slid_bx">
           {isLoading ? (
             // Show Loader while fetching data
@@ -270,7 +265,7 @@ const Dashboard = () => {
                   <label> {getProcessTitle(item.processId)}</label>
 
                   {/* React Flow Component */}
-                  <div className="ss_dash_slid_img" onClick={() => navigate("/Published_Map_level", { state: { id: parseInt(item.processId), title: getProcessTitle(item.processId), user: item } })}>
+                  <div className="ss_dash_slid_img" onClick={() => navigate("/published-map-level", { state: { id: parseInt(item.processId), title: getProcessTitle(item.processId), user: item } })}>
                     <img src="../../../img/dashboard-slider-image.jpg" alt="" />
                     <button>
                       Preview Image of Level 1
@@ -296,7 +291,7 @@ const Dashboard = () => {
                       {item.type === "self" ? (
                         <>
                           {/* Show all options when type is self */}
-                          <p onClick={() => navigate("/Published_Map_level", { state: { id: parseInt(item.processId), title: getProcessTitle(item.processId), user: item } })} style={{ cursor: "pointer", margin: 0 }}>✏ Published</p>
+                          <p onClick={() => navigate("/published-map-level", { state: { id: parseInt(item.processId), title: getProcessTitle(item.processId), user: item } })} style={{ cursor: "pointer", margin: 0 }}>✏ Published</p>
                           <p onClick={() => navigate("/Draft-Process-View", { state: { id: parseInt(item.processId), title: getProcessTitle(item.processId), user: item } })} style={{ cursor: "pointer", margin: 0 }}>✏ View Draft</p>
                           <p onClick={() => navigate("/User-Management", { state: { process: { id: parseInt(item.processId), user_id: item.id } } })} style={{ cursor: "pointer", margin: 0 }}>✏ Managed Users</p>
                           <p onClick={() => navigate('/Setting', { state: { ProcessId: parseInt(item.processId) } })} style={{ cursor: "pointer", margin: 0 }}>🗑 Setting</p>
@@ -305,13 +300,13 @@ const Dashboard = () => {
                         <>
                           {/* Show only Published when role is User */}
                           {item.role === "User" && (
-                            <p onClick={() => navigate("/Published_Map_level", { state: { id: parseInt(item.processId), title: getProcessTitle(item.processId), user: item } })} style={{ cursor: "pointer", margin: 0 }}>✏ Published</p>
+                            <p onClick={() => navigate("/published-map-level", { state: { id: parseInt(item.processId), title: getProcessTitle(item.processId), user: item } })} style={{ cursor: "pointer", margin: 0 }}>✏ Published</p>
                           )}
 
                           {/* Show Published and View Draft when role is Modeler */}
                           {item.role === "Modeler" && (
                             <>
-                              <p onClick={() => navigate("/Published_Map_level", { state: { id: parseInt(item.processId), title: getProcessTitle(item.processId), user: item } })} style={{ cursor: "pointer", margin: 0 }}>✏ Published</p>
+                              <p onClick={() => navigate("/published-map-level", { state: { id: parseInt(item.processId), title: getProcessTitle(item.processId), user: item } })} style={{ cursor: "pointer", margin: 0 }}>✏ Published</p>
                               <p onClick={() => navigate("/Draft-Process-View", { state: { id: parseInt(item.processId), title: getProcessTitle(item.processId), user: item } })} style={{ cursor: "pointer", margin: 0 }}>✏ View Draft</p>
                             </>
                           )}
@@ -324,12 +319,22 @@ const Dashboard = () => {
             </Slider>
           )}
         </div>
+        {user && user.type !== "User" ? (
+          <div className="ss_add_process_div">
+            <p>
+              Add process world
+            </p>
+            <div className="ss_add_proces_img" onClick={() => navigate('/Add-process-title')}> <img src="../../../img/plus.png" alt="profile img" /></div>
+          </div>
+        ) : null}
+
+
       </div>
 
       <div className="ss_container">
         <div className="row">
           <div className="col-lg-4">
-            <h4><img src="../../../img/two-fingers.png" alt="" /> Welcome, [{user?.first_name}]!</h4>
+            <h4><img src="../../../img/two-fingers.svg" alt="" /> Welcome, [{user?.first_name}]!</h4>
             <div className="ss_dash_sec_2_img">
               <iframe
                 className="video"
@@ -345,7 +350,7 @@ const Dashboard = () => {
           </div>
           <div className="col-lg-8">
             <div className="ss_dash_table_mn">
-              <h4><img src="../../../img/star-bold.png" alt="" />My Favorites</h4>
+            <h4><img src="../../../img/star-solid.svg" alt=""/>My Favorites</h4>
 
               <div className="ss_dash_table">
                 <table>

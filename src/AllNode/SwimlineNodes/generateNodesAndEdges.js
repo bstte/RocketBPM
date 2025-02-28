@@ -1,4 +1,4 @@
-const generateNodesAndEdges = (windowWidth, windowHeight) => {
+const generateNodesAndEdges = (windowWidth, windowHeight,BorderCondiction) => {
     const nodes = [];
     const edges = [];
   
@@ -23,7 +23,7 @@ const generateNodesAndEdges = (windowWidth, windowHeight) => {
             width: groupWidth,
             height: groupHeight,
             bordertop: '0px',
-            borderLeft: '1.5px solid #ececec',
+            borderLeft:BorderCondiction==='viewmode'? '0px solid #ececec':'1.5px solid #ececec',
             borderBottom: '1.5px solid #002060',
             borderRight: col === 0 ? '2px solid #002060' : '#ececec',
             borderRadius: '0',

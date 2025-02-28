@@ -42,7 +42,7 @@ const DraftSwimlineLevel = () => {
   const currentParentId = parentId || null;
   const currentLevel = level ? parseInt(level, 10) : 0;
   const { nodes: initialNodes } = useMemo(
-    () => generateNodesAndEdges(windowSize.width, windowSize.height),
+    () => generateNodesAndEdges(windowSize.width, windowSize.height, 'viewmode'),
     [windowSize]
   );
   const [getPublishedDate, setgetPublishedDate] = useState("");
@@ -188,7 +188,7 @@ const DraftSwimlineLevel = () => {
     if (id && user) {
       
         page === "editdraft" ? navigate(`/swimlane/level/${currentLevel}/${currentParentId}`, { state: { id: id, title: title, user: user, parentId: currentParentId, level: currentLevel } })
-          : navigate(`/Published_swimlane/level/${currentLevel}/${currentParentId}`, { state: { id: id, title: title, user: user, parentId: currentParentId, level: currentLevel } })
+          : navigate(`/published-swimlane/level/${currentLevel}/${currentParentId}`, { state: { id: id, title: title, user: user, parentId: currentParentId, level: currentLevel } })
 
       
       // removeBreadcrumbsAfter(0);

@@ -1,8 +1,8 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useRef, useEffect } from "react";
 import { ProgressArrow, Pentagon, Diamond, Box, Label } from "./Icon";
 import { IconButton } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import HomeIcon from "@mui/icons-material/Home";
+// import HomeIcon from "@mui/icons-material/Home";
 import { useNavigate } from "react-router-dom";
 import { logoutUser } from "../redux/userSlice";
 import { useDispatch, useSelector } from "react-redux";
@@ -32,6 +32,8 @@ const Header = ({
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
+   const [dropdownOpen, setDropdownOpen] = useState(false);
+    const dropdownRef = useRef(null);
 
   const handlehomeBack = async () => {
     const confirmcondition = await handleBackdata();
@@ -86,6 +88,27 @@ const Header = ({
     }
   };
 
+// Handle dropdown toggle
+  const toggleDropdown = () => {
+    setDropdownOpen(!dropdownOpen);
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, []);
+
+
+
   return (
     <>
       <div style={styles.mainheader} className="ss_new_hed">
@@ -98,21 +121,14 @@ const Header = ({
           {breadcrumbs
             .filter((crumb) => crumb.label !== title)
             .map((crumb, index, array) => (
-              <span key={index}>
+              <span key={index} className="ss_hm_dash_home_icon">
                 {index === 0 ? (
                   <span
-                    onClick={() => handleBreadcrumbClick(crumb.path, crumb.state)}
-                    style={styles.breadcrumbLink}
+                    onClick={() => handleBreadcrumbClick(crumb.path, crumb.state)} 
                   >
-                    <HomeIcon
-                      style={{
-                        width: 22,
-                        height: 21,
-                        verticalAlign: "middle",
-                        marginRight: 5,
-                        color: "#FF364A"
-                      }}
-                    />
+                  
+                    <img src="../../img/rocket-solid.svg" alt="" />
+
                   </span>
                 ) : (
                   <span
@@ -132,18 +148,10 @@ const Header = ({
         <div style={styles.mhcolright} className="ss_header_new_right">
 
 
-          <div style={styles.loginuserbox}>
+          <div style={styles.loginuserbox} className="ss_hed_rit_user_secnew">
             {Page === "Published" && Procesuser.role !== "User" && (
               <>
-                <div>
-                  <IconButton
-                    edge="start"
-                    color="inherit"
-                    aria-label="favorite"
-                  >
-                    <StarIcon fontSize="large" style={{ color: isFavorite ? "red" : "gray" }} />
-                  </IconButton>
-
+         
                   <button
                     onClick={() => onSave("draft")}
                     style={{
@@ -153,7 +161,19 @@ const Header = ({
                   >
                     View Draft
                   </button>
-                </div>
+
+                  <IconButton
+                    edge="start"
+                    color="inherit"
+                    aria-label="favorite" className="ss_hed_star_img"
+                  >
+                    <img src="../../img/star-regular.svg" alt=""/>
+                  </IconButton>
+
+
+                    <button className="header_share_btn">
+                      <img src="../../img/share.png" alt=""/>
+                    </button>
 
 
               </>
@@ -163,13 +183,7 @@ const Header = ({
               <>
                 {Procesuser?.type !== "assign" && (
                   <div>
-                    <IconButton
-                      edge="start"
-                      color="inherit"
-                      aria-label="favorite"
-                    >
-                      <StarIcon fontSize="large" style={{ color: isFavorite ? "red" : "gray" }} />
-                    </IconButton>
+              
                     <button
                       onClick={() => onSave("editdraft")}
                       style={{
@@ -194,6 +208,22 @@ const Header = ({
                     VIEW PUBLISHED
                   </button>
                 </div>
+                  <div>
+                  <IconButton
+                    edge="start"
+                    color="inherit"
+                    aria-label="favorite" className="ss_hed_star_img"
+                  >
+                    <img src="../../img/star-regular.svg" alt=""/>
+                  </IconButton>
+                  </div>
+
+                  <div>
+                  <button className="header_share_btn">
+                      <img src="../../../img/share.png" alt=""/>
+                    </button>
+                  </div>
+                
               </>
             )}
 
@@ -245,14 +275,30 @@ const Header = ({
             )}
 
             <div className="ss_profile_rit_div">
-              {user?.Profile_image ? (
-                <img src={`${ImageBaseUrl}uploads/profile_images/${user?.Profile_image}`} alt="Profile" onClick={() => navigate('/Account')} />
+              
+
+                {/* Dropdown Button */}
+          <div ref={dropdownRef} style={{ position: "relative" }}>
+            <div id="dropdownBtn" onClick={toggleDropdown}> 
+
+               {user?.Profile_image ? (
+                <img src={`${ImageBaseUrl}uploads/profile_images/${user?.Profile_image}`} alt="Profile"  />
               ) : (
                 <img src="/img/user.png" alt="User" style={styles.loginuserpic} />
               )}
+             
+            </div>
+            {dropdownOpen && (
+              <div className="dropdown-content">
+                <button onClick={() => navigate('/Account')}>Edot Profile</button>
+                <button  onClick={()  =>handleLogout()}>Log out</button>
+               
+              </div>
+            )}
+          </div>
 
             </div>
-            <div style={styles.loginusername}>
+            {/* <div style={styles.loginusername}>
               <div>{` ${user?.first_name || ""}`}</div>
               <span
                 onClick={handleLogout}
@@ -264,7 +310,7 @@ const Header = ({
               >
                 Logout?
               </span>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

@@ -210,8 +210,8 @@ const LoginUser = useSelector((state) => state.user.user);
     const label = currentLevel === 0 ? title : title;
     const path =
       currentLevel === 0
-        ? "/Published_Map_level"
-        : `/PublishedMapLevel/${currentLevel}/${currentParentId}`;
+        ? "/published-map-level"
+        : `/published-map-level${currentLevel}/${currentParentId}`;
 
     const state = {
       id: id,
@@ -259,7 +259,7 @@ const LoginUser = useSelector((state) => state.user.user);
 
   if (data.status === true) {
     if (data.Page_Title === "ProcessMap") {
-      navigate(`/PublishedMapLevel/${newLevel}/${node.id}`, {
+      navigate(`/published-map-level/${newLevel}/${node.id}`, {
         state: {
           id: id,
           title: selectedLabel,
@@ -272,12 +272,12 @@ const LoginUser = useSelector((state) => state.user.user);
     if (data.Page_Title === "Swimlane") {
       addBreadcrumb(
         `${selectedLabel} `,
-        `/Published_swimlane/level/${newLevel}/${node.id}`,
+        `/published-swimlane/level/${newLevel}/${node.id}`,
         { id: id, title, user, parentId: node.id, level: newLevel }
       );
 
       navigate(
-        `/Published_swimlane/level/${newLevel}/${node.id}`,
+        `/published-swimlane/level/${newLevel}/${node.id}`,
         {
           state: {
             id: id,

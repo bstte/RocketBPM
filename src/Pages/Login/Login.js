@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import './Login.css'; // Import the CSS file for styling
-import { loginUser } from '../../redux/userSlice';
+import { loginUser, setUser } from '../../redux/userSlice';
+import { CurrentUser } from '../../API/api';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -15,7 +16,20 @@ const Login = () => {
     e.preventDefault();
     try {
       await dispatch(loginUser({ email, password })).unwrap();
+
+      const token = localStorage.getItem('token'); 
+    if (!token) throw new Error("Token not found");
+
+    // Fetch current user details
+    const response = await CurrentUser(token);
+    dispatch(setUser(response)); // Store user in Redux
+
+    // Navigate to dashboard after setting user
+    setTimeout(() => {
       navigate('/dashboard', { replace: true });
+    }, 500);
+
+
     } catch (err) {
       setError('Invalid credentials');
     }
@@ -27,7 +41,7 @@ const Login = () => {
       <div className="login-wrapper">
       <div className="login-image">
       <img 
-        src="https://sp-ao.shortpixel.ai/client/to_auto,q_glossy,ret_img/https://newprocesslab.com/wp-content/uploads/2021/12/cropped-Logo_NewProcessLab_60x523-1-1.png" 
+        src="../../img/RocketBPM_rocket_logo.png" 
         alt="Logo" 
         className="login-logo"
       />

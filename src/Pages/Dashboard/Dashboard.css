@@ -1,9 +1,9 @@
 .ss_dash_slid_bx .MuiPaper-root{
     display: flex !important;
-        width: 87% !important;
+        width: 92% !important;
         margin: auto;
-        padding: 15px !important;
-        border: 2px solid #002060;
+        padding: 12px !important;
+        border: 1px solid #002060;
         min-height: auto;
         border-radius: 0px;
 }
@@ -56,31 +56,32 @@
 }
 .ss_dash_slider_bx{
     display: flex;
-        border: 2px solid #002060;
+        border: 1px solid #002060;
     box-shadow: 0px 0px 10px #afadad5e;
     border-top: 0;
-    padding: 25px !important;
+    padding: 20px 18px 20px 10px !important;
 }
 .ss_dash_slid_bx {
       border: 0px solid #002060;
     box-shadow: 0px 0px 0px #afadad5e;
     border-top: 0;
-    padding: 0px 0px 0px 20px !important;
+    padding: 0px 15px 0px 0px !important;
     width: 66%;
 }
 
 .ss_add_process_div {
     padding: 0px 15px !important;
-    border: 2px solid #002060;
+    border: 1px solid #002060;
     min-height: auto;
     border-radius: 0px;
-    width: 100%;
+    width: 34%;
     position: relative;
+    height: 290px;
 }
 
 .ss_dash_slid_img img {
     width: 100%;
-    height: 200px;
+    height: 230px;
 }
 
 .ss_dash_slid_img {
@@ -88,7 +89,10 @@
 }
 
 .ss_dash_slid_bx .slick-prev {
-    left: -18px;
+    left: -3px;
+    z-index: 9999;
+    background: #fff;
+    border-radius: 100px;
 }
 
 .ss_dash_slid_bx .slick-arrow:before {
@@ -119,7 +123,7 @@
 
 .ss_title_bar .css-1ygil4i-MuiToolbar-root {
     min-height: 45px;
-    border: 2px solid #002060;
+    border: 1px solid #002060;
 }
 
 .ss_add_proces_img img {
@@ -128,11 +132,13 @@
 }
 
 .ss_dash_slid_bx .slick-next {
-    right: -16px;
+    right: -8px;
+    background-color: #fff;
+    border-radius: 100px;
 }
 
 .ss_container .col-lg-4 {
-    border: 2px solid #002060;
+    border: 1px solid #002060;
     box-shadow: 0px 0px 10px #afadad5e;
     padding: 0 !important;
     margin-top: 0px;
@@ -147,11 +153,11 @@
 
 .ss_container .col-lg-8 {
     width:66%;
-    border: 2px solid #002060;
+    border: 1px solid #002060;
 }
 
 .ss_container h4 {
-     border-bottom: 2px solid #002060;
+     border-bottom: 1px solid #002060;
     font-weight: 400;
     font-size: 16px;
     padding: 10px 15px 10px;
@@ -229,7 +235,7 @@ th, td {
     }
 
     .ss_logo_lft_div img {
-        max-width: 280px;
+        max-width: 225px;
 
     }
 
@@ -238,7 +244,7 @@ th, td {
     .ss_logo_hed_sec {
         display: flex;
         gap: 20px;
-        padding-bottom: 10px;
+        padding-bottom: 5px;
         align-items: center;
     }
     
@@ -255,11 +261,14 @@ th, td {
         
     }
     .ss_profile_rit_div img {
-        width: 40px;
+        width: 32px;
         border-radius: 100px;
-        height: 40px;
+        height: 32px;
         object-fit: cover;
         
+    }
+    .ss_hed_rit_user_sec button:nth-child(1) {
+        padding: 0px !important;
     }
 
     @media only screen and (min-width: 767px) and (max-width: 1023px){
@@ -300,8 +309,8 @@ th, td {
 
     }
     .ss_header_new_right div button{
-        font-size: 14px !important;
-        padding: 9px 17px !important;
+        font-size: 12px !important;
+        padding: 8px 12px !important;
         text-transform: uppercase;
     }
 
@@ -331,14 +340,15 @@ th, td {
     .ss_box_hed_right_1_img img {
         width: 100% !important;
         max-width:280px;
+        height: 30px;
         
         height: 30px;
     }
 
     .ss_box_hed_right_img img{
         width: 100% !important;
-        max-width:280px;
-        height: 30px;
+        max-width:250px;
+        
     }
 
     .ss_box_hed_right_img {
@@ -351,6 +361,63 @@ th, td {
 
     .ss_wid_auto img{
         width: 100% !important;
-        max-width:280px;
-        height: 50px;
+        max-width:350px;
+        height: auto;
+    }
+
+    span.ss_hm_dash_home_icon {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+    }
+    
+   .ss_hm_dash_home_icon img {
+        width: 18px;
+    }
+
+    .ss_hm_dash_home_icon span {
+      display: flex;
+      text-transform: capitalize;
+    }
+    .ss_hm_dash_home_icon span{
+        padding: 0 2px !important;
+    }
+
+
+
+    
+    .ss_header_new_right .ss_hed_star_img {
+        padding: 0 !important;
+        width: auto;
+
+        margin: 0;
+        text-align: center;
+    }
+    
+    .ss_header_new_right .ss_hed_star_img img {
+        width: 25px;
+    }
+
+    .ss_header_new_right .header_share_btn {
+        padding: 0 !important;
+        background: transparent;
+        border: 0;
+    }
+    
+    button.header_share_btn img {
+        width: 22px;
+        position: relative;
+        top: 1px;
+    }
+
+    .ss_new_hed {
+        margin-bottom: 10px !important;
+    }
+
+    .app-header{
+        padding: 0.7vw 13px !important;
+    }
+
+    .ss_hed_box_mn{
+        gap:13px !important;
     }

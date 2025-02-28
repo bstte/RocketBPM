@@ -46,7 +46,7 @@ const ArrowBoxNode = ({ data }) => {
           if (nodeData.status === true) {
             removeBreadcrumbsAfter(1);
             if (nodeData.Page_Title === "ProcessMap") {
-              navigate(`/PublishedMapLevel/${newLevel}/${data.link}`, {
+              navigate(`/published-map-level/${newLevel}/${data.link}`, {
                 state: {
                   id,
                   title: nodeDataParsed.label || "",
@@ -58,7 +58,7 @@ const ArrowBoxNode = ({ data }) => {
             if (nodeData.Page_Title === "Swimlane") { 
                 addBreadcrumb(
                     `${nodeDataParsed.label || ""} `,
-                    `/Published_swimlane/level/${newLevel}/${data.link}`,
+                    `/published-swimlane/level/${newLevel}/${data.link}`,
                     {    id,
                         title: nodeDataParsed.label || "",
                         user,
@@ -67,7 +67,7 @@ const ArrowBoxNode = ({ data }) => {
                         ParentPageGroupId: response.data[0]?.PageGroupId, }
                   );
 
-              navigate(`/Published_swimlane/level/${newLevel}/${data.link}`, {
+              navigate(`/published-swimlane/level/${newLevel}/${data.link}`, {
                 state: {
                   id,
                   title: nodeDataParsed.label || "",

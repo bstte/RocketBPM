@@ -146,6 +146,7 @@ const styles = {
     height: "8px",
     borderRadius: "50%",
     position: "absolute",
+    
   },
   handle: {
     backgroundColor: "transparent",

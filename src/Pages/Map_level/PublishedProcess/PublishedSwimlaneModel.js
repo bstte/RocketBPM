@@ -38,7 +38,7 @@ const PublishedSwimlaneModel = () => {
   const currentParentId = parentId || null;
   const currentLevel = level ? parseInt(level, 10) : 0;
   const { nodes: initialNodes } = useMemo(
-    () => generateNodesAndEdges(windowSize.width, windowSize.height),
+    () => generateNodesAndEdges(windowSize.width, windowSize.height,'viewmode'),
     [windowSize]
   );
     const [process_img, setprocess_img] = useState("");

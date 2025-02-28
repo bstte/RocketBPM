@@ -7,7 +7,7 @@ export const loginUser = createAsyncThunk('user/login', async ({ email, password
     const response = await Login(email, password);
     const { access_token, user } = response; // Access data correctly
     localStorage.setItem('token', access_token);
-    // console.log("access_token", access_token);
+    console.log("access_token", response);
     return user;
   } catch (error) {
     console.error("login error", error);
@@ -24,7 +24,7 @@ export const logoutUser = createAsyncThunk('user/logout', async (_, { rejectWith
         Authorization: `Bearer ${token}`, // Attach token in header
       }
     });
-    // console.log("logout",response.data)
+    localStorage.removeItem("token");
     return response.data; // Return the response message
   } catch (error) {
     console.error("logout error", error);

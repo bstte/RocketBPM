@@ -1,105 +1,46 @@
-import React, { useCallback, useEffect, useRef } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { setUser } from './redux/userSlice'; // Action to set the user
-import Login from './Pages/Login/Login';
-import { BreadcrumbsProvider } from './context/BreadcrumbsContext';
-import { CurrentUser } from './API/api';
-import Dashboard from './Pages/Dashboard/Dashboard';
-import Profile from './Pages/Profile/Profile';
-import MapLevel from './Pages/Map_level/MapLevel';
-import ProcessTitle from './Pages/Map_level/ProcessTitle';
-import ListProcessTitle from './Pages/Map_level/ListProcessTitle';
-import SwimlaneModel from './Pages/Map_level/Swimlane_model';
-import PublishedMapLevel from './Pages/Map_level/PublishedProcess/PublishedMapLevel';
-import PublishedSwimlaneModel from './Pages/Map_level/PublishedProcess/PublishedSwimlaneModel';
-import DraftProcesMapLevel from './Pages/Map_level/DraftProcessView/DraftProcesMapLevel';
-import DraftSwimlineLevel from './Pages/Map_level/DraftProcessView/DraftSwimlineLevel';
-import Signup from './Pages/Signup/Signup';
-import Forgotpassword from './Pages/Forgotpassword/Forgotpassword';
-import Account from './Pages/Accountsettings/Account';
-import ManageAssignedUsers from './Pages/Manage Assigned Users/ManageAssignedUsers';
-import AddUser from './Pages/Manage Assigned Users/AddUser';
-import Setting from './Setting/Setting';
+import React, { useEffect } from "react";
+import { Provider, useDispatch } from "react-redux";
+import { BrowserRouter as Router } from "react-router-dom";
+import AppRoutes from "./routes/AppRoutes";
+import { BreadcrumbsProvider } from "./context/BreadcrumbsContext";
+import { store } from "./redux/store";
+import { setUser } from "./redux/userSlice";
+import { CurrentUser } from "./API/api"; // Import the API call
 
-// import Testdraganddrop from './Pages/Map_level/Testdraganddrop';
-
-const PrivateRoute = ({ children }) => {
-  const { user } = useSelector((state) => state.user);
-  return user ? children : <Navigate to="/login" />;
-};
-
-const App = () => {
-  return (
-    <BreadcrumbsProvider>
-      <Router>
-        <AppContent />
-      </Router>
-    </BreadcrumbsProvider>
-  );
-};
-
-const AppContent = () => {
+function InitializeUser() {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const hasCheckedToken = useRef(false); 
-
-  const checkToken = useCallback(async () => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    try {
-      const response = await CurrentUser(token); // Fetch current user
-      dispatch(setUser(response)); // Save user to Redux
-      // Agar user already kisi page pe hai to waha hi rehne dein
-      if (window.location.pathname === "/login") {
-        navigate('/dashboard'); 
-      }
-    } catch (error) {
-      console.error('Error fetching current user:', error);
-      localStorage.removeItem('token'); // Clear invalid token
-      navigate('/login'); // Redirect to login page
-    }
-  } else {
-    navigate('/login'); // Redirect to login page if no token
-  }
-}, [dispatch, navigate]);
-
 
   useEffect(() => {
-    if (!hasCheckedToken.current) {
-      checkToken(); // Check token when the app loads
-      hasCheckedToken.current = true; // Set the ref to true after the first check
-    }
-  }, [checkToken]); // Include checkToken in the dependency array
+    const fetchUser = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
 
+        const response = await CurrentUser(token);
+        dispatch(setUser(response)); // Store user in Redux
+      } catch (error) {
+        console.error("Error fetching user on reload:", error);
+        localStorage.removeItem("token"); // Clear invalid token
+      }
+    };
+
+    fetchUser();
+  }, [dispatch]);
+
+  return null; // This component does not render anything
+}
+
+function App() {
   return (
-    <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
-      <Route path="/Account" element={<Account />} />
-      <Route path="/Setting" element={<Setting />} />
-      <Route path="/forgotpassword" element={<Forgotpassword />} />
-      <Route path="/User-Management" element={<PrivateRoute><ManageAssignedUsers /></PrivateRoute>} />
-      <Route path="/Add-User" element={<PrivateRoute><AddUser /></PrivateRoute>} />
-      <Route path="/Map-level" element={<PrivateRoute><MapLevel /></PrivateRoute>} />
-      <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-      {/* <Route path="/Testdraganddrop" element={<PrivateRoute><Testdraganddrop /></PrivateRoute>} /> */}
-      <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
-      <Route path="/Add-process-title" element={<PrivateRoute><ProcessTitle /></PrivateRoute>} />
-      <Route path="/List-process-title" element={<PrivateRoute><ListProcessTitle /></PrivateRoute>} />
-      <Route path="/swimlane/level/:level/:parentId" element={<SwimlaneModel />} />
-
-      <Route path="/level/:level/:parentId/*" element={<PrivateRoute><MapLevel /></PrivateRoute>} />
-
-      <Route path="/Published_Map_level" element={<PrivateRoute><PublishedMapLevel /></PrivateRoute>} />
-      <Route path="/PublishedMapLevel/:level/:parentId/*" element={<PrivateRoute><PublishedMapLevel /></PrivateRoute>} />
-      <Route path="/Published_swimlane/level/:level/:parentId" element={<PublishedSwimlaneModel />} />
-
-      <Route path="/Draft-Process-View" element={<PrivateRoute><DraftProcesMapLevel /></PrivateRoute>} />
-      <Route path="/Draft-Process-View/:level/:parentId/*" element={<PrivateRoute><DraftProcesMapLevel /></PrivateRoute>} />
-      <Route path="/Draft-Swim-lanes-View/level/:level/:parentId" element={<DraftSwimlineLevel />} />
-    </Routes>
+    <Provider store={store}>
+      <BreadcrumbsProvider>
+        <Router>
+          <InitializeUser /> {/* Fetch user on app load */}
+          <AppRoutes />
+        </Router>
+      </BreadcrumbsProvider>
+    </Provider>
   );
-};
+}
 
 export default App;
