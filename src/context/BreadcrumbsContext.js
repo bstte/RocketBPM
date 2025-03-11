@@ -1,9 +1,18 @@
-import React, { createContext, useState, useCallback } from 'react';
+import React, { createContext, useState, useCallback, useEffect } from 'react';
 
 export const BreadcrumbsContext = createContext();
 
 export const BreadcrumbsProvider = ({ children }) => {
-  const [breadcrumbs, setBreadcrumbs] = useState([]); 
+  const [breadcrumbs, setBreadcrumbs] = useState(() => {
+    // Local Storage se data load karo (agar available ho)
+    const savedBreadcrumbs = localStorage.getItem("breadcrumbs");
+    return savedBreadcrumbs ? JSON.parse(savedBreadcrumbs) : [];
+  });
+
+  // Jab bhi breadcrumbs change ho, localStorage me update karo
+  useEffect(() => {
+    localStorage.setItem("breadcrumbs", JSON.stringify(breadcrumbs));
+  }, [breadcrumbs]);
 
   const addBreadcrumb = useCallback((label, path, state) => {
     setBreadcrumbs((prev) => {
@@ -13,19 +22,19 @@ export const BreadcrumbsProvider = ({ children }) => {
       return [...prev, { label, path, state }];
     });
   }, []);
-  
 
   const removeBreadcrumbsAfter = useCallback((index) => {
     setBreadcrumbs((prev) => prev.slice(0, index + 1));
   }, []);
 
   const resetBreadcrumbs = useCallback(() => {
-    setBreadcrumbs([]); // Reset to an empty state
+    setBreadcrumbs([]); 
+    localStorage.removeItem("breadcrumbs");
   }, []);
 
   return (
     <BreadcrumbsContext.Provider
-      value={{ breadcrumbs, addBreadcrumb, removeBreadcrumbsAfter, resetBreadcrumbs }}
+      value={{ breadcrumbs, addBreadcrumb, removeBreadcrumbsAfter, resetBreadcrumbs ,setBreadcrumbs}}
     >
       {children}
     </BreadcrumbsContext.Provider>

@@ -16,6 +16,8 @@ import {
   Background,
   MarkerType,
   reconnectEdge,
+  ConnectionLineType,
+  ConnectionMode,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { applyNodeChanges, applyEdgeChanges } from "@xyflow/react";
@@ -64,7 +66,7 @@ const SwimlaneModel = () => {
   );
 
   useEffect(() => {
-    setNodes(initialNodes); // Update nodes dynamically
+    setNodes(initialNodes); 
   }, [initialNodes]);
 
   const [selectedGroupId, setSelectedGroupId] = useState(null);
@@ -254,8 +256,10 @@ const SwimlaneModel = () => {
           animated: Boolean(edge.animated),
           markerEnd: {
             type: MarkerType.ArrowClosed,
+            color:"#002060",
+            width:12,height:12
           },
-          style: { stroke: "#000", strokeWidth: "0.29vh" },
+          style: { stroke: "#000", strokeWidth: 2.5 },
           type: "step",
         }));
         isInitialLoad.current = false;
@@ -280,26 +284,6 @@ const SwimlaneModel = () => {
     windowSize,
   ]);
 
-  useEffect(() => {
-    const handleRefresh = (event) => {
-      const userConfirmed = window.confirm(
-        "You have unsaved changes. Do you really want to leave?"
-      );
-
-      console.log("confirm data", userConfirmed);
-      if (userConfirmed) {
-        navigate("/dashboard");
-      } else {
-        event.preventDefault();
-      }
-    };
-
-    window.addEventListener("beforeunload", handleRefresh);
-
-    return () => {
-      window.removeEventListener("beforeunload", handleRefresh);
-    };
-  }, [navigate]);
   
   const onNodesChange = useCallback(
     (changes) => setChiledNodes((nds) => applyNodeChanges(changes, nds)),
@@ -319,8 +303,10 @@ const SwimlaneModel = () => {
             ...params,
             markerEnd: {
               type: MarkerType.ArrowClosed,
+              color:"#002060",
+              width:12,height:12
             },
-            style: { stroke: "#000", strokeWidth: 2 },
+            style: { stroke: "#002060", strokeWidth: 2.5},
             Level:
               currentParentId !== null
                 ? `Level${currentLevel}_${currentParentId}`
@@ -694,18 +680,42 @@ const SwimlaneModel = () => {
     setKeepOldPosition(node.position);
   };
 
+  const getNearestParentNode = (childNode) => {
+    return nodes.reduce((nearest, parentNode) => {
+      const childCenterX = childNode.position.x + childNode.style.width / 2;
+      const childCenterY = childNode.position.y + childNode.style.height / 2;
+  
+      const parentLeft = parentNode.position.x;
+      const parentRight = parentNode.position.x + parentNode.style.width;
+      const parentTop = parentNode.position.y;
+      const parentBottom = parentNode.position.y + parentNode.style.height;
+  
+      // Check if at least 10% of the node is inside any cell
+      const isOverlapping =
+        childCenterX > parentLeft + parentNode.style.width * 0.05 &&
+        childCenterX < parentRight - parentNode.style.width * 0.05 &&
+        childCenterY > parentTop + parentNode.style.height * 0.05 &&
+        childCenterY < parentBottom - parentNode.style.height * 0.05;
+  
+      if (isOverlapping) {
+        return parentNode;
+      }
+      return nearest;
+    }, null);
+  };
+  
+
+  
+
+
   const handleNodeDragStop = (event, node) => {
     console.log("old nodes ", node);
 
     if (node.id.startsWith("Level")) {
       // Find the nearest parent node
-      const nearestParentNode = nodes.find(
-        (n) =>
-          node.position.x >= n.position.x &&
-          node.position.x <= n.position.x + n.style.width &&
-          node.position.y >= n.position.y &&
-          node.position.y <= n.position.y + n.style.height
-      );
+      const nearestParentNode = getNearestParentNode(node);
+
+
 
       if (node.type === "SwimlineRightsideBox") {
         const [, row, col] =
@@ -1058,6 +1068,11 @@ const SwimlaneModel = () => {
               onEdgeContextMenu={onEdgeClick}
               onNodeDragStart={handleNodeDragStart}
               onNodeDragStop={handleNodeDragStop}
+              connectionLineType={ConnectionLineType.Step} // ✅ Correct Arrow Type
+              connectionLineStyle={{ stroke: "#002060", strokeWidth: 2.5 }} // ✅ Correct Arrow Style
+              connectionRadius={10} 
+              connectionMode={ConnectionMode.Loose} // ✅ Correct Syntax
+              
               proOptions={{ hideAttribution: true }}
               nodeTypes={memoizedNodeTypes}
               edgeTypes={memoizedEdgeTypes}

@@ -27,13 +27,16 @@ const Header = ({
   savefav, isFavorite, Process_img, Procesuser
 }) => {
   const user = useSelector((state) => state.user.user);
+  const [imageSrc, setImageSrc] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
 
   const [hoveredIcon, setHoveredIcon] = useState(null);
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
-   const [dropdownOpen, setDropdownOpen] = useState(false);
-    const dropdownRef = useRef(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
   const handlehomeBack = async () => {
     const confirmcondition = await handleBackdata();
@@ -47,6 +50,7 @@ const Header = ({
 
 
   const { breadcrumbs } = useContext(BreadcrumbsContext);
+
   const iconComponents = {
     progressArrow: <ProgressArrow />,
     pentagon: <Pentagon />,
@@ -54,6 +58,27 @@ const Header = ({
     box: <Box />,
     label: <Label />,
   };
+
+
+  useEffect(() => {
+    setIsLoading(true); // Start loading
+    const timer = setTimeout(() => {
+      if (Process_img) {
+        const img = new Image();
+        img.src = `${ImageBaseUrl}/${Process_img}`;
+        img.onload = () => {
+          setImageSrc(img.src);
+          setIsLoading(false); // Image loaded
+        };
+      } else {
+        setImageSrc("https://newprocesslab.com/wp-content/uploads/2021/12/cropped-Logo_NewProcessLab_60x523-1-1.png");
+        setIsLoading(false); // Default image loaded
+      }
+    }, 1000); // 1 sec delay for smooth loading
+
+    return () => clearTimeout(timer);
+  }, [Process_img]);
+
 
 
   const handleLogout = () => {
@@ -88,7 +113,7 @@ const Header = ({
     }
   };
 
-// Handle dropdown toggle
+  // Handle dropdown toggle
   const toggleDropdown = () => {
     setDropdownOpen(!dropdownOpen);
   };
@@ -124,9 +149,9 @@ const Header = ({
               <span key={index} className="ss_hm_dash_home_icon">
                 {index === 0 ? (
                   <span
-                    onClick={() => handleBreadcrumbClick(crumb.path, crumb.state)} 
+                    onClick={() => handleBreadcrumbClick(crumb.path, crumb.state)}
                   >
-                  
+
                     <img src="../../img/rocket-solid.svg" alt="" />
 
                   </span>
@@ -151,29 +176,29 @@ const Header = ({
           <div style={styles.loginuserbox} className="ss_hed_rit_user_secnew">
             {Page === "Published" && Procesuser.role !== "User" && (
               <>
-         
-                  <button
-                    onClick={() => onSave("draft")}
-                    style={{
-                      ...styles.saveButton,
-                      backgroundColor: "#002060",
-                    }}
-                  >
-                    View Draft
-                  </button>
 
-                  <IconButton
-                    edge="start"
-                    color="inherit"
-                    aria-label="favorite" className="ss_hed_star_img"
-                  >
-                    <img src="../../img/star-regular.svg" alt=""/>
-                  </IconButton>
+                <button
+                  onClick={() => onSave("draft")}
+                  style={{
+                    ...styles.saveButton,
+                    backgroundColor: "#002060",
+                  }}
+                >
+                  View Draft
+                </button>
+
+                <IconButton
+                  edge="start"
+                  color="inherit"
+                  aria-label="favorite" className="ss_hed_star_img"
+                >
+                  <img src="../../img/star-regular.svg" alt="" />
+                </IconButton>
 
 
-                    <button className="header_share_btn">
-                      <img src="../../img/share.png" alt=""/>
-                    </button>
+                <button className="header_share_btn">
+                  <img src="../../img/share.png" alt="" />
+                </button>
 
 
               </>
@@ -183,7 +208,7 @@ const Header = ({
               <>
                 {Procesuser?.type !== "assign" && (
                   <div>
-              
+
                     <button
                       onClick={() => onSave("editdraft")}
                       style={{
@@ -208,22 +233,22 @@ const Header = ({
                     VIEW PUBLISHED
                   </button>
                 </div>
-                  <div>
+                <div>
                   <IconButton
                     edge="start"
                     color="inherit"
                     aria-label="favorite" className="ss_hed_star_img"
                   >
-                    <img src="../../img/star-regular.svg" alt=""/>
+                    <img src="../../img/star-regular.svg" alt="" />
                   </IconButton>
-                  </div>
+                </div>
 
-                  <div>
+                <div>
                   <button className="header_share_btn">
-                      <img src="../../../img/share.png" alt=""/>
-                    </button>
-                  </div>
-                
+                    <img src="../../../img/share.png" alt="" />
+                  </button>
+                </div>
+
               </>
             )}
 
@@ -275,27 +300,27 @@ const Header = ({
             )}
 
             <div className="ss_profile_rit_div">
-              
 
-                {/* Dropdown Button */}
-          <div ref={dropdownRef} style={{ position: "relative" }}>
-            <div id="dropdownBtn" onClick={toggleDropdown}> 
 
-               {user?.Profile_image ? (
-                <img src={`${ImageBaseUrl}uploads/profile_images/${user?.Profile_image}`} alt="Profile"  />
-              ) : (
-                <img src="/img/user.png" alt="User" style={styles.loginuserpic} />
-              )}
-             
-            </div>
-            {dropdownOpen && (
-              <div className="dropdown-content">
-                <button onClick={() => navigate('/Account')}>Edot Profile</button>
-                <button  onClick={()  =>handleLogout()}>Log out</button>
-               
+              {/* Dropdown Button */}
+              <div ref={dropdownRef} style={{ position: "relative" }}>
+                <div id="dropdownBtn" onClick={toggleDropdown}>
+
+                  {user?.Profile_image ? (
+                    <img src={`${ImageBaseUrl}uploads/profile_images/${user?.Profile_image}`} alt="Profile" />
+                  ) : (
+                    <img src="/img/user.png" alt="User" style={styles.loginuserpic} />
+                  )}
+
+                </div>
+                {dropdownOpen && (
+                  <div className="dropdown-content">
+                    <button onClick={() => navigate('/Account')}>Edot Profile</button>
+                    <button onClick={() => handleLogout()}>Log out</button>
+
+                  </div>
+                )}
               </div>
-            )}
-          </div>
 
             </div>
             {/* <div style={styles.loginusername}>
@@ -377,22 +402,14 @@ const Header = ({
                 </div>
               </div>
               <div style={styles.mhcolleft} className="ss_wid_auto">
+                {isLoading ? (
+                  <p>Image Loading...</p>
+                ) : (
+                  <img src={imageSrc} alt="RocketBPM" style={styles.mainlogo} />
+                )}
 
-                {
-                  Process_img ? (
-                    <img
-                      src={`${ImageBaseUrl}/${Process_img}`}
-                      alt="RocketBPM"
-                      style={styles.mainlogo}
-                    />
-                  ) : (
-                    <img
-                      src="https://sp-ao.shortpixel.ai/client/to_auto,q_glossy,ret_img/https://newprocesslab.com/wp-content/uploads/2021/12/cropped-Logo_NewProcessLab_60x523-1-1.png"
-                      alt="RocketBPM"
-                      style={styles.mainlogo}
-                    />
-                  )
-                }
+
+
               </div>
             </>
           )}
@@ -409,21 +426,11 @@ const Header = ({
 
                 </div>
                 <div style={styles.mhcolleft} className="ss_box_hed_right_1_img">
-                  {
-                    Process_img ? (
-                      <img
-                        src={`${ImageBaseUrl}/${Process_img}`}
-                        alt="RocketBPM"
-                        style={styles.mainlogo}
-                      />
-                    ) : (
-                      <img
-                        src="https://sp-ao.shortpixel.ai/client/to_auto,q_glossy,ret_img/https://newprocesslab.com/wp-content/uploads/2021/12/cropped-Logo_NewProcessLab_60x523-1-1.png"
-                        alt="RocketBPM"
-                        style={styles.mainlogo}
-                      />
-                    )
-                  }
+                {isLoading ? (
+                  <p>Loading...</p>
+                ) : (
+                  <img src={imageSrc} alt="RocketBPM" style={styles.mainlogo} />
+                )}
 
                 </div>
               </>
@@ -440,21 +447,11 @@ const Header = ({
                 </div>
               </div>
               <div style={styles.mhcolleft} className="ss_box_hed_right_img">
-                {
-                  Process_img ? (
-                    <img
-                      src={`${ImageBaseUrl}/${Process_img}`}
-                      alt="RocketBPM"
-                      style={styles.mainlogo}
-                    />
-                  ) : (
-                    <img
-                      src="https://sp-ao.shortpixel.ai/client/to_auto,q_glossy,ret_img/https://newprocesslab.com/wp-content/uploads/2021/12/cropped-Logo_NewProcessLab_60x523-1-1.png"
-                      alt="RocketBPM"
-                      style={styles.mainlogo}
-                    />
-                  )
-                }
+              {isLoading ? (
+                  <p>Image Loading...</p>
+                ) : (
+                  <img src={imageSrc} alt="RocketBPM" style={styles.mainlogo} />
+                )}
               </div>
             </>
           )

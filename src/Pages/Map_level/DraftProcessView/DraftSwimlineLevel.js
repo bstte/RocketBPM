@@ -60,7 +60,7 @@ const DraftSwimlineLevel = () => {
     []
   );
 
-  const { removeBreadcrumbsAfter } = useContext(BreadcrumbsContext);
+  const { removeBreadcrumbsAfter ,breadcrumbs,setBreadcrumbs} = useContext(BreadcrumbsContext);
 
   useEffect(() => {
      const checkfav=async()=>{
@@ -184,7 +184,19 @@ const DraftSwimlineLevel = () => {
 
 
   const navigateOnDraft = (page) => {
-
+    const updatedBreadcrumbs = breadcrumbs.map((crumb, index) => {
+      if (index === 0) return crumb; // First breadcrumb remains unchanged
+  
+      return {
+        ...crumb,
+        path: page === "editdraft"
+          ? crumb.path.replace("published-map-level", "Draft-Process-View").replace("Map-level", "Draft-Process-View")
+          : crumb.path.replace("Draft-Process-View", "published-map-level").replace("Draft-Process-View", "Map-level")
+      };
+    });
+  
+    setBreadcrumbs(updatedBreadcrumbs);
+    // console.log("breadcrumbs",breadcrumbs) 
     if (id && user) {
       
         page === "editdraft" ? navigate(`/swimlane/level/${currentLevel}/${currentParentId}`, { state: { id: id, title: title, user: user, parentId: currentParentId, level: currentLevel } })

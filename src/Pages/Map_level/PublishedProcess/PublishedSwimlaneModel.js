@@ -60,7 +60,7 @@ const PublishedSwimlaneModel = () => {
     []
   );
 
-  const { removeBreadcrumbsAfter } = useContext(BreadcrumbsContext);
+  const { removeBreadcrumbsAfter,breadcrumbs,setBreadcrumbs } = useContext(BreadcrumbsContext);
 
   useEffect(() => {
     const checkfav = async () => {
@@ -151,10 +151,11 @@ const PublishedSwimlaneModel = () => {
           ...edge,
           animated: Boolean(edge.animated),
           markerEnd: {
-            type: MarkerType.ArrowClosed,
-          },
-          style: { stroke: "#000", strokeWidth: 2 },
-          type: "step",
+                     type: MarkerType.ArrowClosed,
+                     color:"#002060",
+                     width:12,height:12
+                   },
+                   style: { stroke: "#000", strokeWidth: 2.5 },
         }));
 
         setChiledNodes(parsedNodes);
@@ -184,9 +185,16 @@ const PublishedSwimlaneModel = () => {
   };
 
   const navigateOnDraft = () => {
-
-    // const id=breadcrumbs[1].state?breadcrumbs[1].state.id:''
-    // const user=breadcrumbs[1].state?breadcrumbs[1].state.user:''
+    const updatedBreadcrumbs = breadcrumbs.map((crumb, index) => {
+      if (index === 0) return crumb; 
+  
+      return {
+        ...crumb,
+        path: crumb.path.replace("published-map-level", "Draft-Process-View") 
+      };
+    });
+    setBreadcrumbs(updatedBreadcrumbs);
+  
     if (id && user) {
       navigate(`/Draft-Swim-lanes-View/level/${currentLevel}/${currentParentId}`, { state: { id: id, title: title, user: user, parentId: currentParentId, level: currentLevel } })
       // removeBreadcrumbsAfter(0);
@@ -205,6 +213,7 @@ const PublishedSwimlaneModel = () => {
         addNode={() => console.log("add node")}
         handleBackdata={() => console.log("handle back")}
         iconNames={iconNames}
+        currentLevel={currentLevel}
         getPublishedDate={getPublishedDate}
         setIsNavigating={() => removeBreadcrumbsAfter(currentLevel - 1)}
         Page={"Published"}
@@ -214,7 +223,7 @@ const PublishedSwimlaneModel = () => {
       />
       <div style={styles.appContainer} className="custom_swimlane">
         <ReactFlowProvider>
-          <div style={styles.scrollableWrapper}>
+          <div className="ss_publish_border"  style={styles.scrollableWrapper}>
             <ReactFlow
               nodes={[...nodes, ...ChildNodes]}
               edges={edges}

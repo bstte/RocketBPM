@@ -1,4 +1,4 @@
-import { memo, useState, useRef } from "react";
+import { memo, useState, useRef, useEffect } from "react";
 import { Handle, Position } from "@xyflow/react";
 import ReactDOM from "react-dom";
 
@@ -27,6 +27,23 @@ const BoxNode = ({ data }) => {
     setIsPopupVisible(!isPopupVisible);
   };
 
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setIsPopupVisible(!isPopupVisible);
+
+      }
+    };
+
+    if (isPopupVisible) {
+      document.addEventListener("keydown", handleKeyDown);
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isPopupVisible]);
+
   
   const renderPopup = () => (
     <div className="popupPosition_fix"
@@ -40,10 +57,10 @@ const BoxNode = ({ data }) => {
       <div style={styles.popupHeader} >
         <h3 style={styles.popupTitle}>{title}</h3>
         <button
-          style={styles.closeButton}
+          className="ss_popup_close_btn" style={styles.closeButton}
           onClick={handleClosePopup}
         >
-          <span>x</span>
+          <span>Close</span>
 
         </button>
       </div>

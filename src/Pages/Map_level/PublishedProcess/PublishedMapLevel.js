@@ -63,7 +63,7 @@ const LoginUser = useSelector((state) => state.user.user);
   const { id, title, user } = location.state || {};
   const currentLevel = level ? parseInt(level, 10) : 0;
   const currentParentId = parentId || null;
-  const { addBreadcrumb, removeBreadcrumbsAfter } =
+  const { addBreadcrumb, removeBreadcrumbsAfter,breadcrumbs,setBreadcrumbs } =
     useContext(BreadcrumbsContext);
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -211,7 +211,7 @@ const LoginUser = useSelector((state) => state.user.user);
     const path =
       currentLevel === 0
         ? "/published-map-level"
-        : `/published-map-level${currentLevel}/${currentParentId}`;
+        : `/published-map-level/${currentLevel}/${currentParentId}`;
 
     const state = {
       id: id,
@@ -310,16 +310,24 @@ const LoginUser = useSelector((state) => state.user.user);
 
   const iconNames = {};
 const navigateOnDraft=()=>{
-  // console.log("current map level",currentLevel)
-  // const id=breadcrumbs[1].state?breadcrumbs[1].state.id:''
-  // const user=breadcrumbs[1].state?breadcrumbs[1].state.user:''
-  if(id && user){
+ 
+  const updatedBreadcrumbs = breadcrumbs.map((crumb, index) => {
+    if (index === 0) return crumb; // First breadcrumb ko as it is rakhna
+
+    return {
+      ...crumb,
+      path: crumb.path.replace("published-map-level", "Draft-Process-View") // Path update
+    };
+  });
+  setBreadcrumbs(updatedBreadcrumbs);
+
+if(id && user){
     if(currentLevel===0){
       navigate('/Draft-Process-View',{ state: { id:id, title:title, user: user } })
-      // removeBreadcrumbsAfter(0);
+    
     }else{
        navigate(`/Draft-Process-View/${currentLevel}/${currentParentId}`,{ state: { id:id, title:title, user: user } })
-    // removeBreadcrumbsAfter(0);
+   
     }
    
   }else{

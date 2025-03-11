@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { Box, Card, IconButton, CircularProgress } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { useSelector } from "react-redux";
-import { getFavProcessesByUser, getUserNodes, getvideo } from "../../API/api";
+import apiExports, { getFavProcessesByUser, getUserNodes, getvideo } from "../../API/api";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -13,6 +13,9 @@ import { BreadcrumbsContext } from "../../context/BreadcrumbsContext";
 
 const Dashboard = () => {
   const user = useSelector((state) => state.user.user);
+
+  const [checkpublish, Setcheckpublish] = useState()
+  const [Loading, SetLoading] = useState(false)
   const [filteredNodes, setFilteredNodes] = useState(() => {
     return JSON.parse(localStorage.getItem("filteredNodes")) || [];
   });
@@ -27,7 +30,7 @@ const Dashboard = () => {
   const [selectedProcess, setSelectedProcess] = useState(null);
   const [ProcessTitle, setProcessTitle] = useState(null);
 
-  const [isLoading, setIsLoading] = useState(false); // Loading state
+  const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
   const { addBreadcrumb, resetBreadcrumbs } = useContext(BreadcrumbsContext);
@@ -50,12 +53,12 @@ const Dashboard = () => {
 
         if (!response?.nodes || !response?.assignedProcesses) return;
 
-        // Store assigned roles for each user_id & process_id combination
+
         const assignedUserData = response.assignedProcesses.reduce((acc, p) => {
           if (!acc[p.user_id]) {
             acc[p.user_id] = {};
           }
-          acc[p.user_id][p.process_id] = p.Role; // Store role per process_id
+          acc[p.user_id][p.process_id] = p.Role;
           return acc;
         }, {});
 
@@ -64,14 +67,14 @@ const Dashboard = () => {
         const categorizedNodes = nodesArray.reduce((acc, node) => {
           const processId = String(node.Process_id);
           const assignedRole =
-            assignedUserData[node.user_id]?.[node.Process_id] || "Self"; // Get specific role for this process
+            assignedUserData[node.user_id]?.[node.Process_id] || "Self";
 
           if (!acc[processId]) {
             acc[processId] = {
               processId,
-              type: assignedRole !== "Self" ? "assign" : "self", // If role exists, it's assigned
-              id: node.user_id, // User ID who created this process
-              role: assignedRole, // Assign process-specific role
+              type: assignedRole !== "Self" ? "assign" : "self",
+              id: node.user_id,
+              role: assignedRole,
             };
           }
 
@@ -86,7 +89,7 @@ const Dashboard = () => {
       } catch (error) {
         console.error("getUserNodes error:", error);
       } finally {
-        setIsLoading(false); // Stop loading
+        setIsLoading(false);
       }
     };
 
@@ -146,7 +149,7 @@ const Dashboard = () => {
     addHomeBreadCrums()
     getFavProcessesUser()
 
-  }, [user?.id,addBreadcrumb, resetBreadcrumbs,user]);
+  }, [user?.id, addBreadcrumb, resetBreadcrumbs, user]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -164,16 +167,27 @@ const Dashboard = () => {
   }, []);
 
   // Open Menu
-  const handleOpenMenu = (event, processId) => {
-    event.stopPropagation(); // Prevent event from reaching document
+  const handleOpenMenu = async (event, processId) => {
+    event.stopPropagation();
     setSelectedProcess(processId);
+   const data=await checkPublishData(processId)
+    Setcheckpublish(data?.status)
+    SetLoading(true)
   };
 
-  // Close Menu
-  //   const handleCloseMenu = () => {
-  //  console.log(filteredNodes,user)
-  //     setSelectedProcess(null);
-  //   };
+
+  const checkPublishData=async(processId)=>{
+    const levelParam = 'Level0'
+    const user_id = user ? user.id : null;
+    const Process_id = processId ? processId : null;
+     const data = await apiExports.checkPublishRecord(
+      levelParam,
+      parseInt(user_id),
+      Process_id
+    );
+
+    return data
+  }
 
   const getYouTubeEmbedUrl = (url) => {
     if (!url || typeof url !== "string" || !url.startsWith("http")) {
@@ -205,7 +219,7 @@ const Dashboard = () => {
     centerMode: false,
     centerPadding: "20px",
     adaptiveHeight: true,
-  
+
     responsive: [
       { breakpoint: 1024, settings: { slidesToShow: Math.min(2, filteredNodes.length) } },
       { breakpoint: 600, settings: { slidesToShow: 1 } },
@@ -223,6 +237,24 @@ const Dashboard = () => {
   };
 
 
+  const NavigateOnClick =async (item) => {
+const data =await checkPublishData(item.processId)
+if(data.status){
+     navigate("/published-map-level", { state: { id: parseInt(item.processId), title: getProcessTitle(item.processId), user: item } })
+
+}else{
+       navigate("/Draft-Process-View", {
+        state: {
+          id: parseInt(item.processId),
+          title: getProcessTitle(item.processId),
+          user: item,
+        },
+      })
+
+}
+console.log(data)
+  }
+
   return (
 
     <div >
@@ -230,7 +262,7 @@ const Dashboard = () => {
       <div className="ss_title_bar"> <CustomHeader title="My Process Worlds" /></div>
 
       <div className="ss_dash_slider_bx">
-       
+
         <div className="ss_dash_slid_bx">
           {isLoading ? (
             // Show Loader while fetching data
@@ -265,7 +297,7 @@ const Dashboard = () => {
                   <label> {getProcessTitle(item.processId)}</label>
 
                   {/* React Flow Component */}
-                  <div className="ss_dash_slid_img" onClick={() => navigate("/published-map-level", { state: { id: parseInt(item.processId), title: getProcessTitle(item.processId), user: item } })}>
+                  <div className="ss_dash_slid_img" onClick={()=>NavigateOnClick(item)}>
                     <img src="../../../img/dashboard-slider-image.jpg" alt="" />
                     <button>
                       Preview Image of Level 1
@@ -288,30 +320,124 @@ const Dashboard = () => {
                         zIndex: 1000,
                       }}
                     >
-                      {item.type === "self" ? (
-                        <>
-                          {/* Show all options when type is self */}
-                          <p onClick={() => navigate("/published-map-level", { state: { id: parseInt(item.processId), title: getProcessTitle(item.processId), user: item } })} style={{ cursor: "pointer", margin: 0 }}>✏ Published</p>
-                          <p onClick={() => navigate("/Draft-Process-View", { state: { id: parseInt(item.processId), title: getProcessTitle(item.processId), user: item } })} style={{ cursor: "pointer", margin: 0 }}>✏ View Draft</p>
-                          <p onClick={() => navigate("/User-Management", { state: { process: { id: parseInt(item.processId), user_id: item.id } } })} style={{ cursor: "pointer", margin: 0 }}>✏ Managed Users</p>
-                          <p onClick={() => navigate('/Setting', { state: { ProcessId: parseInt(item.processId) } })} style={{ cursor: "pointer", margin: 0 }}>🗑 Setting</p>
-                        </>
-                      ) : (
-                        <>
-                          {/* Show only Published when role is User */}
-                          {item.role === "User" && (
-                            <p onClick={() => navigate("/published-map-level", { state: { id: parseInt(item.processId), title: getProcessTitle(item.processId), user: item } })} style={{ cursor: "pointer", margin: 0 }}>✏ Published</p>
-                          )}
 
-                          {/* Show Published and View Draft when role is Modeler */}
-                          {item.role === "Modeler" && (
-                            <>
-                              <p onClick={() => navigate("/published-map-level", { state: { id: parseInt(item.processId), title: getProcessTitle(item.processId), user: item } })} style={{ cursor: "pointer", margin: 0 }}>✏ Published</p>
-                              <p onClick={() => navigate("/Draft-Process-View", { state: { id: parseInt(item.processId), title: getProcessTitle(item.processId), user: item } })} style={{ cursor: "pointer", margin: 0 }}>✏ View Draft</p>
-                            </>
-                          )}
-                        </>
+                      {Loading && (
+                        item.type === "self" ? (
+                          <>
+                            {/* Show all options when type is self */}
+                            {checkpublish && (
+                              <p
+                                onClick={() =>
+                                  navigate("/published-map-level", {
+                                    state: {
+                                      id: parseInt(item.processId),
+                                      title: getProcessTitle(item.processId),
+                                      user: item,
+                                    },
+                                  })
+                                }
+                                style={{ cursor: "pointer", margin: 0 }}
+                              >
+                                ✏ Published
+                              </p>
+                            )}
+                            <p
+                              onClick={() =>
+                                navigate("/Draft-Process-View", {
+                                  state: {
+                                    id: parseInt(item.processId),
+                                    title: getProcessTitle(item.processId),
+                                    user: item,
+                                  },
+                                })
+                              }
+                              style={{ cursor: "pointer", margin: 0 }}
+                            >
+                              ✏ View Draft
+                            </p>
+                            <p
+                              onClick={() =>
+                                navigate("/User-Management", {
+                                  state: {
+                                    process: { id: parseInt(item.processId), user_id: item.id },
+                                  },
+                                })
+                              }
+                              style={{ cursor: "pointer", margin: 0 }}
+                            >
+                              ✏ Managed Users
+                            </p>
+                            <p
+                              onClick={() =>
+                                navigate("/Setting", {
+                                  state: { ProcessId: parseInt(item.processId) },
+                                })
+                              }
+                              style={{ cursor: "pointer", margin: 0 }}
+                            >
+                              🗑 Setting
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            {/* Show only Published when role is User */}
+                            {item.role === "User" && (
+                              <p
+                                onClick={() =>
+                                  navigate("/published-map-level", {
+                                    state: {
+                                      id: parseInt(item.processId),
+                                      title: getProcessTitle(item.processId),
+                                      user: item,
+                                    },
+                                  })
+                                }
+                                style={{ cursor: "pointer", margin: 0 }}
+                              >
+                                ✏ Published
+                              </p>
+                            )}
+                            {/* Show Published and View Draft when role is Modeler */}
+                            {item.role === "Modeler" && (
+                              <>
+                                {checkpublish && (
+                                  <p
+                                    onClick={() =>
+                                      navigate("/published-map-level", {
+                                        state: {
+                                          id: parseInt(item.processId),
+                                          title: getProcessTitle(item.processId),
+                                          user: item,
+                                        },
+                                      })
+                                    }
+                                    style={{ cursor: "pointer", margin: 0 }}
+                                  >
+                                    ✏ Published
+                                  </p>
+                                )}
+                                <p
+                                  onClick={() =>
+                                    navigate("/Draft-Process-View", {
+                                      state: {
+                                        id: parseInt(item.processId),
+                                        title: getProcessTitle(item.processId),
+                                        user: item,
+                                      },
+                                    })
+                                  }
+                                  style={{ cursor: "pointer", margin: 0 }}
+                                >
+                                  ✏ View Draft
+                                </p>
+                              </>
+                            )}
+                          </>
+                        )
                       )}
+
+
+
                     </Box>
                   )}
                 </Card>
@@ -350,7 +476,7 @@ const Dashboard = () => {
           </div>
           <div className="col-lg-8">
             <div className="ss_dash_table_mn">
-            <h4><img src="../../../img/star-solid.svg" alt=""/>My Favorites</h4>
+              <h4><img src="../../../img/star-solid.svg" alt="" />My Favorites</h4>
 
               <div className="ss_dash_table">
                 <table>

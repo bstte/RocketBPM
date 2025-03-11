@@ -88,6 +88,12 @@ const MapLevel = () => {
     x: 0,
     y: 0,
   });
+
+  const [OriginalPosition, setOriginalPosition] = useState({
+    x: 0,
+    y: 0,
+  });
+
   const [showPopup, setShowPopup] = useState(false);
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   const [headerTitle, setHeaderTitle] = useState(`${title} `);
@@ -125,13 +131,13 @@ const MapLevel = () => {
         // Check if the label has changed to set unsaved changes
         const changedNode = prevNodes.find((n) => n.id === nodeId);
         if (changedNode && changedNode.data.label !== newLabel) {
-          setHasUnsavedChanges(true);
+          // setHasUnsavedChanges(true);
         }
 
         return updatedNodes;
       });
     },
-    [setNodes, setHasUnsavedChanges]
+    [setNodes]
   );
 
 
@@ -325,7 +331,7 @@ const MapLevel = () => {
       },
       type: type,
       status: "draft",
-      position: position || { x: Math.random() * 250, y: Math.random() * 250 },
+      position: { x: position.x, y: position.y },
       draggable: true,
       isNew: true,
       animated: true,
@@ -595,7 +601,7 @@ const MapLevel = () => {
 
   const handleContextMenuOptionClick = (type) => {
     setShowContextMenu(false);
-    addNode(type, { x: contextMenuPosition.x + 110, y: contextMenuPosition.y + 100 });
+    addNode(type, { x: OriginalPosition.x, y: OriginalPosition.y + 100 });
   };
 
 
@@ -621,6 +627,11 @@ const MapLevel = () => {
     setContextMenuPosition({
       x: event.clientX - containerRect.left,
       y: event.clientY - containerRect.top,
+    });
+
+    setOriginalPosition({
+      x: event.clientX,
+      y: event.clientY ,
     });
   };
 

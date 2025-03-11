@@ -23,6 +23,7 @@ import PublishedMapLevel from "../Pages/Map_level/PublishedProcess/PublishedMapL
 import PublishedSwimlaneModel from "../Pages/Map_level/PublishedProcess/PublishedSwimlaneModel";
 import DraftProcesMapLevel from "../Pages/Map_level/DraftProcessView/DraftProcesMapLevel";
 import DraftSwimlineLevel from "../Pages/Map_level/DraftProcessView/DraftSwimlineLevel";
+import { ReactFlowProvider } from "@xyflow/react";
 
 const AppRoutes = () => {
   return (
@@ -39,7 +40,17 @@ const AppRoutes = () => {
       <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
       <Route path="/user-management" element={<PrivateRoute><ManageAssignedUsers /></PrivateRoute>} />
       <Route path="/add-user" element={<PrivateRoute><AddUser /></PrivateRoute>} />
-      <Route path="/map-level" element={<PrivateRoute><MapLevel /></PrivateRoute>} />
+      <Route
+  path="/map-level"
+  element={
+    <PrivateRoute>
+      <ReactFlowProvider>
+        <MapLevel />
+      </ReactFlowProvider>
+    </PrivateRoute>
+  }
+/>
+
       <Route path="/add-process-title" element={<PrivateRoute><ProcessTitle /></PrivateRoute>} />
       <Route path="/list-process-title" element={<PrivateRoute><ListProcessTitle /></PrivateRoute>} />
       <Route path="/swimlane/level/:level/:parentId" element={<PrivateRoute><SwimlaneModel /></PrivateRoute>} />

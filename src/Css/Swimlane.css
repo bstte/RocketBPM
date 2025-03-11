@@ -3,23 +3,29 @@
 }
 .custom_swimlane .react-flow__node-group {
     border-top: 0;
-    border-bottom: 2px solid #002060 !important;
+    border-bottom: 1px solid #002060 !important;
     /* border-color: #002060 !important; */
     /* width: 136.636px!important; */
 }
 .react-flow__edge-path {
     stroke: #002060 !important;
 }
-.custom_swimlane .borderBox{
-    border-color: #002060 !important;
+.custom_swimlane .borderBox {
+    border: 1px solid rgb(0 32 96) !important;
+     box-shadow: rgb(0 32 96 / 14%) 0px 2px 5px !important;
+ }
+
+ .react-flow__node.react-flow__node-group.selectable {
+    height: 89px !important;
 }
+
 
 .popupPosition_fix {
     top: 50% !important;
     left: 50% !important;
-    max-width: 600px !important;
-    height: 450px !important;
-    width: 600px !important;
+    max-width: 560px !important;
+    height: 420px !important;
+    width: 560px !important;
    
     overflow-y: auto;
 }
@@ -50,6 +56,10 @@
 }
 .popupContent_content::-webkit-scrollbar-thumb{
 	background-color: #002060;
+}
+.ss_publish_border{
+    border: 1px solid rgb(0 32 96) !important;
+    border-top: 0 !important;
 }
 
 

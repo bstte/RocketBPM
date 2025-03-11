@@ -71,8 +71,8 @@ const ManageAssignedUsers = () => {
 
         <div className="ss_table_btm_btn">
           <ul>
-           <li> <button className="ss_add_user_btn">Cancel</button></li>
-            <li><button className="ss_add_user_btn">Save</button></li>
+           <li> <button className="ss_add_user_btn" onClick={()=>navigate(-1)}>Cancel</button></li>
+            {/* <li><button className="ss_add_user_btn">Save</button></li> */}
           </ul>
         </div>
 

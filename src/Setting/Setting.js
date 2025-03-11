@@ -8,6 +8,8 @@ const Setting = () => {
   const location = useLocation();
   const { ProcessId } = location.state || {};
     const navigate = useNavigate();
+    const [loading, setLoading] = useState(true); // ✅ Loading state added
+
   const [processData, setProcessData] = useState({
     process_title: "",
     Process_img: null,
@@ -20,12 +22,16 @@ const Setting = () => {
     const fetchProcessData = async () => {
       if (!ProcessId) return;
       try {
+        setLoading(true); 
+
         const response = await getProcessTitleById(ProcessId);
         if (response.data) {
           setProcessData(response.data);
         }
       } catch (error) {
         console.error("Error fetching process data:", error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchProcessData();
@@ -39,11 +45,7 @@ const Setting = () => {
       img.src = URL.createObjectURL(file);
 
       img.onload = () => {
-        if (img.height === 300) {
           setSelectedImage(img.src);
-        } else {
-          alert("Recommended height: 60 pixels");
-        }
       };
     }
   };
@@ -80,6 +82,7 @@ const Setting = () => {
     try {
       await updateProcess(ProcessId, formData); // Pass ProcessId as a parameter
       alert("Process updated successfully!");
+      navigate("/dashboard")
     } catch (error) {
       console.error("Error updating process:", error);
       alert("Failed to update the process. Please try again.");
@@ -98,17 +101,21 @@ const Setting = () => {
         <div className="ss_sett_lft_div">
           <h4>Edit Properties</h4>
           <div className="ss_logo_lft_div">
-            {selectedImage ? (
+          {loading ? (
+              <p>Loading...</p> 
+            ) : selectedImage ? (
               <img src={selectedImage} alt="Selected" className="profile-image" />
             ) : processData.Process_img ? (
               <img src={`${ImageBaseUrl}/${processData.Process_img}`} alt="Process" className="profile-image" />
             ) : (
               <label>No Image</label>
             )}
+
+           
           </div>
 
           <div className="ss_recheigh">
-            <p>Recommended height: 60 pixels</p>
+            <p>Recommended height: 34 pixel</p>
             <ul>
               <li><button onClick={() => fileInputRef.current.click()}>UPDATE</button></li>
               <li><button onClick={() => setSelectedImage(null)}>REMOVE</button></li>
@@ -126,7 +133,7 @@ const Setting = () => {
                   onChange={(e) => setProcessData({ ...processData, process_title: e.target.value })}
                 />
               </li>
-              <li>Name of Process World</li>
+              <li>Max. 35 characters</li>
             </ul>
           </div>
         </div>
@@ -139,7 +146,7 @@ const Setting = () => {
 
         <div className="ss_table_btm_btn">
           <ul>
-            <li><button className="ss_add_user_btn" onClick={() => window.location.reload()}>Cancel</button></li>
+            <li><button className="ss_add_user_btn" onClick={() => navigate(-1)}>Cancel</button></li>
             <li><button className="ss_add_user_btn" onClick={updateProcessdata}>Save</button></li>
           </ul>
         </div>

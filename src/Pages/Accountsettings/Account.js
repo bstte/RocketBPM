@@ -36,11 +36,11 @@ const Account = () => {
             img.src = URL.createObjectURL(file);
 
             img.onload = () => {
-                if (img.width === 300 && img.height === 300) {
+                // if (img.width === 300 && img.height === 300) {
                     setSelectedImage(img.src);
-                } else {
-                    alert("Image must be 300 x 300 pixels");
-                }
+                // } else {
+                    // alert("Image must be 300 x 300 pixels");
+                // }
             };
         }
     };

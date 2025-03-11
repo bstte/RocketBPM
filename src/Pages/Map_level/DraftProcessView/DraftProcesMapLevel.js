@@ -66,7 +66,7 @@ import { useSelector } from "react-redux";
     const { id, title, user } = location.state || {};
     const currentLevel = level ? parseInt(level, 10) : 0;
     const currentParentId = parentId || null;
-    const { addBreadcrumb, removeBreadcrumbsAfter } =
+    const { addBreadcrumb, removeBreadcrumbsAfter ,breadcrumbs,setBreadcrumbs} =
       useContext(BreadcrumbsContext);
     const [nodes, setNodes, onNodesChange] = useNodesState([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -314,24 +314,37 @@ import { useSelector } from "react-redux";
   
     const iconNames = {};
 
-    const navigateOnDraft=(page)=>{
-      // const id=breadcrumbs[1].state?breadcrumbs[1].state.id:''
-      // const user=breadcrumbs[1].state?breadcrumbs[1].state.user:''
-      // const title=breadcrumbs[1].state?breadcrumbs[1].state.title:''
-      
-      if(id && user){
-        if(currentLevel===0){
-          page==="editdraft"?  navigate('/Map-level',{ state: { id:id, title:title, user: user } }):  navigate('/published-map-level',{ state: { id:id, title:title, user: user } })
-        
-        }else{
-          page==="editdraft"?navigate(`/level/${currentLevel}/${currentParentId}`,{ state: { id:id, title:title, user: user } }): navigate(`/published-map-level/${currentLevel}/${currentParentId}`,{ state: { id:id, title:title, user: user } }) 
-        }
-       
-      }else{
-        alert("Currently not navigate on draft mode")
-      }
+    const navigateOnDraft = (page) => {
     
-    }
+      console.log("breadcrumbs",breadcrumbs)
+      const updatedBreadcrumbs = breadcrumbs.map((crumb, index) => {
+        if (index === 0) return crumb; // First breadcrumb remains unchanged
+    
+        return {
+          ...crumb,
+          path: page === "editdraft"
+            ? crumb.path.replace("published-map-level", "Draft-Process-View").replace("Map-level", "Draft-Process-View")
+            : crumb.path.replace("Draft-Process-View", "published-map-level").replace("Draft-Process-View", "Map-level")
+        };
+      });
+    
+      setBreadcrumbs(updatedBreadcrumbs);
+      console.log("breadcrumbs",breadcrumbs)    
+      if (id && user) {
+        if (currentLevel === 0) {
+          page === "editdraft"
+            ? navigate('/Map-level', { state: { id, title, user } })
+            : navigate('/published-map-level', { state: { id, title, user } });
+        } else {
+          page === "editdraft"
+            ? navigate(`/level/${currentLevel}/${currentParentId}`, { state: { id, title, user } })
+            : navigate(`/published-map-level/${currentLevel}/${currentParentId}`, { state: { id, title, user } });
+        }
+      } else {
+        alert("Currently not navigate on draft mode");
+      }
+    };
+    
 
     const styles = {
       appContainer: {
