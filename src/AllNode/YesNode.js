@@ -14,7 +14,7 @@ const YesNode = ({ data }) => {
       >
         <span style={styles.text}>
 
-          Yes
+          yes
         </span>
       </div>
     </div>
@@ -52,7 +52,6 @@ const styles = {
     width: "100%",
     height: "100%",
     fontWeight: "medium", // **Added for bold text**
-    textTransform: "uppercase",
     fontFamily: "'Poppins', sans-serif",
     fontSize: "16px", // Ensure font size matches input
     wordBreak: "break-word", // Allow text to wrap

@@ -23,6 +23,14 @@ const styles = {
     height: '100vh',
     backgroundColor: '#fff',
   },
+  searchInput: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+    padding: 9,
+    marginBottom: 10,
+    width: "90%"
+  },
 };
 
 export default styles;

@@ -34,6 +34,7 @@ import AddObjectRole from "../../AllNode/SwimlineNodes/addobjectrole";
 import { BreadcrumbsContext } from "../../context/BreadcrumbsContext";
 import '../../Css/Swimlane.css'
 import { useSelector } from "react-redux";
+import TextInputModal from "../../components/TextInputModal";
 
 const SwimlaneModel = () => {
   const [windowSize, setWindowSize] = useState({
@@ -57,8 +58,8 @@ const SwimlaneModel = () => {
   const [getDraftedDate, setDraftedDate] = useState("");
   const [KeepOldPosition, setKeepOldPosition] = useState(null);
   const [isFavorite, setIsFavorite] = useState(false);
-    const [process_img, setprocess_img] = useState("");
-  
+  const [process_img, setprocess_img] = useState("");
+
   const LoginUser = useSelector((state) => state.user.user);
   const { nodes: initialNodes } = useMemo(
     () => generateNodesAndEdges(windowSize.width, windowSize.height),
@@ -66,7 +67,7 @@ const SwimlaneModel = () => {
   );
 
   useEffect(() => {
-    setNodes(initialNodes); 
+    setNodes(initialNodes);
   }, [initialNodes]);
 
   const [selectedGroupId, setSelectedGroupId] = useState(null);
@@ -79,6 +80,8 @@ const SwimlaneModel = () => {
   const [getPublishedDate, setgetPublishedDate] = useState("");
   const [detailschecking, setdetailschecking] = useState(null);
   const [nodes, setNodes] = useState(initialNodes);
+  const [searchQuery, setSearchQuery] = useState("");
+
   const [edges, setEdges] = useState([]);
   const isInitialLoad = useRef(true);
   const nodeTypes = NodeTypes;
@@ -90,6 +93,8 @@ const SwimlaneModel = () => {
     }),
     []
   );
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
 
 
 
@@ -119,28 +124,28 @@ const SwimlaneModel = () => {
     [setChiledNodes, setHasUnsavedChanges]
   );
 
-   useEffect(() => {
-      const checkfav = async () => {
-        const user_id = LoginUser ? LoginUser.id : null;
-        const process_id = id ? id : null;
-  
-  
-        if (!user_id || !process_id) {
-          console.error("Missing required fields:", { user_id, process_id });
-          return; // Stop execution if any field is missing
-        }
-  
-        try {
-          console.log("Sending data:", { user_id, process_id });
-          const response = await checkFavProcess(user_id, process_id);
-          console.log("Response:", response);
-          setIsFavorite(response.exists)
-        } catch (error) {
-          console.error("check fav error:", error);
-        }
+  useEffect(() => {
+    const checkfav = async () => {
+      const user_id = LoginUser ? LoginUser.id : null;
+      const process_id = id ? id : null;
+
+
+      if (!user_id || !process_id) {
+        console.error("Missing required fields:", { user_id, process_id });
+        return; // Stop execution if any field is missing
       }
-      checkfav()
-    }, [LoginUser,id])
+
+      try {
+        console.log("Sending data:", { user_id, process_id });
+        const response = await checkFavProcess(user_id, process_id);
+        console.log("Response:", response);
+        setIsFavorite(response.exists)
+      } catch (error) {
+        console.error("check fav error:", error);
+      }
+    }
+    checkfav()
+  }, [LoginUser, id])
 
   useEffect(() => {
     const fetchNodes = async () => {
@@ -198,29 +203,29 @@ const SwimlaneModel = () => {
           const parsedData = JSON.parse(node.data);
           const parsedPosition = JSON.parse(node.position);
           const parsedMeasured = JSON.parse(node.measured);
-        
+
           let centeredPosition = parsedPosition;
-        
+
           if (parentId) {
             const parentNode = data.nodes.find((n) => n.node_id === parentId);
-        
+
             if (parentNode) {
               const parentWidth = windowSize.width / totalColumns - 14;
               const parentHeight = windowSize.height / totalRows - 14;
-        
+
               const childWidth = parentWidth * 0.9;
               const childHeight = parentHeight * 0.9;
-        
+
               const parentCenterX = parentNode.position.x + parentWidth / 2;
               const parentCenterY = parentNode.position.y + parentHeight / 2;
-        
+
               centeredPosition = {
                 x: parentCenterX - childWidth / 2,
                 y: parentCenterY - childHeight / 2,
               };
             }
           }
-        
+
           return {
             ...remainingNodeProps,
             id: node.node_id,
@@ -250,14 +255,14 @@ const SwimlaneModel = () => {
             },
           };
         });
-        
+
         const parsedEdges = data.edges.map((edge) => ({
           ...edge,
           animated: Boolean(edge.animated),
           markerEnd: {
             type: MarkerType.ArrowClosed,
-            color:"#002060",
-            width:12,height:12
+            color: "#002060",
+            width: 12, height: 12
           },
           style: { stroke: "#000", strokeWidth: 2.5 },
           type: "step",
@@ -284,7 +289,7 @@ const SwimlaneModel = () => {
     windowSize,
   ]);
 
-  
+
   const onNodesChange = useCallback(
     (changes) => setChiledNodes((nds) => applyNodeChanges(changes, nds)),
     [setChiledNodes]
@@ -303,10 +308,10 @@ const SwimlaneModel = () => {
             ...params,
             markerEnd: {
               type: MarkerType.ArrowClosed,
-              color:"#002060",
-              width:12,height:12
+              color: "#002060",
+              width: 12, height: 12
             },
-            style: { stroke: "#002060", strokeWidth: 2.5},
+            style: { stroke: "#002060", strokeWidth: 2.5 },
             Level:
               currentParentId !== null
                 ? `Level${currentLevel}_${currentParentId}`
@@ -572,15 +577,15 @@ const SwimlaneModel = () => {
       nodes.map((node) =>
         node.node_id === nodeId
           ? {
-              ...node,
-              data: {
-                ...node.data,
-                details: {
-                  title: newDetails.title,
-                  content: newDetails.content,
-                },
+            ...node,
+            data: {
+              ...node.data,
+              details: {
+                title: newDetails.title,
+                content: newDetails.content,
               },
-            }
+            },
+          }
           : node
       )
     );
@@ -681,31 +686,34 @@ const SwimlaneModel = () => {
   };
 
   const getNearestParentNode = (childNode) => {
+    if (!childNode || !childNode.style) {
+      return null; // Avoid error by returning null
+    }
     return nodes.reduce((nearest, parentNode) => {
       const childCenterX = childNode.position.x + childNode.style.width / 2;
       const childCenterY = childNode.position.y + childNode.style.height / 2;
-  
+
       const parentLeft = parentNode.position.x;
       const parentRight = parentNode.position.x + parentNode.style.width;
       const parentTop = parentNode.position.y;
       const parentBottom = parentNode.position.y + parentNode.style.height;
-  
+
       // Check if at least 10% of the node is inside any cell
       const isOverlapping =
         childCenterX > parentLeft + parentNode.style.width * 0.05 &&
         childCenterX < parentRight - parentNode.style.width * 0.05 &&
         childCenterY > parentTop + parentNode.style.height * 0.05 &&
         childCenterY < parentBottom - parentNode.style.height * 0.05;
-  
+
       if (isOverlapping) {
         return parentNode;
       }
       return nearest;
     }, null);
   };
-  
 
-  
+
+
 
 
   const handleNodeDragStop = (event, node) => {
@@ -782,10 +790,10 @@ const SwimlaneModel = () => {
           prev.map((child) =>
             child.id === node.id
               ? {
-                  ...child,
-                  parentNode: nearestParentNode.id,
-                  position: updatedPosition,
-                }
+                ...child,
+                parentNode: nearestParentNode.id,
+                position: updatedPosition,
+              }
               : child
           )
         );
@@ -818,13 +826,13 @@ const SwimlaneModel = () => {
         nds.map((node) =>
           node.id === selectedNodeId
             ? {
-                ...node,
-                type: type,
-                data: {
-                  ...node.data,
-                  shape: type,
-                },
-              }
+              ...node,
+              type: type,
+              data: {
+                ...node.data,
+                shape: type,
+              },
+            }
             : node
         )
       );
@@ -887,6 +895,13 @@ const SwimlaneModel = () => {
     }
   };
 
+  const handleTextSubmit = (enteredText) => {
+    setIsModalOpen(false);
+    if (enteredText) {
+      console.log("modalPosition", modalPosition)
+      addNode("FreeText", { x: modalPosition.x - 70, y: modalPosition.y - 125 }, enteredText);
+    }
+  };
   const handlePopupAction = (action) => {
     const { x, y } = contextMenu;
     console.log("contextMenu", contextMenu);
@@ -896,10 +911,10 @@ const SwimlaneModel = () => {
     } else if (action === "No") {
       addNode("No", { x: x - 70, y: y - 125 });
     } else if (action === "addFreeText") {
-      const userInput = prompt("Enter text for the new node:");
-      if (userInput) {
-        addNode("FreeText", { x: x - 70, y: y - 125 }, userInput);
-      }
+      setIsModalOpen(true);
+
+      setModalPosition({ x, y }); // Store x, y in state
+
     } else if (action === "addDetails") {
       openPopup();
     }
@@ -909,50 +924,50 @@ const SwimlaneModel = () => {
 
   const menuItems = [
     ...(detailschecking?.type !== "SwimlineRightsideBox" &&
-    detailschecking?.type !== "progressArrow" &&
-    detailschecking?.type !== "Yes" &&
-    detailschecking?.type !== "No"
+      detailschecking?.type !== "progressArrow" &&
+      detailschecking?.type !== "Yes" &&
+      detailschecking?.type !== "No"
       ? [
-          {
-            label:
-              detailschecking &&
+        {
+          label:
+            detailschecking &&
               (!detailschecking?.data?.details?.title ||
                 detailschecking?.data?.details?.title === "") &&
               (!detailschecking?.data?.details?.content ||
                 detailschecking?.data?.details?.content === "")
-                ? "Add details"
-                : "Edit details",
-            action: () => handlePopupAction("addDetails"),
-            borderBottom: true,
-          },
-        ]
+              ? "Add details"
+              : "Edit details",
+          action: () => handlePopupAction("addDetails"),
+          borderBottom: true,
+        },
+      ]
       : []),
     ...(detailschecking?.type === "box"
       ? [
-          {
-            label: "Switch shape to Decision",
-            action: () => switchNodeType("diamond"),
-            borderBottom: true,
-          },
-        ]
+        {
+          label: "Switch shape to Decision",
+          action: () => switchNodeType("diamond"),
+          borderBottom: true,
+        },
+      ]
       : []),
-      ...(detailschecking?.type === "diamond"
-        ? [
-            {
-              label: "Switch shape to Activity",
-              action: () => switchNodeType("box"),
-              borderBottom: true,
-            },
-          ]
-        : []),
+    ...(detailschecking?.type === "diamond"
+      ? [
+        {
+          label: "Switch shape to Activity",
+          action: () => switchNodeType("box"),
+          borderBottom: true,
+        },
+      ]
+      : []),
     ...(detailschecking?.type === "progressArrow"
       ? [
-          {
-            label: "Link Existing model",
-            action: () => linkExistingmodel(),
-            borderBottom: true,
-          },
-        ]
+        {
+          label: "Link Existing model",
+          action: () => linkExistingmodel(),
+          borderBottom: true,
+        },
+      ]
       : []),
 
     {
@@ -1018,7 +1033,7 @@ const SwimlaneModel = () => {
     }
     return true;
   };
-  
+
   const ExitNavigation = async () => {
     const confirmcondition = await handleBack(); // Wait for confirmation
     if (confirmcondition) {
@@ -1031,8 +1046,16 @@ const SwimlaneModel = () => {
       }
     }
   };
-  
-  
+  const parsedData = LinknodeList.map(item => ({
+    ...item,
+    data: JSON.parse(item.data) // Parse the data field
+  }));
+
+  const filteredData = parsedData.filter(item =>
+    item.data.label && item.data.label.toLowerCase().includes(searchQuery)
+  );
+  console.log("filtefilteredData", filteredData)
+
   return (
     <div>
       <Header
@@ -1070,9 +1093,9 @@ const SwimlaneModel = () => {
               onNodeDragStop={handleNodeDragStop}
               connectionLineType={ConnectionLineType.Step} // ✅ Correct Arrow Type
               connectionLineStyle={{ stroke: "#002060", strokeWidth: 2.5 }} // ✅ Correct Arrow Style
-              connectionRadius={10} 
+              connectionRadius={10}
               connectionMode={ConnectionMode.Loose} // ✅ Correct Syntax
-              
+
               proOptions={{ hideAttribution: true }}
               nodeTypes={memoizedNodeTypes}
               edgeTypes={memoizedEdgeTypes}
@@ -1191,8 +1214,17 @@ const SwimlaneModel = () => {
                   ×
                 </button>
               </div>
+
+              <input
+                type="text"
+                style={styles.searchInput}
+                placeholder="Search..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+
               <div style={popupStyle.body}>
-                {LinknodeList.map((node) => (
+                {filteredData.map((node) => (
                   <label
                     key={node.node_id}
                     style={{
@@ -1209,7 +1241,7 @@ const SwimlaneModel = () => {
                       onChange={() => handleCheckboxChange(node.node_id)}
                       style={popupStyle.checkbox}
                     />
-                    {node.data && JSON.parse(node.data).label}
+                    {node.data.label && node.data.label}
                   </label>
                 ))}
               </div>
@@ -1223,6 +1255,7 @@ const SwimlaneModel = () => {
               </div>
             </div>
           )}
+          <TextInputModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSubmit={handleTextSubmit} />
 
           {options.length > 0 && (
             <AddObjectRole

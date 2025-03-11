@@ -193,8 +193,8 @@ const styles = {
     color: "#000000",
     width: "100%",
     height: "100%",
-    clipPath:
-      "polygon(0 0, calc(100% - 20px) 0, 100% 50%, calc(100% - 20px) 100%, 0 100%)",
+    clipPath: 'polygon(10px 50%, 0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%)',
+
     padding: "10px",
     boxSizing: "border-box",
     overflow: "hidden",
@@ -228,8 +228,7 @@ const styles = {
     right: 0,
     bottom: 0,
     zIndex: 0,
-    clipPath:
-      "polygon(0 0, calc(100% - 20px) 0, 100% 50%, calc(100% - 20px) 100%, 0 100%)",
+    clipPath: 'polygon(10px 50%, 0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%)',
     border: "1px solid black",
     pointerEvents: "none",
     boxSizing: "border-box",

@@ -167,19 +167,7 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
       {/* Border overlay as a separate div */}
       <div style={styles.borderOverlay}></div>
 
-      {/* Handles */}
-      {/* <Handle
-        type="target"
-        position={Position.Bottom}
-        id="bottom-target"
-        style={styles.handle}
-      />
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        id="bottom-source"
-        style={styles.handle}
-      /> */}
+   
       <Handle
         type="target"
         position={Position.Top}
@@ -192,30 +180,7 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
         id="top-source"
         style={styles.handle}
       />
-      {/* <Handle
-        type="target"
-        position={Position.Left}
-        id="left-target"
-        style={styles.handle}
-      />
-      <Handle
-        type="source"
-        position={Position.Left}
-        id="left-source"
-        style={styles.handle}
-      /> */}
-      {/* <Handle
-        type="target"
-        position={Position.Right}
-        id="right-target"
-        style={styles.handle}
-      />
-      <Handle
-        type="source"
-        position={Position.Right}
-        id="right-source"
-        style={styles.handle}
-      /> */}
+   
     </div>
   );
 };
@@ -239,8 +204,10 @@ const styles = {
     color: "#000000",
     width: "100%",
     height: "100%",
-    clipPath:
-      "polygon(0 0, calc(100% - 20px) 0, 100% 50%, calc(100% - 20px) 100%, 0 100%)",
+    // clipPath:
+    //   "polygon(0 0, calc(100% - 20px) 0, 100% 50%, calc(100% - 20px) 100%, 0 100%)",
+      clipPath: 'polygon(10px 50%, 0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%)',
+
     padding: "10px",
     boxSizing: "border-box",
     overflow: "hidden",
