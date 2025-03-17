@@ -212,6 +212,7 @@ const MapLevel = () => {
               autoFocus: true,
               nodeResize: true,
               node_id: node.node_id,
+               isClickable:false
             },
             type: node.type,
             id: node.node_id,
@@ -220,6 +221,7 @@ const MapLevel = () => {
             position: parsedPosition,
             draggable: Boolean(node.draggable),
             animated: Boolean(node.animated),
+           
           };
         });
 
@@ -328,6 +330,7 @@ const MapLevel = () => {
         defaultheight: "120px",
         nodeResize: true,
         autoFocus: true,
+        isClickable:true
       },
       type: type,
       status: "draft",
@@ -612,28 +615,30 @@ const MapLevel = () => {
     }
   }, [showContextMenu]);
 
-
   const handleGlobalContextMenu = (event) => {
-    const targetNode = event.target.closest(".react-flow__node");
-    if (targetNode) {
-      return;
-    }
     event.preventDefault();
-
     const flowContainer = document.querySelector(".flow-container");
+    if (!flowContainer) return;
+  
     const containerRect = flowContainer.getBoundingClientRect();
-
+  
+    // Center Calculate Karna
+    const centerX = containerRect.width / 2;
+    const centerY = containerRect.height / 2;
+  
     setShowContextMenu(true);
     setContextMenuPosition({
       x: event.clientX - containerRect.left,
       y: event.clientY - containerRect.top,
     });
-
+  
+    // Original Position Ko Center Set Karna
     setOriginalPosition({
-      x: event.clientX,
-      y: event.clientY ,
+      x: centerX,
+      y: centerY,
     });
   };
+  
 
 
 

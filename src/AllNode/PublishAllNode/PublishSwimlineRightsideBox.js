@@ -51,6 +51,7 @@ const styles = {
     boxSizing: "border-box",
     overflow: "hidden",
   },
+
   contentEditable: {
     background: "transparent",
     border: "none",

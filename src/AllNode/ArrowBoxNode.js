@@ -5,7 +5,7 @@ const ArrowBoxNode = ({ data }) => {
   const [label, setLabel] = useState(data.label || ''); 
 
   const [isResizing, setIsResizing] = useState(false);
-  const [isClickable, setIsClickable] = useState(false);
+  const [isClickable, setIsClickable] = useState(data?.isClickable);
   const arrowref = useRef(null); 
   const [autoFocus, setAutoFocus] = useState(data.autoFocus);
 
