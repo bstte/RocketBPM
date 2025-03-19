@@ -622,12 +622,13 @@ const MapLevel = () => {
     const flowContainer = document.querySelector(".flow-container");
     if (!flowContainer) return;
   
+    if (event.target.closest(".react-flow__node")) {
+      return;
+    }
+  
     const containerRect = flowContainer.getBoundingClientRect();
   
-    // Center Calculate Karna
-    // const centerX = containerRect.width / 2;
-    // const centerY = containerRect.height / 2;
-  
+
     setShowContextMenu(true);
     setContextMenuPosition({
       x: event.clientX - containerRect.left,
@@ -639,6 +640,7 @@ const MapLevel = () => {
       x: event.clientX - containerRect.left,
       y: event.clientY - containerRect.top,
     });
+    setShowPopup(false)
   };
   
 

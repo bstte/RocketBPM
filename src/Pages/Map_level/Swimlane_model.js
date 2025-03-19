@@ -951,7 +951,8 @@ const SwimlaneModel = () => {
     ...(detailschecking?.type !== "SwimlineRightsideBox" &&
       detailschecking?.type !== "progressArrow" &&
       detailschecking?.type !== "Yes" &&
-      detailschecking?.type !== "No"
+      detailschecking?.type !== "No" &&
+      detailschecking?.type !== "FreeText"
       ? [
         {
           label:

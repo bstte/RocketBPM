@@ -404,7 +404,7 @@ const Header = ({
               
             </>
           )}
-
+{/* 
           {
             Page === "Published" && (
               <>
@@ -418,7 +418,7 @@ const Header = ({
                 </div>
                 <div style={styles.mhcolleft} className="ss_box_hed_right_1_img">
                 {isLoading ? (
-                  <p>Loading...</p>
+                  <p>Image Loading...</p>
                 ) : (
                   <img src={imageSrc} alt="RocketBPM" style={styles.mainlogo} />
                 )}
@@ -426,8 +426,8 @@ const Header = ({
                 </div>
               </>
             )
-          }
-
+          } */}
+{/* 
           {(Page === "ViewDraftmodel" || Page === "ViewDraftswimlane") && (
             <>
               <div style={styles.pdate} className="ss_box_hed_right_2">
@@ -437,19 +437,34 @@ const Header = ({
                   {formattedDatedraft}
                 </div>
               </div>
-              {/* <div style={styles.mhcolleft} className="ss_box_hed_right_img">
+              <div style={styles.mhcolleft} className="ss_box_hed_right_img">
               {isLoading ? (
                   <p>Image Loading...</p>
                 ) : (
                   <img src={imageSrc} alt="RocketBPM" style={styles.mainlogo} />
                 )}
-              </div> */}
+              </div>
             </>
           )
-          }
+          } */}
 
 
 
+              <div style={styles.pdate} className="ss_box_hed_right_2">
+                <div>
+                  Draft On
+                  <br />
+                  {formattedDatedraft}
+                </div>
+              </div>
+              <div style={styles.mhcolleft} className="ss_box_hed_right_img">
+              {isLoading ? (
+                  <p>Image Loading...</p>
+                ) : (
+                  <img src={imageSrc} alt="RocketBPM" style={styles.mainlogo} />
+                )}
+              </div>
+           
 
         </div>
       </header>
