@@ -1,11 +1,19 @@
-const generateNodesAndEdges = (windowWidth, windowHeight,BorderCondiction) => {
+const generateNodesAndEdges = (windowWidth, windowHeight,BorderCondiction,height,appheaderheight) => {
     const nodes = [];
     const edges = [];
-  
+
+    const rflight = document.querySelector(".app-header");
+    const rfWidth = rflight ? rflight.offsetWidth - 14 : windowWidth; 
+
+    
+    const rfHeight = window.innerHeight - ((height + appheaderheight) - 20);
+    
+
+
     const totalRows = 7; 
     const totalColumns = 11;
-    const groupWidth = windowWidth / totalColumns - 5;
-    const groupHeight = windowHeight / totalRows - 18;
+    const groupWidth = rfWidth / totalColumns;
+    const groupHeight = rfHeight / totalRows;
 
     for (let row = 0; row < totalRows; row++) {
       for (let col = 0; col < totalColumns; col++) {

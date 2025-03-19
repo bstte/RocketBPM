@@ -28,6 +28,9 @@ const rfStyle = {
 };
 
 const DraftSwimlineLevel = () => {
+
+
+
   const [windowSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
@@ -41,10 +44,51 @@ const DraftSwimlineLevel = () => {
   const headerTitle = `${title} `;
   const currentParentId = parentId || null;
   const currentLevel = level ? parseInt(level, 10) : 0;
+
+
+  const [height, setHeight] = useState(0);
+  const [appheaderheight, setahHeight] = useState(0);
+  const [remainingHeight, setRemainingHeight] = useState(0);
+  
+  useEffect(() => {
+    const calculateHeights = () => {
+      const element = document.querySelector(".ss_new_hed");
+      const element2 = document.querySelector(".app-header");
+  
+      // Ensure elements are found before accessing height
+      const elementHeight = element ? element.getBoundingClientRect().height : 0;
+      const appHeaderHeight = element2 ? element2.getBoundingClientRect().height : 0;
+  
+      
+      setHeight(elementHeight);
+      setahHeight(appHeaderHeight);
+  
+      // Correct calculation inside the function
+      const newHeight = window.innerHeight - (elementHeight + appHeaderHeight - 14);
+      setRemainingHeight(newHeight);
+    };
+  
+    // Initial setup
+    calculateHeights();
+  
+    // Handle window resize
+    window.addEventListener("resize", calculateHeights);
+  
+    // Cleanup on unmount
+    return () => window.removeEventListener("resize", calculateHeights);
+  }, []);
+  
+  // alert(`Window Height: ${window.innerHeight}, App Div Height: ${appheaderheight}, Header Height: ${height}, New Height: ${remainingHeight}`);
+
+
   const { nodes: initialNodes } = useMemo(
-    () => generateNodesAndEdges(windowSize.width, windowSize.height, 'viewmode'),
-    [windowSize]
+    () => generateNodesAndEdges(windowSize.width, windowSize.height, 'viewmode', height + 10, appheaderheight),
+    [windowSize, height, appheaderheight]
   );
+  useEffect(() => {
+      setNodes(initialNodes);
+    }, [initialNodes]);
+
   const [getPublishedDate, setgetPublishedDate] = useState("");
   const navigate = useNavigate();
   const [ChildNodes, setChiledNodes] = useState([]);
@@ -82,86 +126,114 @@ const DraftSwimlineLevel = () => {
                   console.error("check fav error:", error);
                 }
               }
-    const fetchNodes = async () => {
-      try {
-        const levelParam =
-          currentParentId !== null
-            ? `Level${currentLevel}_${currentParentId}`
-            : `Level${currentLevel}`;
-        const user_id = user ? user.id : null;
-        const Process_id = id ? id : null;
-        const draftStatus = "Draft";
+              const fetchNodes = async () => {
+                try {
+                  const levelParam =
+                    currentParentId !== null
+                      ? `Level${currentLevel}_${currentParentId}`
+                      : `Level${currentLevel}`;
+                  const user_id = user ? user.id : null;
+                  const Process_id = id ? id : null;
+                  const draftStatus = "Draft";
+              
+                  const data = await api.getNodes(
+                    levelParam,
+                    parseInt(user_id),
+                    Process_id
+                  );
+                  const getPublishedDate = await api.GetPublishedDate(
+                    levelParam,
+                    parseInt(user_id),
+                    Process_id,
+                    draftStatus
+                  );
+              
+                  setgetPublishedDate(getPublishedDate.status ? getPublishedDate.created_at : "");
+                  setprocess_img(data.process_img);
 
-        const data = await api.getNodes(
-          levelParam,
-          parseInt(user_id),
-          Process_id
-        );
-        const getPublishedDate = await api.GetPublishedDate(
-          levelParam,
-          parseInt(user_id),
-          Process_id,
-          draftStatus
-        );
-        if (getPublishedDate.status === true) {
-          setgetPublishedDate(getPublishedDate.created_at)
-        } else {
-          setgetPublishedDate("")
-        }
-        const totalRows = 8;
-        const totalColumns = 11;
-        const groupWidth = windowSize.width / totalColumns - 14;
-        const groupHeight = windowSize.height / totalRows - 14;
-        setprocess_img(data.process_img)
+                  const nodebgwidth = document.querySelector(".react-flow__node");
+                  const nodebgwidths = nodebgwidth ? nodebgwidth.getBoundingClientRect().width : 0;
 
-        const parsedNodes = data.nodes.map((node) => {
-          const parsedData = JSON.parse(node.data);
-          const parsedPosition = JSON.parse(node.position);
-          const parsedMeasured = JSON.parse(node.measured);
-
-          return {
-            ...node,
-            data: {
-              ...parsedData,
-
-              width_height: parsedMeasured,
-
-              defaultwidt: "40px",
-              defaultheight: "40px",
-              nodeResize: false,
-            },
-            type: node.type,
-            id: node.node_id,
-            parentId: node.parentId,
-            extent: "parent",
-            measured: parsedMeasured,
-            position: parsedPosition,
-            draggable: Boolean(node.draggable),
-            animated: Boolean(node.animated),
-            style: {
-              width: groupWidth,
-              height: groupHeight,
-            },
-          };
-        });
-
-        const parsedEdges = data.edges.map((edge) => ({
-          ...edge,
-          animated: Boolean(edge.animated),
-          markerEnd: {
-            type: MarkerType.ArrowClosed,
-          },
-          style: { stroke: "#000", strokeWidth: 2 },
-          type: "step",
-        }));
-
-        setChiledNodes(parsedNodes);
-        setEdges(parsedEdges);
-      } catch (error) {
-        console.error("Error fetching nodes:", error);
-        alert("Failed to fetch nodes. Please try again.");
-      }
-    };
+                  const nodebgheight = document.querySelector(".react-flow__node");
+                  const nodebgheights = nodebgheight ? nodebgheight.getBoundingClientRect().height : 0;
+              
+                  // Centralized dimensions
+                  // const totalRows = 7;
+                  // const totalColumns = 11;
+                  const groupWidth = nodebgwidths;
+                  const groupHeight = nodebgheights;
+                  const childWidth = groupWidth * 0.9;
+                  const childHeight = groupHeight * 0.9;
+              
+                  const parsedNodes = data.nodes.map((node) => {
+                    const parsedData = JSON.parse(node.data || "{}");
+                    const parsedPosition = JSON.parse(node.position || "{\"x\":0,\"y\":0}");
+                    const parsedMeasured = JSON.parse(node.measured || "{\"width\":40,\"height\":40}");
+              
+                    let centeredPosition = parsedPosition;
+              
+                    // Parent node positioning
+                    if (node.parentId) {
+                      const parentNode = data.nodes.find((n) => n.node_id === node.parentId);
+                      if (parentNode && parentNode.position) {
+                        const parentPos = JSON.parse(parentNode.position);
+                        const parentWidth = groupWidth;
+                        const parentHeight = groupHeight;
+              
+                        // Center child relative to parent
+                        centeredPosition = {
+                          x: parentPos.x + parentWidth / 2 - childWidth / 2,
+                          y: parentPos.y + parentHeight / 2 - childHeight / 2,
+                        };
+                      }
+                    }
+              
+                    return {
+                      ...node,
+                      data: {
+                        ...parsedData,
+                        width_height: parsedMeasured,
+                        defaultwidt: "40px",
+                        defaultheight: "40px",
+                        nodeResize: false,
+                      },
+                      type: node.type,
+                      id: node.node_id,
+                      parentId: node.parentId,
+                      extent: "parent",
+                      measured: parsedMeasured,
+                      position: centeredPosition,
+                      draggable: Boolean(node.draggable),
+                      animated: Boolean(node.animated),
+                      style: {
+                        width: groupWidth,
+                        height: groupHeight,
+                        childWidth: childWidth,
+                        childHeight: childHeight,
+                        display:"flex",
+                        alignItems:"center",
+                        justifyContent:"center"
+                      },
+                    };
+                  });
+              
+                  const parsedEdges = data.edges.map((edge) => ({
+                    ...edge,
+                    animated: Boolean(edge.animated),
+                    markerEnd: {
+                      type: MarkerType.ArrowClosed,
+                    },
+                    style: { stroke: "#000", strokeWidth: 2 },
+                    type: "step",
+                  }));
+              
+                  setChiledNodes(parsedNodes);
+                  setEdges(parsedEdges);
+                } catch (error) {
+                  console.error("Error fetching nodes:", error);
+                  alert("Failed to fetch nodes. Please try again.");
+                }
+              };
     checkfav()
     fetchNodes();
   }, [
@@ -226,7 +298,7 @@ const DraftSwimlineLevel = () => {
         Process_img={process_img}
 
       />
-      <div style={styles.appContainer} className="custom_swimlane">
+      <div style={{ ...styles.appContainer, height: remainingHeight }}>
         <ReactFlowProvider>
           <div style={styles.scrollableWrapper}>
             <ReactFlow

@@ -28,6 +28,42 @@ const rfStyle = {
 };
 
 const PublishedSwimlaneModel = () => {
+
+  const [height, setHeight] = useState(0);
+  const [appheaderheight, setahHeight] = useState(0);
+  const [remainingHeight, setRemainingHeight] = useState(0);
+
+  useEffect(() => {
+    const calculateHeights = () => {
+      const element = document.querySelector(".ss_new_hed");
+      const element2 = document.querySelector(".app-header");
+
+      // Ensure elements are found before accessing height
+      const elementHeight = element ? element.getBoundingClientRect().height : 0;
+      const appHeaderHeight = element2 ? element2.getBoundingClientRect().height : 0;
+
+      
+
+      setHeight(elementHeight);
+      setahHeight(appHeaderHeight);
+
+      // Correct calculation inside the function
+      const newHeight = window.innerHeight - (elementHeight + appHeaderHeight - 14);
+      setRemainingHeight(newHeight);
+    };
+
+    // Initial setup
+    calculateHeights();
+
+    // Handle window resize
+    window.addEventListener("resize", calculateHeights);
+
+    // Cleanup on unmount
+    return () => window.removeEventListener("resize", calculateHeights);
+  }, []);
+  
+  // alert(`Window Height: ${window.innerHeight}, App Div Height: ${appheaderheight}, Header Height: ${height}, New Height: ${remainingHeight}`);
+
   const [windowSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
@@ -38,9 +74,13 @@ const PublishedSwimlaneModel = () => {
   const currentParentId = parentId || null;
   const currentLevel = level ? parseInt(level, 10) : 0;
   const { nodes: initialNodes } = useMemo(
-    () => generateNodesAndEdges(windowSize.width, windowSize.height,'viewmode'),
-    [windowSize]
+    () => generateNodesAndEdges(windowSize.width, windowSize.height,'viewmode',height + 10, appheaderheight),
+    [windowSize, height, appheaderheight]
   );
+  useEffect(() => {
+        setNodes(initialNodes);
+      }, [initialNodes]);
+      
     const [process_img, setprocess_img] = useState("");
   
   const [getPublishedDate, setgetPublishedDate] = useState("");
@@ -94,6 +134,7 @@ const PublishedSwimlaneModel = () => {
         const user_id = user ? user.id : null;
         const Process_id = id ? id : null;
         const publishedStatus = "Published";
+    
         const data = await api.getPublishedNodes(
           levelParam,
           parseInt(user_id),
@@ -105,29 +146,40 @@ const PublishedSwimlaneModel = () => {
           Process_id,
           publishedStatus
         );
-        if (getPublishedDate.status === true) {
-          setgetPublishedDate(getPublishedDate.created_at)
-        } else {
-          setgetPublishedDate("")
-        }
-        const totalRows = 8;
-        const totalColumns = 11;
-        const groupWidth = windowSize.width / totalColumns - 14;
-        const groupHeight = windowSize.height / totalRows - 14;
-        setprocess_img(data.process_img)
+    
+        setgetPublishedDate(getPublishedDate.status ? getPublishedDate.created_at : "");
+        setprocess_img(data.process_img);
 
+        const nodebgwidth = document.querySelector(".react-flow__node");
+        const nodebgwidths = nodebgwidth ? nodebgwidth.getBoundingClientRect().width : 0;
+
+        const nodebgheight = document.querySelector(".react-flow__node");
+        const nodebgheights = nodebgheight ? nodebgheight.getBoundingClientRect().height : 0;
+
+    
+        // Centralized dimensions
+        // const totalRows = 7;
+        // const totalColumns = 11;
+        const groupWidth = nodebgwidths;
+        const groupHeight = nodebgheights;
+        const childWidth = groupWidth * 0.9;
+        const childHeight = groupHeight * 0.9;
+    
         const parsedNodes = data.nodes.map((node) => {
-          const parsedData = JSON.parse(node.data);
-          const parsedPosition = JSON.parse(node.position);
-          const parsedMeasured = JSON.parse(node.measured);
-
+          const parsedData = JSON.parse(node.data || "{}");
+          const parsedPosition = JSON.parse(node.position || "{\"x\":0,\"y\":0}");
+          const parsedMeasured = JSON.parse(node.measured || "{\"width\":40,\"height\":40}");
+    
+          let centeredPosition = parsedPosition;
+    
+          // Parent node positioning
+          
+    
           return {
             ...node,
             data: {
               ...parsedData,
-
               width_height: parsedMeasured,
-
               defaultwidt: "40px",
               defaultheight: "40px",
               nodeResize: false,
@@ -137,27 +189,33 @@ const PublishedSwimlaneModel = () => {
             parentId: node.parentId,
             extent: "parent",
             measured: parsedMeasured,
-            position: parsedPosition,
+            position: centeredPosition,
             draggable: Boolean(node.draggable),
             animated: Boolean(node.animated),
             style: {
               width: groupWidth,
               height: groupHeight,
+              childWidth: childWidth,
+              childHeight: childHeight,
+              display:"flex",
+              alignItems:"center",
+              justifyContent:"center"
             },
           };
         });
-
+    
         const parsedEdges = data.edges.map((edge) => ({
           ...edge,
           animated: Boolean(edge.animated),
           markerEnd: {
-                     type: MarkerType.ArrowClosed,
-                     color:"#002060",
-                     width:12,height:12
-                   },
-                   style: { stroke: "#000", strokeWidth: 2.5 },
+            type: MarkerType.ArrowClosed,
+            color: "#002060",
+            width: 12,
+            height: 12,
+          },
+          style: { stroke: "#000", strokeWidth: 2.5 },
         }));
-
+    
         setChiledNodes(parsedNodes);
         setEdges(parsedEdges);
       } catch (error) {
@@ -165,6 +223,7 @@ const PublishedSwimlaneModel = () => {
         alert("Failed to fetch nodes. Please try again.");
       }
     };
+    
 
     fetchNodes();
   }, [
@@ -221,7 +280,7 @@ const PublishedSwimlaneModel = () => {
         Process_img={process_img}
         Procesuser={user}
       />
-      <div style={styles.appContainer} className="custom_swimlane">
+      <div style={{ ...styles.appContainer, height: remainingHeight }}>
         <ReactFlowProvider>
           <div className="ss_publish_border"  style={styles.scrollableWrapper}>
             <ReactFlow

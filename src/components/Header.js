@@ -152,7 +152,7 @@ const Header = ({
                     onClick={() => handleBreadcrumbClick(crumb.path, crumb.state)}
                   >
 
-                    <img src="../../img/rocket-solid.svg" alt="" />
+                  <img src={`${process.env.PUBLIC_URL}/img/rocket-solid.svg`} alt="Rocket" />
 
                   </span>
                 ) : (
@@ -192,12 +192,12 @@ const Header = ({
                   color="inherit"
                   aria-label="favorite" className="ss_hed_star_img"
                 >
-                  <img src="../../img/star-regular.svg" alt="" />
+                  <img src={`${process.env.PUBLIC_URL}/img/star-regular.svg`} alt="Star" />
                 </IconButton>
 
 
                 <button className="header_share_btn">
-                  <img src="../../img/share.png" alt="" />
+                  <img src={`${process.env.PUBLIC_URL}/img/share.png`} alt="Share" />
                 </button>
 
 
@@ -239,13 +239,13 @@ const Header = ({
                     color="inherit"
                     aria-label="favorite" className="ss_hed_star_img"
                   >
-                    <img src="../../img/star-regular.svg" alt="" />
+                    <img src={`${process.env.PUBLIC_URL}/img/star-regular.svg`} alt="Star" />
                   </IconButton>
                 </div>
 
                 <div>
                   <button className="header_share_btn">
-                    <img src="../../../img/share.png" alt="" />
+                    <img src={`${process.env.PUBLIC_URL}/img/share.png`} alt="Share" />
                   </button>
                 </div>
 
@@ -401,16 +401,7 @@ const Header = ({
                   {formattedDate}
                 </div>
               </div>
-              <div style={styles.mhcolleft} className="ss_wid_auto">
-                {isLoading ? (
-                  <p>Image Loading...</p>
-                ) : (
-                  <img src={imageSrc} alt="RocketBPM" style={styles.mainlogo} />
-                )}
-
-
-
-              </div>
+              
             </>
           )}
 
@@ -446,13 +437,13 @@ const Header = ({
                   {formattedDatedraft}
                 </div>
               </div>
-              <div style={styles.mhcolleft} className="ss_box_hed_right_img">
+              {/* <div style={styles.mhcolleft} className="ss_box_hed_right_img">
               {isLoading ? (
                   <p>Image Loading...</p>
                 ) : (
                   <img src={imageSrc} alt="RocketBPM" style={styles.mainlogo} />
                 )}
-              </div>
+              </div> */}
             </>
           )
           }

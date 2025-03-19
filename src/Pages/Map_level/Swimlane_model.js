@@ -61,10 +61,47 @@ const SwimlaneModel = () => {
   const [process_img, setprocess_img] = useState("");
 
   const LoginUser = useSelector((state) => state.user.user);
+
+  const [height, setHeight] = useState(0);
+  const [appheaderheight, setahHeight] = useState(0);
+  const [remainingHeight, setRemainingHeight] = useState(0);
+
+  useEffect(() => {
+    const calculateHeights = () => {
+      const element = document.querySelector(".ss_new_hed");
+      const element2 = document.querySelector(".app-header");
+
+      // Ensure elements are found before accessing height
+      const elementHeight = element ? element.getBoundingClientRect().height : 0;
+      const appHeaderHeight = element2 ? element2.getBoundingClientRect().height : 0;
+
+      setHeight(elementHeight);
+      setahHeight(appHeaderHeight);
+
+      // Correct calculation inside the function
+      const newHeight = window.innerHeight - (elementHeight + appHeaderHeight - 13);
+      setRemainingHeight(newHeight);
+    };
+
+    // Initial setup
+    calculateHeights();
+
+    // Handle window resize
+    window.addEventListener("resize", calculateHeights);
+
+    // Cleanup on unmount
+    return () => window.removeEventListener("resize", calculateHeights);
+  }, []);
+
+// alert(`Window Height: ${window.innerHeight}, App Div Height: ${appheaderheight}, Header Height: ${height}, New Height: ${remainingHeight}`);
+
+
+  // Pass updated heights into generateNodesAndEdges
   const { nodes: initialNodes } = useMemo(
-    () => generateNodesAndEdges(windowSize.width, windowSize.height),
-    [windowSize]
+    () => generateNodesAndEdges(windowSize.width, windowSize.height, '', height + 10, appheaderheight),
+    [windowSize, height, appheaderheight]
   );
+
 
   useEffect(() => {
     setNodes(initialNodes);
@@ -150,7 +187,6 @@ const SwimlaneModel = () => {
   useEffect(() => {
     const fetchNodes = async () => {
       try {
-        // console.log("check user ,", user);
         const levelParam =
           currentParentId !== null
             ? `Level${currentLevel}_${currentParentId}`
@@ -158,70 +194,52 @@ const SwimlaneModel = () => {
         const user_id = user ? user.id : null;
         const Process_id = id ? id : null;
 
-        const publishedStatus = "Published";
-        const draftStatus = "Draft";
-
         const [publishedResponse, draftResponse, data] = await Promise.all([
-          api.GetPublishedDate(
-            levelParam,
-            parseInt(user_id),
-            Process_id,
-            publishedStatus
-          ),
-          api.GetPublishedDate(
-            levelParam,
-            parseInt(user_id),
-            Process_id,
-            draftStatus
-          ),
+          api.GetPublishedDate(levelParam, parseInt(user_id), Process_id, "Published"),
+          api.GetPublishedDate(levelParam, parseInt(user_id), Process_id, "Draft"),
           api.getNodes(levelParam, parseInt(user_id), Process_id),
         ]);
 
-        // Set Published date
-        if (publishedResponse.status === true) {
-          setgetPublishedDate(publishedResponse.created_at || "");
-        } else {
-          setgetPublishedDate("");
-        }
+        setgetPublishedDate(publishedResponse.status ? publishedResponse.created_at || "" : "");
+        setDraftedDate(draftResponse.status ? draftResponse.created_at || "" : "");
+        setprocess_img(data.process_img);
 
-        // Set Draft date
-        if (draftResponse.status === true) {
-          setDraftedDate(draftResponse.created_at || "");
-        } else {
-          setDraftedDate("");
-        }
-        setprocess_img(data.process_img)
+        const nodebgwidth = document.querySelector(".react-flow__node");
+        const nodebgwidths = nodebgwidth ? nodebgwidth.getBoundingClientRect().width : 0;
 
-        const totalRows = 8;
+        const nodebgheight = document.querySelector(".react-flow__node");
+        const nodebgheights = nodebgheight ? nodebgheight.getBoundingClientRect().height : 0;
+
+        // Centralized size calculation
+        const totalRows = 7;
         const totalColumns = 11;
-        const groupWidth = windowSize.width / totalColumns - 14;
-        const groupHeight = windowSize.height / totalRows - 14;
+        const groupWidth = nodebgwidths;
+        const groupHeight = nodebgheights;
         const childWidth = groupWidth * 0.9;
         const childHeight = groupHeight * 0.9;
+
         const parsedNodes = data.nodes.map((node) => {
           const { parentId, ...remainingNodeProps } = node;
           const parsedData = JSON.parse(node.data);
           const parsedPosition = JSON.parse(node.position);
           const parsedMeasured = JSON.parse(node.measured);
 
-          let centeredPosition = parsedPosition;
+          let centeredPosition = parsedPosition || { x: 0, y: 0 };
 
+          // Parent node positioning
           if (parentId) {
             const parentNode = data.nodes.find((n) => n.node_id === parentId);
-
-            if (parentNode) {
+            if (parentNode && parentNode.position) {
+              const parentPos = JSON.parse(parentNode.position);
               const parentWidth = windowSize.width / totalColumns - 14;
               const parentHeight = windowSize.height / totalRows - 14;
-
               const childWidth = parentWidth * 0.9;
               const childHeight = parentHeight * 0.9;
 
-              const parentCenterX = parentNode.position.x + parentWidth / 2;
-              const parentCenterY = parentNode.position.y + parentHeight / 2;
-
+              // Proper center calculation
               centeredPosition = {
-                x: parentCenterX - childWidth / 2,
-                y: parentCenterY - childHeight / 2,
+                x: parentPos.x + parentWidth / 2 - childWidth / 2,
+                y: parentPos.y + parentHeight / 2 - childHeight / 2,
               };
             }
           }
@@ -233,8 +251,7 @@ const SwimlaneModel = () => {
             parentId: parentId,
             data: {
               ...parsedData,
-              onLabelChange: (newLabel) =>
-                handleLabelChange(node.node_id, newLabel),
+              onLabelChange: (newLabel) => handleLabelChange(node.node_id, newLabel),
               width_height: parsedMeasured,
               defaultwidt: "40px",
               defaultheight: "40px",
@@ -243,7 +260,7 @@ const SwimlaneModel = () => {
             type: node.type,
             extent: "parent",
             measured: parsedMeasured,
-            position: centeredPosition, // Updated position
+            position: centeredPosition,
             draggable: true,
             isNew: true,
             animated: Boolean(node.animated),
@@ -252,6 +269,9 @@ const SwimlaneModel = () => {
               height: groupHeight,
               childWidth: childWidth,
               childHeight: childHeight,
+              display:"flex",
+              alignItems:"center",
+              justifyContent:"center"
             },
           };
         });
@@ -259,14 +279,11 @@ const SwimlaneModel = () => {
         const parsedEdges = data.edges.map((edge) => ({
           ...edge,
           animated: Boolean(edge.animated),
-          markerEnd: {
-            type: MarkerType.ArrowClosed,
-            color: "#002060",
-            width: 12, height: 12
-          },
+          markerEnd: { type: MarkerType.ArrowClosed, color: "#002060", width: 12, height: 12 },
           style: { stroke: "#000", strokeWidth: 2.5 },
           type: "step",
         }));
+
         isInitialLoad.current = false;
         console.log("on load time parsedNodes", parsedNodes);
         setChiledNodes(parsedNodes);
@@ -289,7 +306,6 @@ const SwimlaneModel = () => {
     windowSize,
   ]);
 
-
   const onNodesChange = useCallback(
     (changes) => setChiledNodes((nds) => applyNodeChanges(changes, nds)),
     [setChiledNodes]
@@ -299,6 +315,7 @@ const SwimlaneModel = () => {
     (changes) => setEdges((eds) => applyEdgeChanges(changes, eds)),
     [setEdges]
   );
+
 
   const onConnect = useCallback(
     (params) => {
@@ -388,13 +405,21 @@ const SwimlaneModel = () => {
       setHasUnsavedChanges(true);
     } else if (selectedGroupId) {
       const selectedGroup = nodes.find((node) => node.id === selectedGroupId);
-      const groupWidth = selectedGroup?.style?.width || 100;
-      const groupHeight = selectedGroup?.style?.height || 100;
+
+      const nodebgwidth = document.querySelector(".react-flow__node");
+      const nodebgwidths = nodebgwidth ? nodebgwidth.getBoundingClientRect().width : 0;
+
+      const nodebgheight = document.querySelector(".react-flow__node");
+      const nodebgheights = nodebgheight ? nodebgheight.getBoundingClientRect().height : 0;
+
+
+      const groupWidth = nodebgwidths;
+      const groupHeight = nodebgheights;
       const childWidth = groupWidth * 0.9;
       const childHeight = groupHeight * 0.9;
       const centeredPosition = {
-        x: selectedGroup.position.x + (groupWidth - childWidth) / 2,
-        y: selectedGroup.position.y + (groupHeight - childHeight) / 2,
+        x: selectedGroup.position.x + (groupWidth - childWidth) / 14,
+        y: selectedGroup.position.y + (groupHeight - childHeight) / 14,
       };
 
       const newNodeId = uuidv4();
@@ -437,10 +462,10 @@ const SwimlaneModel = () => {
         status: "draft",
         PageGroupId: PageGroupId,
         style: {
-          width: childWidth,
-          childWidth: childWidth,
-          childHeight: childHeight,
-          height: childHeight,
+          width: nodebgwidths,
+          childWidth: nodebgwidths,
+          childHeight: nodebgheights,
+          height: nodebgheights,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -666,11 +691,11 @@ const SwimlaneModel = () => {
   };
 
   const centerChildInParent = (parentNode, childNode) => {
-    const parentCenterX = parentNode.position.x + parentNode.style.width / 2;
-    const parentCenterY = parentNode.position.y + parentNode.style.height / 2;
+    const parentCenterX = parentNode.position.x + parentNode.style.width / 14;
+    const parentCenterY = parentNode.position.y + parentNode.style.height / 14;
     const updatedChildPosition = {
-      x: parentCenterX - childNode.style.childWidth / 2,
-      y: parentCenterY - childNode.style.childHeight / 2,
+      x: parentCenterX - childNode.style.childWidth / 14,
+      y: parentCenterY - childNode.style.childHeight / 14,
     };
     return updatedChildPosition;
   };
@@ -1054,7 +1079,11 @@ const SwimlaneModel = () => {
   const filteredData = parsedData.filter(item =>
     item.data.label && item.data.label.toLowerCase().includes(searchQuery)
   );
-  console.log("filtefilteredData", filteredData)
+  //console.log("filtefilteredData", filteredData)  
+
+
+  
+  
 
   return (
     <div>
@@ -1075,7 +1104,7 @@ const SwimlaneModel = () => {
 
       />
 
-      <div style={styles.appContainer} className="custom_swimlane">
+      <div style={{ ...styles.appContainer, height: remainingHeight }}>
         <ReactFlowProvider>
           <div style={styles.scrollableWrapper}>
             <ReactFlow

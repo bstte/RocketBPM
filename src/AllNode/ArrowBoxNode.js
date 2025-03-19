@@ -60,8 +60,8 @@ const ArrowBoxNode = ({ data }) => {
         className="borderBox"
         style={{
           ...styles.arrowBox,
-          minWidth: isResizing ? 'auto' : data.width_height ? data.width_height.width : '520px',
-          minHeight: isResizing ? 'auto' : data.width_height ? data.width_height.height : '150px',
+          minWidth: isResizing ? 'auto' : data.width_height ? data.width_height.width : '326px',
+          minHeight: isResizing ? 'auto' : data.width_height ? data.width_height.height : '110px',
         }}
       >
         <textarea

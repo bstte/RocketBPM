@@ -28,16 +28,16 @@ import { BreadcrumbsContext } from "../../context/BreadcrumbsContext";
 import CustomContextMenu from "../../components/CustomContextMenu";
 import CustomAlert from "../../components/CustomAlert";
 import { useSelector } from "react-redux";
-
+import "../../Css/MapLevel.css";
 
 const MapLevel = () => {
 
   const [totalHeight, setTotalHeight] = useState(0);
   const [windowHeight, setWindowHeight] = useState(window.innerHeight);
-  const windowSize = {
-    width: window.innerWidth - 300,
-    height: window.innerHeight - 300,
-  };
+  // const windowSize = {
+  //   width: window.innerWidth - 300,
+  //   height: window.innerHeight - 300,
+  // };
 
 
 
@@ -378,6 +378,7 @@ const MapLevel = () => {
   
 
   const handleNodeRightClick = async (event, node) => {
+    setShowContextMenu(false);
     event.preventDefault();
     const newLevel = currentLevel + 1;
     const levelParam =
@@ -405,6 +406,7 @@ const MapLevel = () => {
       y: clientY - containerRect.top,
     });
     setShowPopup(true);
+  
   };
 
   useEffect(() => {
@@ -604,7 +606,7 @@ const MapLevel = () => {
 
   const handleContextMenuOptionClick = (type) => {
     setShowContextMenu(false);
-    addNode(type, { x: OriginalPosition.x, y: OriginalPosition.y + 100 });
+    addNode(type, { x: OriginalPosition.x, y: OriginalPosition.y  });
   };
 
 
@@ -623,8 +625,8 @@ const MapLevel = () => {
     const containerRect = flowContainer.getBoundingClientRect();
   
     // Center Calculate Karna
-    const centerX = containerRect.width / 2;
-    const centerY = containerRect.height / 2;
+    // const centerX = containerRect.width / 2;
+    // const centerY = containerRect.height / 2;
   
     setShowContextMenu(true);
     setContextMenuPosition({
@@ -634,8 +636,8 @@ const MapLevel = () => {
   
     // Original Position Ko Center Set Karna
     setOriginalPosition({
-      x: centerX,
-      y: centerY,
+      x: event.clientX - containerRect.left,
+      y: event.clientY - containerRect.top,
     });
   };
   
@@ -737,6 +739,44 @@ const MapLevel = () => {
       }
     }
   }
+
+
+  const handleNodeDragStart = (event, node) => {
+    // Store the original position before dragging
+    setNodes((nodes) =>
+      nodes.map((n) => (n.id === node.id ? { ...n, originalPosition: { ...n.position } } : n))
+    );
+  };
+  
+  const handleNodeDragStop = (event, node) => {
+    const flowContainer = document.querySelector(".flow-container");
+    if (!flowContainer) return; // Safety check for container existence
+  
+    const { left, top, right, bottom } = flowContainer.getBoundingClientRect();
+  
+    const nodeElement = document.querySelector(`[data-id="${node.id}"]`);
+    if (!nodeElement) return; // Ensure the node is in the DOM
+  
+    const nodeRect = nodeElement.getBoundingClientRect();
+  
+    // Detect if node moved out of container bounds
+    const isOutOfBounds =
+      nodeRect.left < left ||
+      nodeRect.top < top ||
+      nodeRect.right > right ||
+      nodeRect.bottom > bottom;
+  
+    if (isOutOfBounds) {
+      setNodes((nodes) =>
+        nodes.map((n) =>
+          n.id === node.id ? { ...n, position: { ...n.originalPosition } } : n
+        )
+      );
+    }
+  };
+  
+
+
   return (
     <div>
       <Header
@@ -782,10 +822,8 @@ const MapLevel = () => {
                 zoomOnPinch={false}
                 panOnDrag={false}
                 fitView
-                translateExtent={[
-                  [1240, 410],
-                  [windowSize.width, windowSize.height],
-                ]}
+                onNodeDragStart={handleNodeDragStart}
+                onNodeDragStop={handleNodeDragStop}
                 panOnScroll={false}
                 maxZoom={0.6}
                 proOptions={{ hideAttribution: true }}

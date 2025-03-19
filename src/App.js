@@ -5,6 +5,7 @@ import AppRoutes from "./routes/AppRoutes";
 import { BreadcrumbsProvider } from "./context/BreadcrumbsContext";
 import { store } from "./redux/store";
 import { setUser } from "./redux/userSlice";
+import "./App.css";
 import { CurrentUser } from "./API/api"; // Import the API call
 
 function InitializeUser() {

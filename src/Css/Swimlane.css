@@ -15,9 +15,9 @@
      box-shadow: rgb(0 32 96 / 14%) 0px 2px 5px !important;
  }
 
- .react-flow__node.react-flow__node-group.selectable {
+ /* .react-flow__node.react-flow__node-group.selectable {
     height: 89px !important;
-}
+} */
 
 
 .popupPosition_fix {
