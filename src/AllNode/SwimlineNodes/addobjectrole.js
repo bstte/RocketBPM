@@ -15,17 +15,22 @@ const AddObjectRole = ({ position, options, onOptionClick, onClose }) => {
     >
       {options.map((option, index) => (
         <div key={index}>
-          <div
-            style={styles.option}
-            onClick={() => {
-              onOptionClick(option);
-              onClose();
-            }}
-            onMouseEnter={(e) => (e.target.style.backgroundColor = "#f0f0f0")}
-            onMouseLeave={(e) => (e.target.style.backgroundColor = "transparent")}
-          >
-            {option}
-          </div>
+        <div
+  style={styles.option}
+  onClick={() => {
+    onOptionClick(option);
+    onClose();
+  }}
+  onMouseEnter={(e) => {
+    e.target.style.backgroundColor = "#f0f0f0";
+  }}
+  onMouseLeave={(e) => {
+    e.target.style.backgroundColor = "transparent";
+  }}
+>
+  {option}
+</div>
+
           {/* Add a white line between options except for the last one */}
           {index < options.length - 1 && <div style={styles.separator} />}
         </div>
@@ -38,24 +43,18 @@ const AddObjectRole = ({ position, options, onOptionClick, onClose }) => {
 const styles = {
   container: {
     position: "absolute",
-    background: "#f5f5f5",
+    background: "#e7e7e7",
     borderRadius: "2px",
-    padding: "5px",
     boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
     zIndex: 1000,
     minWidth: "200px",
   },
   option: {
-    padding: "4px 8px",
+    padding:"8px 12px",
     cursor: "pointer",
-    borderRadius: "4px",
-    transition: "background-color 0.2s",
-    color: "#007bff",
-  },
-  separator: {
-    height: "1px", 
-    backgroundColor: "white", 
-    margin: "2px 0", 
+    color:"#011f60",
+    fontWeight: "500",
+    borderBottom: "1px solid rgb(255, 255, 255)"
   },
 };
 

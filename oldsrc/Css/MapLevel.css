@@ -1,0 +1,6 @@
+.react-flow__viewport {
+    transform: none !important;
+}
+.flow-container {
+    overflow: hidden;
+}

@@ -5,6 +5,9 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { Provider } from 'react-redux'; // Import Provider from react-redux
 import { store } from './redux/store'; // Import your Redux store
+import "@fontsource/poppins";
+import "@fontsource/poppins/400.css";
+import "@fontsource/poppins/500.css";
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

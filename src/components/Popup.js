@@ -77,10 +77,10 @@ const Popup = ({
 const styles = {
   popup: {
     position: "absolute",
-    background: "#f5f5f5",
-    borderRadius: "2px",
-    padding: 5,
-    boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+    background: "#e7e7e7",
+    borderRadius: "0px",
+    padding: 0,
+    boxShadow: "2px 4px 9px rgba(0, 0, 0, 0.1)",
     zIndex: 1000,
     minWidth: "200px",
   },
@@ -91,14 +91,18 @@ const styles = {
     display: "block",
     width: "100%",
     background: "none",
-    color: "#007bff",
+    color: "#002060",
     border: "none",
     borderBottom: "1px solid #fff",
-    padding: "5px",
+    paddingLeft: "25px",
+    paddingRight: "25px",
+    paddingTop:"10px",
+    paddingBottom:"10px",
     textAlign: "left",
     cursor: "pointer",
-    marginBottom: "0.5rem",
     transition: "background 0.2s",
+    fontWeight:"500",
+    fontSize:"0.9rem"
   },
 };
 

@@ -30,7 +30,7 @@
 .ss_title_bar header {
     position: relative;
     background: transparent;
-    color: #000;
+    color: #002060;
     border: 0px solid #002060;
     box-shadow: 0px 0px 0px #afadad5e;
 }
@@ -59,14 +59,14 @@
         border: 1px solid #002060;
     box-shadow: 0px 0px 10px #afadad5e;
     border-top: 0;
-    padding: 20px 18px 20px 10px !important;
+    padding:10px 18px 10px 10px !important;
 }
 .ss_dash_slid_bx {
       border: 0px solid #002060;
     box-shadow: 0px 0px 0px #afadad5e;
     border-top: 0;
     padding: 0px 15px 0px 0px !important;
-    width: 66%;
+    width: 100%;
 }
 
 .ss_add_process_div {
@@ -74,14 +74,15 @@
     border: 1px solid #002060;
     min-height: auto;
     border-radius: 0px;
-    width: 34%;
+    width: 92% !important;
     position: relative;
-    height: 290px;
+    height: 231.6px;
+    margin-left: 7px;
 }
 
 .ss_dash_slid_img img {
     width: 100%;
-    height: 230px;
+    height:170px;
 }
 
 .ss_dash_slid_img {
@@ -122,7 +123,7 @@
 }
 
 .ss_title_bar .css-1ygil4i-MuiToolbar-root {
-    min-height: 45px;
+    min-height: 37px;
     border: 1px solid #002060;
 }
 
@@ -160,7 +161,7 @@
      border-bottom: 1px solid #002060;
     font-weight: 400;
     font-size: 16px;
-    padding: 10px 15px 10px;
+    padding: 5.7px 15px;
     margin: 0;
 }
 
@@ -218,7 +219,7 @@ th, td {
 }
 
 .ss_container {
-    margin-top: 25px;
+    margin-top: 12px;
 }
 
 .ss_container h4 img {
@@ -236,7 +237,7 @@ th, td {
 
     .ss_logo_lft_div img {
         max-width: 225px;
-
+        max-height: 32px;
     }
 
   
@@ -261,11 +262,11 @@ th, td {
         
     }
     .ss_profile_rit_div img {
-        width: 32px;
+        width:32px;
         border-radius: 100px;
         height: 32px;
+        display: block;
         object-fit: cover;
-        
     }
     .ss_hed_rit_user_sec button:nth-child(1) {
         padding: 0px !important;
@@ -310,7 +311,7 @@ th, td {
     }
     .ss_header_new_right div button{
         font-size: 12px !important;
-        padding: 8px 12px !important;
+        padding: 3px 12px !important;
         text-transform: uppercase;
     }
 
@@ -354,6 +355,11 @@ th, td {
     .ss_box_hed_right_img {
         width: auto !important;
     }
+    .ss_box_hed_right_1_img,
+    .ss_box_hed_right_img {
+        min-height: 27px;
+        max-height: 27px;
+    }
 
     .ss_wid_auto{
         width: auto !important;
@@ -369,6 +375,7 @@ th, td {
         display: flex;
         gap: 6px;
         align-items: center;
+        cursor: pointer;
     }
     
    .ss_hm_dash_home_icon img {
@@ -415,9 +422,12 @@ th, td {
     }
 
     .app-header{
-        padding: 0.7vw 13px !important;
+        padding: 13px !important;
     }
 
     .ss_hed_box_mn{
         gap:13px !important;
+    }
+    .ss_logo_lft_div img {
+        cursor: pointer;
     }

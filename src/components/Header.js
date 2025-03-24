@@ -1,7 +1,7 @@
 import React, { useContext, useState, useRef, useEffect } from "react";
 import { ProgressArrow, Pentagon, Diamond, Box, Label } from "./Icon";
 import { IconButton } from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+// import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 // import HomeIcon from "@mui/icons-material/Home";
 import { useNavigate } from "react-router-dom";
 import { logoutUser } from "../redux/userSlice";
@@ -38,15 +38,15 @@ const Header = ({
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  const handlehomeBack = async () => {
-    const confirmcondition = await handleBackdata();
-    console.log(confirmcondition)
-    if (confirmcondition === undefined) {
-      navigate("/dashboard");
-    }
+  // const handlehomeBack = async () => {
+  //   const confirmcondition = await handleBackdata();
+  //   console.log(confirmcondition)
+  //   if (confirmcondition === undefined) {
+  //     navigate("/dashboard");
+  //   }
 
 
-  };
+  // };
 
 
   const { breadcrumbs } = useContext(BreadcrumbsContext);
@@ -343,8 +343,8 @@ const Header = ({
 
 
       <header className="app-header" style={styles.header}>
-        <h1 style={styles.headerTitle}>
-          {currentLevel === 0 && (
+        <h1 style={styles.headerTitle} className="sameheight">
+          {/* {currentLevel === 0 && (
             <IconButton
               edge="start"
               color="inherit"
@@ -353,7 +353,8 @@ const Header = ({
             >
               <ArrowBackIcon fontSize="medium" />
             </IconButton>
-          )}
+          )} */}
+
           {title}
         </h1>
 
@@ -387,7 +388,7 @@ const Header = ({
 
               <div style={styles.pdate}>
                 <div>
-                  Draft On
+                  Draft on
                   <br />
                   {formattedDatedraft}
                 </div>
@@ -401,10 +402,16 @@ const Header = ({
                   {formattedDate}
                 </div>
               </div>
-              
+              <div style={styles.mhcolleft} className="ss_box_hed_right_img">
+              {isLoading ? (
+                  <p>Image Loading...</p>
+                ) : (
+                  <img src={imageSrc} alt="RocketBPM" style={styles.mainlogo} />
+                )}
+              </div>
             </>
           )}
-{/* 
+
           {
             Page === "Published" && (
               <>
@@ -426,13 +433,13 @@ const Header = ({
                 </div>
               </>
             )
-          } */}
-{/* 
+          }
+
           {(Page === "ViewDraftmodel" || Page === "ViewDraftswimlane") && (
             <>
               <div style={styles.pdate} className="ss_box_hed_right_2">
                 <div>
-                  Draft On
+                  Draft on
                   <br />
                   {formattedDatedraft}
                 </div>
@@ -446,25 +453,10 @@ const Header = ({
               </div>
             </>
           )
-          } */}
+          }
 
 
 
-              <div style={styles.pdate} className="ss_box_hed_right_2">
-                <div>
-                  Draft On
-                  <br />
-                  {formattedDatedraft}
-                </div>
-              </div>
-              <div style={styles.mhcolleft} className="ss_box_hed_right_img">
-              {isLoading ? (
-                  <p>Image Loading...</p>
-                ) : (
-                  <img src={imageSrc} alt="RocketBPM" style={styles.mainlogo} />
-                )}
-              </div>
-           
 
         </div>
       </header>
@@ -484,10 +476,9 @@ const styles = {
   },
   headerTitle: {
     margin: 0,
-    fontSize: "1.2vw",
+    fontSize: "18pt",
     fontWeight: "300",
     color: "#002060",
-    textTransform: "uppercase",
   },
   iconContainer: {
     display: "flex",
@@ -554,9 +545,8 @@ const styles = {
     fontSize: "1vw",
   },
   pdate: {
-    textTransform: "uppercase",
-    textAlign: "center",
-    fontSize: "0.8rem",
+    textAlign: "right",
+    fontSize: "8pt",
   },
   flexbox: {
     display: "flex",

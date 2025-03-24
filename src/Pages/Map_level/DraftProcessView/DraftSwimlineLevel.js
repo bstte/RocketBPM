@@ -7,6 +7,7 @@ import {
   StraightEdge,
   Background,
   MarkerType,
+  ConnectionMode,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import Header from "../../../components/Header";
@@ -21,11 +22,11 @@ import { BreadcrumbsContext } from "../../../context/BreadcrumbsContext";
 import '../../../Css/Swimlane.css'
 import { useSelector } from "react-redux";
 
-const rfStyle = {
-  width: "100%",
-  height: "100%",
-  backgroundColor: "#fff",
-};
+// const rfStyle = {
+//   width: "100%",
+//   height: "100%",
+//   backgroundColor: "#fff",
+// };
 
 const DraftSwimlineLevel = () => {
 
@@ -45,7 +46,7 @@ const DraftSwimlineLevel = () => {
   const currentParentId = parentId || null;
   const currentLevel = level ? parseInt(level, 10) : 0;
 
-
+  // const [mainContainerHeight, setmcHeight] = useState(0);
   const [height, setHeight] = useState(0);
   const [appheaderheight, setahHeight] = useState(0);
   const [remainingHeight, setRemainingHeight] = useState(0);
@@ -54,19 +55,23 @@ const DraftSwimlineLevel = () => {
     const calculateHeights = () => {
       const element = document.querySelector(".ss_new_hed");
       const element2 = document.querySelector(".app-header");
-  
+      // const element3 = document.querySelector(".maincontainer");
       // Ensure elements are found before accessing height
       const elementHeight = element ? element.getBoundingClientRect().height : 0;
       const appHeaderHeight = element2 ? element2.getBoundingClientRect().height : 0;
-  
+      // const mainContainerHeight = element3 ? element3.getBoundingClientRect().height : 0;
       
       setHeight(elementHeight);
       setahHeight(appHeaderHeight);
+      // setmcHeight(mainContainerHeight);
   
       // Correct calculation inside the function
-      const newHeight = window.innerHeight - (elementHeight + appHeaderHeight - 14);
-      setRemainingHeight(newHeight);
+      const newHeight = window.innerHeight - (elementHeight + appHeaderHeight);
+      setRemainingHeight(newHeight - 46);
+      //alert('WH :' +  window.innerHeight + 'HH : '+ elementHeight + 'AH : '+ appHeaderHeight + 'TH: ' + newHeight);
     };
+
+    
   
     // Initial setup
     calculateHeights();
@@ -82,8 +87,8 @@ const DraftSwimlineLevel = () => {
 
 
   const { nodes: initialNodes } = useMemo(
-    () => generateNodesAndEdges(windowSize.width, windowSize.height, 'viewmode', height + 10, appheaderheight),
-    [windowSize, height, appheaderheight]
+    () => generateNodesAndEdges(windowSize.width, windowSize.height, 'viewmode', height + 10, appheaderheight, remainingHeight),
+    [windowSize, height, appheaderheight, remainingHeight]
   );
   useEffect(() => {
       setNodes(initialNodes);
@@ -217,15 +222,13 @@ const DraftSwimlineLevel = () => {
                     };
                   });
               
-                  const parsedEdges = data.edges.map((edge) => ({
-                    ...edge,
-                    animated: Boolean(edge.animated),
-                    markerEnd: {
-                      type: MarkerType.ArrowClosed,
-                    },
-                    style: { stroke: "#000", strokeWidth: 2 },
-                    type: "step",
-                  }));
+                   const parsedEdges = data.edges.map((edge) => ({
+                             ...edge,
+                             animated: Boolean(edge.animated),
+                             markerEnd: { type: MarkerType.ArrowClosed, color: "#002060", width: 12, height: 12 },
+                             style: { stroke: "#000", strokeWidth: 2.5 },
+                             type: "step",
+                           }));
               
                   setChiledNodes(parsedNodes);
                   setEdges(parsedEdges);
@@ -298,28 +301,31 @@ const DraftSwimlineLevel = () => {
         Process_img={process_img}
 
       />
-      <div style={{ ...styles.appContainer, height: remainingHeight }}>
+      <div class="maincontainer" style={{ ...styles.appContainer, height: remainingHeight }}>
         <ReactFlowProvider>
           <div style={styles.scrollableWrapper}>
-            <ReactFlow
+          <ReactFlow
               nodes={[...nodes, ...ChildNodes]}
               edges={edges}
+            
+              connectionMode={ConnectionMode.Loose} 
 
+              proOptions={{ hideAttribution: true }}
               nodeTypes={memoizedNodeTypes}
               edgeTypes={memoizedEdgeTypes}
               minZoom={0}
-              translateExtent={[
-                [0, 0],
-                [windowSize.width, windowSize.height],
-              ]}
               zoomOnScroll={false}
               zoomOnPinch={false}
               panOnDrag={false}
               panOnScroll={false}
+              zoomOnDoubleClick={false}
               maxZoom={1}
-              proOptions={{ hideAttribution: true }}
+              translateExtent={[
+                [0, 0],
+                [windowSize.width, windowSize.height],
+              ]}
               defaultEdgeOptions={{ zIndex: 1 }}
-              style={rfStyle}
+              style={styles.rfStyle}
             >
               <Background color="#fff" gap={16} />
             </ReactFlow>

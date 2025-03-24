@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useRef, useCallback } from "react";
 import { Box, Card, IconButton, CircularProgress } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { useSelector } from "react-redux";
@@ -95,6 +95,41 @@ const Dashboard = () => {
 
     getUserNodesData();
   }, [user?.id]);
+
+  const getPublishedDatedata = useCallback(async (processId) => {
+    console.log("hit prototype")
+    const user_id = user?.id;
+    const publishedStatus = "Published";
+  
+    if (!user_id) return null;
+  
+    try {
+      const response = await apiExports.GetPublishedDate("Level0", parseInt(user_id), processId, publishedStatus);
+      console.log("publisd date respone",response?.created_at)
+      return response?.created_at || null; // Ensure a valid date is returned
+    } catch (error) {
+      console.error("Error fetching published date:", error);
+      return null;
+    }
+  }, [user?.id]);
+  
+  const [publishedDates, setPublishedDates] = useState({});
+
+  useEffect(() => {
+    const fetchPublishedDates = async () => {
+      const dates = {};
+      for (const item of getFavProcessesUser) {
+        dates[item.process_id] = await getPublishedDatedata(item.process_id);
+      }
+      setPublishedDates(dates);
+    };
+  
+    if (getFavProcessesUser.length > 0) {
+      fetchPublishedDates();
+    }
+  }, [getFavProcessesUser, getPublishedDatedata]);
+  
+
 
 
 
@@ -211,7 +246,7 @@ const Dashboard = () => {
     dots: false,
     infinite: true,
     speed: 500,
-    slidesToShow: Math.min(2, filteredNodes.length),
+    slidesToShow: Math.min(3, filteredNodes.length),
     slidesToScroll: 1,
     autoplay: true,
     autoplaySpeed: 3000,
@@ -221,21 +256,21 @@ const Dashboard = () => {
     adaptiveHeight: true,
 
     responsive: [
-      { breakpoint: 1024, settings: { slidesToShow: Math.min(2, filteredNodes.length) } },
+      { breakpoint: 1024, settings: { slidesToShow: Math.min(3, filteredNodes.length) } },
       { breakpoint: 600, settings: { slidesToShow: 1 } },
     ],
   };
 
-  const formattedDate = (getPublishedDate) => {
-    return getPublishedDate
-      ? new Date(getPublishedDate).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      })
-      : "";
+  const formattedDate = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return isNaN(date.getTime()) ? "Invalid Date" : date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
   };
-
+  
 
   const NavigateOnClick =async (item) => {
 const data =await checkPublishData(item.processId)
@@ -254,6 +289,29 @@ if(data.status){
 }
 console.log(data)
   }
+
+  const sliderRef = useRef(null);
+  const [slideHeight, setSlideHeight] = useState(0);
+
+  // Function to get and set the height
+  const updateHeight = () => {
+    const slideElement = sliderRef.current?.innerSlider?.list.querySelector(
+      ".ss_dash_slid_bx .slick-track > div > div"
+    );
+
+    if (slideElement) {
+      const height = slideElement.clientHeight;
+      setSlideHeight(height);
+    }
+  };
+
+  // Run after render
+  useEffect(() => {
+    updateHeight(); // Initial load
+    window.addEventListener("resize", updateHeight); // Adjust on resize
+
+    return () => window.removeEventListener("resize", updateHeight);
+  }, []);
 
   return (
 
@@ -442,17 +500,18 @@ console.log(data)
                   )}
                 </Card>
               ))}
+              {user && user.type !== "User" ? (
+                <div className="ss_add_process_div" style={{ height: `${slideHeight}px` }}>
+                  <p>
+                    Add process world
+                  </p>
+                  <div className="ss_add_proces_img" onClick={() => navigate('/Add-process-title')}> <img src="../../../img/plus.png" alt="profile img" /></div>
+                </div>
+              ) : null}
             </Slider>
           )}
         </div>
-        {user && user.type !== "User" ? (
-          <div className="ss_add_process_div">
-            <p>
-              Add process world
-            </p>
-            <div className="ss_add_proces_img" onClick={() => navigate('/Add-process-title')}> <img src="../../../img/plus.png" alt="profile img" /></div>
-          </div>
-        ) : null}
+        
 
 
       </div>
@@ -483,7 +542,7 @@ console.log(data)
                   <thead>
                     <tr>
                       <th width="63%">Process Name</th>
-                      <th width="15%">Favorite Date</th>
+                      <th width="15%">Published</th>
                     </tr>
                   </thead>
                   {getFavProcessesUser.map((item) => (
@@ -492,7 +551,7 @@ console.log(data)
                       <tr>
                         <td>{getProcessTitle(item.process_id)}</td>
 
-                        <td>{formattedDate(item.updated_at)}</td>
+                      <td>{formattedDate(publishedDates[item.process_id])}</td>
                       </tr>
                     </tbody>
                   ))}

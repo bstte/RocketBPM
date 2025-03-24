@@ -39,7 +39,40 @@ const MapLevel = () => {
   //   height: window.innerHeight - 300,
   // };
 
+  const [selectedNodeId, setSelectedNodeId] = useState(null);
 
+  // const [height, setHeight] = useState(0);
+  // const [appheaderheight, setahHeight] = useState(0);
+  const [remainingHeight, setRemainingHeight] = useState(0);
+
+  useEffect(() => {
+    const calculateHeights = () => {
+      const element = document.querySelector(".ss_new_hed");
+      const element2 = document.querySelector(".app-header");
+
+      // Ensure elements are found before accessing height
+      const elementHeight = element ? element.getBoundingClientRect().height : 0;
+      const appHeaderHeight = element2 ? element2.getBoundingClientRect().height : 0;
+
+      // setHeight(elementHeight);
+      // setahHeight(appHeaderHeight);
+
+      // Correct calculation inside the function
+      const newHeight = window.innerHeight - (elementHeight + appHeaderHeight);
+      setRemainingHeight(newHeight - 40);
+
+
+    };
+
+    // Initial setup
+    calculateHeights();
+
+    // Handle window resize
+    window.addEventListener("resize", calculateHeights);
+
+    // Cleanup on unmount
+    return () => window.removeEventListener("resize", calculateHeights);
+  }, []);
 
   useEffect(() => {
     const calculateHeight = () => {
@@ -104,10 +137,10 @@ const MapLevel = () => {
 
   const memoizedNodeTypes = useMemo(
     () => ({
-      progressArrow: ArrowBoxNode,
-      pentagon: PentagonNode,
+      progressArrow: (props) => <ArrowBoxNode {...props} selectedNodeId={selectedNodeId} />,
+      pentagon: (props) => <PentagonNode {...props} selectedNodeId={selectedNodeId} />,
     }),
-    []
+    [selectedNodeId]
   );
 
   const memoizedEdgeTypes = useMemo(
@@ -344,6 +377,7 @@ const MapLevel = () => {
 
     setNodes((nds) => nds.concat(newNode));
     setHasUnsavedChanges(true);
+    setSelectedNodeId(newNode.id);
     setTimeout(() => {
       setNodes((nds) =>
         nds.map((node) =>
@@ -777,7 +811,9 @@ const MapLevel = () => {
     }
   };
   
-
+  const handleNodeClick = (event, node) => {
+    setSelectedNodeId(node.id); // Set the selected node ID
+  };
 
   return (
     <div>
@@ -803,7 +839,7 @@ const MapLevel = () => {
         Test
       </button> */}
       <ReactFlowProvider>
-        <div className="app-container" style={styles.appContainer}>
+        <div className="app-container" style={{ ...styles.appContainer, height: remainingHeight }}>
           <div className="content-wrapper" style={styles.contentWrapper}>
             <div
               className="flow-container"
@@ -815,6 +851,7 @@ const MapLevel = () => {
                 edges={edges}
                 onNodesChange={onNodesChange}
                 onEdgesChange={onEdgesChange}
+                onNodeClick={handleNodeClick}
                 onConnect={onConnect}
                 onReconnect={onReconnect}
                 nodeTypes={memoizedNodeTypes}

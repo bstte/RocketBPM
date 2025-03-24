@@ -5,6 +5,7 @@
   "dependencies": {
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
+    "@fontsource/poppins": "^5.2.5",
     "@liangfaan/reactflow-swimlane": "^0.1.3",
     "@mui/icons-material": "^6.1.5",
     "@mui/material": "^6.1.5",

@@ -23,9 +23,9 @@
 .popupPosition_fix {
     top: 50% !important;
     left: 50% !important;
-    max-width: 560px !important;
-    height: 420px !important;
-    width: 560px !important;
+    max-width: 600px !important;
+    height: 450px !important;
+    width: 600px !important;
    
     overflow-y: auto;
 }

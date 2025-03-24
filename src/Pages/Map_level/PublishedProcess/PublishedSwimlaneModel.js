@@ -7,6 +7,7 @@ import {
   StraightEdge,
   Background,
   MarkerType,
+  ConnectionMode,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import Header from "../../../components/Header";
@@ -21,11 +22,6 @@ import { BreadcrumbsContext } from "../../../context/BreadcrumbsContext";
 import '../../../Css/Swimlane.css'
 import { useSelector } from "react-redux";
 
-const rfStyle = {
-  width: "100%",
-  height: "100%",
-  backgroundColor: "#fff",
-};
 
 const PublishedSwimlaneModel = () => {
 
@@ -49,7 +45,7 @@ const PublishedSwimlaneModel = () => {
 
       // Correct calculation inside the function
       const newHeight = window.innerHeight - (elementHeight + appHeaderHeight - 14);
-      setRemainingHeight(newHeight);
+      setRemainingHeight(newHeight - 46);
     };
 
     // Initial setup
@@ -74,8 +70,8 @@ const PublishedSwimlaneModel = () => {
   const currentParentId = parentId || null;
   const currentLevel = level ? parseInt(level, 10) : 0;
   const { nodes: initialNodes } = useMemo(
-    () => generateNodesAndEdges(windowSize.width, windowSize.height,'viewmode',height + 10, appheaderheight),
-    [windowSize, height, appheaderheight]
+    () => generateNodesAndEdges(windowSize.width, windowSize.height,'viewmode',height + 10, appheaderheight, remainingHeight),
+    [windowSize, height, appheaderheight, remainingHeight]
   );
   useEffect(() => {
         setNodes(initialNodes);
@@ -205,17 +201,12 @@ const PublishedSwimlaneModel = () => {
         });
     
         const parsedEdges = data.edges.map((edge) => ({
-          ...edge,
-          animated: Boolean(edge.animated),
-          markerEnd: {
-            type: MarkerType.ArrowClosed,
-            color: "#002060",
-            width: 12,
-            height: 12,
-          },
-          style: { stroke: "#000", strokeWidth: 2.5 },
-        }));
-    
+              ...edge,
+              animated: Boolean(edge.animated),
+              markerEnd: { type: MarkerType.ArrowClosed, color: "#002060", width: 12, height: 12 },
+              style: { stroke: "#000", strokeWidth: 2.5 },
+              type: "step",
+            }));
         setChiledNodes(parsedNodes);
         setEdges(parsedEdges);
       } catch (error) {
@@ -283,10 +274,13 @@ const PublishedSwimlaneModel = () => {
       <div style={{ ...styles.appContainer, height: remainingHeight }}>
         <ReactFlowProvider>
           <div className="ss_publish_border"  style={styles.scrollableWrapper}>
-            <ReactFlow
+          <ReactFlow
               nodes={[...nodes, ...ChildNodes]}
               edges={edges}
+          
+              connectionMode={ConnectionMode.Loose} 
 
+              proOptions={{ hideAttribution: true }}
               nodeTypes={memoizedNodeTypes}
               edgeTypes={memoizedEdgeTypes}
               minZoom={0}
@@ -294,14 +288,14 @@ const PublishedSwimlaneModel = () => {
               zoomOnPinch={false}
               panOnDrag={false}
               panOnScroll={false}
+              zoomOnDoubleClick={false}
               maxZoom={1}
               translateExtent={[
                 [0, 0],
                 [windowSize.width, windowSize.height],
               ]}
-              proOptions={{ hideAttribution: true }}
               defaultEdgeOptions={{ zIndex: 1 }}
-              style={rfStyle}
+              style={styles.rfStyle}
             >
               <Background color="#fff" gap={16} />
             </ReactFlow>

@@ -61,7 +61,7 @@ const SwimlaneModel = () => {
   const [process_img, setprocess_img] = useState("");
 
   const LoginUser = useSelector((state) => state.user.user);
-
+  // const [mcheight, setmcHeight] = useState(0);
   const [height, setHeight] = useState(0);
   const [appheaderheight, setahHeight] = useState(0);
   const [remainingHeight, setRemainingHeight] = useState(0);
@@ -70,17 +70,19 @@ const SwimlaneModel = () => {
     const calculateHeights = () => {
       const element = document.querySelector(".ss_new_hed");
       const element2 = document.querySelector(".app-header");
+      // const element3 = document.querySelector(".maincontainer");
 
       // Ensure elements are found before accessing height
       const elementHeight = element ? element.getBoundingClientRect().height : 0;
       const appHeaderHeight = element2 ? element2.getBoundingClientRect().height : 0;
+      // const mainContainerHeight = element3 ? element3.getBoundingClientRect().height : 0;
 
       setHeight(elementHeight);
       setahHeight(appHeaderHeight);
 
       // Correct calculation inside the function
       const newHeight = window.innerHeight - (elementHeight + appHeaderHeight - 13);
-      setRemainingHeight(newHeight);
+      setRemainingHeight(newHeight - 46);
     };
 
     // Initial setup
@@ -93,13 +95,13 @@ const SwimlaneModel = () => {
     return () => window.removeEventListener("resize", calculateHeights);
   }, []);
 
-// alert(`Window Height: ${window.innerHeight}, App Div Height: ${appheaderheight}, Header Height: ${height}, New Height: ${remainingHeight}`);
+  // alert(`Window Height: ${window.innerHeight}, App Div Height: ${appheaderheight}, Header Height: ${height}, New Height: ${remainingHeight}`);
 
 
   // Pass updated heights into generateNodesAndEdges
   const { nodes: initialNodes } = useMemo(
-    () => generateNodesAndEdges(windowSize.width, windowSize.height, '', height + 10, appheaderheight),
-    [windowSize, height, appheaderheight]
+    () => generateNodesAndEdges(windowSize.width, windowSize.height, '', height + 10, appheaderheight, remainingHeight),
+    [windowSize, height, appheaderheight, remainingHeight]
   );
 
 
@@ -269,9 +271,9 @@ const SwimlaneModel = () => {
               height: groupHeight,
               childWidth: childWidth,
               childHeight: childHeight,
-              display:"flex",
-              alignItems:"center",
-              justifyContent:"center"
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
             },
           };
         });
@@ -280,12 +282,12 @@ const SwimlaneModel = () => {
           ...edge,
           animated: Boolean(edge.animated),
           markerEnd: { type: MarkerType.ArrowClosed, color: "#002060", width: 12, height: 12 },
-          style: { stroke: "#000", strokeWidth: 2.5 },
+          style: { stroke: "#000", strokeWidth: 2 },
           type: "step",
         }));
 
         isInitialLoad.current = false;
-        console.log("on load time parsedNodes", parsedNodes);
+        console.log("on load time data", data);
         setChiledNodes(parsedNodes);
         setEdges(parsedEdges);
       } catch (error) {
@@ -418,8 +420,8 @@ const SwimlaneModel = () => {
       const childWidth = groupWidth * 0.9;
       const childHeight = groupHeight * 0.9;
       const centeredPosition = {
-        x: selectedGroup.position.x + (groupWidth - childWidth) / 14,
-        y: selectedGroup.position.y + (groupHeight - childHeight) / 14,
+        x: (selectedGroup.position.x + (groupWidth - childWidth) / 14) - 1,
+        y: (selectedGroup.position.y + (groupHeight - childHeight) / 14) - 0.5,
       };
 
       const newNodeId = uuidv4();
@@ -663,9 +665,14 @@ const SwimlaneModel = () => {
       setSelectedNode(node);
       setPosition({ x: event.clientX, y: event.clientY });
       setMenuVisible(true);
+      const popupHeight = 150;
+      const screenHeight = window.innerHeight;
+      let newY = event.clientY;
+      if (event.clientY + popupHeight > screenHeight) {
+        newY = event.clientY - popupHeight;
+      }
       setContextMenu({
-        x: event.clientX,
-        y: event.clientY,
+        x: event.clientX, y: newY,
         nodeId: node.id,
       });
     } else {
@@ -691,11 +698,12 @@ const SwimlaneModel = () => {
   };
 
   const centerChildInParent = (parentNode, childNode) => {
-    const parentCenterX = parentNode.position.x + parentNode.style.width / 14;
-    const parentCenterY = parentNode.position.y + parentNode.style.height / 14;
+
+    const parentCenterX = parentNode.position.x + parentNode.style.width / 11;
+    const parentCenterY = parentNode.position.y + parentNode.style.height / 11;
     const updatedChildPosition = {
-      x: parentCenterX - childNode.style.childWidth / 14,
-      y: parentCenterY - childNode.style.childHeight / 14,
+      x: parentCenterX - childNode.style.childWidth / 11,
+      y: parentCenterY - childNode.style.childHeight / 11,
     };
     return updatedChildPosition;
   };
@@ -719,7 +727,7 @@ const SwimlaneModel = () => {
       const childCenterY = childNode.position.y + childNode.style.height / 2;
 
       const parentLeft = parentNode.position.x;
-      const parentRight = parentNode.position.x + parentNode.style.width;
+      const parentRight = (parentNode.position.x + parentNode.style.width) + 1;
       const parentTop = parentNode.position.y;
       const parentBottom = parentNode.position.y + parentNode.style.height;
 
@@ -989,7 +997,7 @@ const SwimlaneModel = () => {
     ...(detailschecking?.type === "progressArrow"
       ? [
         {
-          label: "Link Existing model",
+          label: "Link Existing Model",
           action: () => linkExistingmodel(),
           borderBottom: true,
         },
@@ -1083,8 +1091,8 @@ const SwimlaneModel = () => {
   //console.log("filtefilteredData", filteredData)  
 
 
-  
-  
+
+
 
   return (
     <div>
@@ -1168,6 +1176,7 @@ const SwimlaneModel = () => {
                   { label: "Add free text", action: "addFreeText" },
                 ].map((item, index) => (
                   <div
+                    className="swimlanepopup"
                     key={index}
                     style={{
                       padding: "8px 12px",
@@ -1176,40 +1185,42 @@ const SwimlaneModel = () => {
                       transition: "background-color 0.2s ease",
                     }}
                     onClick={() => handlePopupAction(item.action)}
-                    onMouseEnter={(e) =>
-                      (e.currentTarget.style.backgroundColor = "#f1f1f1")
-                    }
-                    onMouseLeave={(e) =>
-                      (e.currentTarget.style.backgroundColor = "transparent")
-                    }
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = "#002060";
+                      e.currentTarget.style.color = "#fff";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = "#e7e7e7";
+                      e.currentTarget.style.color = "#002060";
+                    }}
                   >
                     {item.label}
                   </div>
+
                 ))}
                 <div
+                  className="swimlanepopup"
                   style={{
                     padding: "8px 12px",
                     cursor: "pointer",
                     transition: "background-color 0.2s ease",
                   }}
                   onClick={() => {
-                    if (
-                      window.confirm(
-                        "Are you sure you want to delete this arrow?"
-                      )
-                    ) {
+                    if (window.confirm("Are you sure you want to delete this arrow?")) {
                       deleteEdge();
                     }
                   }}
-                  onMouseEnter={(e) =>
-                    (e.currentTarget.style.backgroundColor = "#f1f1f1")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.currentTarget.style.backgroundColor = "transparent")
-                  }
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "#002060";
+                    e.currentTarget.style.color = "#fff";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                  }}
                 >
                   Delete Arrow
                 </div>
+
               </div>
             )}
 
@@ -1233,7 +1244,7 @@ const SwimlaneModel = () => {
 
           {/* Checkbox Popup */}
           {isCheckboxPopupOpen && (
-            <div style={popupStyle.container}>
+            <div style={popupStyle.container} className="swimlanepopup">
               <div style={popupStyle.header}>
                 <span>Existing Model</span>
                 <button

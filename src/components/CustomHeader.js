@@ -47,7 +47,7 @@ const CustomHeader = ({ title }) => {
     <AppBar>
       <div className="ss_logo_hed_sec">
         <div className="ss_logo_lft_div">
-          <img src="../../img/RocketBPM_rocket_logo.png" alt='' />
+          <img src="../../img/RocketBPM_rocket_logo.png" alt='logo' onClick={() => navigate("/dashboard")} />
         </div>
 
         <div className="ss_profile_rit_div" style={{ flexDirection: "row" }}>

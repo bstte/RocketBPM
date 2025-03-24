@@ -1,6 +1,9 @@
 import { memo, useState, useRef, useEffect } from "react";
 import { Handle, Position } from "@xyflow/react";
 import ReactDOM from "react-dom";
+import Draggable from "react-draggable";
+import { ResizableBox } from "react-resizable";
+import "react-resizable/css/styles.css";
 
 const decodeHtmlEntities = (str) => {
   const textArea = document.createElement("textarea");
@@ -10,28 +13,23 @@ const decodeHtmlEntities = (str) => {
 
 const BoxNode = ({ data }) => {
   const [isPopupVisible, setIsPopupVisible] = useState(false);
-  const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
+  const [popupSize, setPopupSize] = useState({ width: 600, height: 450 });
 
   const title = decodeHtmlEntities(data.details.title);
-  const boxRef = useRef(null); // Reference to the node element
+  const boxRef = useRef(null);
 
   const handleBoxClick = () => {
-    if (boxRef.current) {
-      const { top, left } = boxRef.current.getBoundingClientRect();
-      setPopupPosition({ x: left, y: top });
-      setIsPopupVisible(!isPopupVisible);
-    }
+    setIsPopupVisible(true);
   };
 
   const handleClosePopup = () => {
-    setIsPopupVisible(!isPopupVisible);
+    setIsPopupVisible(false);
   };
 
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === "Escape") {
-        setIsPopupVisible(!isPopupVisible);
-
+        setIsPopupVisible(false);
       }
     };
 
@@ -44,104 +42,83 @@ const BoxNode = ({ data }) => {
     };
   }, [isPopupVisible]);
 
-  
   const renderPopup = () => (
-    <div className="popupPosition_fix"
-      style={{
-        ...styles.popup,
-        left: popupPosition.x,
-        top: popupPosition.y,
-        zIndex: 1001,
-      }}
-    >
-      <div style={styles.popupHeader} >
-        <h3 style={styles.popupTitle}>{title}</h3>
-        <button
-          className="ss_popup_close_btn" style={styles.closeButton}
-          onClick={handleClosePopup}
-        >
-          <span>Close</span>
-
-        </button>
-      </div>
-      <div className="popupContent_content"
-        style={styles.popupContent}
-        dangerouslySetInnerHTML={{ __html: data.details.content }}
-      />
-    </div>
+    <Draggable handle=".popupHeader">
+      <ResizableBox
+        width={popupSize.width}
+        height={popupSize.height}
+        minConstraints={[300, 200]}
+        maxConstraints={[800, 600]}
+        onResizeStop={(e, { size }) => setPopupSize(size)}
+        style={{
+          position: "absolute",
+          top: "20%",
+          left: "0",
+          right: "0",
+          margin:"0 auto",
+          transform: "translate(0, -50%)",
+          backgroundColor: "#ffffff",
+          border: "1px solid #011f60",
+          overflow: "hidden",
+          zIndex: 1001,
+          boxShadow:"0 0 10px #011f6047",
+        }}
+      >
+        <div style={{ ...styles.popup, width: "100%", height: "100%" }}>
+          <div className="popupHeader" style={styles.popupHeader}>
+            <h3 style={styles.popupTitle}>{title}</h3>
+            <button style={styles.closeButton} onClick={handleClosePopup}>
+              Close
+            </button>
+          </div>
+          <div
+            className="popupContent_content"
+            style={styles.popupContent}
+            dangerouslySetInnerHTML={{ __html: data.details.content }}
+          />
+        </div>
+      </ResizableBox>
+    </Draggable>
   );
-  
-
 
   return (
     <>
-    <div 
-      style={styles.wrapper}
-      onClick={handleBoxClick} 
-      ref={boxRef} 
-    >
-      <div className="borderBox" style={styles.box}>
-        <div>
-          <button style={styles.withoutlinkButton}>{title}</button>
+      <div style={styles.wrapper} onClick={handleBoxClick} ref={boxRef}>
+        <div className="borderBox" style={styles.box}>
+          <div>
+            <button style={styles.withoutlinkButton}>{title}</button>
+          </div>
         </div>
+
+        {[20, 50, 80].map((leftOffset, index) => (
+          <Handle
+            key={`top-target-${index}`}
+            type="target"
+            position={Position.Top}
+            id={`top-target-${index}`}
+            style={{ ...styles.handle, top: "0px", left: `${leftOffset}%` }}
+          />
+        ))}
+
+        {[20, 50, 80].map((leftOffset, index) => (
+          <Handle
+            key={`bottom-target-${index}`}
+            type="target"
+            position={Position.Bottom}
+            id={`bottom-target-${index}`}
+            style={{ ...styles.handle, bottom: "0px", left: `${leftOffset}%` }}
+          />
+        ))}
+
+        <Handle type="target" position={Position.Left} id="left-target" style={styles.handle} />
+        <Handle type="source" position={Position.Left} id="left-source" style={styles.handle} />
+        <Handle type="target" position={Position.Right} id="right-target" style={styles.handle} />
+        <Handle type="source" position={Position.Right} id="right-source" style={styles.handle} />
+
+        <div style={styles.borderOverlay}></div>
       </div>
-      
-            {[20, 50, 80].map((leftOffset, index) => (
-              <>
-                <Handle
-                  key={`top-target-${index}`}
-                  type="target"
-                  position={Position.Top}
-                  id={`top-target-${index}`}
-                  style={{ ...styles.handle, top: "0px", left: `${leftOffset}%` }}
-                />
-      
-      
-                <Handle
-                  key={`top-source-${index}`}
-                  type="source"
-                  position={Position.Top}
-                  id={`top-source-${index}`}
-                  style={{ ...styles.handle, top: "0px", left: `${leftOffset}%` }}
-                />
-              </>
-            ))}
-      
-          
-              {/* Bottom Handles */}
-              {[20, 50, 80].map((leftOffset, index) => (
-                <>
-              <Handle
-                key={`bottom-target-${index}`}
-                type="target"
-                position={Position.Bottom}
-                id={`bottom-target-${index}`}
-                style={{ ...styles.handle, bottom: '0px', left: `${leftOffset}%` }}
-              />
-      
-              <Handle
-              key={`bottom-source-${index}`}
-              type="source"
-              position={Position.Bottom}
-              id={`bottom-source-${index}`}
-              style={{ ...styles.handle, bottom: '0px', left: `${leftOffset}%` }}
-            />
-            </>
-            ))}
-      
 
-      
-      <Handle type="target" position={Position.Left} id="left-target" style={styles.handle} />
-      <Handle type="source" position={Position.Left} id="left-source" style={styles.handle} />
-      <Handle type="target" position={Position.Right} id="right-target" style={styles.handle} />
-      <Handle type="source" position={Position.Right} id="right-source" style={styles.handle} />
-
-      <div style={styles.borderOverlay}></div>
-
-   
-    </div>
-       {/* Render the popup when hovered */}
-       {isPopupVisible && data.details.title && ReactDOM.createPortal(renderPopup(), document.body)}
+      {isPopupVisible && data.details.title && ReactDOM.createPortal(renderPopup(), document.body)}
     </>
   );
 };
@@ -161,10 +138,9 @@ const styles = {
     position: "relative",
     backgroundColor: "#ffffff",
     color: "#000000",
-    border: "2px solid #000",
+    border: "1px solid #000",
     width: "100%",
     height: "100%",
-    boxShadow: "0 2px 5px rgba(0, 0, 0, 0.3)",
     padding: "10px",
     boxSizing: "border-box",
     overflow: "hidden",
@@ -180,56 +156,40 @@ const styles = {
     borderRadius: "5px",
     pointerEvents: "none",
   },
-  label: {
-    fontSize: "12px",
-    fontFamily: "'Poppins', sans-serif",
-    background: "transparent",
-    border: "none",
-    outline: "none",
-    textAlign: "center",
-    width: "100%",
-  },
   handle: {
     backgroundColor: "transparent",
     border: "none",
     width: "0px",
     height: "0px",
-    pointerEvents: "none" ,
+    pointerEvents: "none",
   },
   popup: {
-    position: "fixed",
-    transform: "translate(-50%, -50%)",
-    width: "auto",
-    maxWidth: "500px",
-    padding: "20px",
+    display: "flex",
+    flexDirection: "column",
     backgroundColor: "#ffffff",
-    border: "1px solid #000",
-    borderRadius: "5px",
-    boxShadow: "0 2px 5px #002060",
-    overflow: "hidden",
-    left: '50%',
-    top: '50%',
+    overflowY: "auto",
+    zIndex: 1001,
   },
   popupHeader: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: "10px", // Space below the header
+    padding: "10px",
+    backgroundColor: "white",
+    cursor: "move",
   },
   popupTitle: {
     fontSize: "16px",
     fontWeight: "500",
-    color: "#002060",
+    color: "#011f60",
     margin: "0",
-    texttransform: "capitalize", // Remove default margins
   },
   popupContent: {
     fontSize: "14px",
     color: "#002060",
-    whiteSpace: "normal",
-    maxHeight: "200px",
+    padding: "0 10px 10px",
     overflowY: "auto",
-    paddingRight: "10px",
+    flexGrow: 1,
   },
   withoutlinkButton: {
     fontSize: "12px",
@@ -238,17 +198,15 @@ const styles = {
     border: "none",
     cursor: "pointer",
   },
-
   closeButton: {
-    position: "absolute",
-    top: "5px",
-    right: "5px",
-    background: "transparent",
-    color: "#002060",
-    border: "none",
+    background: "#011f60",
+    borderRadius: "7px",
+    color: "#ffffff",
     cursor: "pointer",
-    fontSize: "18px",
-    fontWeight: "bold",
+    fontSize: "14px",
+    padding: "2px 20px",
+    textTransform: "uppercase",
+    border:"0"
   },
 };
 

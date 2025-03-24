@@ -119,12 +119,11 @@ const styles = {
     height: "45px",
     backgroundColor: "#ffffff",
     color: "#000000",
-    border: "2px solid #002060",
+    border: "1px solid #002060",
     transform: "rotate(45deg)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    boxShadow: "0 2px 5px rgba(0, 0, 0, 0.3)",
   },
   title: {
     transform: "rotate(-45deg)",

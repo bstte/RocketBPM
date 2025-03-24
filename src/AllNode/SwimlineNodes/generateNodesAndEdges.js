@@ -1,19 +1,14 @@
-const generateNodesAndEdges = (windowWidth, windowHeight,BorderCondiction,height,appheaderheight) => {
+const generateNodesAndEdges = (windowWidth, windowHeight,BorderCondiction,height,appheaderheight,remainingHeight) => {
     const nodes = [];
     const edges = [];
 
     const rflight = document.querySelector(".app-header");
-    const rfWidth = rflight ? rflight.offsetWidth - 14 : windowWidth; 
-
-    
-    const rfHeight = window.innerHeight - ((height + appheaderheight) - 20);
-    
-
+    const rfWidth = rflight ? rflight.offsetWidth : windowWidth; 
 
     const totalRows = 7; 
     const totalColumns = 11;
     const groupWidth = rfWidth / totalColumns;
-    const groupHeight = rfHeight / totalRows;
+    const groupHeight = remainingHeight / totalRows - 0.3;
 
     for (let row = 0; row < totalRows; row++) {
       for (let col = 0; col < totalColumns; col++) {
@@ -31,9 +26,9 @@ const generateNodesAndEdges = (windowWidth, windowHeight,BorderCondiction,height
             width: groupWidth,
             height: groupHeight,
             bordertop: '0px',
-            borderLeft:BorderCondiction==='viewmode'? '0px solid #ececec':'1.5px solid #ececec',
-            borderBottom: '1.5px solid #002060',
-            borderRight: col === 0 ? '2px solid #002060' : '#ececec',
+            borderLeft:BorderCondiction==='viewmode'? '0px solid #ececec':'1px solid #ececec',
+            borderBottom: '0px solid #002060',
+            borderRight: col === 0 ? '1px solid #002060' : '#ececec',
             borderRadius: '0',
           },
         });

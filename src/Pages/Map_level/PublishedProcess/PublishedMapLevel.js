@@ -32,14 +32,33 @@ const PublishedMapLevel = () => {
     width: window.innerWidth - 300,
     height: window.innerHeight - 300,
 };
+
+// const [height, setHeight] = useState(0);
+// const [appheaderheight, setahHeight] = useState(0);
+const [remainingHeight, setRemainingHeight] = useState(0);
+
 const LoginUser = useSelector((state) => state.user.user);
 
-    const [isFavorite, setIsFavorite] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
 
   useEffect(() => {
     const calculateHeight = () => {
       const breadcrumbsElement = document.querySelector(".breadcrumbs-container");
       const appHeaderElement = document.querySelector(".app-header");
+
+      const element = document.querySelector(".ss_new_hed");
+        const element2 = document.querySelector(".app-header");
+  
+        // Ensure elements are found before accessing height
+        const elementHeight = element ? element.getBoundingClientRect().height : 0;
+        const appHeaderHeight = element2 ? element2.getBoundingClientRect().height : 0;
+  
+        // setHeight(elementHeight);
+        // setahHeight(appHeaderHeight);
+  
+        // Correct calculation inside the function
+        const newHeight = window.innerHeight - (elementHeight + appHeaderHeight);
+        setRemainingHeight(newHeight - 40);
 
       if (breadcrumbsElement && appHeaderElement) {
         const combinedHeight = breadcrumbsElement.offsetHeight + appHeaderElement.offsetHeight + 100;
@@ -381,7 +400,7 @@ const styles = {
         Procesuser={user}
       />
       <ReactFlowProvider>
-        <div className="app-container" style={styles.appContainer}>
+      <div className="app-container" style={{ ...styles.appContainer, height: remainingHeight }}>
           <div className="content-wrapper" style={styles.contentWrapper}>
             
             <div className="flow-container" style={styles.flowContainer}>

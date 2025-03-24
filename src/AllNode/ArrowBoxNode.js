@@ -1,11 +1,11 @@
 import { memo, useState, useEffect, useRef } from 'react';
 import { NodeResizer } from '@xyflow/react';
 
-const ArrowBoxNode = ({ data }) => {
+const ArrowBoxNode = ({  data, id, selectedNodeId }) => {
   const [label, setLabel] = useState(data.label || ''); 
 
   const [isResizing, setIsResizing] = useState(false);
-  const [isClickable, setIsClickable] = useState(data?.isClickable);
+  const isClickable = selectedNodeId === id;
   const arrowref = useRef(null); 
   const [autoFocus, setAutoFocus] = useState(data.autoFocus);
 
@@ -46,7 +46,7 @@ const ArrowBoxNode = ({ data }) => {
   };
 
   const handleClick = () => {
-    setIsClickable(!isClickable);
+    //setIsClickable(!isClickable);
   };
 
 
@@ -61,7 +61,7 @@ const ArrowBoxNode = ({ data }) => {
         style={{
           ...styles.arrowBox,
           minWidth: isResizing ? 'auto' : data.width_height ? data.width_height.width : '326px',
-          minHeight: isResizing ? 'auto' : data.width_height ? data.width_height.height : '110px',
+          minHeight: isResizing ? 'auto' : data.width_height ? data.width_height.height : '90px',
         }}
       >
         <textarea
@@ -73,7 +73,7 @@ const ArrowBoxNode = ({ data }) => {
           style={styles.textarea}
           rows={1}
           maxLength={200} 
-    
+          className='mapleveltextarea'
         />
       </div>
 
@@ -106,19 +106,20 @@ const styles = {
     color: '#000000',
     width: '100%',
     height: '100%',
-    clipPath: 'polygon(40px 50%, 0 0, calc(100% - 40px) 0, 100% 50%, calc(100% - 40px) 100%, 0 100%)',
+    clipPath: 'polygon(20px 50%, 0 0, calc(106% - 40px) 0, 100% 50%, calc(106% - 40px) 100%, 0 100%)',
     boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
     padding: '10px',
     boxSizing: 'border-box',
     overflow: 'hidden',
     border: 'none',
+    transition: "width 0.2s ease, height 0.2s ease",
   },
 
   textarea: {
     background: 'transparent',
     border: 'none',
     color: 'white',
-    fontSize: '20px',
+    fontSize: '1rem',
     width: '100%',
     resize: 'none', 
     outline: 'none',

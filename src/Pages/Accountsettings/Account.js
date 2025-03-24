@@ -222,7 +222,7 @@ const Account = () => {
                     </div>
 
                     <div className="account_Edit_buttons_CANCEL">
-                        <button type="button" className="button_account" onClick={() => window.location.reload()}>CANCEL</button>
+                        <button type="button" className="button_account" onClick={() => navigate(-1) }>CANCEL</button>
                         <button type="button" className="button_account" onClick={updateProfile}>SAVE</button>
                     </div>
 

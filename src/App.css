@@ -76,3 +76,29 @@
 #root {
   margin: 0 auto;
 }
+body,p,h1,h2,h3,h4,h5,h6,button,input,select,textarea {
+  font-family: "Poppins", sans-serif !important;
+}
+.mapleveltextarea {
+  height: 80%;
+}
+.mapleveltextarea::placeholder {
+  color: #fff;
+}
+.sameheight,
+.ss_hed_box_mn {
+  height: 34px;
+}
+.popupContent_content p {
+  margin-top: 0;
+}
+.popupContent_content ul {
+  padding: 0px 0 0 15px;
+  margin: 0 0 15px;
+}
+.popupContent_content ul li {
+  margin-bottom: 5px;
+}
+.popupContent_content ul li::marker {
+  color: #ff364a;
+}

@@ -1,16 +1,20 @@
 import { memo, useState, useRef, useEffect } from "react";
 import { Handle, Position } from "@xyflow/react";
 import ReactDOM from "react-dom";
+import Draggable from "react-draggable";
+import { ResizableBox } from "react-resizable";
+import "react-resizable/css/styles.css";
 
 const SwimlineDiamondNode = ({ data }) => {
   const [isPopupVisible, setIsPopupVisible] = useState(false);
-  const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
+  // const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
+  const [popupSize, setPopupSize] = useState({ width: 600, height: 450 });
   const titleRef = useRef(null);
 
   const handleBoxClick = () => {
     if (titleRef.current) {
-      const { top, left } = titleRef.current.getBoundingClientRect();
-      setPopupPosition({ x: left, y: top });
+      // const { top, left } = titleRef.current.getBoundingClientRect();
+      // setPopupPosition({ x: left, y: top });
       setIsPopupVisible(!isPopupVisible);
     }
   };
@@ -36,32 +40,49 @@ const SwimlineDiamondNode = ({ data }) => {
     };
   }, [isPopupVisible]);
 
-  const renderPopup = () => (
-    <div className="popupPosition_fix"
-      style={{
-        ...styles.popup,
-        left: popupPosition.x,
-        top: popupPosition.y,
-        zIndex: 1001,
-      }}
-    >
-      <div style={styles.popupHeader} >
-        <h3 style={styles.popupTitle}>{data.details.title}</h3>
-        <button
-          style={styles.closeButton}
-          onClick={handleClosePopup}
-        >
-          <span>x</span>
 
-        </button>
-      </div>
-      <div className="popupContent_content"
-        style={styles.popupContent}
-        dangerouslySetInnerHTML={{ __html: data.details.content }}
-      />
-    </div>
-  );
-  
+
+   const renderPopup = () => (
+      <Draggable handle=".popupHeader">
+        <ResizableBox
+          width={popupSize.width}
+          height={popupSize.height}
+          minConstraints={[300, 200]}
+          maxConstraints={[800, 600]}
+          onResizeStop={(e, { size }) => setPopupSize(size)}
+          style={{
+            position: "absolute",
+            top: "20%",
+            left: "0",
+            right: "0",
+            margin:"0 auto",
+            transform: "translate(0, -50%)",
+            backgroundColor: "#ffffff",
+            border: "1px solid #011f60",
+            overflow: "hidden",
+            zIndex: 1001,
+            boxShadow:"0 0 10px #011f6047",
+          }}
+        >
+          <div style={{ ...styles.popup, width: "100%", height: "100%" }}>
+            <div className="popupHeader" style={styles.popupHeader}>
+            <h3 style={styles.popupTitle}>{data.details.title}</h3>
+              <button style={styles.closeButton} onClick={handleClosePopup}>
+                Close
+              </button>
+            </div>
+            <div
+              className="popupContent_content"
+              style={styles.popupContent}
+              dangerouslySetInnerHTML={{ __html: data.details.content }}
+            />
+          </div>
+        </ResizableBox>
+      </Draggable>
+    );
+
+
+
 
   return (
     <>
@@ -118,7 +139,7 @@ const styles = {
     height: "45px",
     backgroundColor: "#ffffff",
     color: "#000000",
-    border: "2px solid #002060",
+    border: "1px solid #002060",
     transform: "rotate(45deg)",
     display: "flex",
     alignItems: "center",
@@ -134,61 +155,56 @@ const styles = {
     margin: "0",
   },
   handle: {
-    // position: "absolute",
-    // width: "10px",
-    // height: "10px",
-    // backgroundColor: "red",
-    // borderRadius: "50%",
     backgroundColor: "transparent",
-  
     border: "none",
     width: "0px",
     height: "0px",
-    pointerEvents: "auto" ,
+    pointerEvents: "none",
   },
   popup: {
-    position: "fixed",
-    transform: "translate(-50%, -50%)",
-    width: "auto",
-    maxWidth: "500px",
-    padding: "20px",
+    display: "flex",
+    flexDirection: "column",
     backgroundColor: "#ffffff",
-    border: "1px solid #002060",
-    borderRadius: "5px",
-    boxShadow: "0 2px 5px rgba(0, 0, 0, 0.3)",
-    overflow: "hidden",
+    overflowY: "auto",
+    zIndex: 1001,
   },
   popupHeader: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: "10px", // Space below the header
+    padding: "10px",
+    backgroundColor: "white",
+    cursor: "move",
   },
   popupTitle: {
     fontSize: "16px",
-    fontWeight: "400",
-    color: "#002060",
-    margin: "0 0 10px 0",
-
+    fontWeight: "500",
+    color: "#011f60",
+    margin: "0",
   },
   popupContent: {
     fontSize: "14px",
     color: "#002060",
-    whiteSpace: "normal",
-    maxHeight: "200px",
+    padding: "0 10px 10px",
     overflowY: "auto",
-    paddingRight: "10px",
+    flexGrow: 1,
   },
-  closeButton: {
-    position: "absolute",
-    top: "5px",
-    right: "5px",
-    background: "transparent",
+  withoutlinkButton: {
+    fontSize: "12px",
     color: "#002060",
+    background: "none",
     border: "none",
     cursor: "pointer",
-    fontSize: "18px",
-    fontWeight: "bold",
+  },
+  closeButton: {
+    background: "#011f60",
+    borderRadius: "7px",
+    color: "#ffffff",
+    cursor: "pointer",
+    fontSize: "14px",
+    padding: "2px 20px",
+    textTransform: "uppercase",
+    border:"0"
   },
 };
 

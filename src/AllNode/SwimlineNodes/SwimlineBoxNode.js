@@ -7,7 +7,7 @@ const BoxNode = ({ data }) => {
   const [title, setTitle] = useState(data.details.title);
   const boxRef = useRef(null);
   const [autoFocus, setAutoFocus] = useState(data.autoFocus);
-  const [isHovered, setIsHovered] = useState(false); // State to track hover
+  const [isHovered, setIsHovered] = useState(false); 
 
   useEffect(() => {
     setTitle(data.details.title);
@@ -161,10 +161,9 @@ const styles = {
     position: "relative",
     backgroundColor: "#ffffff",
     color: "#000000",
-    border: "2px solid #002060",
+    border: "1px solid #002060",
     width: "100%",
     height: "100%",
-    boxShadow: "0 2px 5px rgba(0, 0, 0, 0.3)",
     padding: "0px",
     boxSizing: "border-box",
     overflow: "hidden",
@@ -211,7 +210,6 @@ const styles = {
     backgroundColor: "#ffffff",
     border: "1px solid #002060",
     borderRadius: "5px",
-    boxShadow: "0 2px 5px rgba(0, 0, 0, 0.3)",
     overflow: "hidden",
   },
   popupTitle: {
