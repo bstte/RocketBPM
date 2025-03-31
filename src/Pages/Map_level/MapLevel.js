@@ -519,6 +519,8 @@ const MapLevel = () => {
 
       try {
         const response = await filter_draft(ParentPageGroupId);
+        console.log("inside first",response)
+
         if (response.data === true) {
           alert("First published previous page");
           return false

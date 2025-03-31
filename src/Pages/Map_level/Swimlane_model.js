@@ -501,14 +501,19 @@ const SwimlaneModel = () => {
     if (savetype === "Published" && currentLevel !== 0) {
       try {
         const response = await filter_draft(ParentPageGroupId);
+        console.log("inside first",response)
         if (response.data === true) {
           alert("First published previous page");
           return false;
         }
       } catch (error) {
+        console.log("inside ParentPageGroupId",ParentPageGroupId)
+
         console.error("filter draft error", error);
       }
     }
+
+    console.log("direct outside,")
 
     const Level =
       currentParentId !== null

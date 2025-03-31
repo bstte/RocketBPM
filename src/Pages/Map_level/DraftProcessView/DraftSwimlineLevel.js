@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect, useContext } from "react";
+import React, { useMemo, useState, useEffect, useContext, useCallback } from "react";
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -21,6 +21,7 @@ import { BreadcrumbsContext } from "../../../context/BreadcrumbsContext";
 
 import '../../../Css/Swimlane.css'
 import { useSelector } from "react-redux";
+import apiExports from "../../../API/api";
 
 // const rfStyle = {
 //   width: "100%",
@@ -37,7 +38,7 @@ const DraftSwimlineLevel = () => {
     height: window.innerHeight,
   });
   const location = useLocation();
-  const { id, title, user, parentId, level } = location.state || {};
+  const { id, title, user, parentId, level ,ParentPageGroupId} = location.state || {};
   const LoginUser = useSelector((state) => state.user.user);
       const [isFavorite, setIsFavorite] = useState(false);
   const [process_img, setprocess_img] = useState("");
@@ -50,8 +51,11 @@ const DraftSwimlineLevel = () => {
   const [height, setHeight] = useState(0);
   const [appheaderheight, setahHeight] = useState(0);
   const [remainingHeight, setRemainingHeight] = useState(0);
+    const [checkpublish, Setcheckpublish] = useState()
   
   useEffect(() => {
+
+    console.log("check ParentPageGroupId",ParentPageGroupId)
     const calculateHeights = () => {
       const element = document.querySelector(".ss_new_hed");
       const element2 = document.querySelector(".app-header");
@@ -110,6 +114,36 @@ const DraftSwimlineLevel = () => {
   );
 
   const { removeBreadcrumbsAfter ,breadcrumbs,setBreadcrumbs} = useContext(BreadcrumbsContext);
+
+  const checkPublishData = useCallback(async (processId) => {
+    // console.log("currentLevel",currentLevel)
+    const levelParam =
+    currentParentId !== null
+      ? `Level${currentLevel}_${currentParentId}`
+      : `Level${currentLevel}`;
+    // const levelParam = 'Level0';
+    const user_id = user ? user.id : null;
+    const Process_id = processId ? processId : null;
+    const data = await apiExports.checkPublishRecord(
+      levelParam,
+      parseInt(user_id),
+      Process_id
+    );
+  
+    return data;
+  }, [user,currentLevel,currentParentId]); 
+
+  useEffect(() => {
+    const checkpublishfunction = async () => {
+      const processId = id ? id : null;
+  
+      const data = await checkPublishData(processId);
+  
+      Setcheckpublish(data?.status);
+    };
+  
+    checkpublishfunction();
+  }, [checkPublishData, id]);
 
   useEffect(() => {
      const checkfav=async()=>{
@@ -274,7 +308,7 @@ const DraftSwimlineLevel = () => {
     // console.log("breadcrumbs",breadcrumbs) 
     if (id && user) {
       
-        page === "editdraft" ? navigate(`/swimlane/level/${currentLevel}/${currentParentId}`, { state: { id: id, title: title, user: user, parentId: currentParentId, level: currentLevel } })
+        page === "editdraft" ? navigate(`/swimlane/level/${currentLevel}/${currentParentId}`, { state: { id: id, title: title, user: user, parentId: currentParentId, level: currentLevel ,ParentPageGroupId:ParentPageGroupId} })
           : navigate(`/published-swimlane/level/${currentLevel}/${currentParentId}`, { state: { id: id, title: title, user: user, parentId: currentParentId, level: currentLevel } })
 
       
@@ -299,6 +333,7 @@ const DraftSwimlineLevel = () => {
         Page={"ViewDraftswimlane"}
         isFavorite={isFavorite}
         Process_img={process_img}
+        checkpublish={checkpublish}
 
       />
       <div class="maincontainer" style={{ ...styles.appContainer, height: remainingHeight }}>

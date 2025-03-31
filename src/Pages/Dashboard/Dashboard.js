@@ -519,7 +519,7 @@ console.log(data)
       <div className="ss_container">
         <div className="row">
           <div className="col-lg-4">
-            <h4><img src="../../../img/two-fingers.svg" alt="" /> Welcome, [{user?.first_name}]!</h4>
+            <h4><img src="../../../img/two-fingers.svg" alt="" /> Welcome, {user?.first_name}!</h4>
             <div className="ss_dash_sec_2_img">
               <iframe
                 className="video"

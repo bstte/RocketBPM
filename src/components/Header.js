@@ -24,7 +24,7 @@ const Header = ({
   getDraftedDate,
   setIsNavigating,
   Page,
-  savefav, isFavorite, Process_img, Procesuser
+  savefav, isFavorite, Process_img, Procesuser, checkpublish
 }) => {
   const user = useSelector((state) => state.user.user);
   const [imageSrc, setImageSrc] = useState(null);
@@ -152,7 +152,7 @@ const Header = ({
                     onClick={() => handleBreadcrumbClick(crumb.path, crumb.state)}
                   >
 
-                  <img src={`${process.env.PUBLIC_URL}/img/rocket-solid.svg`} alt="Rocket" />
+                    <img src={`${process.env.PUBLIC_URL}/img/rocket-solid.svg`} alt="Rocket" />
 
                   </span>
                 ) : (
@@ -221,18 +221,22 @@ const Header = ({
                   </div>
                 )}
 
+                {
+                  checkpublish && (
+                    <div>
+                      <button
+                        onClick={() => onSave("published")}
+                        style={{
+                          ...styles.saveButton,
+                          backgroundColor: "#002060",
+                        }}
+                      >
+                        VIEW PUBLISHED
+                      </button>
+                    </div>
+                  )
+                }
 
-                <div>
-                  <button
-                    onClick={() => onSave("published")}
-                    style={{
-                      ...styles.saveButton,
-                      backgroundColor: "#002060",
-                    }}
-                  >
-                    VIEW PUBLISHED
-                  </button>
-                </div>
                 <div>
                   <IconButton
                     edge="start"
@@ -403,7 +407,7 @@ const Header = ({
                 </div>
               </div>
               <div style={styles.mhcolleft} className="ss_box_hed_right_img">
-              {isLoading ? (
+                {isLoading ? (
                   <p>Image Loading...</p>
                 ) : (
                   <img src={imageSrc} alt="RocketBPM" style={styles.mainlogo} />
@@ -424,11 +428,11 @@ const Header = ({
 
                 </div>
                 <div style={styles.mhcolleft} className="ss_box_hed_right_1_img">
-                {isLoading ? (
-                  <p>Image Loading...</p>
-                ) : (
-                  <img src={imageSrc} alt="RocketBPM" style={styles.mainlogo} />
-                )}
+                  {isLoading ? (
+                    <p>Image Loading...</p>
+                  ) : (
+                    <img src={imageSrc} alt="RocketBPM" style={styles.mainlogo} />
+                  )}
 
                 </div>
               </>
@@ -445,7 +449,7 @@ const Header = ({
                 </div>
               </div>
               <div style={styles.mhcolleft} className="ss_box_hed_right_img">
-              {isLoading ? (
+                {isLoading ? (
                   <p>Image Loading...</p>
                 ) : (
                   <img src={imageSrc} alt="RocketBPM" style={styles.mainlogo} />
