@@ -46,6 +46,7 @@ const styles = {
   },
 
   text: {
+    color:"#002060",
     cursor: "pointer",
     padding: "5px",
     display: "flex",

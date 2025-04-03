@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import CustomHeader from "../components/CustomHeader";
 import "./Setting.css";
 import {  useLocation, useNavigate } from "react-router-dom";
-import { getProcessTitleById, updateProcess, ImageBaseUrl, deleteProcess } from "../API/api";
+import { getProcessTitleById, updateProcess, ImageBaseUrl, deleteProcess, removeProcessImage } from "../API/api";
+import CustomAlert from "../components/CustomAlert";
 
 const Setting = () => {
   const location = useLocation();
@@ -89,6 +90,44 @@ const Setting = () => {
     }
   };
   
+  const handleRemoveImage = async () => {
+    CustomAlert.confirm(
+        "Remove Profile Image",
+        "Are you sure you want to remove your profile image?",
+        async () => {
+            if(selectedImage){
+                setSelectedImage(null);
+
+            }else{
+                const token = localStorage.getItem("token");
+                if (!token) {
+                    alert("User not authenticated! Please login.");
+                    return;
+                }
+                console.log("ProcessId",ProcessId)
+    
+                try {
+                    const response = await removeProcessImage(token,ProcessId);
+                    const data = response.data; // Fix here
+    
+                    if (response.status === 200) { // Check status code
+                      alert("Process image removed successfully!");
+                      setProcessData((prev) => ({ ...prev, Process_img: null })); 
+                    } else {
+                        alert(data.message || "Failed to remove Process image.");
+                    }
+                    
+                } catch (error) {
+                    console.error("Error removing Process image:", error);
+                    alert("Something went wrong. Please try again.");
+                }
+            }
+          
+        }
+    );
+};
+
+
   
 
   return (
@@ -118,7 +157,7 @@ const Setting = () => {
             <p>Recommended height: 34 pixel</p>
             <ul>
               <li><button onClick={() => fileInputRef.current.click()}>UPDATE</button></li>
-              <li><button onClick={() => setSelectedImage(null)}>REMOVE</button></li>
+              <li><button onClick={handleRemoveImage}>REMOVE</button></li>
             </ul>
           </div>
 

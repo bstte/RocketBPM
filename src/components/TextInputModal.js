@@ -1,7 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
-const TextInputModal = ({ isOpen, onSubmit }) => {
-  const [text, setText] = useState("");
+const TextInputModal = ({ isOpen, onSubmit,initialValue }) => {
+  const [text, setText] = useState(initialValue);
+  useEffect(() => {
+    setText(initialValue); // Update text when modal opens with a new value
+  }, [initialValue]);
 
   if (!isOpen) return null;
 

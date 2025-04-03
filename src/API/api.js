@@ -222,6 +222,24 @@ export const updateprofile = async (token, profileData) => {
 };
 
 
+export const removeProfileImgage = async (token) => {
+  try {
+    const response = await api.delete(
+      '/remove-profile-image',
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return response;
+  } catch (error) {
+    console.error('Error updating profile:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
 export const saveProcessTitle = async (title, user_id) => {
   try {
     const response = await api.post('/process-titles', { process_title: title, user_id: user_id });
@@ -378,6 +396,19 @@ export const deleteProcess = async (processId) => {
     throw error;
   }
 };
+
+export const removeProcessImage = async (token,ProcessId) => {
+  try {
+  
+    const response = await api.delete(`/remove-process-image?id=${ProcessId}`);
+
+    return response;
+  } catch (error) {
+    console.error('Error updating profile:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
 
 export const getvideo = async (id) => {
   try {

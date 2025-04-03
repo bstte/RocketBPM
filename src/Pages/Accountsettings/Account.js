@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import './Account.css';
 import CustomHeader from '../../components/CustomHeader';
-import { deactivateUser, ImageBaseUrl, updateprofile } from '../../API/api'
+import { deactivateUser, ImageBaseUrl, removeProfileImgage, updateprofile } from '../../API/api'
 import CustomAlert from '../../components/CustomAlert';
 import { useNavigate } from 'react-router-dom';
 import { setUser } from '../../redux/userSlice';
@@ -47,11 +47,7 @@ const Account = () => {
 
 
     // Function to remove selected image
-    const handleRemoveImage = () => {
-        setSelectedImage(null);
-        
-    };
-
+ 
     const deactivateUserFunction = async () => {
         CustomAlert.confirm(
             "Deactivate Account",
@@ -113,12 +109,51 @@ const Account = () => {
             console.log("Profile updated:", response);
             alert("Profile updated successfully!");
             dispatch(setUser(response.user));
+            navigate('/dashboard')
 
         } catch (error) {
             console.error("Error updating profile:", error);
             alert("Failed to update profile. Please try again.");
         }
     };
+
+    const handleRemoveImage = async () => {
+        CustomAlert.confirm(
+            "Remove Profile Image",
+            "Are you sure you want to remove your profile image?",
+            async () => {
+                if(selectedImage){
+                    setSelectedImage(null);
+
+                }else{
+                    const token = localStorage.getItem("token");
+                    if (!token) {
+                        alert("User not authenticated! Please login.");
+                        return;
+                    }
+        
+                    try {
+                        const response = await removeProfileImgage(token);
+                        const data = response.data; // Fix here
+        
+                        if (response.status === 200) { // Check status code
+                            alert("Profile image removed successfully!");
+                            setSelectedImage(null); // Update UI
+                            dispatch(setUser({ ...user, Profile_image: null })); // Update Redux state
+                        } else {
+                            alert(data.message || "Failed to remove profile image.");
+                        }
+                        
+                    } catch (error) {
+                        console.error("Error removing profile image:", error);
+                        alert("Something went wrong. Please try again.");
+                    }
+                }
+              
+            }
+        );
+    };
+    
 
 
     return (
@@ -135,15 +170,13 @@ const Account = () => {
 
                             <div className="account_Edit_user">
                                 <div className="account_Edit_user_wrapper">
-                                    <div className="account_Edit_user_icon" onClick={() => fileInputRef.current.click()}>
+                                    <div className="account_Edit_user_icon" >
                                         {selectedImage ? (
                                             <img src={selectedImage} alt="Profile" className="profile-image" />
                                         ) : user?.Profile_image ? (
                                             <img src={`${ImageBaseUrl}uploads/profile_images/${user?.Profile_image}`} alt="Profile" className="profile-image" />
                                         ) : (
-                                            <svg className="login-logo" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px">
-                                                <path d="M234-276q51-39 114-61.5T480-360q69 0 132 22.5T726-276q35-41 54.5-93T800-480q0-133-93.5-226.5T480-800q-133 0-226.5 93.5T160-480q0 59 19.5 111t54.5 93Zm246-164q-59 0-99.5-40.5T340-580q0-59 40.5-99.5T480-720q59 0 99.5 40.5T620-580q0 59-40.5 99.5T480-440Z" />
-                                            </svg>
+                                            <img src="/img/user-circle-solid.svg" alt="User"/>
                                         )}
 
                                     </div>
@@ -151,7 +184,7 @@ const Account = () => {
                                     <div className="account_Edit_detail">
                                         <h2>Recommended size: 300 x 300 pixels</h2>
                                         <div className="account_Edit_buttons">
-                                            <button type="button" className="button_account">UPDATE</button>
+                                            <button type="button" className="button_account" onClick={() => fileInputRef.current.click()}>UPDATE</button>
                                             <button type="button" className="button_account" onClick={handleRemoveImage}>REMOVE</button>
                                         </div>
                                     </div>

@@ -107,7 +107,6 @@ const styles = {
     width: '100%',
     height: '100%',
     clipPath: 'polygon(20px 50%, 0 0, calc(106% - 40px) 0, 100% 50%, calc(106% - 40px) 100%, 0 100%)',
-    boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
     padding: '10px',
     boxSizing: 'border-box',
     overflow: 'hidden',

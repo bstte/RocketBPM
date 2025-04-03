@@ -1,6 +1,6 @@
 import React, { useContext, useState, useRef, useEffect } from "react";
 import { ProgressArrow, Pentagon, Diamond, Box, Label } from "./Icon";
-import { IconButton } from "@mui/material";
+import { colors, IconButton } from "@mui/material";
 // import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 // import HomeIcon from "@mui/icons-material/Home";
 import { useNavigate } from "react-router-dom";
@@ -187,18 +187,13 @@ const Header = ({
                   View Draft
                 </button>
 
-                <IconButton
-                  edge="start"
-                  color="inherit"
-                  aria-label="favorite" className="ss_hed_star_img"
-                >
+                <div className="headericons">                
                   <img src={`${process.env.PUBLIC_URL}/img/star-regular.svg`} alt="Star" />
-                </IconButton>
-
-
-                <button className="header_share_btn">
+                </div>
+                <div className="headericons">                
                   <img src={`${process.env.PUBLIC_URL}/img/share.png`} alt="Share" />
-                </button>
+                </div>
+                
 
 
               </>
@@ -237,20 +232,16 @@ const Header = ({
                   )
                 }
 
-                <div>
-                  <IconButton
-                    edge="start"
-                    color="inherit"
-                    aria-label="favorite" className="ss_hed_star_img"
-                  >
+                <div className="headericons">
+                  
                     <img src={`${process.env.PUBLIC_URL}/img/star-regular.svg`} alt="Star" />
-                  </IconButton>
+                  
                 </div>
 
-                <div>
-                  <button className="header_share_btn">
+                <div className="headericons">
+                  
                     <img src={`${process.env.PUBLIC_URL}/img/share.png`} alt="Share" />
-                  </button>
+                  
                 </div>
 
               </>
@@ -313,13 +304,13 @@ const Header = ({
                   {user?.Profile_image ? (
                     <img src={`${ImageBaseUrl}uploads/profile_images/${user?.Profile_image}`} alt="Profile" />
                   ) : (
-                    <img src="/img/user.png" alt="User" style={styles.loginuserpic} />
+                    <img src="/img/user-circle-solid.svg" alt="User" style={styles.loginuserpic} />
                   )}
 
                 </div>
                 {dropdownOpen && (
                   <div className="dropdown-content">
-                    <button onClick={() => navigate('/Account')}>Edot Profile</button>
+                    <button onClick={() => navigate('/Account')}>Edit Profile</button>
                     <button onClick={() => handleLogout()}>Log out</button>
 
                   </div>
@@ -392,7 +383,7 @@ const Header = ({
 
               <div style={styles.pdate}>
                 <div>
-                  Draft on
+                  Draft
                   <br />
                   {formattedDatedraft}
                 </div>
@@ -443,7 +434,7 @@ const Header = ({
             <>
               <div style={styles.pdate} className="ss_box_hed_right_2">
                 <div>
-                  Draft on
+                  Draft
                   <br />
                   {formattedDatedraft}
                 </div>
@@ -481,8 +472,11 @@ const styles = {
   headerTitle: {
     margin: 0,
     fontSize: "18pt",
+    lineHeight:"18pt",
     fontWeight: "300",
     color: "#002060",
+    display: "flex",
+    alignItems: "center",
   },
   iconContainer: {
     display: "flex",
@@ -550,7 +544,8 @@ const styles = {
   },
   pdate: {
     textAlign: "right",
-    fontSize: "8pt",
+    fontSize: "7pt",
+    color:"#002060"
   },
   flexbox: {
     display: "flex",

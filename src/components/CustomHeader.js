@@ -89,15 +89,15 @@ const CustomHeader = ({ title }) => {
           </div>
         </div>
       </div>
-      <Toolbar>
+      <Toolbar  className='boxHead' >
         <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
           <IconButton edge="start" color="inherit" aria-label="back" onClick={handleBack}>
             {/* <ArrowBackIcon fontSize="large" /> */}
-            <div className="ss_dash_3dots_sec"><img src="../../img/more-3dots.png" alt=''/></div>
+            {/* <div className="ss_dash_3dots_sec"><img src="../../img/more-3dots.png" alt=''/></div> */}
           </IconButton>
 
           <Typography variant="h6" sx={{ marginLeft: 'auto' }}>
-          <div className="ss_process_title"><img src="../../img/globe-solid.svg" alt='' /> {title}</div> 
+            <div className="ss_process_title"><img src="../../img/globe-solid.svg" alt='' /> {title}</div> 
           </Typography>
         </Box>
       </Toolbar>

@@ -229,7 +229,7 @@ const styles = {
     bottom: 0,
     zIndex: 0,
     clipPath: 'polygon(10px 50%, 0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%)',
-    border: "1px solid black",
+    // border: "1px solid black",
     pointerEvents: "none",
     boxSizing: "border-box",
     backgroundColor: "transparent",

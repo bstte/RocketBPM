@@ -32,10 +32,12 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
 }
+
 .app {
   display: flex;
   height: 100vh;
@@ -54,7 +56,12 @@
   flex-grow: 1;
   position: relative;
 }
-
+.app-container,
+.maincontainer,
+.publishcontainer,
+.ss_publish_border {
+  box-shadow: 0px 0px 10px #afadad5e;
+}
 .node-container {
   position: absolute;
   display: flex;
@@ -76,29 +83,48 @@
 #root {
   margin: 0 auto;
 }
-body,p,h1,h2,h3,h4,h5,h6,button,input,select,textarea {
+
+body,
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+button,
+input,
+select,
+textarea {
   font-family: "Poppins", sans-serif !important;
 }
+
 .mapleveltextarea {
   height: 80%;
 }
+
 .mapleveltextarea::placeholder {
   color: #fff;
 }
+
 .sameheight,
 .ss_hed_box_mn {
-  height: 34px;
+  /* height: 34px; */
 }
+
 .popupContent_content p {
   margin-top: 0;
 }
+
 .popupContent_content ul {
   padding: 0px 0 0 15px;
   margin: 0 0 15px;
 }
+
 .popupContent_content ul li {
   margin-bottom: 5px;
 }
+
 .popupContent_content ul li::marker {
   color: #ff364a;
 }

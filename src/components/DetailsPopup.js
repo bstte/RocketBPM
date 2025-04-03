@@ -8,7 +8,20 @@ import { ResizableBox } from "react-resizable";
 const DetailsPopup = ({ isOpen, onClose, onSave, Details }) => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [popupSize, setPopupSize] = useState({ width: 560, height: 420 });
+  const [popupSize, setPopupSize] = useState({ width: 580, height: 430 });
+  const [maxConstraints, setMaxConstraints] = useState([800, 600]);
+  const [editorHeight, setEditorHeight] = useState(450);
+
+  useEffect(() => {
+    const updateMaxConstraints = () => {
+      setMaxConstraints([window.innerWidth - 30, window.innerHeight - 30]);
+    };
+
+    updateMaxConstraints();
+    window.addEventListener("resize", updateMaxConstraints);
+
+    return () => window.removeEventListener("resize", updateMaxConstraints);
+  }, []);
 
   useEffect(() => {
     if (isOpen && Details) {
@@ -45,9 +58,12 @@ const DetailsPopup = ({ isOpen, onClose, onSave, Details }) => {
         <ResizableBox
           width={popupSize.width}
           height={popupSize.height}
-          minConstraints={[300, 200]}
-          maxConstraints={[800, 600]}
-          onResizeStop={(e, { size }) => setPopupSize(size)}
+          minConstraints={[300, 450]}
+          maxConstraints={maxConstraints}
+          onResizeStop={(e, { size }) => {
+            setPopupSize(size);
+            setEditorHeight(size.height - 50); // Adjust editor height
+          }}
           style={{
             position: "absolute",
             top: "25%",
@@ -58,17 +74,20 @@ const DetailsPopup = ({ isOpen, onClose, onSave, Details }) => {
             boxShadow: "0 2px 5px #002060",
             overflow: "hidden",
             zIndex: 1001,
+            padding:"10px"
           }}
         >
           {/* <div className="popup-overlay"> */}
-          <div style={{
+          <div className="EditContentPopup" style={{
             display: "flex",
             flexDirection: "column",
             backgroundColor: "#ffffff",
-            border: "1px solid #000",
-            boxShadow: "0 2px 5px #002060",
-            overflowY: "auto",
-            zIndex: 1001, width: "100%", height: "100%"
+            border: "0px solid #000",
+            overflow: "hidden",
+            zIndex: 1001, 
+            width: "100%", 
+            height: "100%",
+            
           }}>
             <div className="popup-header" style={{
               display: "flex",
@@ -108,7 +127,7 @@ const DetailsPopup = ({ isOpen, onClose, onSave, Details }) => {
                   ],
                 }}
                 placeholder="Enter your details here. You can include hyperlinks like https://example.com."
-                style={{ height: "200px", marginBottom: "20px" }}
+                style={{ height: `${editorHeight - 50}px`, marginBottom: "20px" }} 
               />
             </div>
           </div>

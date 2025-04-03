@@ -14,7 +14,7 @@ import Header from "../../../components/Header";
 import { useLocation, useNavigate } from "react-router-dom";
 import api, { checkFavProcess } from "../../../API/api";
 
-import generateNodesAndEdges from "../../../../src/AllNode/SwimlineNodes/generateNodesAndEdges";
+import generateNodesAndEdges from "../../../AllNode/SwimlineNodes/generateNodesAndEdges";
 import styles from "../SwimlaneStyles";
 import PublishNodeType from "./PublishNodeType";
 import { BreadcrumbsContext } from "../../../context/BreadcrumbsContext";
@@ -169,7 +169,18 @@ const PublishedSwimlaneModel = () => {
           let centeredPosition = parsedPosition;
     
           // Parent node positioning
-          
+          const nodeStyle =
+          node.type === "Yes" || node.type === "No" || node.type === "FreeText"
+            ? {} // No styles applied for these node types
+            : {
+              width: groupWidth,
+              height: groupHeight,
+              childWidth: childWidth,
+              childHeight: childHeight,
+              display:"flex",
+              alignItems:"center",
+              justifyContent:"center"
+            };
     
           return {
             ...node,
@@ -188,15 +199,7 @@ const PublishedSwimlaneModel = () => {
             position: centeredPosition,
             draggable: Boolean(node.draggable),
             animated: Boolean(node.animated),
-            style: {
-              width: groupWidth,
-              height: groupHeight,
-              childWidth: childWidth,
-              childHeight: childHeight,
-              display:"flex",
-              alignItems:"center",
-              justifyContent:"center"
-            },
+            style: nodeStyle,
           };
         });
     

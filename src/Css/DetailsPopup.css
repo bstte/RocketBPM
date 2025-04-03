@@ -114,10 +114,9 @@
   }
   
   .ql-editor {
-    min-height: 380px;
     font-size: 14px;
     color: #002060;
-    padding: 0 0 10px 0;
+    padding:0 10px 30px 10px;
     font-family: 'Poppins';
     margin-top: 10px;
   }
@@ -137,6 +136,7 @@
     margin-left: 0;
     margin-right: 0.3em;
     text-align: left;
+    color: #FF364A;
   }
   ::-webkit-scrollbar {
     height: 5px;

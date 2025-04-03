@@ -28,7 +28,7 @@ import api, { checkFavProcess, filter_draft } from "../../API/api";
 import CustomContextPopup from "../../components/CustomContextPopup";
 import DetailsPopup from "../../components/DetailsPopup";
 import NodeTypes from "./NodeTypes";
-import generateNodesAndEdges from "../../../src/AllNode/SwimlineNodes/generateNodesAndEdges";
+import generateNodesAndEdges from "../../AllNode/SwimlineNodes/generateNodesAndEdges";
 import styles from "./SwimlaneStyles";
 import AddObjectRole from "../../AllNode/SwimlineNodes/addobjectrole";
 import { BreadcrumbsContext } from "../../context/BreadcrumbsContext";
@@ -133,6 +133,8 @@ const SwimlaneModel = () => {
     []
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalText, setModalText] = useState("");
+
   const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
 
 
@@ -246,6 +248,20 @@ const SwimlaneModel = () => {
             }
           }
 
+          const nodeStyle =
+          node.type === "Yes" || node.type === "No" || node.type === "FreeText"
+            ? {} // No styles applied for these node types
+            : {
+              width: groupWidth,
+              height: groupHeight,
+              childWidth: childWidth,
+              childHeight: childHeight,
+              display:"flex",
+              alignItems:"center",
+              justifyContent:"center"
+            };
+    
+
           return {
             ...remainingNodeProps,
             id: node.node_id,
@@ -266,15 +282,7 @@ const SwimlaneModel = () => {
             draggable: true,
             isNew: true,
             animated: Boolean(node.animated),
-            style: {
-              width: groupWidth,
-              height: groupHeight,
-              childWidth: childWidth,
-              childHeight: childHeight,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center"
-            },
+            style:nodeStyle,
           };
         });
 
@@ -354,6 +362,11 @@ const SwimlaneModel = () => {
     (event, node) => {
       setSelectedEdge(null);
       setOptions([]);
+       if (node.type === "FreeText") {
+    setSelectedNodeId(node.id);
+    setModalText(node.data.label || ""); // Store existing text
+
+    setIsModalOpen(true)  }
     },
 
     []
@@ -374,6 +387,8 @@ const SwimlaneModel = () => {
         return;
       }
 
+      console.log("add position", `${type}`, position)
+
       const newNodeId = uuidv4();
       const newNode = {
         id:
@@ -391,10 +406,7 @@ const SwimlaneModel = () => {
           nodeResize: false,
         },
         type: type,
-        position: position || {
-          x: Math.random() * 250,
-          y: Math.random() * 250,
-        },
+        position: position,
         draggable: true,
         isNew: true,
         animated: true,
@@ -402,6 +414,7 @@ const SwimlaneModel = () => {
         status: "draft",
         PageGroupId: PageGroupId,
       };
+      console.log("after adding value,", newNode)
 
       setChiledNodes((nds) => [...nds, newNode]);
       setHasUnsavedChanges(true);
@@ -932,14 +945,26 @@ const SwimlaneModel = () => {
       alert("Please select a node before saving.");
     }
   };
-
   const handleTextSubmit = (enteredText) => {
     setIsModalOpen(false);
-    if (enteredText) {
-      console.log("modalPosition", modalPosition)
-      addNode("FreeText", { x: modalPosition.x - 70, y: modalPosition.y - 125 }, enteredText);
+  
+    if (!enteredText) return;
+    addNode("FreeText", { x: modalPosition.x - 70, y: modalPosition.y - 125 }, enteredText);
+
+  
+  
+    // If selectedNodeId is null, create a new node
+    if (selectedNodeId) {
+      setChiledNodes((prevNodes) => {
+        return prevNodes.map((node) =>
+          node.id === selectedNodeId
+            ? { ...node, data: { ...node.data, label: enteredText } } // 🔄 Update existing node
+            : node
+        );
+      });
     }
   };
+  
   const handlePopupAction = (action) => {
     const { x, y } = contextMenu;
     console.log("contextMenu", contextMenu);
@@ -1118,7 +1143,7 @@ const SwimlaneModel = () => {
 
       />
 
-      <div style={{ ...styles.appContainer, height: remainingHeight }}>
+      <div className="publishcontainer" style={{ ...styles.appContainer, height: remainingHeight }}>
         <ReactFlowProvider>
           <div style={styles.scrollableWrapper}>
             <ReactFlow
@@ -1301,7 +1326,12 @@ const SwimlaneModel = () => {
               </div>
             </div>
           )}
-          <TextInputModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSubmit={handleTextSubmit} />
+<TextInputModal 
+  isOpen={isModalOpen} 
+  onClose={() => setIsModalOpen(false)} 
+  onSubmit={handleTextSubmit} 
+  initialValue={modalText} // Pass existing value to modal
+/>
 
           {options.length > 0 && (
             <AddObjectRole
