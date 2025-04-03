@@ -97,7 +97,7 @@ const DraftProcesMapLevel = () => {
   const location = useLocation();
   const LoginUser = useSelector((state) => state.user.user);
 
-  const { id, title, user } = location.state || {};
+  const { id, title, user ,ParentPageGroupId} = location.state || {};
   const currentLevel = level ? parseInt(level, 10) : 0;
   const currentParentId = parentId || null;
   const { addBreadcrumb, removeBreadcrumbsAfter, breadcrumbs, setBreadcrumbs } =
@@ -380,9 +380,7 @@ const DraftProcesMapLevel = () => {
   const iconNames = {};
 
   const navigateOnDraft = (page) => {
-    console.log("page",page)
-
-    console.log("breadcrumbs", breadcrumbs)
+ 
     const updatedBreadcrumbs = breadcrumbs.map((crumb, index) => {
       if (index === 0) return crumb; // First breadcrumb remains unchanged
 
@@ -399,12 +397,12 @@ const DraftProcesMapLevel = () => {
     if (id && user) {
       if (currentLevel === 0) {
         page === "editdraft"
-          ? navigate('/Map-level', { state: { id, title, user } })
-          : navigate('/published-map-level', { state: { id, title, user } });
+          ? navigate('/Map-level', { state: { id, title, user ,ParentPageGroupId} })
+          : navigate('/published-map-level', { state: { id, title, user,ParentPageGroupId } });
       } else {
         page === "editdraft"
-          ? navigate(`/level/${currentLevel}/${currentParentId}`, { state: { id, title, user ,ParentPageGroupId: nodes[0]?.PageGroupId} })
-          : navigate(`/published-map-level/${currentLevel}/${currentParentId}`, { state: { id, title, user } });
+          ? navigate(`/level/${currentLevel}/${currentParentId}`, { state: { id, title, user ,ParentPageGroupId} })
+          : navigate(`/published-map-level/${currentLevel}/${currentParentId}`, { state: { id, title, user,ParentPageGroupId } });
       }
     } else {
       alert("Currently not navigate on draft mode");

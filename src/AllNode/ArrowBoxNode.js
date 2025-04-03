@@ -1,35 +1,36 @@
 import { memo, useState, useEffect, useRef } from 'react';
 import { NodeResizer } from '@xyflow/react';
 
-const ArrowBoxNode = ({  data, id, selectedNodeId }) => {
-  const [label, setLabel] = useState(data.label || ''); 
-
-  const [isResizing, setIsResizing] = useState(false);
+const ArrowBoxNode = ({ data, id, selectedNodeId }) => {
+  const [label, setLabel] = useState(data.label || '');
+  // const [isResizing, setIsResizing] = useState(false);
   const isClickable = selectedNodeId === id;
-  const arrowref = useRef(null); 
+  const arrowRef = useRef(null);
   const [autoFocus, setAutoFocus] = useState(data.autoFocus);
 
+  const [width, setWidth] = useState(data.width_height?.width || 326);
+  const [height, setHeight] = useState(data.width_height?.height || 90);
+  const [clipPath, setClipPath] = useState("");
+
   useEffect(() => {
-    setLabel(data.label || ''); 
+    setLabel(data.label || '');
   }, [data]);
 
   useEffect(() => {
-    if (autoFocus && arrowref.current) {
+    if (autoFocus && arrowRef.current) {
       setTimeout(() => {
-        arrowref.current.focus();
-        setAutoFocus(false); 
+        arrowRef.current.focus();
+        setAutoFocus(false);
       }, 0);
     }
   }, [autoFocus]);
 
   const handleChange = (e) => {
-    const newValue = e.target.value || ''; 
-    setLabel(newValue);
+    setLabel(e.target.value);
     if (data.onLabelChange) {
-      data.onLabelChange(newValue);
+      data.onLabelChange(e.target.value);
     }
   };
-
 
   const handleBlur = () => {
     if (data.onLabelChange) {
@@ -37,44 +38,67 @@ const ArrowBoxNode = ({  data, id, selectedNodeId }) => {
     }
   };
 
+  const calculateClipPath = (w, h) => {
+    return `polygon(20px 50%, 0 0, calc(${w}px - 24px) 0, ${w}px 50%, calc(${w}px - 24px) 100%, 0 100%)`;
+  };
+
+  useEffect(() => {
+    setClipPath(calculateClipPath(width, height));
+  }, [width, height]);
+
   const handleResizeStart = () => {
-    setIsResizing(true);
+    // setIsResizing(true);
+  };
+
+  const handleResize = (event, size) => {
+    if (!size || typeof size.width === "undefined" || typeof size.height === "undefined") {
+      console.warn("Size is undefined", size);
+      return;
+    }
+    setWidth(size.width);
+    setHeight(size.height);
   };
 
   const handleResizeStop = () => {
-    setIsResizing(false);
+    // setIsResizing(false);
   };
 
-  const handleClick = () => {
-    //setIsClickable(!isClickable);
+  const adjustHeight = (e) => {
+    const element = e.target;
+    element.style.height = "auto"; // Reset height
+    element.style.height = element.scrollHeight + "px"; // Adjust to content
+
+    const wrapper = element.parentElement;
+    if (wrapper) {
+      wrapper.style.height = element.scrollHeight + "px";
+    }
   };
-
-
 
   return (
-    <div
-      style={styles.wrapper}
-      onClick={handleClick}
-    >
+    <div style={styles.wrapper}>
       <div
         className="borderBox"
         style={{
           ...styles.arrowBox,
-          minWidth: isResizing ? 'auto' : data.width_height ? data.width_height.width : '326px',
-          minHeight: isResizing ? 'auto' : data.width_height ? data.width_height.height : '90px',
+          width: `${width}px`,
+          height: `${height}px`,
+          clipPath: clipPath,
         }}
       >
-        <textarea
-        ref={arrowref}
-          value={label} 
-          onChange={handleChange} 
-          onBlur={handleBlur}
-          placeholder="Type ...."
-          style={styles.textarea}
-          rows={1}
-          maxLength={200} 
-          className='mapleveltextarea'
-        />
+        <div style={styles.textareaWrapper}>
+          <textarea
+            ref={arrowRef}
+            value={label}
+            onChange={handleChange}
+            onInput={adjustHeight}
+            onBlur={handleBlur}
+            placeholder="Type ...."
+            style={styles.textarea}
+            rows={1}
+            maxLength={200}
+            className="mapleveltextarea"
+          />
+        </div>
       </div>
 
       {isClickable && (
@@ -82,10 +106,10 @@ const ArrowBoxNode = ({  data, id, selectedNodeId }) => {
           minWidth={120}
           minHeight={80}
           onResizeStart={handleResizeStart}
+          onResize={handleResize}
           onResizeStop={handleResizeStop}
         />
       )}
-
     </div>
   );
 };
@@ -104,14 +128,20 @@ const styles = {
     textAlign: 'center',
     backgroundColor: 'red',
     color: '#000000',
-    width: '100%',
-    height: '100%',
-    clipPath: 'polygon(20px 50%, 0 0, calc(106% - 40px) 0, 100% 50%, calc(106% - 40px) 100%, 0 100%)',
     padding: '10px',
     boxSizing: 'border-box',
     overflow: 'hidden',
     border: 'none',
     transition: "width 0.2s ease, height 0.2s ease",
+  },
+  
+  textareaWrapper: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    height: '100%',
+    overflow: 'hidden',
   },
 
   textarea: {
@@ -120,13 +150,13 @@ const styles = {
     color: 'white',
     fontSize: '1rem',
     width: '100%',
-    resize: 'none', 
+    minHeight: '20px',
+    resize: 'none',
     outline: 'none',
     textAlign: 'center',
     overflowWrap: 'break-word',
     whiteSpace: 'pre-wrap',
     fontFamily: "'Poppins', sans-serif",
-    minHeight: '20px',
   },
 };
 

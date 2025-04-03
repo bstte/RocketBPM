@@ -1,6 +1,6 @@
 import React, { useContext, useState, useRef, useEffect } from "react";
 import { ProgressArrow, Pentagon, Diamond, Box, Label } from "./Icon";
-import { colors, IconButton } from "@mui/material";
+import { IconButton } from "@mui/material";
 // import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 // import HomeIcon from "@mui/icons-material/Home";
 import { useNavigate } from "react-router-dom";
@@ -38,18 +38,8 @@ const Header = ({
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  // const handlehomeBack = async () => {
-  //   const confirmcondition = await handleBackdata();
-  //   console.log(confirmcondition)
-  //   if (confirmcondition === undefined) {
-  //     navigate("/dashboard");
-  //   }
 
-
-  // };
-
-
-  const { breadcrumbs } = useContext(BreadcrumbsContext);
+  const { breadcrumbs,removeBreadcrumbsAfter } = useContext(BreadcrumbsContext);
 
   const iconComponents = {
     progressArrow: <ProgressArrow />,
@@ -104,11 +94,13 @@ const Header = ({
     })
     : "";
 
-  const handleBreadcrumbClick = async (path, state) => {
+  const handleBreadcrumbClick = async (path, state,index) => {
     const confirmcondition = await handleBackdata();
     console.log("confirmcondition click", confirmcondition)
     if (confirmcondition !== false) {
       setIsNavigating(true);
+      removeBreadcrumbsAfter(index);
+
       navigate(path, { state });
     }
   };
@@ -157,7 +149,7 @@ const Header = ({
                   </span>
                 ) : (
                   <span
-                    onClick={() => handleBreadcrumbClick(crumb.path, crumb.state)}
+                    onClick={() => handleBreadcrumbClick(crumb.path, crumb.state,index)}
                     style={styles.breadcrumbLink}
                   >
                     {crumb.label}
@@ -275,8 +267,10 @@ const Header = ({
                     onClick={() => onPublish("Published")}
                     style={{
                       ...styles.saveButton,
-                      backgroundColor: "#002060",
+                      backgroundColor: !checkpublish? "gray":"#002060",
                     }}
+                    title={!checkpublish?"Publish all parent models first":""}
+
                   >
                     Publish
                   </button>

@@ -7,6 +7,7 @@ import {
   StraightEdge,
   Background,
   MarkerType,
+  ConnectionLineType,
   ConnectionMode,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
@@ -38,7 +39,7 @@ const PublishedSwimlaneModel = () => {
       const elementHeight = element ? element.getBoundingClientRect().height : 0;
       const appHeaderHeight = element2 ? element2.getBoundingClientRect().height : 0;
 
-      
+
 
       setHeight(elementHeight);
       setahHeight(appHeaderHeight);
@@ -57,7 +58,7 @@ const PublishedSwimlaneModel = () => {
     // Cleanup on unmount
     return () => window.removeEventListener("resize", calculateHeights);
   }, []);
-  
+
   // alert(`Window Height: ${window.innerHeight}, App Div Height: ${appheaderheight}, Header Height: ${height}, New Height: ${remainingHeight}`);
 
   const [windowSize] = useState({
@@ -70,22 +71,22 @@ const PublishedSwimlaneModel = () => {
   const currentParentId = parentId || null;
   const currentLevel = level ? parseInt(level, 10) : 0;
   const { nodes: initialNodes } = useMemo(
-    () => generateNodesAndEdges(windowSize.width, windowSize.height,'viewmode',height + 10, appheaderheight, remainingHeight),
+    () => generateNodesAndEdges(windowSize.width, windowSize.height, 'viewmode', height + 10, appheaderheight, remainingHeight),
     [windowSize, height, appheaderheight, remainingHeight]
   );
   useEffect(() => {
-        setNodes(initialNodes);
-      }, [initialNodes]);
-      
-    const [process_img, setprocess_img] = useState("");
-  
+    setNodes(initialNodes);
+  }, [initialNodes]);
+
+  const [process_img, setprocess_img] = useState("");
+
   const [getPublishedDate, setgetPublishedDate] = useState("");
   const navigate = useNavigate();
   const [ChildNodes, setChiledNodes] = useState([]);
   const [nodes, setNodes] = useState(initialNodes);
   const [edges, setEdges] = useState([]);
   const LoginUser = useSelector((state) => state.user.user);
-   const [isFavorite, setIsFavorite] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
   const nodeTypes = PublishNodeType;
   const edgeTypes = useMemo(
     () => ({
@@ -96,7 +97,7 @@ const PublishedSwimlaneModel = () => {
     []
   );
 
-  const { removeBreadcrumbsAfter,breadcrumbs,setBreadcrumbs } = useContext(BreadcrumbsContext);
+  const { removeBreadcrumbsAfter, breadcrumbs, setBreadcrumbs } = useContext(BreadcrumbsContext);
 
   useEffect(() => {
     const checkfav = async () => {
@@ -119,7 +120,7 @@ const PublishedSwimlaneModel = () => {
       }
     }
     checkfav()
-  }, [LoginUser,id])
+  }, [LoginUser, id])
   useEffect(() => {
     const fetchNodes = async () => {
       try {
@@ -130,7 +131,7 @@ const PublishedSwimlaneModel = () => {
         const user_id = user ? user.id : null;
         const Process_id = id ? id : null;
         const publishedStatus = "Published";
-    
+
         const data = await api.getPublishedNodes(
           levelParam,
           parseInt(user_id),
@@ -142,7 +143,7 @@ const PublishedSwimlaneModel = () => {
           Process_id,
           publishedStatus
         );
-    
+
         setgetPublishedDate(getPublishedDate.status ? getPublishedDate.created_at : "");
         setprocess_img(data.process_img);
 
@@ -152,7 +153,7 @@ const PublishedSwimlaneModel = () => {
         const nodebgheight = document.querySelector(".react-flow__node");
         const nodebgheights = nodebgheight ? nodebgheight.getBoundingClientRect().height : 0;
 
-    
+
         // Centralized dimensions
         // const totalRows = 7;
         // const totalColumns = 11;
@@ -160,28 +161,28 @@ const PublishedSwimlaneModel = () => {
         const groupHeight = nodebgheights;
         const childWidth = groupWidth * 0.9;
         const childHeight = groupHeight * 0.9;
-    
+
         const parsedNodes = data.nodes.map((node) => {
           const parsedData = JSON.parse(node.data || "{}");
           const parsedPosition = JSON.parse(node.position || "{\"x\":0,\"y\":0}");
           const parsedMeasured = JSON.parse(node.measured || "{\"width\":40,\"height\":40}");
-    
+          
           let centeredPosition = parsedPosition;
-    
+
           // Parent node positioning
           const nodeStyle =
-          node.type === "Yes" || node.type === "No" || node.type === "FreeText"
-            ? {} // No styles applied for these node types
-            : {
-              width: groupWidth,
-              height: groupHeight,
-              childWidth: childWidth,
-              childHeight: childHeight,
-              display:"flex",
-              alignItems:"center",
-              justifyContent:"center"
-            };
-    
+            node.type === "Yes" || node.type === "No" || node.type === "FreeText"
+              ? {} // No styles applied for these node types
+              : {
+                width: groupWidth,
+                height: groupHeight,
+                childWidth: childWidth,
+                childHeight: childHeight,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center"
+              };
+
           return {
             ...node,
             data: {
@@ -200,16 +201,18 @@ const PublishedSwimlaneModel = () => {
             draggable: Boolean(node.draggable),
             animated: Boolean(node.animated),
             style: nodeStyle,
+            
           };
+          
         });
-    
+        
         const parsedEdges = data.edges.map((edge) => ({
-              ...edge,
-              animated: Boolean(edge.animated),
-              markerEnd: { type: MarkerType.ArrowClosed, color: "#002060", width: 12, height: 12 },
-              style: { stroke: "#000", strokeWidth: 2.5 },
-              type: "step",
-            }));
+                  ...edge,
+                  animated: Boolean(edge.animated),
+                  markerEnd: { type: MarkerType.ArrowClosed, color: "#002060", width: 12, height: 12 },
+                  style: { stroke: "#000", strokeWidth: 2 },
+                  type: "step",
+                }));
         setChiledNodes(parsedNodes);
         setEdges(parsedEdges);
       } catch (error) {
@@ -217,7 +220,7 @@ const PublishedSwimlaneModel = () => {
         alert("Failed to fetch nodes. Please try again.");
       }
     };
-    
+
 
     fetchNodes();
   }, [
@@ -239,15 +242,15 @@ const PublishedSwimlaneModel = () => {
 
   const navigateOnDraft = () => {
     const updatedBreadcrumbs = breadcrumbs.map((crumb, index) => {
-      if (index === 0) return crumb; 
-  
+      if (index === 0) return crumb;
+
       return {
         ...crumb,
-        path: crumb.path.replace("published-map-level", "Draft-Process-View") 
+        path: crumb.path.replace("published-map-level", "Draft-Process-View")
       };
     });
     setBreadcrumbs(updatedBreadcrumbs);
-  
+
     if (id && user) {
       navigate(`/Draft-Swim-lanes-View/level/${currentLevel}/${currentParentId}`, { state: { id: id, title: title, user: user, parentId: currentParentId, level: currentLevel } })
       // removeBreadcrumbsAfter(0);
@@ -276,13 +279,14 @@ const PublishedSwimlaneModel = () => {
       />
       <div style={{ ...styles.appContainer, height: remainingHeight }}>
         <ReactFlowProvider>
-          <div className="ss_publish_border"  style={styles.scrollableWrapper}>
-          <ReactFlow
+          <div className="ss_publish_border" style={styles.scrollableWrapper}>
+            <ReactFlow
               nodes={[...nodes, ...ChildNodes]}
               edges={edges}
-          
-              connectionMode={ConnectionMode.Loose} 
-
+              connectionLineType={ConnectionLineType.Step} // ✅ Correct Arrow Type
+                            connectionLineStyle={{ stroke: "#002060", strokeWidth: 2.5 }} // ✅ Correct Arrow Style
+                            connectionRadius={10}
+                            connectionMode={ConnectionMode.Loose}
               proOptions={{ hideAttribution: true }}
               nodeTypes={memoizedNodeTypes}
               edgeTypes={memoizedEdgeTypes}

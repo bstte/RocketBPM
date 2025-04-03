@@ -40,6 +40,7 @@ const MapLevel = () => {
   // };
 
   const [selectedNodeId, setSelectedNodeId] = useState(null);
+  const [checkpublish, Setcheckpublish] = useState(true)
 
   // const [height, setHeight] = useState(0);
   // const [appheaderheight, setahHeight] = useState(0);
@@ -152,6 +153,35 @@ const MapLevel = () => {
     []
   );
 
+
+
+
+    useEffect(() => {
+      const checkpublishfunction = async () => {
+        if ( currentLevel !== 0) {
+
+          try {
+            const response = await filter_draft(ParentPageGroupId);
+            console.log("inside first map",response)
+            if(response?.data===true){
+              Setcheckpublish(false);
+
+            }else{
+              Setcheckpublish(true);
+
+            }
+
+         
+          } catch (error) {
+            console.error("filter draft error", error)
+          }
+        }
+  
+      };
+  
+      checkpublishfunction();
+    }, [ParentPageGroupId,currentLevel]);
+  
   const handleLabelChange = useCallback(
     (nodeId, newLabel) => {
       setNodes((prevNodes) => {
@@ -267,6 +297,7 @@ const MapLevel = () => {
           style: { stroke: "#000", strokeWidth: 2 },
           type: "step",
         }));
+
         setNodes(parsedNodes);
         setEdges(parsedEdges);
       } catch (error) {
@@ -449,6 +480,7 @@ const MapLevel = () => {
   }, [location.state, currentLevel, title]);
 
   const handleCreateNewNode = async (type) => {
+    console.log("check nodes section ",nodes[0]?.PageGroupId)
 
     if (selectedNode) {
       const selectedNodeData = nodes.find((node) => node.id === selectedNode);
@@ -515,6 +547,7 @@ const MapLevel = () => {
 
   // Save nodes and edges to backend
   const handleSaveNodes = async (savetype) => {
+    console.log("ParentPageGroupId",ParentPageGroupId)
     if (savetype === "Published" && currentLevel !== 0) {
 
       try {
@@ -835,6 +868,8 @@ const MapLevel = () => {
         savefav={handleFav}
         isFavorite={isFavorite}
         Process_img={process_img}
+        checkpublish={checkpublish}
+
 
       />
       {/* <button onClick={checkbreadcrums}>

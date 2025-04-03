@@ -79,7 +79,7 @@ const LoginUser = useSelector((state) => state.user.user);
   const navigate = useNavigate();
   const { level, parentId } = useParams();
   const location = useLocation();
-  const { id, title, user } = location.state || {};
+  const { id, title, user ,ParentPageGroupId} = location.state || {};
   const currentLevel = level ? parseInt(level, 10) : 0;
   const currentParentId = parentId || null;
   const { addBreadcrumb, removeBreadcrumbsAfter,breadcrumbs,setBreadcrumbs } =
@@ -205,6 +205,8 @@ const LoginUser = useSelector((state) => state.user.user);
           type: "step",
         }));
         checkfav()
+        console.log("published process map ,",parsedNodes)
+
         setNodes(parsedNodes);
         setEdges(parsedEdges);
       } catch (error) {
@@ -261,7 +263,7 @@ const LoginUser = useSelector((state) => state.user.user);
   const handlenodeClick=async (event, node) => {
     event.preventDefault();
     const selectedLabel = node.data.label || "";
-    const PageGroupId=node.PageGroupId;
+    const PageGroupId=nodes[0]?.PageGroupId;
     const newLevel = currentLevel + 1;
     console.log("newLevel",newLevel)
     const levelParam =
@@ -292,7 +294,8 @@ const LoginUser = useSelector((state) => state.user.user);
       addBreadcrumb(
         `${selectedLabel} `,
         `/published-swimlane/level/${newLevel}/${node.id}`,
-        { id: id, title, user, parentId: node.id, level: newLevel }
+        { id: id, title, user, parentId: node.id, level: newLevel, ParentPageGroupId: PageGroupId,
+        }
       );
 
       navigate(
@@ -329,7 +332,8 @@ const LoginUser = useSelector((state) => state.user.user);
 
   const iconNames = {};
 const navigateOnDraft=()=>{
- 
+
+
   const updatedBreadcrumbs = breadcrumbs.map((crumb, index) => {
     if (index === 0) return crumb; // First breadcrumb ko as it is rakhna
 
@@ -342,10 +346,10 @@ const navigateOnDraft=()=>{
 
 if(id && user){
     if(currentLevel===0){
-      navigate('/Draft-Process-View',{ state: { id:id, title:title, user: user } })
+      navigate('/Draft-Process-View',{ state: { id:id, title:title, user: user,ParentPageGroupId } })
     
     }else{
-       navigate(`/Draft-Process-View/${currentLevel}/${currentParentId}`,{ state: { id:id, title:title, user: user } })
+       navigate(`/Draft-Process-View/${currentLevel}/${currentParentId}`,{ state: { id:id, title:title, user: user,ParentPageGroupId } })
    
     }
    

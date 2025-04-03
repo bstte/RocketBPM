@@ -55,7 +55,7 @@ const DraftSwimlineLevel = () => {
 
   useEffect(() => {
 
-    console.log("check ParentPageGroupId", ParentPageGroupId)
+    // console.log("check ParentPageGroupId", ParentPageGroupId)
     const calculateHeights = () => {
       const element = document.querySelector(".ss_new_hed");
       const element2 = document.querySelector(".app-header");
@@ -135,7 +135,7 @@ const DraftSwimlineLevel = () => {
 
   useEffect(() => {
     const checkpublishfunction = async () => {
-      const processId = id ? id : null;
+      const processId = currentParentId;
 
       const data = await checkPublishData(processId);
 
@@ -143,7 +143,7 @@ const DraftSwimlineLevel = () => {
     };
 
     checkpublishfunction();
-  }, [checkPublishData, id]);
+  }, [checkPublishData, id,currentParentId]);
 
   useEffect(() => {
     const checkfav = async () => {
@@ -267,7 +267,7 @@ const DraftSwimlineLevel = () => {
           ...edge,
           animated: Boolean(edge.animated),
           markerEnd: { type: MarkerType.ArrowClosed, color: "#002060", width: 12, height: 12 },
-          style: { stroke: "#000", strokeWidth: 2.5 },
+          style: { stroke: "#000", strokeWidth: 2 },
           type: "step",
         }));
 

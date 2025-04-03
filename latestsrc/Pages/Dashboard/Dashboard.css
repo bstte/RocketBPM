@@ -1,0 +1,459 @@
+.ss_dash_slid_bx .MuiPaper-root {
+    display: flex !important;
+    width: 92% !important;
+    margin: auto;
+    padding: 12px !important;
+    border: 1px solid #002060;
+    min-height: auto;
+    border-radius: 0px;
+}
+
+.slick-prev:before,
+.slick-next:before {
+    color: #000;
+}
+
+.react-flow {
+    overflow: visible !important;
+}
+
+.ss_shae_box {
+    overflow: hidden;
+    min-height: auto !important;
+}
+
+
+.ss_dash_slid_bx .react-flow__viewport {
+    transform: translate(0px, 0px) scale(0.17) !important;
+
+}
+
+.ss_title_bar header {
+    position: relative;
+    background: transparent;
+    color: #002060;
+    border: 0px solid #002060;
+    box-shadow: 0px 0px 0px #afadad5e;
+}
+
+.ss_title_bar .MuiBox-root {
+    align-items: center;
+}
+
+.ss_title_bar .MuiButtonBase-root {
+    order: 2;
+    padding: 0;
+}
+
+.ss_title_bar h6 {
+    font-size: 16px;
+    margin: 0;
+}
+
+.ss_dash_slid_bx .MuiBox-root {
+    padding: 10px !important;
+}
+
+.ss_title_bar .css-1ygil4i-MuiToolbar-root {
+    min-height: 45px;
+}
+
+.ss_dash_slider_bx {
+    display: flex;
+    border: 1px solid #002060;
+    box-shadow: 0px 0px 10px #afadad5e;
+    border-top: 0;
+    padding: 10px 18px 10px 10px !important;
+}
+
+.ss_dash_slid_bx {
+    border: 0px solid #002060;
+    box-shadow: 0px 0px 0px #afadad5e;
+    border-top: 0;
+    padding: 0px 15px 0px 0px !important;
+    width: 100%;
+}
+
+.ss_add_process_div {
+    padding: 0px 15px !important;
+    border: 1px solid #002060;
+    min-height: auto;
+    border-radius: 0px;
+    width: 92% !important;
+    position: relative;
+    height: 231.6px;
+    margin-left: 7px;
+}
+
+.ss_dash_slid_img img {
+    width: 100%;
+    height: 170px;
+}
+
+.ss_dash_slid_img {
+    margin-top: 13px;
+}
+
+.ss_dash_slid_bx .slick-prev {
+    left: -3px;
+    z-index: 9999;
+    background: #fff;
+    border-radius: 100px;
+}
+
+.ss_dash_slid_bx .slick-arrow:before {
+    opacity: 1;
+    font-size: 20px;
+}
+
+.ss_add_proces_img {
+    width: 70px;
+    height: 70px;
+    background: #fe0000;
+    border-radius: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    bottom: 30px;
+    right: 0;
+    top: 25%;
+    left: 0;
+    margin: auto;
+}
+
+.MuiBox-root.css-1t50xtz p {
+    font-size: 14px;
+    border-bottom: 1px solid #e5e5e5;
+    padding: 5px 0;
+}
+
+.ss_title_bar .css-1ygil4i-MuiToolbar-root {
+    min-height: 37px;
+    border: 1px solid #002060;
+}
+
+.ss_add_proces_img img {
+    width: 30px;
+    filter: brightness(0) invert(1);
+}
+
+.ss_dash_slid_bx .slick-next {
+    right: -8px;
+    background-color: #fff;
+    border-radius: 100px;
+}
+
+.ss_container .col-lg-4 {
+    border: 1px solid #002060;
+    box-shadow: 0px 0px 10px #afadad5e;
+    padding: 0 !important;
+    margin-top: 0px;
+    width: 33%;
+}
+
+.ss_container .row {
+    display: flex;
+    gap: 15px;
+
+}
+
+.ss_container .col-lg-8 {
+    width: 66%;
+    border: 1px solid #002060;
+}
+
+.ss_container h4 {
+    border-bottom: 1px solid #002060;
+    font-weight: 400;
+    font-size: 16px;
+    padding: 5.7px 15px;
+    margin: 0;
+}
+
+.ss_dash_sec_2_img img {
+    width: 100%;
+}
+
+.ss_dash_sec_2_img {
+    padding: 12px;
+}
+
+table {
+    width: 100%;
+    color: #002060;
+    border-collapse: collapse;
+
+}
+
+.ss_dash_table {
+    padding: 14px;
+}
+
+th,
+td {
+    padding: 5px;
+    border-bottom: 1px solid #2f497d;
+    text-align: left;
+    font-weight: 400;
+    font-size: 15px;
+}
+
+.ss_dash_table table thead th {
+    font-size: 12px;
+}
+
+.ss_dash_table table thead tr th {
+    border-bottom: 0;
+}
+
+.ss_dash_slid_img button {
+    background: #bfbfbf;
+    color: #fff;
+    text-decoration: none;
+    font-size: 14px;
+    padding: 10px 15px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    border: 0;
+}
+
+
+.ss_dash_slid_img {
+    position: relative;
+}
+
+.ss_table_btm_para {
+    padding: 15px 15px 75px;
+    text-align: center;
+}
+
+.ss_container {
+    margin-top: 12px;
+}
+
+.ss_container h4 img {
+    width: 20px;
+    display: inline-block;
+    position: relative;
+    top: 3px;
+    margin-right: 5px;
+}
+
+.ss_table_btm_para img {
+    width: 16px;
+    vertical-align: middle;
+    margin: 0 2px;
+}
+
+.ss_logo_lft_div img {
+    max-height: 34px;
+    display: block;
+}
+
+
+
+.ss_logo_hed_sec {
+    display: flex;
+    gap: 20px;
+    padding-bottom: 5px;
+    align-items: center;
+}
+
+.ss_logo_lft_div {
+    width: 50%;
+}
+
+.ss_profile_rit_div {
+    width: 50%;
+    text-align: right;
+    display: flex;
+    justify-content: end;
+    gap: 10px;
+
+}
+
+.ss_profile_rit_div img {
+    width: 34px;
+    height: 34px;
+    border-radius: 100px;
+    display: block;
+    object-fit: cover;
+}
+
+.ss_hed_rit_user_sec button:nth-child(1) {
+    padding: 0px !important;
+}
+
+@media only screen and (min-width: 767px) and (max-width: 1023px) {
+    .ss_dash_slid_img a {
+        width: 58%;
+    }
+
+    .ss_add_user_bx {
+        width: 45%;
+        max-width: 370px;
+    }
+}
+
+.css-uks7c6-MuiSvgIcon-root {
+    font-size: 1.5rem !important;
+}
+
+.ss_dash_sec_2_img .video {
+    width: 100%;
+    height: 250px;
+}
+
+.ss_profile_rit_div div>div {
+    font-size: 14px;
+    line-height: 15px;
+    color: #002060;
+}
+
+.ss_profile_rit_div span {
+    font-size: 13px;
+    color: #000 !important;
+    text-decoration: none !important;
+    line-height: 14px;
+}
+
+.ss_header_new_right div {
+    width: auto;
+    gap: 15px;
+
+}
+
+.ss_header_new_right div button {
+    font-size: 12px !important;
+    padding: 3px 16px !important;
+    text-transform: uppercase;
+    height: 34px;
+}
+
+.ss_header_new_right div div {
+    font-size: 15px;
+    line-height: 20px;
+    color: #002060;
+}
+
+.ss_header_new_right div span {
+    font-size: 14px;
+    color: #000 !important;
+    text-decoration: none !important;
+    line-height: 14px;
+
+}
+
+
+.ss_box_hed_right_1_img {
+    width: auto !important;
+}
+
+.ss_hed_box_mn {
+    width: 50%;
+    justify-content: end;
+}
+
+.ss_box_hed_right_1_img img {
+    width: 100% !important;
+    max-width: 280px;
+    height: 30px;
+
+    height: 30px;
+}
+
+.ss_box_hed_right_img img {
+    width: 100% !important;
+    max-width: 280px;
+    height: 30px;
+
+}
+
+.ss_box_hed_right_img {
+    width: auto !important;
+}
+
+.ss_box_hed_right_1_img,
+.ss_box_hed_right_img {
+    min-height: 27px;
+    max-height: 27px;
+}
+
+.ss_wid_auto {
+    width: auto !important;
+}
+
+.ss_wid_auto img {
+    width: 100% !important;
+    max-width: 350px;
+    height: auto;
+}
+
+span.ss_hm_dash_home_icon {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    cursor: pointer;
+}
+
+.ss_hm_dash_home_icon img {
+    width: 34px;
+    height: 34px;
+}
+
+.ss_hm_dash_home_icon span {
+    display: flex;
+    text-transform: capitalize;
+}
+
+
+
+.ss_header_new_right .ss_hed_star_img {
+    padding: 0 !important;
+    width: auto;
+
+    margin: 0;
+    text-align: center;
+}
+
+.ss_header_new_right .ss_hed_star_img img {
+    width: 34px;
+    height: 34px;
+}
+
+.ss_header_new_right .header_share_btn {
+    padding: 0 !important;
+    background: transparent;
+    border: 0;
+}
+
+button.header_share_btn img {
+    width: 34px;
+    height: 34px;
+    position: relative;
+}
+
+.ss_new_hed {
+    margin-bottom: 8px !important;
+}
+
+.app-header {
+    padding:11.5px 10.5px 11px 9px !important;
+    box-shadow: 0px 0px 10px #afadad5e;
+}
+
+.ss_hed_box_mn {
+    gap: 9.5px !important;
+}
+
+.ss_logo_lft_div img {
+    cursor: pointer;
+}
+.css-1ygil4i-MuiToolbar-root.boxHead {
+    padding-left: 15px;
+    padding-right: 15px;
+}

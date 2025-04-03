@@ -1,0 +1,30 @@
+.topdot {
+    position: absolute !important;
+    left: 1.3px !important;
+    right: 0 !important;
+    top: -1px !important;
+}
+.bottomdot {
+    position: absolute !important;
+    left: 86% !important;
+    right: 0 !important;
+    bottom:-4px !important;
+    transform: translateX(72%);
+    top: inherit !important;
+}
+.leftdot {
+    position: absolute !important;
+    left: -2px !important;
+    top: 106% !important;
+    transform: translateY(-106%);
+}
+.rightdot {
+    position: absolute !important;
+    right: -5px !important;
+    top: 2px !important;
+    transform: translateY(-5px);
+}
+.topdot,.bottomdot,.leftdot,.rightdot {
+    width: 8px;
+    height: 8px;
+}

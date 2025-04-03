@@ -35,6 +35,7 @@ import { BreadcrumbsContext } from "../../context/BreadcrumbsContext";
 import '../../Css/Swimlane.css'
 import { useSelector } from "react-redux";
 import TextInputModal from "../../components/TextInputModal";
+import apiExports from "../../API/api";
 
 const SwimlaneModel = () => {
   const [windowSize, setWindowSize] = useState({
@@ -120,6 +121,7 @@ const SwimlaneModel = () => {
   const [detailschecking, setdetailschecking] = useState(null);
   const [nodes, setNodes] = useState(initialNodes);
   const [searchQuery, setSearchQuery] = useState("");
+  const [checkpublish, Setcheckpublish] = useState()
 
   const [edges, setEdges] = useState([]);
   const isInitialLoad = useRef(true);
@@ -227,7 +229,7 @@ const SwimlaneModel = () => {
           const parsedData = JSON.parse(node.data);
           const parsedPosition = JSON.parse(node.position);
           const parsedMeasured = JSON.parse(node.measured);
-
+          console.log('parsedMeasured: '+parsedMeasured);
           let centeredPosition = parsedPosition || { x: 0, y: 0 };
 
           // Parent node positioning
@@ -281,6 +283,7 @@ const SwimlaneModel = () => {
             position: centeredPosition,
             draggable: true,
             isNew: true,
+            
             animated: Boolean(node.animated),
             style:nodeStyle,
           };
@@ -294,7 +297,7 @@ const SwimlaneModel = () => {
           type: "step",
         }));
 
-        isInitialLoad.current = false;
+        // isInitialLoad.current = false;
         console.log("on load time data", data);
         setChiledNodes(parsedNodes);
         setEdges(parsedEdges);
@@ -371,6 +374,37 @@ const SwimlaneModel = () => {
 
     []
   );
+
+  const checkPublishData = useCallback(async (processId) => {
+    // console.log("currentLevel",currentLevel)
+    const levelParam =
+      currentParentId !== null
+        ? `Level${currentLevel}_${currentParentId}`
+        : `Level${currentLevel}`;
+    // const levelParam = 'Level0';
+    const user_id = user ? user.id : null;
+    const Process_id = processId ? processId : null;
+    const data = await apiExports.checkPublishRecord(
+      levelParam,
+      parseInt(user_id),
+      Process_id
+    );
+
+    return data;
+  }, [user, currentLevel, currentParentId]);
+
+
+    useEffect(() => {
+      const checkpublishfunction = async () => {
+        const processId = id ? id : null;
+  
+        const data = await checkPublishData(processId);
+  
+        Setcheckpublish(data?.status);
+      };
+  
+      checkpublishfunction();
+    }, [checkPublishData, id]);
 
   const addNode = (type, position, label = "") => {
     let PageGroupId;
@@ -1140,6 +1174,7 @@ const SwimlaneModel = () => {
         onExit={ExitNavigation}
         isFavorite={isFavorite}
         Process_img={process_img}
+        checkpublish={checkpublish}
 
       />
 

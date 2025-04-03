@@ -6,13 +6,13 @@ const SwimlineDiamondNode = ({ data }) => {
   const [title, setTitle] = useState(data.details.title);
   const titleRef = useRef(null);
   const [autoFocus, setAutoFocus] = useState(data.autoFocus);
-  const [isHovered, setIsHovered] = useState(false); 
+  const [isHovered, setIsHovered] = useState(false);
   useEffect(() => {
     setTitle(data.details.title);
   }, [data.details.title]);
 
   useEffect(() => {
-    
+
     if (autoFocus && titleRef.current) {
       setTimeout(() => {
         titleRef.current.focus();
@@ -47,7 +47,7 @@ const SwimlineDiamondNode = ({ data }) => {
   const handleFocus = (e) => {
     const selection = window.getSelection();
     const range = document.createRange();
-  
+
     if (e.target.firstChild) {
       range.setStart(e.target.firstChild, e.target.selectionStart || 0);
       range.collapse(true);
@@ -55,13 +55,13 @@ const SwimlineDiamondNode = ({ data }) => {
       selection.addRange(range);
     }
   };
-  
-  const handleBlur = () => {};
+
+  const handleBlur = () => { };
 
   return (
     <div className="diamond_Wrapper_custom" style={styles.wrapper} onClick={handleBoxClick}
-    onMouseEnter={() => setIsHovered(true)} 
-    onMouseLeave={() => setIsHovered(false)} 
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       {/* Diamond Shape */}
       <div style={styles.diamondWrapper} className="diamond_Wrapper">
@@ -79,21 +79,26 @@ const SwimlineDiamondNode = ({ data }) => {
           />
         </div>
       </div>
-      
 
-      <Handle type="target" position={Position.Top} id="top-target" style={isHovered ? styles.hoverhandle:styles.handle} />
-        <Handle type="source" position={Position.Top} id="top-source" style={isHovered ? styles.hoverhandle:styles.handle} />
-        <Handle type="target" position={Position.Bottom} id="bottom-target" style={isHovered ? styles.hoverhandle:styles.handle} />
-        <Handle type="source" position={Position.Bottom} id="bottom-source" style={isHovered ? styles.hoverhandle:styles.handle} />
 
-        <Handle type="target" position={Position.Left} id="left-target"
-          style={isHovered ? { ...styles.hoverhandle, left:'-5px' } : { ...styles.handle, left:'-5px'}}
+      <Handle type="target" position={Position.Top} id="top-target" style={isHovered ? styles.hoverhandle : {...styles.handle, top: '-2px'}} />
+      <Handle type="source" position={Position.Top} id="top-source" style={isHovered ? styles.hoverhandle : {...styles.handle, top: '-2px'}} />
+
+
+      <Handle type="target" position={Position.Bottom} id="bottom-target" style={isHovered ? styles.hoverhandle :  {...styles.handle, bottom: '-2px'}} />
+      <Handle type="source" position={Position.Bottom} id="bottom-source" style={isHovered ? styles.hoverhandle :  {...styles.handle, bottom: '-2px'}} />
+
+
+      <Handle type="target" position={Position.Left} id="left-target"
+        style={isHovered ? { ...styles.hoverhandle, left: '-10px' } : { ...styles.handle, left: '-10px' }}
       />
-        <Handle type="source" position={Position.Left} id="left-source"   style={isHovered ? { ...styles.hoverhandle, left:'-5px' } : { ...styles.handle, left:'-5px'}} />
-        <Handle type="target" position={Position.Right} id="right-target" 
-          style={isHovered ? { ...styles.hoverhandle, right:'-5px' } : { ...styles.handle, right:'-5px'}}
+      <Handle type="source" position={Position.Left} id="left-source" style={isHovered ? { ...styles.hoverhandle, left: '-10px' } : { ...styles.handle, left: '-10px' }} />
+
+
+      <Handle type="target" position={Position.Right} id="right-target"
+        style={isHovered ? { ...styles.hoverhandle, right: '-10px' } : { ...styles.handle, right: '-10px' }}
       />
-        <Handle type="source" position={Position.Right} id="right-source"           style={isHovered ? { ...styles.hoverhandle, right:'-5px' } : { ...styles.handle, right:'-5px'}} />
+      <Handle type="source" position={Position.Right} id="right-source" style={isHovered ? { ...styles.hoverhandle, right: '-10px' } : { ...styles.handle, right: '-10px' }} />
     </div>
   );
 };
@@ -115,8 +120,8 @@ const styles = {
   },
   diamond: {
     position: "relative",
-    width: "45px",
-    height: "45px",
+    width: "54px",
+    height: "54px",
     backgroundColor: "#ffffff",
     color: "#000000",
     border: "1px solid #002060",
@@ -145,7 +150,7 @@ const styles = {
     height: "8px",
     borderRadius: "50%",
     position: "absolute",
-    
+
   },
   handle: {
     backgroundColor: "transparent",
@@ -153,7 +158,7 @@ const styles = {
     border: "none",
     width: "0px",
     height: "0px",
-    pointerEvents: "none" ,
+    pointerEvents: "none",
   },
 };
 

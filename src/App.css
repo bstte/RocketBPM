@@ -99,9 +99,6 @@ textarea {
   font-family: "Poppins", sans-serif !important;
 }
 
-.mapleveltextarea {
-  height: 80%;
-}
 
 .mapleveltextarea::placeholder {
   color: #fff;
