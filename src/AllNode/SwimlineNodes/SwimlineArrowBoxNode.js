@@ -10,7 +10,6 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
   const [title, setTitle] = useState(data.details.title);
   const [autoFocus, setAutoFocus] = useState(data.autoFocus);
   const [isHovered, setIsHovered] = useState(false); 
-
  const { addBreadcrumb, removeBreadcrumbsAfter } =
     useContext(BreadcrumbsContext);
   const contentEditableRef = useRef(null);
@@ -148,7 +147,7 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
             {data.link && (
               <div>
                 <button style={styles.linkButton} onClick={handleLinkClick}>
-                  {title}
+                 {data.details?.title } {title}
                 </button>
               </div>
             )}

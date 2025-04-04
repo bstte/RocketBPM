@@ -66,6 +66,7 @@ const SwimlaneModel = () => {
   const [height, setHeight] = useState(0);
   const [appheaderheight, setahHeight] = useState(0);
   const [remainingHeight, setRemainingHeight] = useState(0);
+  const [selectedTitle, setSelectedTitle] = useState("");
 
   useEffect(() => {
     const calculateHeights = () => {
@@ -712,6 +713,7 @@ const SwimlaneModel = () => {
     if (node.Page_Title === "Swimlane") {
       setOptions([]);
       setSelectedNodeId(node.node_id);
+    
       setdetailschecking(node);
       event.preventDefault();
       setSelectedNode(node);
@@ -949,11 +951,13 @@ const SwimlaneModel = () => {
       (node) => node.node_id !== extractedValue
     );
     setLinknodeList(filteredNodes);
+    console.log("check data",)
     setIsCheckboxPopupOpen(true);
   };
 
-  const handleCheckboxChange = (nodeId) => {
+  const handleCheckboxChange = (nodeId,label) => {
     setSelectedLinknodeIds(nodeId);
+    setSelectedTitle(label)
   };
 
   const saveSelectedNodes = () => {
@@ -961,12 +965,18 @@ const SwimlaneModel = () => {
       setChiledNodes((nds) =>
         nds.map((node) => {
           if (node.id === selectedNodeId) {
+            console.log("link existin gmodel",node)
             return {
               ...node,
               data: {
                 ...node.data,
                 link: selectedLinknodeIds,
+                details: {
+                  ...node.data.details,
+                  title: selectedTitle || node.data.details?.title || "Default Title", 
+                },
               },
+              
             };
           }
           return node;
@@ -1344,7 +1354,7 @@ const SwimlaneModel = () => {
                     <input
                       type="checkbox"
                       checked={selectedLinknodeIds === node.node_id}
-                      onChange={() => handleCheckboxChange(node.node_id)}
+                      onChange={() => handleCheckboxChange(node.node_id,node.data.label)}
                       style={popupStyle.checkbox}
                     />
                     {node.data.label && node.data.label}
