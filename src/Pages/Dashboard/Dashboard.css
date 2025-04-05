@@ -10,7 +10,7 @@
 
 .slick-prev:before,
 .slick-next:before {
-    color: #000;
+    color: #002060;
 }
 
 .react-flow {
@@ -316,7 +316,7 @@ td {
 
 .ss_profile_rit_div span {
     font-size: 13px;
-    color: #000 !important;
+    color: #002060 !important;
     text-decoration: none !important;
     line-height: 14px;
 }
@@ -342,7 +342,7 @@ td {
 
 .ss_header_new_right div span {
     font-size: 14px;
-    color: #000 !important;
+    color: #002060 !important;
     text-decoration: none !important;
     line-height: 14px;
 

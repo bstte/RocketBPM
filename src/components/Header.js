@@ -1,13 +1,13 @@
 import React, { useContext, useState, useRef, useEffect } from "react";
 import { ProgressArrow, Pentagon, Diamond, Box, Label } from "./Icon";
-import { IconButton } from "@mui/material";
+// import { IconButton } from "@mui/material";
 // import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 // import HomeIcon from "@mui/icons-material/Home";
 import { useNavigate } from "react-router-dom";
 import { logoutUser } from "../redux/userSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { BreadcrumbsContext } from "../context/BreadcrumbsContext";
-import StarIcon from "@mui/icons-material/Star";
+// import StarIcon from "@mui/icons-material/Star";
 import { ImageBaseUrl } from "../API/api";
 
 
@@ -61,7 +61,7 @@ const Header = ({
           setIsLoading(false); // Image loaded
         };
       } else {
-        setImageSrc("https://newprocesslab.com/wp-content/uploads/2021/12/cropped-Logo_NewProcessLab_60x523-1-1.png");
+        setImageSrc("/img/RocketBPM_rocket_logo.png");
         setIsLoading(false); // Default image loaded
       }
     }, 1000); // 1 sec delay for smooth loading
@@ -178,10 +178,22 @@ const Header = ({
                 >
                   View Draft
                 </button>
-
-                <div className="headericons">                
-                  <img src={`${process.env.PUBLIC_URL}/img/star-regular.svg`} alt="Star" />
-                </div>
+                
+                {
+                  isFavorite ? (
+                    <div className="headericons active">                
+                        <img src={`${process.env.PUBLIC_URL}/img/star-solid.svg`} alt="Star" />
+                      </div>
+                  ) : (
+                    <>
+                      <div className="headericons">                
+                        <img src={`${process.env.PUBLIC_URL}/img/star-regular.svg`} alt="Star" />
+                      </div>
+                    </>
+                  )
+                }
+                
+                
                 <div className="headericons">                
                   <img src={`${process.env.PUBLIC_URL}/img/share.png`} alt="Share" />
                 </div>
@@ -224,11 +236,19 @@ const Header = ({
                   )
                 }
 
-                <div className="headericons">
-                  
-                    <img src={`${process.env.PUBLIC_URL}/img/star-regular.svg`} alt="Star" />
-                  
-                </div>
+                {
+                  isFavorite ? (
+                    <div className="headericons active">                
+                        <img src={`${process.env.PUBLIC_URL}/img/star-solid.svg`} alt="Star" />
+                      </div>
+                  ) : (
+                    <>
+                      <div className="headericons">                
+                        <img src={`${process.env.PUBLIC_URL}/img/star-regular.svg`} alt="Star" />
+                      </div>
+                    </>
+                  )
+                }
 
                 <div className="headericons">
                   
@@ -241,15 +261,20 @@ const Header = ({
 
             {Page === "Draft" && (
               <>
-                <div>
-                  <IconButton
-                    edge="start"
-                    color="inherit"
-                    aria-label="favorite"
-                    onClick={savefav}
-                  >
-                    <StarIcon fontSize="large" style={{ color: isFavorite ? "red" : "gray" }} />
-                  </IconButton>
+                {
+                    isFavorite ? (
+                      <div className="headericons active">                
+                          <img src={`${process.env.PUBLIC_URL}/img/star-solid.svg`} alt="Star" />
+                        </div>
+                    ) : (
+                      <>
+                        <div className="headericons">                
+                          <img src={`${process.env.PUBLIC_URL}/img/star-regular.svg`} alt="Star" onClick={savefav} />
+                        </div>
+                      </>
+                    )
+                  }
+                <div>   
                   <button
                     onClick={() => onSave("draft")}
                     style={{
@@ -494,7 +519,7 @@ const styles = {
   iconStyle: {
     width: "32px",
     height: "32px",
-    color: "#000",
+    color: "#002060",
     transition: "transform 0.3s ease",
   },
   saveButton: {

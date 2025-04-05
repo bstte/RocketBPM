@@ -57,6 +57,8 @@ const SwimlineDiamondNode = ({ data }) => {
   };
 
   const handleBlur = () => { };
+  const nodebgheight = document.querySelector(".react-flow__node");
+  const nodebgheights = nodebgheight ? nodebgheight.getBoundingClientRect().height : 0;
 
   return (
     <div className="diamond_Wrapper_custom" style={styles.wrapper} onClick={handleBoxClick}
@@ -65,7 +67,7 @@ const SwimlineDiamondNode = ({ data }) => {
     >
       {/* Diamond Shape */}
       <div style={styles.diamondWrapper} className="diamond_Wrapper">
-        <div style={styles.diamond} className="diamond_header">
+        <div style={{ ...styles.diamond, width: nodebgheights, height: nodebgheights}} className="diamond_header">
           <ContentEditable
             innerRef={titleRef}
             html={title}
@@ -77,28 +79,27 @@ const SwimlineDiamondNode = ({ data }) => {
             placeholder="Type title here..."
             style={styles.title}
           />
+          
         </div>
+        <Handle className="topdot_edit" type="target" position={Position.Top} id="top-target" style={isHovered ? styles.hoverhandle : {...styles.handle}} />
+          <Handle className="topdot_edit" type="source" position={Position.Top} id="top-source" style={isHovered ? styles.hoverhandle : {...styles.handle}} />
+
+          <Handle className="bottomdot_edit" type="target" position={Position.Bottom} id="bottom-target" style={isHovered ? styles.hoverhandle :  {...styles.handle}} />
+          <Handle className="bottomdot_edit" type="source" position={Position.Bottom} id="bottom-source" style={isHovered ? styles.hoverhandle :  {...styles.handle}} />
+
+          <Handle className="leftdot_edit" type="target" position={Position.Left} id="left-target"
+            style={isHovered ? { ...styles.hoverhandle } : { ...styles.handle }}
+          />
+          <Handle className="leftdot_edit" type="source" position={Position.Left} id="left-source" style={isHovered ? { ...styles.hoverhandle } : { ...styles.handle }} />
+
+          <Handle className="rightdot_edit" type="target" position={Position.Right} id="right-target"
+            style={isHovered ? { ...styles.hoverhandle } : { ...styles.handle }}
+          />
+          <Handle className="rightdot_edit" type="source" position={Position.Right} id="right-source" style={isHovered ? { ...styles.hoverhandle } : { ...styles.handle }} />
       </div>
 
 
-      <Handle type="target" position={Position.Top} id="top-target" style={isHovered ? styles.hoverhandle : {...styles.handle, top: '-2px'}} />
-      <Handle type="source" position={Position.Top} id="top-source" style={isHovered ? styles.hoverhandle : {...styles.handle, top: '-2px'}} />
-
-
-      <Handle type="target" position={Position.Bottom} id="bottom-target" style={isHovered ? styles.hoverhandle :  {...styles.handle, bottom: '-2px'}} />
-      <Handle type="source" position={Position.Bottom} id="bottom-source" style={isHovered ? styles.hoverhandle :  {...styles.handle, bottom: '-2px'}} />
-
-
-      <Handle type="target" position={Position.Left} id="left-target"
-        style={isHovered ? { ...styles.hoverhandle, left: '-10px' } : { ...styles.handle, left: '-10px' }}
-      />
-      <Handle type="source" position={Position.Left} id="left-source" style={isHovered ? { ...styles.hoverhandle, left: '-10px' } : { ...styles.handle, left: '-10px' }} />
-
-
-      <Handle type="target" position={Position.Right} id="right-target"
-        style={isHovered ? { ...styles.hoverhandle, right: '-10px' } : { ...styles.handle, right: '-10px' }}
-      />
-      <Handle type="source" position={Position.Right} id="right-source" style={isHovered ? { ...styles.hoverhandle, right: '-10px' } : { ...styles.handle, right: '-10px' }} />
+      
     </div>
   );
 };
@@ -111,28 +112,28 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    flex: "0 0 100%",
   },
   diamondWrapper: {
     position: "relative",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    flex: "0 0 100%",
   },
   diamond: {
     position: "relative",
-    width: "54px",
-    height: "54px",
     backgroundColor: "#ffffff",
-    color: "#000000",
-    border: "1px solid #002060",
-    transform: "rotate(45deg)",
+    color: "#002060",
+    border: "1.6px solid #002060",
+    transform: "rotate(45deg) scale(0.628)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
   },
   title: {
     transform: "rotate(-45deg)",
-    fontSize: "9px",
+    fontSize: "1rem",
     fontFamily: "'Poppins', sans-serif",
     textAlign: "center",
     background: "transparent",
@@ -150,14 +151,15 @@ const styles = {
     height: "8px",
     borderRadius: "50%",
     position: "absolute",
+    border: "none",
 
   },
   handle: {
     backgroundColor: "transparent",
     position: "absolute",
     border: "none",
-    width: "0px",
-    height: "0px",
+    width: "8px",
+    height: "8px",
     pointerEvents: "none",
   },
 };

@@ -51,7 +51,7 @@ const styles = {
     position: 'relative',
     textAlign: 'center',
     backgroundColor: 'red',
-    color: '#000000',
+    color: '#002060',
     width: '100%',
     height: '100%',
     clipPath: 'polygon(20px 50%, 0px 0px, calc(302px) 0px, 326px 50%, calc(302px) 100%, 0px 100%)',

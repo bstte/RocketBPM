@@ -31,7 +31,7 @@ const styles = {
     justifyContent: 'center',
     textAlign: 'center',
     backgroundColor: 'red',
-    color: '#000000',
+    color: '#002060',
     width: '100%',
     height: '100%',
     clipPath: 'polygon(50% 0%, 100% 30%, 100% 100%, 0% 100%, 0% 30%)',

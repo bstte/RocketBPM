@@ -135,7 +135,8 @@ const DraftSwimlineLevel = () => {
 
   useEffect(() => {
     const checkpublishfunction = async () => {
-      const processId = currentParentId;
+      // const processId = currentParentId;
+      const processId = id ? id : null;
 
       const data = await checkPublishData(processId);
 
@@ -267,7 +268,7 @@ const DraftSwimlineLevel = () => {
           ...edge,
           animated: Boolean(edge.animated),
           markerEnd: { type: MarkerType.ArrowClosed, color: "#002060", width: 12, height: 12 },
-          style: { stroke: "#000", strokeWidth: 2 },
+          style: { stroke: "#002060", strokeWidth: 2 },
           type: "step",
         }));
 

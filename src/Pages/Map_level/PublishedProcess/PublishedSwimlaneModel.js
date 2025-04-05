@@ -210,7 +210,7 @@ const PublishedSwimlaneModel = () => {
                   ...edge,
                   animated: Boolean(edge.animated),
                   markerEnd: { type: MarkerType.ArrowClosed, color: "#002060", width: 12, height: 12 },
-                  style: { stroke: "#000", strokeWidth: 2 },
+                  style: { stroke: "#002060", strokeWidth: 2 },
                   type: "step",
                 }));
         setChiledNodes(parsedNodes);

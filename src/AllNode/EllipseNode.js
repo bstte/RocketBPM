@@ -192,7 +192,7 @@ const styles = {
     position: 'relative',
     textAlign: 'center',
     backgroundColor: '#ffffff', // Ellipse background color
-    color: '#000000',
+    color: '#002060',
     borderRadius: '50%', // Make it a full ellipse by using 50% border radius
     width: '100%',
     height: '100%',

@@ -5,6 +5,7 @@ import Draggable from "react-draggable";
 import { ResizableBox } from "react-resizable";
 import "react-resizable/css/styles.css";
 import "./publishnode.css";
+// import { color } from "@mui/system";
 
 const SwimlineDiamondNode = ({ data }) => {
   // const [isHovered, setIsHovered] = useState(false);
@@ -68,7 +69,11 @@ const SwimlineDiamondNode = ({ data }) => {
       >
         <div style={{ ...styles.popup, width: "100%", height: "100%" }}>
           <div className="popupHeader" style={styles.popupHeader}>
-            <h3 style={styles.popupTitle}>{data.details.title}</h3>
+            <h3 style={styles.popupTitle}>
+              {/* {data.details.title} */}
+              {data.details.title?.replace(/<br\s*\/?>/gi, " ")}
+
+              </h3>
             <button style={styles.closeButton} onClick={handleClosePopup}>
               Close
             </button>
@@ -83,8 +88,8 @@ const SwimlineDiamondNode = ({ data }) => {
     </Draggable>
   );
 
-
-
+  const nodebgheight = document.querySelector(".react-flow__node");
+  const nodebgheights = nodebgheight ? nodebgheight.getBoundingClientRect().height : 0;
 
   return (
     <>
@@ -94,22 +99,22 @@ const SwimlineDiamondNode = ({ data }) => {
       >
         {/* Diamond Shape */}
         <div style={styles.diamondWrapper} className="diamond_Wrapper">
-          <div style={styles.diamond} className="diamond_header">
+          <div style={{ ...styles.diamond, width: nodebgheights, height: nodebgheights }} className="diamond_header">
             <div ref={titleRef} style={styles.title}>
-              {data.details.title}
+            {data.details.title?.replace(/<br\s*\/?>/gi, " ")}
             </div>
-            <Handle className="topdot" type="target" position={Position.Top} id="top-target" style={styles.handle} />
-            <Handle className="topdot" type="source" position={Position.Top} id="top-source" style={styles.handle} />
-            <Handle className="bottomdot" type="target" position={Position.Bottom} id="bottom-target" style={styles.handle} />
-            <Handle className="bottomdot" type="source" position={Position.Bottom} id="bottom-source" style={styles.handle} />
-            <Handle className="leftdot" type="target" position={Position.Left} id="left-target" style={{ ...styles.handle, left: '-5px' }}/>
-            <Handle className="leftdot" type="source" position={Position.Left} id="left-source" style={{ ...styles.handle, left: '-5px' }} />
-            <Handle className="rightdot" type="target" position={Position.Right} id="right-target" style={{ ...styles.handle, right: '-5px' }} />
-            <Handle className="rightdot" type="source" position={Position.Right} id="right-source" style={{ ...styles.handle, right: '-5px' }} />
           </div>
+          <Handle className="topdot" type="target" position={Position.Top} id="top-target" style={styles.handle} />
+          <Handle className="topdot" type="source" position={Position.Top} id="top-source" style={styles.handle} />
+          <Handle className="bottomdot" type="target" position={Position.Bottom} id="bottom-target" style={styles.handle} />
+          <Handle className="bottomdot" type="source" position={Position.Bottom} id="bottom-source" style={styles.handle} />
+          <Handle className="leftdot" type="target" position={Position.Left} id="left-target" style={{ ...styles.handle }} />
+          <Handle className="leftdot" type="source" position={Position.Left} id="left-source" style={{ ...styles.handle }} />
+          <Handle className="rightdot" type="target" position={Position.Right} id="right-target" style={{ ...styles.handle }} />
+          <Handle className="rightdot" type="source" position={Position.Right} id="right-source" style={{ ...styles.handle }} />
         </div>
 
-        
+
 
       </div>
 
@@ -128,33 +133,35 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    flex: "0 0 100%",
   },
   diamondWrapper: {
     position: "relative",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    flex: "0 0 100%"
   },
   diamond: {
     position: "relative",
-    width: "54px",
-    height: "54px",
     backgroundColor: "#ffffff",
-    color: "#000000",
-    border: "1px solid #002060",
-    transform: "rotate(45deg)",
+    color: "#002060",
+    border: "1.6px solid #002060",
+    transform: "rotate(45deg) scale(0.6)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    
   },
   title: {
     transform: "rotate(-45deg)",
-    fontSize: "9px",
+    fontSize: "1rem",
     fontFamily: "'Poppins', sans-serif",
     textAlign: "center",
     background: "transparent",
     padding: "0",
     margin: "0",
+    color: "#002060"
   },
   handle: {
     backgroundColor: "transparent",

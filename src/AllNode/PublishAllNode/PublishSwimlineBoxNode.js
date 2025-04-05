@@ -13,9 +13,22 @@ const decodeHtmlEntities = (str) => {
 
 const BoxNode = ({ data }) => {
   const [isPopupVisible, setIsPopupVisible] = useState(false);
-  const [popupSize, setPopupSize] = useState({ width: 600, height: 450 });
+  const [popupSize, setPopupSize] = useState({ width: 580, height: 430 });
+    const [maxConstraints, setMaxConstraints] = useState([800, 600]);
+    // const [editorHeight, setEditorHeight] = useState(450);
 
-  const title = decodeHtmlEntities(data.details.title);
+     useEffect(() => {
+        const updateMaxConstraints = () => {
+          setMaxConstraints([window.innerWidth - 30, window.innerHeight - 30]);
+        };
+    
+        updateMaxConstraints();
+        window.addEventListener("resize", updateMaxConstraints);
+    
+        return () => window.removeEventListener("resize", updateMaxConstraints);
+      }, []);
+
+  const title = decodeHtmlEntities(data.details.title?.replace(/<br\s*\/?>/gi, " "));
   const boxRef = useRef(null);
 
   const handleBoxClick = () => {
@@ -48,20 +61,20 @@ const BoxNode = ({ data }) => {
         width={popupSize.width}
         height={popupSize.height}
         minConstraints={[300, 200]}
-        maxConstraints={[800, 600]}
+        maxConstraints={maxConstraints}
         onResizeStop={(e, { size }) => setPopupSize(size)}
         style={{
           position: "absolute",
           top: "20%",
           left: "0",
           right: "0",
-          margin:"0 auto",
+          margin: "0 auto",
           transform: "translate(0, -50%)",
           backgroundColor: "#ffffff",
           border: "1px solid #011f60",
           overflow: "hidden",
           zIndex: 1001,
-          boxShadow:"0 0 10px #011f6047",
+          boxShadow: "0 0 10px #011f6047",
         }}
       >
         <div style={{ ...styles.popup, width: "100%", height: "100%" }}>
@@ -90,76 +103,76 @@ const BoxNode = ({ data }) => {
           </div>
         </div>
 
-       
-      {[20, 50, 80].map((leftOffset, index) => (
-        <>
-          <Handle
-            key={`top-target-${index}`}
-            type="target"
-            position={Position.Top}
-            id={`top-target-${index}`}
-            style={ { ...styles.handle, top: "0px", left: `${leftOffset}%` }}
-          />
+
+        {[20, 50, 80].map((leftOffset, index) => (
+          <>
+            <Handle
+              key={`top-target-${index}`}
+              type="target"
+              position={Position.Top}
+              id={`top-target-${index}`}
+              style={{ ...styles.handle, top: "0px", left: `${leftOffset}%` }}
+            />
 
 
-          <Handle
-            key={`top-source-${index}`}
-            type="source"
-            position={Position.Top}
-            id={`top-source-${index}`}
-            style={ { ...styles.handle, top: "0px", left: `${leftOffset}%` }}
+            <Handle
+              key={`top-source-${index}`}
+              type="source"
+              position={Position.Top}
+              id={`top-source-${index}`}
+              style={{ ...styles.handle, top: "0px", left: `${leftOffset}%` }}
 
-          />
-        </>
-      ))}
+            />
+          </>
+        ))}
 
-    
+
         {/* Bottom Handles */}
         {[20, 50, 80].map((leftOffset, index) => (
           <>
+            <Handle
+              key={`bottom-target-${index}`}
+              type="target"
+              position={Position.Bottom}
+              id={`bottom-target-${index}`}
+              style={{ ...styles.handle, bottom: "0px", left: `${leftOffset}%` }}
+            />
+
+            <Handle
+              key={`bottom-source-${index}`}
+              type="source"
+              position={Position.Bottom}
+              id={`bottom-source-${index}`}
+              style={{ ...styles.handle, bottom: "0px", left: `${leftOffset}%` }}
+            />
+          </>
+        ))}
+
         <Handle
-          key={`bottom-target-${index}`}
           type="target"
-          position={Position.Bottom}
-          id={`bottom-target-${index}`}
-          style={ { ...styles.handle, bottom: "0px", left: `${leftOffset}%` }}
+          position={Position.Left}
+          id="left-target"
+          style={styles.handle}
+
         />
-
         <Handle
-        key={`bottom-source-${index}`}
-        type="source"
-        position={Position.Bottom}
-        id={`bottom-source-${index}`}
-        style={ { ...styles.handle, bottom: "0px", left: `${leftOffset}%` }}
-      />
-      </>
-      ))}
-
- <Handle
-        type="target"
-        position={Position.Left}
-        id="left-target"
-        style={styles.handle}
-     
-      />
-      <Handle
-        type="source"
-        position={Position.Left}
-        id="left-source"
-        style={styles.handle}
-      />
-      <Handle
-        type="target"
-        position={Position.Right}
-        id="right-target"
+          type="source"
+          position={Position.Left}
+          id="left-source"
           style={styles.handle}
-      />
-      <Handle
-        type="source"
-        position={Position.Right}
-        id="right-source"
+        />
+        <Handle
+          type="target"
+          position={Position.Right}
+          id="right-target"
           style={styles.handle}
-      />
+        />
+        <Handle
+          type="source"
+          position={Position.Right}
+          id="right-source"
+          style={styles.handle}
+        />
 
         <div style={styles.borderOverlay}></div>
       </div>
@@ -183,8 +196,8 @@ const styles = {
     justifyContent: "center",
     position: "relative",
     backgroundColor: "#ffffff",
-    color: "#000000",
-    border: "1px solid #000",
+    color: "#002060",
+    border: "1px solid #002060",
     width: "100%",
     height: "100%",
     padding: "10px",
@@ -213,7 +226,7 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     backgroundColor: "#ffffff",
-    overflowY: "auto",
+    overflow: "hidden",
     zIndex: 1001,
   },
   popupHeader: {
@@ -252,7 +265,7 @@ const styles = {
     fontSize: "14px",
     padding: "2px 20px",
     textTransform: "uppercase",
-    border:"0"
+    border: "0"
   },
 };
 

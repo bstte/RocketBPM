@@ -1,3 +1,6 @@
+body {
+  color: #002060;
+}
 .App {
   text-align: center;
 }
@@ -68,7 +71,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border: 1px solid #000;
+  border: 1px solid #002060;
 }
 
 .node-label {
@@ -124,4 +127,32 @@ textarea {
 
 .popupContent_content ul li::marker {
   color: #ff364a;
+}
+.maincontainer .react-flow__node-group.selectable:focus,
+.ss_publish_border .react-flow__node-group.selectable:focus,
+.maincontainer .react-flow__node-group.selectable:hover,
+.ss_publish_border .react-flow__node-group.selectable:hover {
+  box-shadow: none !important;
+}
+
+.menuitems {
+    padding: 8px 12px;
+    cursor: pointer;
+    background-color: rgb(231, 231, 231);
+    color: rgb(1, 31, 96);
+    font-weight: 500;
+    border: 0;
+    border-bottom: 1px solid rgb(255, 255, 255);
+    width: 100%;
+    text-align: left;
+    font-weight: 300;
+    font-size: 1rem;
+}
+.menuitems:hover,
+.newpopmenuitems button:hover {
+  background: #ff364a !important;
+  color: #fff !important;
+}
+.text_blue {
+  color: #002060;
 }

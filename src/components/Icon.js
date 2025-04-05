@@ -96,7 +96,7 @@ export const Label = () => (
         x="16"
         y="17.5"
         textAnchor="middle"
-        fill="#000"
+        fill="#002060"
         fontSize="10"
         fontFamily="Helvetica"
       >

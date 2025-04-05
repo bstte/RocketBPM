@@ -39,6 +39,12 @@
         font-size: 20px;
         line-height: 1.2;
     }
+    .account_Edit_heading>h2 {
+        margin-bottom: 20px;
+    }
+    .account_Edit_buttons {
+        margin-top: 10px;
+    }
     .account_main_wrapper {
         display: flex;
         justify-content: space-between;
@@ -53,7 +59,7 @@
     .account_Edit_user_wrapper {
         display: flex;
         align-items: flex-end;
-        gap: 10px;
+        gap: 30px;
     }
     button.button_account {
         background-color: #002060;

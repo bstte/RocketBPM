@@ -87,7 +87,7 @@ const styles = {
   iconStyle: {
     width: '32px',
     height: '32px',
-    color: '#000',
+    color: '#002060',
     transition: 'transform 0.3s ease',
   },
 };

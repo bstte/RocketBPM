@@ -32,40 +32,14 @@ const CustomContextMenu = ({
                 top: `${contextMenuPosition.y}px`,
                 left: `${contextMenuPosition.x}px`,
                 background: '#f5f5f5', 
-                borderRadius: '8px',
-                boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
+                boxShadow: "rgba(0, 0, 0, 0.1) 0px 2px 10px",
                 zIndex: 1000,
-                padding: '10px',
                 minWidth: '100px',
+                width: '300px'
             }}
         >
-            <button
-                style={{
-                    padding: '10px',
-                    background: 'none',
-                    border: 'none', 
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                   
-                    borderBottom: '1px solid #fff', 
-                }}
-                onClick={() => handleContextMenuOptionClick('progressArrow')}
-            >
-                Add Value Adding Process
-            </button>
-            <button
-                style={{
-                    padding: '10px',
-                    background: 'none',
-                    border: 'none', 
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                    width: '100%',
-                }}
-                onClick={() => handleContextMenuOptionClick('pentagon')}
-            >
-                Add Steer & Enable Process
-            </button>
+            <button className='menuitems' onClick={() => handleContextMenuOptionClick('progressArrow')}>Add Value Adding Process</button>
+            <button className='menuitems' onClick={() => handleContextMenuOptionClick('pentagon')}>Add Steer & Enable Process </button>
         </div>
     );
 };

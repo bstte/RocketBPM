@@ -251,7 +251,7 @@ const DraftProcesMapLevel = () => {
           markerEnd: {
             type: MarkerType.ArrowClosed,
           },
-          style: { stroke: "#000", strokeWidth: 2 },
+          style: { stroke: "#002060", strokeWidth: 2 },
           type: "step",
         }));
 

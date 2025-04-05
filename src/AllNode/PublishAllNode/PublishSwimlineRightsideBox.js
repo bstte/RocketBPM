@@ -43,7 +43,7 @@ const styles = {
     justifyContent: "center",
     position: "relative",
     backgroundColor: "red",
-    color: "#000000",
+    color: "#002060",
     width: "100%",
     height: "100%",
     boxSizing: "border-box",

@@ -352,7 +352,7 @@ console.log(data)
                     <MoreVertIcon />
                   </IconButton>
 
-                  <label> {getProcessTitle(item.processId)}</label>
+                  <label className="text_blue"> {getProcessTitle(item.processId)}</label>
 
                   {/* React Flow Component */}
                   <div className="ss_dash_slid_img" onClick={()=>NavigateOnClick(item)}>
@@ -559,7 +559,7 @@ console.log(data)
                 </table>
 
               </div>
-              <div className="ss_table_btm_para"><p>Activate the on <img src="../../../img/star.png" alt="" /> a process model to add a favorite.
+              <div className="ss_table_btm_para"><p>Activate the <img src="../../../img/star-regular.svg" alt="" /> on a process model to add a favorite.
               </p></div>
             </div>
 

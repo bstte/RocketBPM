@@ -26,8 +26,8 @@ const DetailsPopup = ({ isOpen, onClose, onSave, Details }) => {
   useEffect(() => {
     if (isOpen && Details) {
 
-      setTitle(Details.data.details.title || ""); // Set title if exists
-      setContent(Details.data.details.content || ""); // Set content if exists
+      setTitle(Details.data.details.title?.replace(/<br\s*\/?>/gi, " ") || ""); 
+      setContent(Details.data.details.content || ""); 
     }
   }, [Details, isOpen]);
 
@@ -70,7 +70,7 @@ const DetailsPopup = ({ isOpen, onClose, onSave, Details }) => {
             left: "30%",
             transform: "translate(-50%, -50%)",
             backgroundColor: "#ffffff",
-            border: "1px solid #000",
+            border: "1px solid #002060",
             boxShadow: "0 2px 5px #002060",
             overflow: "hidden",
             zIndex: 1001,
@@ -82,7 +82,7 @@ const DetailsPopup = ({ isOpen, onClose, onSave, Details }) => {
             display: "flex",
             flexDirection: "column",
             backgroundColor: "#ffffff",
-            border: "0px solid #000",
+            border: "0px solid #002060",
             overflow: "hidden",
             zIndex: 1001, 
             width: "100%", 

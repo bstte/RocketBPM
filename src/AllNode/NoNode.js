@@ -36,7 +36,7 @@ const styles = {
     position: "relative",
     textAlign: "center",
 
-    color: "#000",
+    color: "#002060",
     borderRadius: "3px",
     width: "100%",
     height: "100%",

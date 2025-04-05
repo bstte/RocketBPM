@@ -204,7 +204,7 @@ const styles = {
     position: "relative",
     textAlign: "center",
     backgroundColor: "red",
-    color: "#000000",
+    color: "#002060",
     width: "100%",
     height: "100%",
     // clipPath:

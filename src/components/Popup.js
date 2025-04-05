@@ -20,55 +20,55 @@ const Popup = ({
         top: `${popupPosition.y}px`,
       }}
     >
-      <div style={styles.popupTitle}>
-      {condition.status === true ? (
-  <button
-    onClick={() => handleCreateNewNode(condition.Page_Title)}
-    style={styles.popupButton}
-  >
-    Open Model
-  </button>
-) : (
-  <>
-    <button
-      onClick={() => handleCreateNewNode("ProcessMap")}
-      style={styles.popupButton}
-    >
-      Create New Process Map Model
-    </button>
-    <button
-      onClick={() => handleCreateNewNode("Swimlane")}
-      style={styles.popupButton}
-    >
-      Create New Swimlane Model
-    </button>
-  </>
-)}
+      <div className="newpopmenuitems" style={styles.popupTitle}>
+        {condition.status === true ? (
+          <button
+            onClick={() => handleCreateNewNode(condition.Page_Title)}
+            style={styles.popupButton}
+          >
+            Open Model
+          </button>
+        ) : (
+          <>
+            <button
+              onClick={() => handleCreateNewNode("ProcessMap")}
+              style={styles.popupButton}
+            >
+              Create New Process Map Model
+            </button>
+            <button
+              onClick={() => handleCreateNewNode("Swimlane")}
+              style={styles.popupButton}
+            >
+              Create New Swimlane Model
+            </button>
+          </>
+        )}
 
-   
-      
-            {selectedNodeType === "progressArrow" && (
-              <button
-                onClick={() => switchNodeType("pentagon")}
-                style={styles.popupButton}
-              >
-                {`Switch shape to Steer & Enable Process`}
-              </button>
-            )}
-            {selectedNodeType === "pentagon" && (
-              <button
-                onClick={() => switchNodeType("progressArrow")}
-                style={styles.popupButton}
-              >
-                {`Switch shape to Value Adding Process`}
-              </button>
-            )}
 
-            
+
+        {selectedNodeType === "progressArrow" && (
+          <button
+            onClick={() => switchNodeType("pentagon")}
+            style={styles.popupButton}
+          >
+            {`Switch shape to Steer & Enable Process`}
+          </button>
+        )}
+        {selectedNodeType === "pentagon" && (
+          <button
+            onClick={() => switchNodeType("progressArrow")}
+            style={styles.popupButton}
+          >
+            {`Switch shape to Value Adding Process`}
+          </button>
+        )}
+
+
         <button onClick={deleteNode} style={styles.popupButton}>
           {`Delete`}
         </button>
-        
+
 
       </div>
     </div>
@@ -96,13 +96,13 @@ const styles = {
     borderBottom: "1px solid #fff",
     paddingLeft: "25px",
     paddingRight: "25px",
-    paddingTop:"10px",
-    paddingBottom:"10px",
+    paddingTop: "10px",
+    paddingBottom: "10px",
     textAlign: "left",
     cursor: "pointer",
     transition: "background 0.2s",
-    fontWeight:"500",
-    fontSize:"0.9rem"
+    fontWeight: "300",
+    fontSize: "1rem",
   },
 };
 
