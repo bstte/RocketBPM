@@ -264,7 +264,7 @@ const Header = ({
                 {
                     isFavorite ? (
                       <div className="headericons active">                
-                          <img src={`${process.env.PUBLIC_URL}/img/star-solid.svg`} alt="Star" />
+                          <img src={`${process.env.PUBLIC_URL}/img/star-solid.svg`} alt="Star" onClick={savefav}/>
                         </div>
                     ) : (
                       <>

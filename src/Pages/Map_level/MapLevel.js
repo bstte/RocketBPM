@@ -23,12 +23,14 @@ import Header from "../../components/Header";
 import Popup from "../../components/Popup";
 import ArrowBoxNode from "../../AllNode/ArrowBoxNode";
 import PentagonNode from "../../AllNode/PentagonNode";
-import api, { addFavProcess, checkFavProcess, filter_draft } from "../../API/api";
+import api, { addFavProcess, checkFavProcess, filter_draft, removeFavProcess } from "../../API/api";
 import { BreadcrumbsContext } from "../../context/BreadcrumbsContext";
 import CustomContextMenu from "../../components/CustomContextMenu";
 import CustomAlert from "../../components/CustomAlert";
 import { useSelector } from "react-redux";
 import "../../Css/MapLevel.css";
+import StickyNote from "../../AllNode/StickyNote";
+import StickyNoteModel from "../../components/StickyNoteModel";
 
 const MapLevel = () => {
 
@@ -116,8 +118,8 @@ const MapLevel = () => {
   const [checkRecord, setcheckRecord] = useState(null);
   const [getPublishedDate, setgetPublishedDate] = useState("");
   const [getDraftedDate, setDraftedDate] = useState("");
-    const [process_img, setprocess_img] = useState("");
-  
+  const [process_img, setprocess_img] = useState("");
+
   const [contextMenuPosition, setContextMenuPosition] = useState({
     x: 0,
     y: 0,
@@ -127,19 +129,24 @@ const MapLevel = () => {
     x: 0,
     y: 0,
   });
+  const [selectedNodeStickyNoteId, setSelectedNodeStickyNoteId] = useState(null);
 
   const [showPopup, setShowPopup] = useState(false);
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   const [headerTitle, setHeaderTitle] = useState(`${title} `);
   const [isNavigating, setIsNavigating] = useState(false);
+  const [modalText, setModalText] = useState("");
 
   const [isFavorite, setIsFavorite] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
 
   const memoizedNodeTypes = useMemo(
     () => ({
       progressArrow: (props) => <ArrowBoxNode {...props} selectedNodeId={selectedNodeId} />,
       pentagon: (props) => <PentagonNode {...props} selectedNodeId={selectedNodeId} />,
+      StickyNote: (props) => <StickyNote {...props} selectedNodeId={selectedNodeId} />,
+
     }),
     [selectedNodeId]
   );
@@ -156,32 +163,32 @@ const MapLevel = () => {
 
 
 
-    useEffect(() => {
-      const checkpublishfunction = async () => {
-        if ( currentLevel !== 0) {
+  useEffect(() => {
+    const checkpublishfunction = async () => {
+      if (currentLevel !== 0) {
 
-          try {
-            const response = await filter_draft(ParentPageGroupId);
-            console.log("inside first map",response)
-            if(response?.data===true){
-              Setcheckpublish(false);
+        try {
+          const response = await filter_draft(ParentPageGroupId);
+          console.log("inside first map", response)
+          if (response?.data === true) {
+            Setcheckpublish(false);
 
-            }else{
-              Setcheckpublish(true);
+          } else {
+            Setcheckpublish(true);
 
-            }
-
-         
-          } catch (error) {
-            console.error("filter draft error", error)
           }
+
+
+        } catch (error) {
+          console.error("filter draft error", error)
         }
-  
-      };
-  
-      checkpublishfunction();
-    }, [ParentPageGroupId,currentLevel]);
-  
+      }
+
+    };
+
+    checkpublishfunction();
+  }, [ParentPageGroupId, currentLevel]);
+
   const handleLabelChange = useCallback(
     (nodeId, newLabel) => {
       setNodes((prevNodes) => {
@@ -206,16 +213,16 @@ const MapLevel = () => {
 
 
   useEffect(() => {
-    const checkfav=async()=>{
+    const checkfav = async () => {
       const user_id = LoginUser ? LoginUser.id : null;
       const process_id = id ? id : null;
-    
-    
+
+
       if (!user_id || !process_id) {
         console.error("Missing required fields:", { user_id, process_id });
         return; // Stop execution if any field is missing
       }
-    
+
       try {
         console.log("Sending data:", { user_id, process_id });
         const response = await checkFavProcess(user_id, process_id);
@@ -258,7 +265,6 @@ const MapLevel = () => {
           setDraftedDate("");
         }
         setprocess_img(data.process_img)
-
         const parsedNodes = data.nodes.map((node) => {
           const parsedData = JSON.parse(node.data);
           const parsedPosition = JSON.parse(node.position);
@@ -275,7 +281,7 @@ const MapLevel = () => {
               autoFocus: true,
               nodeResize: true,
               node_id: node.node_id,
-               isClickable:false
+              isClickable: false
             },
             type: node.type,
             id: node.node_id,
@@ -284,7 +290,7 @@ const MapLevel = () => {
             position: parsedPosition,
             draggable: Boolean(node.draggable),
             animated: Boolean(node.animated),
-           
+
           };
         });
 
@@ -361,9 +367,9 @@ const MapLevel = () => {
     console.log('Connected:', connection);
   }, []);
 
- 
 
-  const addNode = (type, position) => {
+
+  const addNode = (type, position,label = "") => {
     console.log("position", position);
     const newNodeId = uuidv4();
     let PageGroupId;
@@ -379,8 +385,9 @@ const MapLevel = () => {
         currentParentId !== null
           ? `Level${currentLevel}_${newNodeId}_${currentParentId}`
           : `Level${currentLevel}_${newNodeId}`,
+          
       data: {
-        label: "",
+        label:  type === "StickyNote" ? label : "",
         shape: type,
         onLabelChange: (newLabel) =>
           handleLabelChange(
@@ -394,7 +401,7 @@ const MapLevel = () => {
         defaultheight: "120px",
         nodeResize: true,
         autoFocus: true,
-        isClickable:true
+        isClickable: true
       },
       type: type,
       status: "draft",
@@ -418,7 +425,7 @@ const MapLevel = () => {
     }, 1000);
   };
 
- 
+
 
   const deleteNode = useCallback(() => {
     if (selectedNode) {
@@ -440,10 +447,16 @@ const MapLevel = () => {
       );
     }
   }, [selectedNode, setNodes, setEdges, title]);
-  
+
 
   const handleNodeRightClick = async (event, node) => {
     setShowContextMenu(false);
+
+    
+    if (node.type === "StickyNote") {
+      return;
+    }
+
     event.preventDefault();
     const newLevel = currentLevel + 1;
     const levelParam =
@@ -471,7 +484,7 @@ const MapLevel = () => {
       y: clientY - containerRect.top,
     });
     setShowPopup(true);
-  
+
   };
 
   useEffect(() => {
@@ -480,7 +493,7 @@ const MapLevel = () => {
   }, [location.state, currentLevel, title]);
 
   const handleCreateNewNode = async (type) => {
-    console.log("check nodes section ",nodes[0]?.PageGroupId)
+    console.log("check nodes section ", nodes[0]?.PageGroupId)
 
     if (selectedNode) {
       const selectedNodeData = nodes.find((node) => node.id === selectedNode);
@@ -494,7 +507,7 @@ const MapLevel = () => {
       if (confirmcondition) {
         if (type === "ProcessMap") {
           if (checkRecord.status === true) {
-           
+
             navigate(`/Draft-Process-View/${newLevel}/${selectedNode}`, {
               state: { id, title: selectedLabel, user, ParentPageGroupId: nodes[0]?.PageGroupId },
             });
@@ -547,15 +560,15 @@ const MapLevel = () => {
 
   // Save nodes and edges to backend
   const handleSaveNodes = async (savetype) => {
-    console.log("ParentPageGroupId",ParentPageGroupId)
+    console.log("ParentPageGroupId", ParentPageGroupId)
     if (savetype === "Published" && currentLevel !== 0) {
 
       try {
         const response = await filter_draft(ParentPageGroupId);
-        console.log("inside first",response)
+        console.log("inside first", response)
 
         if (response.data === true) {
-          alert("First published previous page");
+          alert("Publish all parent models first");
           return false
         }
       } catch (error) {
@@ -675,7 +688,13 @@ const MapLevel = () => {
 
   const handleContextMenuOptionClick = (type) => {
     setShowContextMenu(false);
-    addNode(type, { x: OriginalPosition.x, y: OriginalPosition.y  });
+    if(type==="StickyNote"){
+      setIsModalOpen(true);
+
+    }else{
+      addNode(type, { x: OriginalPosition.x, y: OriginalPosition.y });
+
+    }
   };
 
 
@@ -690,20 +709,20 @@ const MapLevel = () => {
     event.preventDefault();
     const flowContainer = document.querySelector(".flow-container");
     if (!flowContainer) return;
-  
+
     if (event.target.closest(".react-flow__node")) {
       return;
     }
-  
+
     const containerRect = flowContainer.getBoundingClientRect();
-  
+
 
     setShowContextMenu(true);
     setContextMenuPosition({
       x: event.clientX - containerRect.left,
       y: event.clientY - containerRect.top,
     });
-  
+
     // Original Position Ko Center Set Karna
     setOriginalPosition({
       x: event.clientX - containerRect.left,
@@ -711,7 +730,7 @@ const MapLevel = () => {
     });
     setShowPopup(false)
   };
-  
+
 
 
 
@@ -778,22 +797,33 @@ const MapLevel = () => {
     const user_id = LoginUser ? LoginUser.id : null;
     const process_id = id ? id : null;
     const type = user ? user.type : null;
-  
+
     if (!user_id || !process_id || !type) {
       console.error("Missing required fields:", { user_id, process_id, type });
-      return; // Stop execution if any field is missing
+      return;
     }
-  
+
+
     try {
-      console.log("Sending data:", { user_id, process_id, type });
-      const response = await addFavProcess(user_id, process_id, type);
-      setIsFavorite(true)
-      console.log("Response:", response);
+      if (isFavorite) {
+        console.log("inside")
+        // If already favorite, remove it
+        const response = await removeFavProcess(user_id, process_id);
+        setIsFavorite(false);
+        console.log("Removed from favorites:", response);
+      } else {
+        console.log("outside")
+        // Otherwise, add to favorites
+        const response = await addFavProcess(user_id, process_id, type);
+        setIsFavorite(true);
+        console.log("Added to favorites:", response);
+      }
     } catch (error) {
-      console.error("Add fav error:", error);
+      console.error("Favorite toggle error:", error);
     }
   };
-  
+
+
 
   const ExitNavigation = async () => {
     const confirmcondition = await handleBack();
@@ -818,25 +848,24 @@ const MapLevel = () => {
       nodes.map((n) => (n.id === node.id ? { ...n, originalPosition: { ...n.position } } : n))
     );
   };
-  
+
   const handleNodeDragStop = (event, node) => {
     const flowContainer = document.querySelector(".flow-container");
     if (!flowContainer) return; // Safety check for container existence
-  
+
     const { left, top, right, bottom } = flowContainer.getBoundingClientRect();
-  
+
     const nodeElement = document.querySelector(`[data-id="${node.id}"]`);
     if (!nodeElement) return; // Ensure the node is in the DOM
-  
+
     const nodeRect = nodeElement.getBoundingClientRect();
-  
-    // Detect if node moved out of container bounds
+
     const isOutOfBounds =
       nodeRect.left < left ||
       nodeRect.top < top ||
       nodeRect.right > right ||
       nodeRect.bottom > bottom;
-  
+
     if (isOutOfBounds) {
       setNodes((nodes) =>
         nodes.map((n) =>
@@ -845,10 +874,42 @@ const MapLevel = () => {
       );
     }
   };
-  
+
   const handleNodeClick = (event, node) => {
-    setSelectedNodeId(node.id); // Set the selected node ID
+    setSelectedNodeId(node.id); 
+    if (node.type === "StickyNote") {
+      setSelectedNodeStickyNoteId(node.id);
+      setModalText(node.data.label || "");
+
+      setIsModalOpen(true)
+    }
   };
+
+
+  const handleTextSubmit = (enteredText) => {
+    setIsModalOpen(false);
+
+    if (!enteredText) return;
+
+
+
+    // // If selectedNodeId is null, create a new node
+    if (selectedNodeStickyNoteId) {
+      setNodes((prevNodes) => {
+        return prevNodes.map((node) =>
+          node.id === selectedNodeStickyNoteId
+            ? { ...node, data: { ...node.data, label: enteredText } } 
+            : node
+        );
+      });
+      setSelectedNodeStickyNoteId(null)
+    }else{
+      addNode("StickyNote", { x: OriginalPosition.x, y: OriginalPosition.y }, enteredText);
+
+    }
+  };
+
+
 
   return (
     <div>
@@ -912,6 +973,14 @@ const MapLevel = () => {
                 contextMenuPosition={contextMenuPosition}
                 handleContextMenuOptionClick={handleContextMenuOptionClick}
               />
+
+              <StickyNoteModel
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onSubmit={handleTextSubmit}
+                initialValue={modalText} 
+              />
+
               <Popup
                 showPopup={showPopup}
                 popupPosition={popupPosition}

@@ -24,6 +24,7 @@ import PublishArrowBoxNode from "../../../AllNode/PublishAllNode/PublishArrowBox
 import PublishPentagonNode from "../../../AllNode/PublishAllNode/PublishPentagonNode";
 import { useSelector } from "react-redux";
 import apiExports from "../../../API/api";
+import StickyNote from "../../../AllNode/StickyNote";
 
 const DraftProcesMapLevel = () => {
 
@@ -113,6 +114,7 @@ const DraftProcesMapLevel = () => {
     () => ({
       progressArrow: PublishArrowBoxNode,
       pentagon: PublishPentagonNode,
+      StickyNote:StickyNote
     }),
     []
   );

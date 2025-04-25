@@ -168,7 +168,7 @@ const LoginUser = useSelector((state) => state.user.user);
         }
 
         setprocess_img(data.process_img)
-        const parsedNodes = data.nodes.map((node) => {
+        const parsedNodes = data.nodes.filter((node) => node.type !== "StickyNote").map((node) => {
           const parsedData = JSON.parse(node.data);
           const parsedPosition = JSON.parse(node.position);
           const parsedMeasured = JSON.parse(node.measured);

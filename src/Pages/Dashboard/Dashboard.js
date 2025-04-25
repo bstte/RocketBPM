@@ -41,34 +41,87 @@ const Dashboard = () => {
     const process = ProcessTitle?.find((p) => p.id === parseInt(id));
     return process ? process.process_title : "";
   };
+  // useEffect(() => {
+  //   const getUserNodesData = async () => {
+  //     try {
+  //       const user_id = user?.id;
+  //       if (!user_id) return;
+
+  //       const response = await getUserNodes(parseInt(user_id));
+  //       console.log("response", response);
+  //       setProcessTitle(response.ProcessTitle);
+
+  //       if (!response?.nodes || !response?.assignedProcesses) return;
+
+
+  //       const assignedUserData = response.assignedProcesses.reduce((acc, p) => {
+  //         if (!acc[p.user_id]) {
+  //           acc[p.user_id] = {};
+  //         }
+  //         acc[p.user_id][p.process_id] = p.Role;
+  //         return acc;
+  //       }, {});
+
+  //       const nodesArray = response.nodes[""] || [];
+
+  //       const categorizedNodes = nodesArray.reduce((acc, node) => {
+  //         const processId = String(node.Process_id);
+  //         const assignedRole =
+  //           assignedUserData[node.user_id]?.[node.Process_id] || "Self";
+
+  //         if (!acc[processId]) {
+  //           acc[processId] = {
+  //             processId,
+  //             type: assignedRole !== "Self" ? "assign" : "self",
+  //             id: node.user_id,
+  //             role: assignedRole,
+  //           };
+  //         }
+
+  //         return acc;
+  //       }, {});
+
+  //       const processedNodes = Object.values(categorizedNodes);
+  //       console.log("processedNodes", processedNodes);
+
+  //       setFilteredNodes(processedNodes);
+  //       localStorage.setItem("filteredNodes", JSON.stringify(processedNodes));
+  //     } catch (error) {
+  //       console.error("getUserNodes error:", error);
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+  //   };
+
+  //   getUserNodesData();
+  // }, [user?.id]);
+
+
   useEffect(() => {
     const getUserNodesData = async () => {
       try {
         const user_id = user?.id;
         if (!user_id) return;
-
+  
         const response = await getUserNodes(parseInt(user_id));
         console.log("response", response);
         setProcessTitle(response.ProcessTitle);
-
-        if (!response?.nodes || !response?.assignedProcesses) return;
-
-
+  
+        if (!response?.assignedProcesses) return;
+  
         const assignedUserData = response.assignedProcesses.reduce((acc, p) => {
-          if (!acc[p.user_id]) {
-            acc[p.user_id] = {};
-          }
+          if (!acc[p.user_id]) acc[p.user_id] = {};
           acc[p.user_id][p.process_id] = p.Role;
           return acc;
         }, {});
-
-        const nodesArray = response.nodes[""] || [];
-
+  
+        const nodesArray = response.nodes?.[""] || [];
+  
         const categorizedNodes = nodesArray.reduce((acc, node) => {
           const processId = String(node.Process_id);
           const assignedRole =
             assignedUserData[node.user_id]?.[node.Process_id] || "Self";
-
+  
           if (!acc[processId]) {
             acc[processId] = {
               processId,
@@ -77,13 +130,26 @@ const Dashboard = () => {
               role: assignedRole,
             };
           }
-
+  
           return acc;
         }, {});
-
+  
+        // ✅ Add missing processes (which have no nodes)
+        response.ProcessTitle.forEach((process) => {
+          const processId = String(process.id);
+          if (!categorizedNodes[processId]) {
+            categorizedNodes[processId] = {
+              processId,
+              type: "self",
+              id: user_id,
+              role: "None",
+            };
+          }
+        });
+  
         const processedNodes = Object.values(categorizedNodes);
         console.log("processedNodes", processedNodes);
-
+  
         setFilteredNodes(processedNodes);
         localStorage.setItem("filteredNodes", JSON.stringify(processedNodes));
       } catch (error) {
@@ -92,9 +158,12 @@ const Dashboard = () => {
         setIsLoading(false);
       }
     };
-
+  
     getUserNodesData();
   }, [user?.id]);
+
+  
+  
 
   const getPublishedDatedata = useCallback(async (processId) => {
     console.log("hit prototype")

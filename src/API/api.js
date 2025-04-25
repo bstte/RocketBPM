@@ -3,9 +3,11 @@ import axios from 'axios';
 // const baseUrl = 'https://teamwebdevelopers.com/proto-type/api'
 // export const ImageBaseUrl = 'https://teamwebdevelopers.com/proto-type/public/'
 
-const baseUrl = 'https://admin.rocketbpm.com/api'
-export const ImageBaseUrl = 'https://admin.rocketbpm.com/public/'
-// const baseUrl ='http://localhost:8000/api/'
+// const baseUrl = 'https://admin.rocketbpm.com/api'
+// export const ImageBaseUrl = 'https://admin.rocketbpm.com/public/'
+export const ImageBaseUrl = 'http://localhost:8000/'
+
+const baseUrl ='http://localhost:8000/api/'
 export const defaultApi = axios.create({
   baseURL: baseUrl,
   headers: {
@@ -326,6 +328,19 @@ export const addFavProcess = async (user_id, process_id, type) => {
     throw error;
   }
 };
+
+
+export const removeFavProcess = async (user_id, process_id) => {
+  try {
+    const response = await api.post('/remove-fav-process', { user_id, process_id });
+    return response.data;
+  } catch (error) {
+    console.error('Error removing favorite process:', error);
+    throw error;
+  }
+};
+
+
 
 export const checkFavProcess = async (user_id, process_id) => {
   try {

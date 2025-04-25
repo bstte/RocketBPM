@@ -120,7 +120,7 @@ const AddUser = () => {
 
     <div className="ss_body_div">
       <div className="ss_add_user_bx">
-      <div className="ss_add_user_img_dv1"><img src="https://newprocesslab.com/wp-content/uploads/2021/12/cropped-Logo_NewProcessLab_60x523-1-1.png" alt='no img'/></div>
+      <div className="ss_add_user_img_dv1"><img src="/img/RocketBPM_rocket_logo.png" alt='no img' style={{width: "15vw"}}/></div>
       <form onSubmit={handleSubmit}>
         {/* Email Input */}
         <h3>Add User</h3>

@@ -425,7 +425,6 @@ const SwimlaneModel = () => {
         return;
       }
 
-      console.log("add position", `${type}`, position)
 
       const newNodeId = uuidv4();
       const newNode = {
@@ -554,7 +553,7 @@ const SwimlaneModel = () => {
         const response = await filter_draft(ParentPageGroupId);
         console.log("inside first", response)
         if (response.data === true) {
-          alert("First published previous page");
+          alert("Publish all parent models first");
           return false;
         }
       } catch (error) {

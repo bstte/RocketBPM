@@ -40,6 +40,8 @@ const CustomContextMenu = ({
         >
             <button className='menuitems' onClick={() => handleContextMenuOptionClick('progressArrow')}>Add Value Adding Process</button>
             <button className='menuitems' onClick={() => handleContextMenuOptionClick('pentagon')}>Add Steer & Enable Process </button>
+            <button className='menuitems' onClick={() => handleContextMenuOptionClick('StickyNote')}>Sticky Note</button>
+
         </div>
     );
 };
