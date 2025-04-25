@@ -128,9 +128,11 @@
     padding: 5px 0;
 }
 
-.ss_title_bar .css-1ygil4i-MuiToolbar-root {
+.ss_title_bar .MuiToolbar-root.MuiToolbar-gutters.MuiToolbar-regular.boxHead {
     min-height: 37px;
     border: 1px solid #002060;
+    padding-left: 15px;
+    padding-right: 15px;
 }
 
 .ss_add_proces_img img {
