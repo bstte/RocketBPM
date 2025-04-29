@@ -12,7 +12,7 @@ const YesNode = ({ data }) => {
           ...styles.labelBox,
         }}
       >
-        <span style={styles.text}>
+        <span className="yeslabel" style={styles.text}>
 
           yes
         </span>
@@ -54,7 +54,7 @@ const styles = {
     height: "100%",
     fontWeight: "medium", // **Added for bold text**
     fontFamily: "'Poppins', sans-serif",
-    fontSize: "16px", // Ensure font size matches input
+    fontSize: "12px", // Ensure font size matches input
     wordBreak: "break-word", // Allow text to wrap
   },
 };

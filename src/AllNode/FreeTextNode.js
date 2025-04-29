@@ -4,7 +4,7 @@ const FreeTextNode = ({ data }) => {
   return (
     <div style={styles.wrapper}>
       <div style={styles.labelBox}>
-        <span style={styles.text}>{data.label.split("\n").map((line, index) => (
+        <span className="freetext" style={styles.text}>{data.label.split("\n").map((line, index) => (
           <React.Fragment key={index}>
             {line}
             <br />
@@ -19,7 +19,7 @@ const styles = {
   wrapper: {},
   labelBox: {},
   text: {
-    fontSize: "16px",
+    fontSize: "12px",
     whiteSpace: "pre-line", // Ensures line breaks are respected
   },
 };

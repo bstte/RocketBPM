@@ -31,57 +31,33 @@ import { useSelector } from "react-redux";
 import "../../Css/MapLevel.css";
 import StickyNote from "../../AllNode/StickyNote";
 import StickyNoteModel from "../../components/StickyNoteModel";
-
 const MapLevel = () => {
-
   const [totalHeight, setTotalHeight] = useState(0);
   const [windowHeight, setWindowHeight] = useState(window.innerHeight);
-  // const windowSize = {
-  //   width: window.innerWidth - 300,
-  //   height: window.innerHeight - 300,
-  // };
-
   const [selectedNodeId, setSelectedNodeId] = useState(null);
-  const [checkpublish, Setcheckpublish] = useState(true)
-
-  // const [height, setHeight] = useState(0);
-  // const [appheaderheight, setahHeight] = useState(0);
+  const [checkpublish, Setcheckpublish] = useState(true);
   const [remainingHeight, setRemainingHeight] = useState(0);
 
+  // const flowcontainer = document.querySelector(".flow-container");
+  // const flowcontainerwidth = flowcontainer ? flowcontainer.getBoundingClientRect().width : 0;
+  // alert(flowcontainerwidth);
   useEffect(() => {
     const calculateHeights = () => {
       const element = document.querySelector(".ss_new_hed");
       const element2 = document.querySelector(".app-header");
-
-      // Ensure elements are found before accessing height
       const elementHeight = element ? element.getBoundingClientRect().height : 0;
       const appHeaderHeight = element2 ? element2.getBoundingClientRect().height : 0;
-
-      // setHeight(elementHeight);
-      // setahHeight(appHeaderHeight);
-
-      // Correct calculation inside the function
       const newHeight = window.innerHeight - (elementHeight + appHeaderHeight);
       setRemainingHeight(newHeight - 40);
-
-
     };
-
-    // Initial setup
     calculateHeights();
-
-    // Handle window resize
     window.addEventListener("resize", calculateHeights);
-
-    // Cleanup on unmount
     return () => window.removeEventListener("resize", calculateHeights);
   }, []);
-
   useEffect(() => {
     const calculateHeight = () => {
       const breadcrumbsElement = document.querySelector(".breadcrumbs-container");
       const appHeaderElement = document.querySelector(".app-header");
-
       if (breadcrumbsElement && appHeaderElement) {
         const combinedHeight = breadcrumbsElement.offsetHeight + appHeaderElement.offsetHeight + 100;
         setTotalHeight(combinedHeight);
@@ -97,18 +73,14 @@ const MapLevel = () => {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
-
-
   const navigate = useNavigate();
   const { level, parentId } = useParams();
   const location = useLocation();
   const LoginUser = useSelector((state) => state.user.user);
-
   const { id, title, user, ParentPageGroupId } = location.state || {};
   const currentLevel = level ? parseInt(level, 10) : 0;
   const currentParentId = parentId || null;
-  const { addBreadcrumb, removeBreadcrumbsAfter } =
-    useContext(BreadcrumbsContext);
+  const { addBreadcrumb, removeBreadcrumbsAfter } = useContext(BreadcrumbsContext);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -119,38 +91,30 @@ const MapLevel = () => {
   const [getPublishedDate, setgetPublishedDate] = useState("");
   const [getDraftedDate, setDraftedDate] = useState("");
   const [process_img, setprocess_img] = useState("");
-
   const [contextMenuPosition, setContextMenuPosition] = useState({
     x: 0,
     y: 0,
   });
-
   const [OriginalPosition, setOriginalPosition] = useState({
     x: 0,
     y: 0,
   });
   const [selectedNodeStickyNoteId, setSelectedNodeStickyNoteId] = useState(null);
-
   const [showPopup, setShowPopup] = useState(false);
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   const [headerTitle, setHeaderTitle] = useState(`${title} `);
   const [isNavigating, setIsNavigating] = useState(false);
   const [modalText, setModalText] = useState("");
-
   const [isFavorite, setIsFavorite] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-
   const memoizedNodeTypes = useMemo(
     () => ({
       progressArrow: (props) => <ArrowBoxNode {...props} selectedNodeId={selectedNodeId} />,
       pentagon: (props) => <PentagonNode {...props} selectedNodeId={selectedNodeId} />,
       StickyNote: (props) => <StickyNote {...props} selectedNodeId={selectedNodeId} />,
-
     }),
     [selectedNodeId]
   );
-
   const memoizedEdgeTypes = useMemo(
     () => ({
       smoothstep: SmoothStepEdge,
@@ -159,14 +123,9 @@ const MapLevel = () => {
     }),
     []
   );
-
-
-
-
   useEffect(() => {
     const checkpublishfunction = async () => {
       if (currentLevel !== 0) {
-
         try {
           const response = await filter_draft(ParentPageGroupId);
           console.log("inside first map", response)
@@ -177,18 +136,13 @@ const MapLevel = () => {
             Setcheckpublish(true);
 
           }
-
-
         } catch (error) {
           console.error("filter draft error", error)
         }
       }
-
     };
-
     checkpublishfunction();
   }, [ParentPageGroupId, currentLevel]);
-
   const handleLabelChange = useCallback(
     (nodeId, newLabel) => {
       setNodes((prevNodes) => {
@@ -197,32 +151,23 @@ const MapLevel = () => {
             ? { ...node, data: { ...node.data, label: newLabel } }
             : node
         );
-
-        // Check if the label has changed to set unsaved changes
         const changedNode = prevNodes.find((n) => n.id === nodeId);
         if (changedNode && changedNode.data.label !== newLabel) {
           // setHasUnsavedChanges(true);
         }
-
         return updatedNodes;
       });
     },
     [setNodes]
   );
-
-
-
   useEffect(() => {
     const checkfav = async () => {
       const user_id = LoginUser ? LoginUser.id : null;
       const process_id = id ? id : null;
-
-
       if (!user_id || !process_id) {
         console.error("Missing required fields:", { user_id, process_id });
-        return; // Stop execution if any field is missing
+        return;
       }
-
       try {
         console.log("Sending data:", { user_id, process_id });
         const response = await checkFavProcess(user_id, process_id);
@@ -240,25 +185,18 @@ const MapLevel = () => {
             : `Level${currentLevel}`;
         const user_id = user ? user.id : null;
         const Process_id = id ? id : null;
-
         const publishedStatus = "Published";
         const draftStatus = "Draft";
-
         const [publishedResponse, draftResponse, data] = await Promise.all([
           api.GetPublishedDate(levelParam, parseInt(user_id), Process_id, publishedStatus),
           api.GetPublishedDate(levelParam, parseInt(user_id), Process_id, draftStatus),
           api.getNodes(levelParam, parseInt(user_id), Process_id),
         ]);
-
-
-        // Set Published date
         if (publishedResponse.status === true) {
           setgetPublishedDate(publishedResponse.created_at || "");
         } else {
           setgetPublishedDate("");
         }
-
-        // Set Draft date
         if (draftResponse.status === true) {
           setDraftedDate(draftResponse.created_at || "");
         } else {
@@ -269,14 +207,12 @@ const MapLevel = () => {
           const parsedData = JSON.parse(node.data);
           const parsedPosition = JSON.parse(node.position);
           const parsedMeasured = JSON.parse(node.measured);
-
           return {
             ...node,
             data: {
               ...parsedData,
               onLabelChange: (newLabel) =>
                 handleLabelChange(node.node_id, newLabel),
-
               width_height: parsedMeasured,
               autoFocus: true,
               nodeResize: true,
@@ -285,15 +221,12 @@ const MapLevel = () => {
             },
             type: node.type,
             id: node.node_id,
-
             measured: parsedMeasured,
             position: parsedPosition,
             draggable: Boolean(node.draggable),
             animated: Boolean(node.animated),
-
           };
         });
-
         const parsedEdges = data.edges.map((edge) => ({
           ...edge,
           animated: Boolean(edge.animated),
@@ -303,7 +236,6 @@ const MapLevel = () => {
           style: { stroke: "#002060", strokeWidth: 2 },
           type: "step",
         }));
-
         setNodes(parsedNodes);
         setEdges(parsedEdges);
       } catch (error) {
@@ -311,8 +243,6 @@ const MapLevel = () => {
         alert("Failed to fetch object. Please refresh this page.");
       }
     };
-
-
     checkfav()
     fetchNodes();
   }, [
@@ -325,29 +255,22 @@ const MapLevel = () => {
     user,
     id,
   ]);
-
   useEffect(() => {
     const label = currentLevel === 0 ? title : title;
     const path =
       currentLevel === 0
         ? "/Map-level"
         : `/level/${currentLevel}/${currentParentId}`;
-
     const state = {
       id: id,
       title: title,
       user: user,
     };
-
     if (currentLevel >= 0 && isNavigating) {
-      // Ensure the 0th breadcrumb is not removed
       const safeIndex = Math.max(1, currentLevel - 1);
       removeBreadcrumbsAfter(safeIndex);
     }
-
     addBreadcrumb(label, path, state);
-    // console.log("isNavigating",isNavigating)
-
     setIsNavigating(false);
   }, [
     currentLevel,
@@ -359,35 +282,25 @@ const MapLevel = () => {
     title,
     user,
   ]);
-
-
-
   const onConnect = useCallback((connection) => {
-    // Your callback logic here
     console.log('Connected:', connection);
   }, []);
-
-
-
-  const addNode = (type, position,label = "") => {
+  const addNode = (type, position, label = "") => {
     console.log("position", position);
     const newNodeId = uuidv4();
     let PageGroupId;
-
     if (nodes.length === 0) {
       PageGroupId = uuidv4();
     } else {
       PageGroupId = nodes[0]?.PageGroupId;
     }
-
     const newNode = {
       id:
         currentParentId !== null
           ? `Level${currentLevel}_${newNodeId}_${currentParentId}`
           : `Level${currentLevel}_${newNodeId}`,
-          
       data: {
-        label:  type === "StickyNote" ? label : "",
+        label: type === "StickyNote" ? label : "",
         shape: type,
         onLabelChange: (newLabel) =>
           handleLabelChange(
@@ -396,7 +309,6 @@ const MapLevel = () => {
               : `Level${currentLevel}_${newNodeId}`,
             newLabel
           ),
-
         defaultwidt: "230px",
         defaultheight: "120px",
         nodeResize: true,
@@ -412,7 +324,6 @@ const MapLevel = () => {
       Page_Title: "ProcessMap",
       PageGroupId: PageGroupId
     };
-
     setNodes((nds) => nds.concat(newNode));
     setHasUnsavedChanges(true);
     setSelectedNodeId(newNode.id);
@@ -424,9 +335,6 @@ const MapLevel = () => {
       );
     }, 1000);
   };
-
-
-
   const deleteNode = useCallback(() => {
     if (selectedNode) {
       CustomAlert.confirm(
@@ -447,16 +355,11 @@ const MapLevel = () => {
       );
     }
   }, [selectedNode, setNodes, setEdges, title]);
-
-
   const handleNodeRightClick = async (event, node) => {
     setShowContextMenu(false);
-
-    
     if (node.type === "StickyNote") {
       return;
     }
-
     event.preventDefault();
     const newLevel = currentLevel + 1;
     const levelParam =
@@ -471,43 +374,32 @@ const MapLevel = () => {
       Process_id
     );
     setcheckRecord(data)
-
-
     setSelectedNode(node.id);
     setPopupTitle(node.data.label || "Node Actions");
     const { clientX, clientY } = event;
     const flowContainer = document.querySelector(".flow-container");
     const containerRect = flowContainer.getBoundingClientRect();
-
     setPopupPosition({
       x: clientX - containerRect.left,
       y: clientY - containerRect.top,
     });
     setShowPopup(true);
-
   };
-
   useEffect(() => {
     const stateTitle = location.state?.title || title;
     setHeaderTitle(`${stateTitle}`);
   }, [location.state, currentLevel, title]);
-
   const handleCreateNewNode = async (type) => {
     console.log("check nodes section ", nodes[0]?.PageGroupId)
-
     if (selectedNode) {
       const selectedNodeData = nodes.find((node) => node.id === selectedNode);
       const selectedLabel = selectedNodeData?.data?.label || "";
-
       const newLevel = currentLevel + 1;
-
       setShowPopup(false);
-
       const confirmcondition = await handleBack();
       if (confirmcondition) {
         if (type === "ProcessMap") {
           if (checkRecord.status === true) {
-
             navigate(`/Draft-Process-View/${newLevel}/${selectedNode}`, {
               state: { id, title: selectedLabel, user, ParentPageGroupId: nodes[0]?.PageGroupId },
             });
@@ -516,9 +408,7 @@ const MapLevel = () => {
               state: { id, title: selectedLabel, user, ParentPageGroupId: nodes[0]?.PageGroupId },
             });
           }
-
         }
-
         if (type === "Swimlane") {
           if (checkRecord.status === true) {
             navigate(`/Draft-Swim-lanes-View/level/${newLevel}/${selectedNode}`, {
@@ -537,7 +427,6 @@ const MapLevel = () => {
               `/swimlane/level/${newLevel}/${selectedNode}`,
               { id, title, user, parentId: selectedNode, level: newLevel }
             );
-
             navigate(`/swimlane/level/${newLevel}/${selectedNode}`, {
               state: {
                 id,
@@ -549,16 +438,10 @@ const MapLevel = () => {
               },
             });
           }
-
         }
       }
-
-
-
     }
   };
-
-  // Save nodes and edges to backend
   const handleSaveNodes = async (savetype) => {
     console.log("ParentPageGroupId", ParentPageGroupId)
     if (savetype === "Published" && currentLevel !== 0) {
@@ -575,7 +458,6 @@ const MapLevel = () => {
         console.error("filter draft error", error)
       }
     }
-
     const Level =
       currentParentId !== null
         ? `Level${currentLevel}_${currentParentId}`
@@ -636,7 +518,6 @@ const MapLevel = () => {
           })
         ),
       });
-      // console.log("response",response)
       alert(response.message);
       setHasUnsavedChanges(false);
     } catch (error) {
@@ -650,7 +531,6 @@ const MapLevel = () => {
       }
     }
   };
-
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === "Delete" && selectedNode) {
@@ -662,9 +542,6 @@ const MapLevel = () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [selectedNode, deleteNode]);
-
-
-
   const switchNodeType = (type) => {
     if (selectedNode) {
       setNodes((nds) =>
@@ -685,26 +562,22 @@ const MapLevel = () => {
       setShowPopup(false);
     }
   };
-
   const handleContextMenuOptionClick = (type) => {
     setShowContextMenu(false);
-    if(type==="StickyNote"){
+    if (type === "StickyNote") {
       setIsModalOpen(true);
 
-    }else{
+    } else {
       addNode(type, { x: OriginalPosition.x, y: OriginalPosition.y });
 
     }
   };
-
-
   const handlePageClick = useCallback(() => {
     setShowPopup(false);
     if (showContextMenu) {
       setShowContextMenu(false);
     }
   }, [showContextMenu]);
-
   const handleGlobalContextMenu = (event) => {
     event.preventDefault();
     const flowContainer = document.querySelector(".flow-container");
@@ -713,27 +586,18 @@ const MapLevel = () => {
     if (event.target.closest(".react-flow__node")) {
       return;
     }
-
     const containerRect = flowContainer.getBoundingClientRect();
-
-
     setShowContextMenu(true);
     setContextMenuPosition({
       x: event.clientX - containerRect.left,
       y: event.clientY - containerRect.top,
     });
-
-    // Original Position Ko Center Set Karna
     setOriginalPosition({
       x: event.clientX - containerRect.left,
       y: event.clientY - containerRect.top,
     });
     setShowPopup(false)
   };
-
-
-
-
   useEffect(() => {
     document.addEventListener("click", handlePageClick);
 
@@ -741,19 +605,13 @@ const MapLevel = () => {
       document.removeEventListener("click", handlePageClick);
     };
   }, [handlePageClick]);
-
-
-
   const iconNames = {};
-
-  // Called when edge is reconnected
   const onReconnect = useCallback(
     (oldEdge, newConnection) => {
       setEdges((prevEdges) => reconnectEdge(oldEdge, newConnection, prevEdges));
     },
     [setEdges]
   );
-
   const handleBack = async () => {
     if (hasUnsavedChanges) {
       const userConfirmed = window.confirm(
@@ -762,12 +620,10 @@ const MapLevel = () => {
       if (!userConfirmed) {
         return false;
       }
-      await handleSaveNodes("draft"); // Wait for saving to complete
+      await handleSaveNodes("draft");
     }
     return true;
   };
-
-
   const styles = {
     appContainer: {
       display: "flex",
@@ -802,18 +658,13 @@ const MapLevel = () => {
       console.error("Missing required fields:", { user_id, process_id, type });
       return;
     }
-
-
     try {
       if (isFavorite) {
         console.log("inside")
-        // If already favorite, remove it
         const response = await removeFavProcess(user_id, process_id);
         setIsFavorite(false);
         console.log("Removed from favorites:", response);
       } else {
-        console.log("outside")
-        // Otherwise, add to favorites
         const response = await addFavProcess(user_id, process_id, type);
         setIsFavorite(true);
         console.log("Added to favorites:", response);
@@ -822,9 +673,6 @@ const MapLevel = () => {
       console.error("Favorite toggle error:", error);
     }
   };
-
-
-
   const ExitNavigation = async () => {
     const confirmcondition = await handleBack();
     if (confirmcondition) {
@@ -840,32 +688,23 @@ const MapLevel = () => {
       }
     }
   }
-
-
   const handleNodeDragStart = (event, node) => {
-    // Store the original position before dragging
     setNodes((nodes) =>
       nodes.map((n) => (n.id === node.id ? { ...n, originalPosition: { ...n.position } } : n))
     );
   };
-
   const handleNodeDragStop = (event, node) => {
     const flowContainer = document.querySelector(".flow-container");
-    if (!flowContainer) return; // Safety check for container existence
-
+    if (!flowContainer) return;
     const { left, top, right, bottom } = flowContainer.getBoundingClientRect();
-
     const nodeElement = document.querySelector(`[data-id="${node.id}"]`);
-    if (!nodeElement) return; // Ensure the node is in the DOM
-
+    if (!nodeElement) return;
     const nodeRect = nodeElement.getBoundingClientRect();
-
     const isOutOfBounds =
       nodeRect.left < left ||
       nodeRect.top < top ||
       nodeRect.right > right ||
       nodeRect.bottom > bottom;
-
     if (isOutOfBounds) {
       setNodes((nodes) =>
         nodes.map((n) =>
@@ -874,43 +713,31 @@ const MapLevel = () => {
       );
     }
   };
-
   const handleNodeClick = (event, node) => {
-    setSelectedNodeId(node.id); 
+    setSelectedNodeId(node.id);
     if (node.type === "StickyNote") {
       setSelectedNodeStickyNoteId(node.id);
       setModalText(node.data.label || "");
-
       setIsModalOpen(true)
     }
   };
-
-
   const handleTextSubmit = (enteredText) => {
     setIsModalOpen(false);
-
     if (!enteredText) return;
-
-
-
-    // // If selectedNodeId is null, create a new node
     if (selectedNodeStickyNoteId) {
       setNodes((prevNodes) => {
         return prevNodes.map((node) =>
           node.id === selectedNodeStickyNoteId
-            ? { ...node, data: { ...node.data, label: enteredText } } 
+            ? { ...node, data: { ...node.data, label: enteredText } }
             : node
         );
       });
       setSelectedNodeStickyNoteId(null)
-    }else{
+    } else {
       addNode("StickyNote", { x: OriginalPosition.x, y: OriginalPosition.y }, enteredText);
 
     }
   };
-
-
-
   return (
     <div>
       <Header
@@ -930,8 +757,6 @@ const MapLevel = () => {
         isFavorite={isFavorite}
         Process_img={process_img}
         checkpublish={checkpublish}
-
-
       />
       {/* <button onClick={checkbreadcrums}>
         Test
@@ -945,6 +770,7 @@ const MapLevel = () => {
               onContextMenu={handleGlobalContextMenu}
             >
               <ReactFlow
+                //nodeExtent={[[0, 0], [flowcontainerwidth, remainingHeight]]}
                 nodes={nodes}
                 edges={edges}
                 onNodesChange={onNodesChange}
@@ -957,30 +783,30 @@ const MapLevel = () => {
                 minZoom={0.1}
                 zoomOnScroll={false}
                 zoomOnPinch={false}
+                zoomOnDoubleClick={false}
                 panOnDrag={false}
-                fitView
+                fitView={true}
                 onNodeDragStart={handleNodeDragStart}
                 onNodeDragStop={handleNodeDragStop}
                 panOnScroll={false}
-                maxZoom={0.6}
+                maxZoom={0.5}
                 proOptions={{ hideAttribution: true }}
                 onNodeContextMenu={handleNodeRightClick}
+                preventScrolling={false}
+                nodesDraggable={true}
                 style={styles.reactFlowStyle}
               ></ReactFlow>
-
               <CustomContextMenu
                 showContextMenu={showContextMenu}
                 contextMenuPosition={contextMenuPosition}
                 handleContextMenuOptionClick={handleContextMenuOptionClick}
               />
-
               <StickyNoteModel
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onSubmit={handleTextSubmit}
-                initialValue={modalText} 
+                initialValue={modalText}
               />
-
               <Popup
                 showPopup={showPopup}
                 popupPosition={popupPosition}
@@ -1000,7 +826,4 @@ const MapLevel = () => {
     </div>
   );
 };
-
-
-
 export default MapLevel;

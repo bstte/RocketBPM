@@ -65,7 +65,9 @@
     border-top: 0;
     padding: 10px 18px 10px 10px !important;
 }
-
+.ss_dash_slid_bx .slick-slide>div {
+    width: 100%;
+}
 .ss_dash_slid_bx {
     border: 0px solid #002060;
     box-shadow: 0px 0px 0px #afadad5e;
@@ -79,10 +81,11 @@
     border: 1px solid #002060;
     min-height: auto;
     border-radius: 0px;
-    width: 92% !important;
+    width: 90% !important;
     position: relative;
-    height: 231.6px;
+    height: 230.6px;
     margin-left: 7px;
+    max-width: 476px;
 }
 
 .ss_dash_slid_img img {
@@ -131,8 +134,6 @@
 .ss_title_bar .MuiToolbar-root.MuiToolbar-gutters.MuiToolbar-regular.boxHead {
     min-height: 37px;
     border: 1px solid #002060;
-    padding-left: 15px;
-    padding-right: 15px;
 }
 
 .ss_add_proces_img img {
@@ -279,8 +280,8 @@ td {
 }
 
 .ss_profile_rit_div img {
-    width: 34px;
-    height: 34px;
+    width: 22px !important;
+    height: 22px;
     border-radius: 100px;
     display: block;
     object-fit: cover;
@@ -331,9 +332,9 @@ td {
 
 .ss_header_new_right div button {
     font-size: 12px !important;
-    padding: 3px 16px !important;
+    padding: 2px 16px 3px 16px !important;
     text-transform: uppercase;
-    height: 34px;
+    height: 22px;
 }
 
 .ss_header_new_right div div {
@@ -403,13 +404,14 @@ span.ss_hm_dash_home_icon {
 }
 
 .ss_hm_dash_home_icon img {
-    width: 34px;
-    height: 34px;
+    width: 22px;
+    height: 22px;
 }
 
 .ss_hm_dash_home_icon span {
     display: flex;
     text-transform: capitalize;
+    line-height: 22px;
 }
 
 
@@ -458,4 +460,13 @@ button.header_share_btn img {
 .css-1ygil4i-MuiToolbar-root.boxHead {
     padding-left: 15px;
     padding-right: 15px;
+}
+.process_boxes {
+    display: flex;
+    gap: 2%;
+}
+.process_boxes>div {
+    flex: 0 0 30.3%;
+    max-width: 30.3%;
+    margin-left: 0 !important;
 }

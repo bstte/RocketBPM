@@ -21,7 +21,7 @@ const CustomContextPopup = ({
         minWidth: '150px', 
       }}
     >
-      <div style={{
+      <div className='swimlanemenuclose' style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -51,21 +51,14 @@ const CustomContextPopup = ({
 
       {menuItems.map((item, index) => (
         <div
+          className='menuitems'
           key={index}
-          style={{
-            padding: '8px 12px',
-            cursor: 'pointer',
-            backgroundColor: '#e7e7e7',
-            color:'#011f60',
-            fontWeight:'500',
-            borderBottom: item.borderBottom ? '1px solid #fff' : 'none',
-          }}
           onClick={() => {
             item.action();
             onClose();
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = '#002060';
+            e.currentTarget.style.backgroundColor = '#ff364a';
             e.currentTarget.style.color = '#fff'
           }}
           onMouseLeave={(e) => {

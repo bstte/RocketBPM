@@ -3,11 +3,12 @@ import axios from 'axios';
 // const baseUrl = 'https://teamwebdevelopers.com/proto-type/api'
 // export const ImageBaseUrl = 'https://teamwebdevelopers.com/proto-type/public/'
 
-const baseUrl = 'https://admin.rocketbpm.com/api'
-export const ImageBaseUrl = 'https://admin.rocketbpm.com/public/'
-// export const ImageBaseUrl = 'http://localhost:8000/'
+// const baseUrl = 'https://admin.rocketbpm.com/api'
+// export const ImageBaseUrl = 'https://admin.rocketbpm.com/public/'
 
-// const baseUrl ='http://localhost:8000/api/'
+
+export const ImageBaseUrl = 'http://localhost:8000/'
+const baseUrl ='http://localhost:8000/api/'
 export const defaultApi = axios.create({
   baseURL: baseUrl,
   headers: {

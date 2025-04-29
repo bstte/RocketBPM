@@ -99,7 +99,7 @@ const SwimlineDiamondNode = ({ data }) => {
       >
         {/* Diamond Shape */}
         <div style={styles.diamondWrapper} className="diamond_Wrapper">
-          <div style={{ ...styles.diamond, width: nodebgheights, height: nodebgheights }} className="diamond_header">
+          <div style={{ ...styles.diamond, width: nodebgheights-10, height: nodebgheights-10 }} className="diamond_header">
             <div ref={titleRef} style={styles.title}>
             {data.details.title?.replace(/<br\s*\/?>/gi, " ")}
             </div>

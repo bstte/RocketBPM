@@ -8,7 +8,7 @@ import { ResizableBox } from "react-resizable";
 const DetailsPopup = ({ isOpen, onClose, onSave, Details }) => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [popupSize, setPopupSize] = useState({ width: 580, height: 430 });
+  const [popupSize, setPopupSize] = useState({ width: 600, height: 450 });
   const [maxConstraints, setMaxConstraints] = useState([800, 600]);
   const [editorHeight, setEditorHeight] = useState(450);
 
@@ -93,7 +93,7 @@ const DetailsPopup = ({ isOpen, onClose, onSave, Details }) => {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
-              padding: "10px",
+              padding: "0 10px 10px",
               cursor: "move"
             }}>
               <input

@@ -587,7 +587,7 @@ const styles = {
     textDecoration: "none",
     color: "#002060", // Standard blue for links
     cursor: "pointer", // Change the cursor to indicate it's clickable
-    padding: "5px 8px", // Increase clickable area if needed
+    padding: "0px 8px", // Increase clickable area if needed
     backgroundColor: "transparent", // Transparent background to look like a link
     border: "none", // Remove border if it's a button
   },

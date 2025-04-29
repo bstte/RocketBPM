@@ -140,7 +140,6 @@ textarea {
     cursor: pointer;
     background-color: rgb(231, 231, 231);
     color: rgb(1, 31, 96);
-    font-weight: 500;
     border: 0;
     border-bottom: 1px solid rgb(255, 255, 255);
     width: 100%;
@@ -155,4 +154,7 @@ textarea {
 }
 .text_blue {
   color: #002060;
+}
+.swimlanemenuclose {
+  width: 100%;
 }

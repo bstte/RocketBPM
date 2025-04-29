@@ -14,10 +14,7 @@ const NoNode = ({ data }) => {
           ...styles.labelBox,
         }}
       >
-        <span style={styles.text}>
-
-          no
-        </span>
+        <span className="nolabel" style={styles.text}>no</span>
       </div>
     </div>
   );
@@ -56,7 +53,7 @@ const styles = {
     height: "100%",
     fontWeight: "medium", // **Added for bold text**
     fontFamily: "'Poppins', sans-serif",
-    fontSize: "16px", // Ensure font size matches input
+    fontSize: "12px", // Ensure font size matches input
     wordBreak: "break-word", // Allow text to wrap
   },
 };

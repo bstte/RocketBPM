@@ -16,7 +16,6 @@ import {
   Background,
   MarkerType,
   reconnectEdge,
-  ConnectionLineType,
   ConnectionMode,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
@@ -32,7 +31,7 @@ import generateNodesAndEdges from "../../AllNode/SwimlineNodes/generateNodesAndE
 import styles from "./SwimlaneStyles";
 import AddObjectRole from "../../AllNode/SwimlineNodes/addobjectrole";
 import { BreadcrumbsContext } from "../../context/BreadcrumbsContext";
-import '../../Css/Swimlane.css'
+import '../../Css/Swimlane.css';
 import { useSelector } from "react-redux";
 import TextInputModal from "../../components/TextInputModal";
 import apiExports from "../../API/api";
@@ -60,6 +59,8 @@ const SwimlaneModel = () => {
   const [KeepOldPosition, setKeepOldPosition] = useState(null);
   const [isFavorite, setIsFavorite] = useState(false);
   const [process_img, setprocess_img] = useState("");
+
+  
 
   const LoginUser = useSelector((state) => state.user.user);
   // const [mcheight, setmcHeight] = useState(0);
@@ -124,7 +125,12 @@ const SwimlaneModel = () => {
   const [detailschecking, setdetailschecking] = useState(null);
   const [nodes, setNodes] = useState(initialNodes);
   const [searchQuery, setSearchQuery] = useState("");
-  const [checkpublish, Setcheckpublish] = useState()
+  const [checkpublish, Setcheckpublish] = useState();
+
+  const ChildNodesRef = useRef(ChildNodes);
+    useEffect(() => {
+    ChildNodesRef.current = ChildNodes;
+  }, [ChildNodes]);
 
   const [edges, setEdges] = useState([]);
   const isInitialLoad = useRef(true);
@@ -292,13 +298,27 @@ const SwimlaneModel = () => {
           };
         });
 
-        const parsedEdges = data.edges.map((edge) => ({
-          ...edge,
-          animated: Boolean(edge.animated),
-          markerEnd: { type: MarkerType.ArrowClosed, color: "#002060", width: 12, height: 12 },
-          style: { stroke: "#002060", strokeWidth: 2 },
-          type: "step",
-        }));
+        const parsedEdges = data.edges.map((edge) => {
+          const sourceNode = data.nodes.find((node) => node.node_id === edge.source);
+          const targetNode = data.nodes.find((node) => node.node_id === edge.target);
+        
+          const sourcePosition = sourceNode ? JSON.parse(sourceNode.position || '{"x":0,"y":0}') : { x: 0, y: 0 };
+          const targetPosition = targetNode ? JSON.parse(targetNode.position || '{"x":0,"y":0}') : { x: 0, y: 0 };
+        
+          // Check if in same row or same column
+          const isSameRow = Math.abs(sourcePosition.y - targetPosition.y) < 10; // 10px tolerance
+          const isSameColumn = Math.abs(sourcePosition.x - targetPosition.x) < 10;
+        
+          const edgeType = (isSameRow || isSameColumn) ? "default" : "step";
+        
+          return {
+            ...edge,
+            animated: Boolean(edge.animated),
+            markerEnd: { type: MarkerType.ArrowClosed, color: "#002060", width: 12, height: 12 },
+            style: { stroke: "#002060", strokeWidth: 2 },
+            type: edgeType,  
+          };
+        });
 
         // isInitialLoad.current = false;
         console.log("on load time data", data);
@@ -335,6 +355,26 @@ const SwimlaneModel = () => {
 
   const onConnect = useCallback(
     (params) => {
+      const sourceNode = ChildNodesRef.current.find((node) => node.node_id === params.source);
+      const targetNode = ChildNodesRef.current.find((node) => node.node_id === params.target);
+    console.log("params",params);
+    console.log("sourceNode",sourceNode);
+    console.log("targetNode",targetNode);
+  
+  
+  
+    console.log('Current ChildNodes:', ChildNodesRef.current);
+    
+  const sourcePosition = sourceNode ? sourceNode.position || { x: 0, y: 0 } : { x: 0, y: 0 };
+  const targetPosition = targetNode ? targetNode.position || { x: 0, y: 0 } : { x: 0, y: 0 };
+  
+      // Check if in same row or same column
+      const isSameRow = Math.abs(sourcePosition.y - targetPosition.y) < 10; // 10px tolerance
+      const isSameColumn = Math.abs(sourcePosition.x - targetPosition.x) < 10;
+    
+      const edgeType = (isSameRow || isSameColumn) ? "default" : "step";
+    
+  console.log("on connecting edge type",edgeType)
       setEdges((eds) =>
         addEdge(
           {
@@ -342,16 +382,17 @@ const SwimlaneModel = () => {
             markerEnd: {
               type: MarkerType.ArrowClosed,
               color: "#002060",
-              width: 12, height: 12
+              width: 12,
+              height: 12,
             },
-            style: { stroke: "#002060", strokeWidth: 2.5 },
+            style: { stroke: "#002060", strokeWidth: 2 },
             Level:
               currentParentId !== null
                 ? `Level${currentLevel}_${currentParentId}`
                 : `Level${currentLevel}`,
             user_id: user && user.id,
             Process_id: id && id,
-            type: "step",
+            type: edgeType, // ✅ dynamic edge type
             Page: "Swimlane",
             status: "draft",
           },
@@ -360,7 +401,6 @@ const SwimlaneModel = () => {
       );
       setHasUnsavedChanges(true);
     },
-
     [setEdges, currentLevel, currentParentId, user, id]
   );
 
@@ -744,7 +784,7 @@ const SwimlaneModel = () => {
       } else if (row === 6 && col > 0) {
         options = ["Add Process"];
       } else {
-        options = ["Add Activities", "Add Decision"];
+        options = ["Add Activity", "Add Decision"];
       }
       setPosition({ x: event.clientX, y: event.clientY });
       setOptions(options);
@@ -1119,7 +1159,7 @@ const SwimlaneModel = () => {
   const handleOptionClick = (option) => {
     if (option === "Add Role") {
       addNode("SwimlineRightsideBox");
-    } else if (option === "Add Activities") {
+    } else if (option === "Add Activity") {
       addNode("box");
     } else if (option === "Add Decision") {
       addNode("diamond");
@@ -1229,7 +1269,7 @@ const SwimlaneModel = () => {
               onEdgeContextMenu={onEdgeClick}
               onNodeDragStart={handleNodeDragStart}
               onNodeDragStop={handleNodeDragStop}
-              connectionLineType={ConnectionLineType.Step} // ✅ Correct Arrow Type
+              // connectionLineType={ConnectionLineType.Step}
               connectionLineStyle={{ stroke: "#002060", strokeWidth: 2.5 }} // ✅ Correct Arrow Style
               connectionRadius={10}
               connectionMode={ConnectionMode.Loose} // ✅ Correct Syntax
@@ -1276,47 +1316,23 @@ const SwimlaneModel = () => {
                   { label: "Add free text", action: "addFreeText" },
                 ].map((item, index) => (
                   <div
-                    className="swimlanepopup"
+                    className="menuitems"
                     key={index}
-                    style={{
-                      padding: "8px 12px",
-                      cursor: "pointer",
-                      borderBottom: index === 0 ? "1px solid #f0f0f0" : "none",
-                      transition: "background-color 0.2s ease",
-                    }}
                     onClick={() => handlePopupAction(item.action)}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = "#002060";
-                      e.currentTarget.style.color = "#fff";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = "#e7e7e7";
-                      e.currentTarget.style.color = "#002060";
-                    }}
+                    
                   >
                     {item.label}
                   </div>
 
                 ))}
                 <div
-                  className="swimlanepopup"
-                  style={{
-                    padding: "8px 12px",
-                    cursor: "pointer",
-                    transition: "background-color 0.2s ease",
-                  }}
+                  className="menuitems"
                   onClick={() => {
                     if (window.confirm("Are you sure you want to delete this arrow?")) {
                       deleteEdge();
                     }
                   }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = "#002060";
-                    e.currentTarget.style.color = "#fff";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "transparent";
-                  }}
+     
                 >
                   Delete Arrow
                 </div>

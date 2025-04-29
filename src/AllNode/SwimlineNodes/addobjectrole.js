@@ -14,22 +14,16 @@ const AddObjectRole = ({ position, options, onOptionClick, onClose }) => {
       onContextMenu={(e) => e.preventDefault()}
     >
       {options.map((option, index) => (
-        <div key={index}>
-        <div
-  style={styles.option}
-  onClick={() => {
-    onOptionClick(option);
-    onClose();
-  }}
-  onMouseEnter={(e) => {
-    e.target.style.backgroundColor = "#f0f0f0";
-  }}
-  onMouseLeave={(e) => {
-    e.target.style.backgroundColor = "transparent";
-  }}
->
-  {option}
-</div>
+        <div className="menuitems" key={index}>
+          <div            
+            onClick={() => {
+              onOptionClick(option);
+              onClose();
+            }}
+            
+          >
+            {option}
+          </div>
 
           {/* Add a white line between options except for the last one */}
           {index < options.length - 1 && <div style={styles.separator} />}
@@ -50,9 +44,9 @@ const styles = {
     minWidth: "200px",
   },
   option: {
-    padding:"8px 12px",
+    padding: "8px 12px",
     cursor: "pointer",
-    color:"#011f60",
+    color: "#011f60",
     fontWeight: "500",
     borderBottom: "1px solid rgb(255, 255, 255)"
   },

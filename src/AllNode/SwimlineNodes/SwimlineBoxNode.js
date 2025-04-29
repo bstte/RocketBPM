@@ -54,7 +54,7 @@ const BoxNode = ({ data }) => {
   };
 
   return (
-    <div style={styles.wrapper} onClick={handleBoxClick}
+    <div className="swimboxnode_1" style={styles.wrapper} onClick={handleBoxClick}
         onMouseEnter={() => setIsHovered(true)} 
     onMouseLeave={() => setIsHovered(false)} 
     >
@@ -150,7 +150,7 @@ const styles = {
   wrapper: {
     position: "relative",
     width: "86%",
-    height: "84%",
+    height: "78%",
     alignItems: "center",
     justifyContent: "center",
   },

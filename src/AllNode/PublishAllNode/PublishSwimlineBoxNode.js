@@ -13,7 +13,7 @@ const decodeHtmlEntities = (str) => {
 
 const BoxNode = ({ data }) => {
   const [isPopupVisible, setIsPopupVisible] = useState(false);
-  const [popupSize, setPopupSize] = useState({ width: 580, height: 430 });
+  const [popupSize, setPopupSize] = useState({ width: 600, height: 450 });
     const [maxConstraints, setMaxConstraints] = useState([800, 600]);
     // const [editorHeight, setEditorHeight] = useState(450);
 
@@ -77,7 +77,7 @@ const BoxNode = ({ data }) => {
           boxShadow: "0 0 10px #011f6047",
         }}
       >
-        <div style={{ ...styles.popup, width: "100%", height: "100%" }}>
+        <div className="publishpopupdetails" style={{ ...styles.popup, width: "100%", height: "100%" }}>
           <div className="popupHeader" style={styles.popupHeader}>
             <h3 style={styles.popupTitle}>{title}</h3>
             <button style={styles.closeButton} onClick={handleClosePopup}>
@@ -96,7 +96,7 @@ const BoxNode = ({ data }) => {
 
   return (
     <>
-      <div style={styles.wrapper} onClick={handleBoxClick} ref={boxRef}>
+      <div className="swimboxnode_2" style={styles.wrapper} onClick={handleBoxClick} ref={boxRef}>
         <div className="borderBox" style={styles.box}>
           <div>
             <button style={styles.withoutlinkButton}>{title}</button>
@@ -176,7 +176,7 @@ const BoxNode = ({ data }) => {
 
         <div style={styles.borderOverlay}></div>
       </div>
-
+        
       {isPopupVisible && data.details.title && ReactDOM.createPortal(renderPopup(), document.body)}
     </>
   );
@@ -186,7 +186,7 @@ const styles = {
   wrapper: {
     position: "relative",
     width: "86%",
-    height: "84%",
+    height: "78%",
     alignItems: "center",
     justifyContent: "center",
   },
