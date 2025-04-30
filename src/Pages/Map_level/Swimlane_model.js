@@ -17,6 +17,7 @@ import {
   MarkerType,
   reconnectEdge,
   ConnectionMode,
+  ConnectionLineType,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { applyNodeChanges, applyEdgeChanges } from "@xyflow/react";
@@ -34,7 +35,7 @@ import { BreadcrumbsContext } from "../../context/BreadcrumbsContext";
 import '../../Css/Swimlane.css';
 import { useSelector } from "react-redux";
 import TextInputModal from "../../components/TextInputModal";
-import apiExports from "../../API/api";
+// import apiExports from "../../API/api";
 
 const SwimlaneModel = () => {
   const [windowSize, setWindowSize] = useState({
@@ -419,37 +420,58 @@ const SwimlaneModel = () => {
     []
   );
 
-  const checkPublishData = useCallback(async (processId) => {
-    // console.log("currentLevel",currentLevel)
-    const levelParam =
-      currentParentId !== null
-        ? `Level${currentLevel}_${currentParentId}`
-        : `Level${currentLevel}`;
-    // const levelParam = 'Level0';
-    const user_id = user ? user.id : null;
-    const Process_id = processId ? processId : null;
-    const data = await apiExports.checkPublishRecord(
-      levelParam,
-      parseInt(user_id),
-      Process_id
-    );
+//   const checkPublishData = useCallback(async (processId) => {
+//     // console.log("currentLevel",currentLevel)
+//     const levelParam =
+//       currentParentId !== null
+//         ? `Level${currentLevel}_${currentParentId}`
+//         : `Level${currentLevel}`;
+//     // const levelParam = 'Level0';
+//     const user_id = user ? user.id : null;
+//     const Process_id = processId ? processId : null;
+//     const data = await apiExports.checkPublishRecord(
+//       levelParam,
+//       parseInt(user_id),
+//       Process_id
+//     );
 
-    return data;
-  }, [user, currentLevel, currentParentId]);
+//     return data;
+//   }, [user, currentLevel, currentParentId]);
+
+
+//   useEffect(() => {
+//     const checkpublishfunction = async () => {
+//       const processId = id ? id : null;
+
+//       const data = await checkPublishData(processId);
+// console.log("pulish data",data)
+//       Setcheckpublish(data?.status);
+//     };
+
+//     checkpublishfunction();
+//   }, [checkPublishData, id]);
 
 
   useEffect(() => {
     const checkpublishfunction = async () => {
-      const processId = id ? id : null;
+      if (currentLevel !== 0) {
+        try {
+          const response = await filter_draft(ParentPageGroupId);
+          console.log("inside first map", response)
+          if (response?.data === true) {
+            Setcheckpublish(false);
 
-      const data = await checkPublishData(processId);
+          } else {
+            Setcheckpublish(true);
 
-      Setcheckpublish(data?.status);
+          }
+        } catch (error) {
+          console.error("filter draft error", error)
+        }
+      }
     };
-
     checkpublishfunction();
-  }, [checkPublishData, id]);
-
+  }, [ParentPageGroupId, currentLevel]);
   const addNode = (type, position, label = "") => {
     let PageGroupId;
 
@@ -1205,7 +1227,7 @@ const SwimlaneModel = () => {
   }));
 
   const filteredData = parsedData.filter(item =>
-    item.data.label && item.data.label.toLowerCase().includes(searchQuery)
+    item.data.label && item.data.label.toLowerCase().includes(searchQuery.toLowerCase())
   );
   //console.log("filtefilteredData", filteredData)  
 
@@ -1269,10 +1291,10 @@ const SwimlaneModel = () => {
               onEdgeContextMenu={onEdgeClick}
               onNodeDragStart={handleNodeDragStart}
               onNodeDragStop={handleNodeDragStop}
-              // connectionLineType={ConnectionLineType.Step}
-              connectionLineStyle={{ stroke: "#002060", strokeWidth: 2.5 }} // ✅ Correct Arrow Style
+              connectionLineType={ConnectionLineType.Step}
+              connectionLineStyle={{ stroke: "#002060", strokeWidth: 2.5 }} 
               connectionRadius={10}
-              connectionMode={ConnectionMode.Loose} // ✅ Correct Syntax
+              connectionMode={ConnectionMode.Loose} 
 
               proOptions={{ hideAttribution: true }}
               nodeTypes={memoizedNodeTypes}

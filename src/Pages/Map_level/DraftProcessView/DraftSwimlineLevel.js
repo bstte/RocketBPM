@@ -360,7 +360,7 @@ const DraftSwimlineLevel = () => {
       />
       <div class="maincontainer" style={{ ...styles.appContainer, height: remainingHeight }}>
         <ReactFlowProvider>
-          <div style={styles.scrollableWrapper}>
+          <div className="ss_publish_border" style={styles.scrollableWrapper}>
             <ReactFlow
               nodes={[...nodes, ...ChildNodes]}
               edges={edges}

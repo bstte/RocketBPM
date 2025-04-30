@@ -28,8 +28,8 @@ const BoxNode = ({ data }) => {
         return () => window.removeEventListener("resize", updateMaxConstraints);
       }, []);
 
-  const title = decodeHtmlEntities(data.details.title?.replace(/<br\s*\/?>/gi, " "));
-  const boxRef = useRef(null);
+      const title = decodeHtmlEntities((data.details.title || "").replace(/<br\s*\/?>/gi, " "));
+      const boxRef = useRef(null);
 
   const handleBoxClick = () => {
     setIsPopupVisible(true);

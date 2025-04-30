@@ -483,7 +483,7 @@ const Dashboard = () => {
                                   }
                                   style={{ cursor: "pointer", margin: 0 }}
                                 >
-                                 View draft
+                                  View draft
                                 </p>
                                 <p
                                   onClick={() =>
@@ -495,7 +495,7 @@ const Dashboard = () => {
                                   }
                                   style={{ cursor: "pointer", margin: 0 }}
                                 >
-                                 Manage users
+                                  Manage users
                                 </p>
                                 <p
                                   onClick={() =>
@@ -505,7 +505,7 @@ const Dashboard = () => {
                                   }
                                   style={{ cursor: "pointer", margin: 0 }}
                                 >
-                                Edit settings
+                                  Edit settings
                                 </p>
                               </>
                             ) : (
@@ -524,7 +524,7 @@ const Dashboard = () => {
                                     }
                                     style={{ cursor: "pointer", margin: 0 }}
                                   >
-                                View published
+                                    View published
                                   </p>
                                 )}
                                 {/* Show Published and View Draft when role is Modeler */}
@@ -543,7 +543,7 @@ const Dashboard = () => {
                                         }
                                         style={{ cursor: "pointer", margin: 0 }}
                                       >
-                                    View published
+                                        View published
                                       </p>
                                     )}
                                     <p
@@ -558,7 +558,7 @@ const Dashboard = () => {
                                       }
                                       style={{ cursor: "pointer", margin: 0 }}
                                     >
-                               View draft
+                                      View draft
                                     </p>
                                   </>
                                 )}
@@ -578,7 +578,7 @@ const Dashboard = () => {
                         <p>
                           Add process world
                         </p>
-                        <div className="ss_add_proces_img" onClick={() => navigate('/Add-process-title')}> 
+                        <div className="ss_add_proces_img" onClick={() => navigate('/Add-process-title')}>
                           <img src="../../../img/plus.png" alt="profile img" /></div>
                       </div>
                     </div>
@@ -589,151 +589,61 @@ const Dashboard = () => {
                 <div className="process_boxes">
                   {filteredNodes.map((item) => (
                     <Card
-                    key={item.processId}
-                    sx={{
-                      width: "95%",
-                      minHeight: "300px",
-                      padding: 2,
-                      position: "relative",
-                      display: "flex",
-                      flexDirection: "column",
-                      boxShadow: "none", // 
-                      border: "1px solid #ddd",
-                    }}
-                  >
-                    {/* Three dots menu */}
-                    <IconButton
-                      sx={{ position: "absolute", top: 10, right: 10 }}
-                      onClick={(event) => handleOpenMenu(event, item.processId)}
+                      key={item.processId}
+                      sx={{
+                        width: "95%",
+                        minHeight: "300px",
+                        padding: 2,
+                        position: "relative",
+                        display: "flex",
+                        flexDirection: "column",
+                        boxShadow: "none", // 
+                        border: "1px solid #ddd",
+                      }}
                     >
-                      <MoreVertIcon />
-                    </IconButton>
-
-                    <label className="text_blue"> {getProcessTitle(item.processId)}</label>
-
-                    {/* React Flow Component */}
-                    <div className="ss_dash_slid_img" onClick={() => NavigateOnClick(item)}>
-                      <img src="../../../img/dashboard-slider-image.jpg" alt="" />
-                      <button>
-                        Preview Image of Level 1
-                      </button>
-                      {/* <a href="#"></a> */}
-                    </div>
-
-                    {/* Custom dropdown menu */}
-                    {selectedProcess === item.processId && (
-                      <Box
-                        sx={{
-                          position: "absolute",
-                          top: 35,
-                          right: 10,
-                          width: "150px",
-                          bgcolor: "white",
-                          boxShadow: 3,
-                          borderRadius: 1,
-                          padding: 1,
-                          zIndex: 1000,
-                        }}
+                      {/* Three dots menu */}
+                      <IconButton
+                        sx={{ position: "absolute", top: 10, right: 10 }}
+                        onClick={(event) => handleOpenMenu(event, item.processId)}
                       >
+                        <MoreVertIcon />
+                      </IconButton>
 
-                        {Loading && (
-                          item.type === "self" ? (
-                            <>
-                              {/* Show all options when type is self */}
-                              {checkpublish && (
-                                <p
-                                  onClick={() =>
-                                    navigate("/published-map-level", {
-                                      state: {
-                                        id: parseInt(item.processId),
-                                        title: getProcessTitle(item.processId),
-                                        user: item,
-                                      },
-                                    })
-                                  }
-                                  style={{ cursor: "pointer", margin: 0 }}
-                                >
-                                  ✏ Published
-                                </p>
-                              )}
-                              <p
-                                onClick={() =>
-                                  navigate("/Draft-Process-View", {
-                                    state: {
-                                      id: parseInt(item.processId),
-                                      title: getProcessTitle(item.processId),
-                                      user: item,
-                                    },
-                                  })
-                                }
-                                style={{ cursor: "pointer", margin: 0 }}
-                              >
-                                ✏ View Draft
-                              </p>
-                              <p
-                                onClick={() =>
-                                  navigate("/User-Management", {
-                                    state: {
-                                      process: { id: parseInt(item.processId), user_id: item.id },
-                                    },
-                                  })
-                                }
-                                style={{ cursor: "pointer", margin: 0 }}
-                              >
-                                ✏ Managed Users
-                              </p>
-                              <p
-                                onClick={() =>
-                                  navigate("/Setting", {
-                                    state: { ProcessId: parseInt(item.processId) },
-                                  })
-                                }
-                                style={{ cursor: "pointer", margin: 0 }}
-                              >
-                                🗑 Setting
-                              </p>
-                            </>
-                          ) : (
-                            <>
-                              {/* Show only Published when role is User */}
-                              {item.role === "User" && (
-                                <p
-                                  onClick={() =>
-                                    navigate("/published-map-level", {
-                                      state: {
-                                        id: parseInt(item.processId),
-                                        title: getProcessTitle(item.processId),
-                                        user: item,
-                                      },
-                                    })
-                                  }
-                                  style={{ cursor: "pointer", margin: 0 }}
-                                >
-                                  ✏ Published
-                                </p>
-                              )}
-                              {/* Show Published and View Draft when role is Modeler */}
-                              {item.role === "Modeler" && (
-                                <>
-                                  {checkpublish && (
-                                    <p
-                                      onClick={() =>
-                                        navigate("/published-map-level", {
-                                          state: {
-                                            id: parseInt(item.processId),
-                                            title: getProcessTitle(item.processId),
-                                            user: item,
-                                          },
-                                        })
-                                      }
-                                      style={{ cursor: "pointer", margin: 0 }}
-                                    >
-                                      ✏ Published
-                                    </p>
-                                  )}
+                      <label className="text_blue"> {getProcessTitle(item.processId)}</label>
+
+                      {/* React Flow Component */}
+                      <div className="ss_dash_slid_img" onClick={() => NavigateOnClick(item)}>
+                        <img src="../../../img/dashboard-slider-image.jpg" alt="" />
+                        <button>
+                          Preview Image of Level 1
+                        </button>
+                        {/* <a href="#"></a> */}
+                      </div>
+
+                      {/* Custom dropdown menu */}
+                      {selectedProcess === item.processId && (
+                        <Box
+                          sx={{
+                            position: "absolute",
+                            top: 35,
+                            right: 10,
+                            width: "150px",
+                            bgcolor: "white",
+                            boxShadow: 3,
+                            borderRadius: 1,
+                            padding: 1,
+                            zIndex: 1000,
+                          }}
+                        >
+
+                          {Loading && (
+                            item.type === "self" ? (
+                              <>
+                                {/* Show all options when type is self */}
+                                {checkpublish && (
                                   <p
                                     onClick={() =>
-                                      navigate("/Draft-Process-View", {
+                                      navigate("/published-map-level", {
                                         state: {
                                           id: parseInt(item.processId),
                                           title: getProcessTitle(item.processId),
@@ -743,19 +653,109 @@ const Dashboard = () => {
                                     }
                                     style={{ cursor: "pointer", margin: 0 }}
                                   >
-                                    ✏ View Draft
+                                    View published
                                   </p>
-                                </>
-                              )}
-                            </>
-                          )
-                        )}
+                                )}
+                                <p
+                                  onClick={() =>
+                                    navigate("/Draft-Process-View", {
+                                      state: {
+                                        id: parseInt(item.processId),
+                                        title: getProcessTitle(item.processId),
+                                        user: item,
+                                      },
+                                    })
+                                  }
+                                  style={{ cursor: "pointer", margin: 0 }}
+                                >
+                                  View draft
+                                </p>
+                                <p
+                                  onClick={() =>
+                                    navigate("/User-Management", {
+                                      state: {
+                                        process: { id: parseInt(item.processId), user_id: item.id },
+                                      },
+                                    })
+                                  }
+                                  style={{ cursor: "pointer", margin: 0 }}
+                                >
+                                  Manage users
+                                </p>
+                                <p
+                                  onClick={() =>
+                                    navigate("/Setting", {
+                                      state: { ProcessId: parseInt(item.processId) },
+                                    })
+                                  }
+                                  style={{ cursor: "pointer", margin: 0 }}
+                                >
+                                  Edit settings
+                                </p>
+                              </>
+                            ) : (
+                              <>
+                                {/* Show only Published when role is User */}
+                                {item.role === "User" && (
+                                  <p
+                                    onClick={() =>
+                                      navigate("/published-map-level", {
+                                        state: {
+                                          id: parseInt(item.processId),
+                                          title: getProcessTitle(item.processId),
+                                          user: item,
+                                        },
+                                      })
+                                    }
+                                    style={{ cursor: "pointer", margin: 0 }}
+                                  >
+                                    View published
+                                  </p>
+                                )}
+                                {/* Show Published and View Draft when role is Modeler */}
+                                {item.role === "Modeler" && (
+                                  <>
+                                    {checkpublish && (
+                                      <p
+                                        onClick={() =>
+                                          navigate("/published-map-level", {
+                                            state: {
+                                              id: parseInt(item.processId),
+                                              title: getProcessTitle(item.processId),
+                                              user: item,
+                                            },
+                                          })
+                                        }
+                                        style={{ cursor: "pointer", margin: 0 }}
+                                      >
+                                        View published
+                                      </p>
+                                    )}
+                                    <p
+                                      onClick={() =>
+                                        navigate("/Draft-Process-View", {
+                                          state: {
+                                            id: parseInt(item.processId),
+                                            title: getProcessTitle(item.processId),
+                                            user: item,
+                                          },
+                                        })
+                                      }
+                                      style={{ cursor: "pointer", margin: 0 }}
+                                    >
+                                      View draft
+                                    </p>
+                                  </>
+                                )}
+                              </>
+                            )
+                          )}
 
 
 
-                      </Box>
-                    )}
-                  </Card>
+                        </Box>
+                      )}
+                    </Card>
                   ))}
 
                   {user && user.type !== "User" && (
@@ -770,7 +770,7 @@ const Dashboard = () => {
                   )}
 
                   {user && user.type !== "User" && (
-                    <div className="ss_add_process_div" style={{opacity:"0"}}>
+                    <div className="ss_add_process_div" style={{ opacity: "0" }}>
                       <div style={{ width: "100%" }}>
                         <p>Add process world</p>
                         <div className="ss_add_proces_img" onClick={() => navigate('/Add-process-title')}>
