@@ -166,7 +166,7 @@ const PublishedSwimlaneModel = () => {
           const parsedData = JSON.parse(node.data || "{}");
           const parsedPosition = JSON.parse(node.position || "{\"x\":0,\"y\":0}");
           const parsedMeasured = JSON.parse(node.measured || "{\"width\":40,\"height\":40}");
-          
+
           let centeredPosition = parsedPosition;
 
           // Parent node positioning
@@ -201,30 +201,30 @@ const PublishedSwimlaneModel = () => {
             draggable: Boolean(node.draggable),
             animated: Boolean(node.animated),
             style: nodeStyle,
-            
+
           };
-          
+
         });
-        
+
         const parsedEdges = data.edges.map((edge) => {
           const sourceNode = data.nodes.find((node) => node.node_id === edge.source);
           const targetNode = data.nodes.find((node) => node.node_id === edge.target);
-        
+
           const sourcePosition = sourceNode ? JSON.parse(sourceNode.position || '{"x":0,"y":0}') : { x: 0, y: 0 };
           const targetPosition = targetNode ? JSON.parse(targetNode.position || '{"x":0,"y":0}') : { x: 0, y: 0 };
-        
+
           // Check if in same row or same column
           const isSameRow = Math.abs(sourcePosition.y - targetPosition.y) < 10; // 10px tolerance
           const isSameColumn = Math.abs(sourcePosition.x - targetPosition.x) < 10;
-        
+
           const edgeType = (isSameRow || isSameColumn) ? "default" : "step";
-        
+
           return {
             ...edge,
             animated: Boolean(edge.animated),
             markerEnd: { type: MarkerType.ArrowClosed, color: "#002060", width: 12, height: 12 },
             style: { stroke: "#002060", strokeWidth: 2 },
-            type: edgeType,  
+            type: edgeType,
           };
         });
         setChiledNodes(parsedNodes);
@@ -298,9 +298,9 @@ const PublishedSwimlaneModel = () => {
               nodes={[...nodes, ...ChildNodes]}
               edges={edges}
               connectionLineType={ConnectionLineType.Step} // ✅ Correct Arrow Type
-                            connectionLineStyle={{ stroke: "#002060", strokeWidth: 2.5 }} // ✅ Correct Arrow Style
-                            connectionRadius={10}
-                            connectionMode={ConnectionMode.Loose}
+              connectionLineStyle={{ stroke: "#002060", strokeWidth: 2.5 }} // ✅ Correct Arrow Style
+              connectionRadius={10}
+              connectionMode={ConnectionMode.Loose}
               proOptions={{ hideAttribution: true }}
               nodeTypes={memoizedNodeTypes}
               edgeTypes={memoizedEdgeTypes}

@@ -38,8 +38,8 @@ const MapLevel = () => {
   const [checkpublish, Setcheckpublish] = useState(true);
   const [remainingHeight, setRemainingHeight] = useState(0);
 
-  const flowcontainer = document.querySelector(".flow-container");
-  const flowcontainerwidth = flowcontainer ? flowcontainer.getBoundingClientRect().width : 0;
+  // const flowcontainer = document.querySelector(".flow-container");
+  // const flowcontainerwidth = flowcontainer ? flowcontainer.getBoundingClientRect().width : 0;
   // alert(flowcontainerwidth);
   useEffect(() => {
     const calculateHeights = () => {
@@ -309,11 +309,27 @@ const MapLevel = () => {
               : `Level${currentLevel}_${newNodeId}`,
             newLabel
           ),
-        defaultwidt: "230px",
-        defaultheight: "120px",
+        defaultwidt: 326,
+        defaultheight: 90,
+        width_height: { width: 326, height: 90 },
         nodeResize: true,
         autoFocus: true,
-        isClickable: true
+        isClickable: true,
+        updateWidthHeight: (id, size) => {
+          setNodes((prevNodes) =>
+            prevNodes.map((node) =>
+              node.id === id
+                ? {
+                    ...node,
+                    data: {
+                      ...node.data,
+                      width_height: size,
+                    },
+                  }
+                : node
+            )
+          );
+        },
       },
       type: type,
       status: "draft",
@@ -624,6 +640,7 @@ const MapLevel = () => {
     }
     return true;
   };
+  
   const styles = {
     appContainer: {
       display: "flex",
@@ -772,7 +789,7 @@ const MapLevel = () => {
               onContextMenu={handleGlobalContextMenu}
             >
               <ReactFlow
-                nodeExtent={[[0, 0], [flowcontainerwidth, remainingHeight]]}
+                //nodeExtent={[[0, 0], [flowcontainerwidth, remainingHeight]]}
                 nodes={nodes}
                 edges={edges}
                 onNodesChange={onNodesChange}

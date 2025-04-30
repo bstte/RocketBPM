@@ -1,40 +1,40 @@
 .topdot {
-    position: absolute !important;
-    left:50% !important;
-    top: 7px !important;
+  position: absolute !important;
+  left:50% !important;
+  top: 10px !important;
 }
 .bottomdot {
-    position: absolute !important;
-    left: 50% !important;
-    bottom:7px !important;
+  position: absolute !important;
+  left: 50% !important;
+  bottom:8px !important;
 }
 .leftdot {
-    position: absolute !important;
-    left: 7px !important;
-    top: 48.2% !important;
+  position: absolute !important;
+  left: 8px !important;
+  top: 50% !important;
 }
 .rightdot {
-    position: absolute !important;
-    right: 7px !important;
-    top: 48.2% !important;
+  position: absolute !important;
+  right: 7px !important;
+  top: 50% !important;
 }
 .topdot,.bottomdot,.leftdot,.rightdot {
-    width: 8px;
-    height: 8px;
+  width: 8px;
+  height: 8px;
 }
-@media(min-width:1566px) and (max-width:1920px) {
-    .leftdot {
-      top: 49.2% !important;
-    }
-    .rightdot {
-      top: 49.2% !important;
-    }
+/* @media(min-width:1566px) and (max-width:1920px) {
+  .leftdot {
+    top: 49.2% !important;
   }
-  @media(min-width:989px) and (max-width:1280px) {
-    .leftdot {
-      top: 48.1% !important;
-    }
-    .rightdot {
-      top: 48.1% !important;
-    }
+  .rightdot {
+    top: 49.2% !important;
   }
+}
+@media(min-width:989px) and (max-width:1280px) {
+  .leftdot {
+    top: 48.1% !important;
+  }
+  .rightdot {
+    top: 48.1% !important;
+  }
+} */

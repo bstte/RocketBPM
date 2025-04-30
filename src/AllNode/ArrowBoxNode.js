@@ -9,7 +9,14 @@ const ArrowBoxNode = ({ data, id, selectedNodeId }) => {
 
   const [width, setWidth] = useState(data.width_height?.width || 326);
   const [height, setHeight] = useState(data.width_height?.height || 90);
-  // const [clipPath, setClipPath] = useState("");
+
+  // NEW IMPORTANT: Sync width/height when data.width_height changes
+  useEffect(() => {
+    if (data.width_height?.width && data.width_height?.height) {
+      setWidth(data.width_height.width);
+      setHeight(data.width_height.height);
+    }
+  }, [data.width_height]);
 
   useEffect(() => {
     setLabel(data.label || "");
@@ -31,17 +38,6 @@ const ArrowBoxNode = ({ data, id, selectedNodeId }) => {
     }
   };
 
-  // const calculateClipPath = (w, h) => {
-  //   return `polygon(20px 50%, 0 0, calc(${w}px - 24px) 0, ${w}px 50%, calc(${w}px - 24px) 100%, 0 100%)`;
-  // };
-
-  // useEffect(() => {
-  //   const newClipPath = calculateClipPath(width, height);
-  //   if (newClipPath !== clipPath) {
-  //     setClipPath(newClipPath);
-  //   }
-  // }, [width, height]);
-  
   const clipPath = useMemo(() => {
     const arrowWidth = 24;
     return `polygon(
@@ -54,7 +50,6 @@ const ArrowBoxNode = ({ data, id, selectedNodeId }) => {
     )`;
   }, [width, height]);
 
-
   const handleResize = (event, size) => {
     if (!size || typeof size.width === "undefined" || typeof size.height === "undefined") {
       console.warn("Size is undefined", size);
@@ -62,6 +57,10 @@ const ArrowBoxNode = ({ data, id, selectedNodeId }) => {
     }
     setWidth(size.width);
     setHeight(size.height);
+
+    if (data.updateWidthHeight) {
+      data.updateWidthHeight(id, { width: size.width, height: size.height });
+    }
   };
 
   const adjustHeight = (e) => {
@@ -77,13 +76,13 @@ const ArrowBoxNode = ({ data, id, selectedNodeId }) => {
     }
   };
 
-  // Fix: Ensure textarea maintains height after selecting another object
+  // Adjust textarea height dynamically
   useEffect(() => {
     if (arrowRef.current) {
-      arrowRef.current.style.height = "auto"; // Reset before recalculating
-      arrowRef.current.style.height = arrowRef.current.scrollHeight + "px"; // Set dynamically
+      arrowRef.current.style.height = "auto";
+      arrowRef.current.style.height = arrowRef.current.scrollHeight + "px";
     }
-  }, [label, width, height, selectedNodeId]); // Depend on selectedNodeId
+  }, [label, width, height, selectedNodeId]);
 
   return (
     <div style={styles.wrapper}>
