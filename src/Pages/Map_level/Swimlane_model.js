@@ -35,6 +35,7 @@ import { BreadcrumbsContext } from "../../context/BreadcrumbsContext";
 import '../../Css/Swimlane.css';
 import { useSelector } from "react-redux";
 import TextInputModal from "../../components/TextInputModal";
+import StickyNoteModel from "../../components/StickyNoteModel";
 // import apiExports from "../../API/api";
 
 const SwimlaneModel = () => {
@@ -60,8 +61,9 @@ const SwimlaneModel = () => {
   const [KeepOldPosition, setKeepOldPosition] = useState(null);
   const [isFavorite, setIsFavorite] = useState(false);
   const [process_img, setprocess_img] = useState("");
+  const [StickyNoteModeltext, setStickyNoteModeltext] = useState("");
 
-  
+
 
   const LoginUser = useSelector((state) => state.user.user);
   // const [mcheight, setmcHeight] = useState(0);
@@ -120,6 +122,7 @@ const SwimlaneModel = () => {
   const [selectedNode, setSelectedNode] = useState(null);
   const [selectedNodeId, setSelectedNodeId] = useState(null);
   const [selectedNodefreetextId, setSelectedNodefreetextId] = useState(null);
+  const [selectedNodeStickyNoteId, setSelectedNodeStickyNoteId] = useState(null);
 
   const [selectedEdge, setSelectedEdge] = useState(null);
   const [getPublishedDate, setgetPublishedDate] = useState("");
@@ -129,7 +132,7 @@ const SwimlaneModel = () => {
   const [checkpublish, Setcheckpublish] = useState();
 
   const ChildNodesRef = useRef(ChildNodes);
-    useEffect(() => {
+  useEffect(() => {
     ChildNodesRef.current = ChildNodes;
   }, [ChildNodes]);
 
@@ -145,6 +148,8 @@ const SwimlaneModel = () => {
     []
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpenStickyNode, setIsModalOpenStickyNode] = useState(false);
+
   const [modalText, setModalText] = useState("");
 
   const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
@@ -302,22 +307,22 @@ const SwimlaneModel = () => {
         const parsedEdges = data.edges.map((edge) => {
           const sourceNode = data.nodes.find((node) => node.node_id === edge.source);
           const targetNode = data.nodes.find((node) => node.node_id === edge.target);
-        
+
           const sourcePosition = sourceNode ? JSON.parse(sourceNode.position || '{"x":0,"y":0}') : { x: 0, y: 0 };
           const targetPosition = targetNode ? JSON.parse(targetNode.position || '{"x":0,"y":0}') : { x: 0, y: 0 };
-        
+
           // Check if in same row or same column
           const isSameRow = Math.abs(sourcePosition.y - targetPosition.y) < 10; // 10px tolerance
           const isSameColumn = Math.abs(sourcePosition.x - targetPosition.x) < 10;
-        
+
           const edgeType = (isSameRow || isSameColumn) ? "default" : "step";
-        
+
           return {
             ...edge,
             animated: Boolean(edge.animated),
             markerEnd: { type: MarkerType.ArrowClosed, color: "#002060", width: 12, height: 12 },
             style: { stroke: "#002060", strokeWidth: 2 },
-            type: edgeType,  
+            type: edgeType,
           };
         });
 
@@ -358,24 +363,24 @@ const SwimlaneModel = () => {
     (params) => {
       const sourceNode = ChildNodesRef.current.find((node) => node.node_id === params.source);
       const targetNode = ChildNodesRef.current.find((node) => node.node_id === params.target);
-    console.log("params",params);
-    console.log("sourceNode",sourceNode);
-    console.log("targetNode",targetNode);
-  
-  
-  
-    console.log('Current ChildNodes:', ChildNodesRef.current);
-    
-  const sourcePosition = sourceNode ? sourceNode.position || { x: 0, y: 0 } : { x: 0, y: 0 };
-  const targetPosition = targetNode ? targetNode.position || { x: 0, y: 0 } : { x: 0, y: 0 };
-  
+      console.log("params", params);
+      console.log("sourceNode", sourceNode);
+      console.log("targetNode", targetNode);
+
+
+
+      console.log('Current ChildNodes:', ChildNodesRef.current);
+
+      const sourcePosition = sourceNode ? sourceNode.position || { x: 0, y: 0 } : { x: 0, y: 0 };
+      const targetPosition = targetNode ? targetNode.position || { x: 0, y: 0 } : { x: 0, y: 0 };
+
       // Check if in same row or same column
       const isSameRow = Math.abs(sourcePosition.y - targetPosition.y) < 10; // 10px tolerance
       const isSameColumn = Math.abs(sourcePosition.x - targetPosition.x) < 10;
-    
+
       const edgeType = (isSameRow || isSameColumn) ? "default" : "step";
-    
-  console.log("on connecting edge type",edgeType)
+
+      console.log("on connecting edge type", edgeType)
       setEdges((eds) =>
         addEdge(
           {
@@ -414,50 +419,27 @@ const SwimlaneModel = () => {
         setModalText(node.data.label || ""); // Store existing text
 
         setIsModalOpen(true)
+      } else if (node.type === "StickyNote") {
+
+        setSelectedNodeStickyNoteId(node.id)
+        setStickyNoteModeltext(node.data.label || "");
+        setIsModalOpenStickyNode(true)
       }
+
     },
 
     []
   );
-
-//   const checkPublishData = useCallback(async (processId) => {
-//     // console.log("currentLevel",currentLevel)
-//     const levelParam =
-//       currentParentId !== null
-//         ? `Level${currentLevel}_${currentParentId}`
-//         : `Level${currentLevel}`;
-//     // const levelParam = 'Level0';
-//     const user_id = user ? user.id : null;
-//     const Process_id = processId ? processId : null;
-//     const data = await apiExports.checkPublishRecord(
-//       levelParam,
-//       parseInt(user_id),
-//       Process_id
-//     );
-
-//     return data;
-//   }, [user, currentLevel, currentParentId]);
-
-
-//   useEffect(() => {
-//     const checkpublishfunction = async () => {
-//       const processId = id ? id : null;
-
-//       const data = await checkPublishData(processId);
-// console.log("pulish data",data)
-//       Setcheckpublish(data?.status);
-//     };
-
-//     checkpublishfunction();
-//   }, [checkPublishData, id]);
 
 
   useEffect(() => {
     const checkpublishfunction = async () => {
       if (currentLevel !== 0) {
         try {
+
           const response = await filter_draft(ParentPageGroupId);
-          console.log("inside first map", response)
+          // console.log("inside first map", response)
+
           if (response?.data === true) {
             Setcheckpublish(false);
 
@@ -481,12 +463,11 @@ const SwimlaneModel = () => {
       PageGroupId = ChildNodes[0]?.PageGroupId;
     }
 
-    if (type === "Yes" || type === "No" || type === "FreeText") {
+    if (type === "Yes" || type === "No" || type === "FreeText" || type==="StickyNote") {
       if (!position) {
         alert("Position not defind");
         return;
       }
-
 
       const newNodeId = uuidv4();
       const newNode = {
@@ -496,7 +477,7 @@ const SwimlaneModel = () => {
             : `Level${currentLevel}_${newNodeId}`,
 
         data: {
-          label: type === "FreeText" ? label : "",
+          label: type === "FreeText" || type === "StickyNote" ? label : "",
           shape: type,
           onLabelChange: (newLabel) => handleLabelChange(newNodeId, newLabel),
 
@@ -619,7 +600,7 @@ const SwimlaneModel = () => {
           return false;
         }
       } catch (error) {
-        console.log("inside ParentPageGroupId", ParentPageGroupId)
+        // console.log("inside ParentPageGroupId", ParentPageGroupId)
 
         console.error("filter draft error", error);
       }
@@ -806,7 +787,7 @@ const SwimlaneModel = () => {
       } else if (row === 6 && col > 0) {
         options = ["Add Process"];
       } else {
-        options = ["Add Activity", "Add Decision"];
+        options = ["Add Activity", "Add Decision", "Sticky Note"];
       }
       setPosition({ x: event.clientX, y: event.clientY });
       setOptions(options);
@@ -928,7 +909,8 @@ const SwimlaneModel = () => {
       if (
         node.type === "Yes" ||
         node.type === "No" ||
-        node.type === "FreeText"
+        node.type === "FreeText" ||
+        node.type === "StickyNote"
       ) {
         return;
       }
@@ -1070,8 +1052,27 @@ const SwimlaneModel = () => {
         );
       });
       setSelectedNodefreetextId(null)
-    }else{
+    } else {
       addNode("FreeText", { x: modalPosition.x - 70, y: modalPosition.y - 125 }, enteredText);
+
+    }
+  };
+
+
+  const handlestickyNoteTextSubmit = (enteredText) => {
+    setIsModalOpenStickyNode(false);
+    if (!enteredText) return;
+    if (selectedNodeStickyNoteId) {
+      setChiledNodes((prevNodes) => {
+        return prevNodes.map((node) =>
+          node.id === selectedNodeStickyNoteId
+            ? { ...node, data: { ...node.data, label: enteredText } }
+            : node
+        );
+      });
+      setSelectedNodeStickyNoteId(null)
+    } else {
+      addNode("StickyNote", { x: modalPosition.x, y: modalPosition.y }, enteredText);
 
     }
   };
@@ -1189,6 +1190,10 @@ const SwimlaneModel = () => {
       addNode("progressArrow");
     }
 
+     else if (option === "Sticky Note") {
+      setIsModalOpenStickyNode(true)
+    }
+
     setOptions([]);
   };
 
@@ -1214,7 +1219,7 @@ const SwimlaneModel = () => {
     if (confirmcondition) {
       if (id && user) {
         navigate(`/Draft-Swim-lanes-View/level/${currentLevel}/${currentParentId}`, {
-          state: { id: id, title: title, user: user, parentId: currentParentId, level: currentLevel }
+          state: { id: id, title: title, user: user, parentId: currentParentId, level: currentLevel,ParentPageGroupId }
         });
       } else {
         alert("Currently not navigate on draft mode");
@@ -1292,9 +1297,9 @@ const SwimlaneModel = () => {
               onNodeDragStart={handleNodeDragStart}
               onNodeDragStop={handleNodeDragStop}
               connectionLineType={ConnectionLineType.Step}
-              connectionLineStyle={{ stroke: "#002060", strokeWidth: 2.5 }} 
+              connectionLineStyle={{ stroke: "#002060", strokeWidth: 2.5 }}
               connectionRadius={10}
-              connectionMode={ConnectionMode.Loose} 
+              connectionMode={ConnectionMode.Loose}
 
               proOptions={{ hideAttribution: true }}
               nodeTypes={memoizedNodeTypes}
@@ -1341,7 +1346,7 @@ const SwimlaneModel = () => {
                     className="menuitems"
                     key={index}
                     onClick={() => handlePopupAction(item.action)}
-                    
+
                   >
                     {item.label}
                   </div>
@@ -1354,7 +1359,7 @@ const SwimlaneModel = () => {
                       deleteEdge();
                     }
                   }}
-     
+
                 >
                   Delete Arrow
                 </div>
@@ -1440,7 +1445,12 @@ const SwimlaneModel = () => {
             onSubmit={handleTextSubmit}
             initialValue={modalText} // Pass existing value to modal
           />
-
+          <StickyNoteModel
+            isOpen={isModalOpenStickyNode}
+            onClose={() => setIsModalOpenStickyNode(false)}
+            onSubmit={handlestickyNoteTextSubmit}
+            initialValue={StickyNoteModeltext}
+          />
           {options.length > 0 && (
             <AddObjectRole
               position={position}

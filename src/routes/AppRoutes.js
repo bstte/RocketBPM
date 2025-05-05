@@ -24,6 +24,8 @@ import PublishedSwimlaneModel from "../Pages/Map_level/PublishedProcess/Publishe
 import DraftProcesMapLevel from "../Pages/Map_level/DraftProcessView/DraftProcesMapLevel";
 import DraftSwimlineLevel from "../Pages/Map_level/DraftProcessView/DraftSwimlineLevel";
 import { ReactFlowProvider } from "@xyflow/react";
+import EditUser from "../Pages/Manage Assigned Users/editUser";
+import SignupForm from "../Pages/Signup/SignupForm";
 
 const AppRoutes = () => {
   return (
@@ -31,6 +33,8 @@ const AppRoutes = () => {
       {/* Public Routes */}
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
+      <Route path="/SignupForm" element={<SignupForm />} />
+
       <Route path="/forgotpassword" element={<Forgotpassword />} />
       <Route path="/account" element={<Account />} />
       <Route path="/setting" element={<Setting />} />
@@ -40,6 +44,8 @@ const AppRoutes = () => {
       <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
       <Route path="/user-management" element={<PrivateRoute><ManageAssignedUsers /></PrivateRoute>} />
       <Route path="/add-user" element={<PrivateRoute><AddUser /></PrivateRoute>} />
+      <Route path="/edit-user" element={<PrivateRoute><EditUser /></PrivateRoute>} />
+
       <Route
   path="/map-level"
   element={

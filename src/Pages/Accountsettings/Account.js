@@ -103,7 +103,8 @@ const Account = () => {
             const blob = await response.blob();
             formData.append("profile_image", new File([blob], "profile.jpg", { type: "image/jpeg" }));
         }
-
+console.log("newPassword",newPassword)
+        console.log("form repeatNewPassword,",repeatNewPassword)
         try {
             const response = await updateprofile(token, formData); // ✅ Pass formData
             console.log("Profile updated:", response);

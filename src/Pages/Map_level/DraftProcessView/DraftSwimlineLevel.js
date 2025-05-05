@@ -55,7 +55,6 @@ const DraftSwimlineLevel = () => {
 
   useEffect(() => {
 
-    // console.log("check ParentPageGroupId", ParentPageGroupId)
     const calculateHeights = () => {
       const element = document.querySelector(".ss_new_hed");
       const element2 = document.querySelector(".app-header");
@@ -331,7 +330,7 @@ const DraftSwimlineLevel = () => {
     if (id && user) {
 
       page === "editdraft" ? navigate(`/swimlane/level/${currentLevel}/${currentParentId}`, { state: { id: id, title: title, user: user, parentId: currentParentId, level: currentLevel, ParentPageGroupId: ParentPageGroupId } })
-        : navigate(`/published-swimlane/level/${currentLevel}/${currentParentId}`, { state: { id: id, title: title, user: user, parentId: currentParentId, level: currentLevel } })
+        : navigate(`/published-swimlane/level/${currentLevel}/${currentParentId}`, { state: { id: id, title: title, user: user, parentId: currentParentId, level: currentLevel ,ParentPageGroupId: ParentPageGroupId} })
 
 
       // removeBreadcrumbsAfter(0);

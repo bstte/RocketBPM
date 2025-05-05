@@ -2,7 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getProcessAssignUsers } from '../../API/api';
 import CustomHeader from '../../components/CustomHeader';
-import "./Manageuser.css"; 
+import { FaEdit } from "react-icons/fa";
+
+import "./Manageuser.css";
 const ManageAssignedUsers = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -30,9 +32,9 @@ const ManageAssignedUsers = () => {
 
   return (
     <div>
-        {/* header */}
-          <div className="ss_title_bar"> <CustomHeader title="User Management" /></div>
-{/* header */}
+      {/* header */}
+      <div className="ss_title_bar"> <CustomHeader title="User Management" /></div>
+      {/* header */}
       <div className="ss_mang_user_mn_dv">
 
         <button className="ss_add_user_btn" onClick={() => navigate("/Add-User", { state: { process: process } })}
@@ -47,7 +49,11 @@ const ManageAssignedUsers = () => {
               <th>Last Name</th>
               <th>Email</th>
               <th>Role</th>
-              <th>Status</th>
+              <th>User Status</th>
+              <th>Process Status</th>
+
+              <th>Action</th>
+
             </tr>
           </thead>
           <tbody>
@@ -59,6 +65,17 @@ const ManageAssignedUsers = () => {
                   <td>{user.assigned_user?.email || 'N/A'}</td>
                   <td>{user?.Role || 'N/A'}</td>
                   <td>{user.assigned_user?.status || 'N/A'}</td>
+                  <td>{user?.status || 'N/A'}</td>
+
+                  <td>
+
+                    <button className="ss_add_user_btn" onClick={() => navigate("/edit-User", { state: { assignedUsers: user } })}
+                    >
+                        <FaEdit />
+
+                    </button>
+                  </td>
+
                 </tr>
               ))
             ) : (
@@ -71,7 +88,7 @@ const ManageAssignedUsers = () => {
 
         <div className="ss_table_btm_btn">
           <ul>
-           <li> <button className="ss_add_user_btn" onClick={()=>navigate(-1)}>CLOSE</button></li>
+            <li> <button className="ss_add_user_btn" onClick={() => navigate(-1)}>CLOSE</button></li>
             {/* <li><button className="ss_add_user_btn">Save</button></li> */}
           </ul>
         </div>

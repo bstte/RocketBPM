@@ -7,6 +7,7 @@ import PublishSwimlineBoxNode from '../../../AllNode/PublishAllNode/PublishSwiml
 import PublishSwimlineDiamondNode from '../../../AllNode/PublishAllNode/PublishSwimlineDiamondNode';
 import PublishSwimlineRightsideBox from '../../../AllNode/PublishAllNode/PublishSwimlineRightsideBox';
 import FreeTextNode from '../../../AllNode/FreeTextNode';
+import StickyNote from '../../../AllNode/StickyNote';
 
 const PublishNodeType = {
   progressArrow: PublishSwimlineArrowBoxNode,
@@ -17,6 +18,8 @@ const PublishNodeType = {
   Yes: YesNode,
   No: NoNode,
    FreeText: FreeTextNode,
+     StickyNote: StickyNote,
+   
 };
 
 export default PublishNodeType;

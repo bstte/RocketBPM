@@ -66,7 +66,7 @@ const PublishedSwimlaneModel = () => {
     height: window.innerHeight,
   });
   const location = useLocation();
-  const { id, title, user, parentId, level } = location.state || {};
+  const { id, title, user, parentId, level,ParentPageGroupId } = location.state || {};
   const headerTitle = `${title} `;
   const currentParentId = parentId || null;
   const currentLevel = level ? parseInt(level, 10) : 0;
@@ -122,6 +122,7 @@ const PublishedSwimlaneModel = () => {
     checkfav()
   }, [LoginUser, id])
   useEffect(() => {
+
     const fetchNodes = async () => {
       try {
         const levelParam =
@@ -266,7 +267,7 @@ const PublishedSwimlaneModel = () => {
     setBreadcrumbs(updatedBreadcrumbs);
 
     if (id && user) {
-      navigate(`/Draft-Swim-lanes-View/level/${currentLevel}/${currentParentId}`, { state: { id: id, title: title, user: user, parentId: currentParentId, level: currentLevel } })
+      navigate(`/Draft-Swim-lanes-View/level/${currentLevel}/${currentParentId}`, { state: { id: id, title: title, user: user, parentId: currentParentId, level: currentLevel,ParentPageGroupId } })
       // removeBreadcrumbsAfter(0);
     } else {
       alert("Currently not navigate on draft mode")

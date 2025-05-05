@@ -25,8 +25,11 @@ const DetailsPopup = ({ isOpen, onClose, onSave, Details }) => {
 
   useEffect(() => {
     if (isOpen && Details) {
+console.log("Details.data.details.title,",Details.data.details.title)
+setTitle(
+  Details.data.details.title?.replace(/<br\s*\/?>/gi, " ").replace(/&nbsp;/g, " ") || ""
+);
 
-      setTitle(Details.data.details.title?.replace(/<br\s*\/?>/gi, " ") || ""); 
       setContent(Details.data.details.content || ""); 
     }
   }, [Details, isOpen]);
@@ -62,7 +65,7 @@ const DetailsPopup = ({ isOpen, onClose, onSave, Details }) => {
           maxConstraints={maxConstraints}
           onResizeStop={(e, { size }) => {
             setPopupSize(size);
-            setEditorHeight(size.height - 50); // Adjust editor height
+            setEditorHeight(size.height - 50); 
           }}
           style={{
             position: "absolute",

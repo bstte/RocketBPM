@@ -7,6 +7,7 @@ import PublishSwimlineDiamondNode from '../../../AllNode/PublishAllNode/PublishS
 import PublishSwimlineRightsideBox from '../../../AllNode/PublishAllNode/PublishSwimlineRightsideBox';
 import DraftSwimlaneArrowNode from '../../../AllNode/DraftViewNode/DraftSwimlaneArrowNode';
 import FreeTextNode from '../../../AllNode/FreeTextNode';
+import StickyNote from '../../../AllNode/StickyNote';
 
 const DraftNodeType = {
   progressArrow: DraftSwimlaneArrowNode,
@@ -17,6 +18,8 @@ const DraftNodeType = {
   Yes: YesNode,
   No: NoNode,
    FreeText: FreeTextNode,
+     StickyNote: StickyNote,
+   
 };
 
 export default DraftNodeType;

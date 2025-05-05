@@ -3,12 +3,12 @@ import axios from 'axios';
 // const baseUrl = 'https://teamwebdevelopers.com/proto-type/api'
 // export const ImageBaseUrl = 'https://teamwebdevelopers.com/proto-type/public/'
 
-const baseUrl = 'https://admin.rocketbpm.com/api'
-export const ImageBaseUrl = 'https://admin.rocketbpm.com/public/'
+// const baseUrl = 'https://admin.rocketbpm.com/api'
+// export const ImageBaseUrl = 'https://admin.rocketbpm.com/public/'
 
 
-// export const ImageBaseUrl = 'http://localhost:8000/'
-// const baseUrl ='http://localhost:8000/api/'
+export const ImageBaseUrl = 'http://localhost:8000/'
+const baseUrl ='http://localhost:8000/api/'
 export const defaultApi = axios.create({
   baseURL: baseUrl,
   headers: {
@@ -320,6 +320,17 @@ export const saveAssingUserData = async (newUserObject = null) => {
   }
 };
 
+export const updateAssignedUserData = async (newUserObject = null) => {
+  try {
+    const response = await api.post('/update-assigned-user', newUserObject);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching process titles:', error);
+    throw error;
+  }
+};
+
+
 export const addFavProcess = async (user_id, process_id, type) => {
   try {
     const response = await api.post('/add-fav-process', { user_id, process_id, type });
@@ -446,6 +457,15 @@ export const signup = async (newUserObject = null) => {
   }
 };
 
+export const submitSignupForm = async (newUserObject = null) => {
+  try {
+    const response = await api.post('/submitSignupForm', newUserObject);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching process titles:', error);
+    throw error;
+  }
+};
 
 
 

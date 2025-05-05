@@ -42,61 +42,7 @@ const Dashboard = () => {
     const process = ProcessTitle?.find((p) => p.id === parseInt(id));
     return process ? process.process_title : "";
   };
-  // useEffect(() => {
-  //   const getUserNodesData = async () => {
-  //     try {
-  //       const user_id = user?.id;
-  //       if (!user_id) return;
-
-  //       const response = await getUserNodes(parseInt(user_id));
-  //       console.log("response", response);
-  //       setProcessTitle(response.ProcessTitle);
-
-  //       if (!response?.nodes || !response?.assignedProcesses) return;
-
-
-  //       const assignedUserData = response.assignedProcesses.reduce((acc, p) => {
-  //         if (!acc[p.user_id]) {
-  //           acc[p.user_id] = {};
-  //         }
-  //         acc[p.user_id][p.process_id] = p.Role;
-  //         return acc;
-  //       }, {});
-
-  //       const nodesArray = response.nodes[""] || [];
-
-  //       const categorizedNodes = nodesArray.reduce((acc, node) => {
-  //         const processId = String(node.Process_id);
-  //         const assignedRole =
-  //           assignedUserData[node.user_id]?.[node.Process_id] || "Self";
-
-  //         if (!acc[processId]) {
-  //           acc[processId] = {
-  //             processId,
-  //             type: assignedRole !== "Self" ? "assign" : "self",
-  //             id: node.user_id,
-  //             role: assignedRole,
-  //           };
-  //         }
-
-  //         return acc;
-  //       }, {});
-
-  //       const processedNodes = Object.values(categorizedNodes);
-  //       console.log("processedNodes", processedNodes);
-
-  //       setFilteredNodes(processedNodes);
-  //       localStorage.setItem("filteredNodes", JSON.stringify(processedNodes));
-  //     } catch (error) {
-  //       console.error("getUserNodes error:", error);
-  //     } finally {
-  //       setIsLoading(false);
-  //     }
-  //   };
-
-  //   getUserNodesData();
-  // }, [user?.id]);
-
+ 
 
   useEffect(() => {
     const getUserNodesData = async () => {
@@ -272,19 +218,20 @@ const Dashboard = () => {
   }, []);
 
   // Open Menu
-  const handleOpenMenu = async (event, processId) => {
+  const handleOpenMenu = async (event, item) => {
+
     event.stopPropagation();
-    setSelectedProcess(processId);
-    const data = await checkPublishData(processId)
+    setSelectedProcess(item.processId);
+    const data = await checkPublishData(item)
     Setcheckpublish(data?.status)
     SetLoading(true)
   };
 
 
-  const checkPublishData = async (processId) => {
+  const checkPublishData = async (item) => {
     const levelParam = 'Level0'
-    const user_id = user ? user.id : null;
-    const Process_id = processId ? processId : null;
+    const user_id = item ? item.id : null;
+    const Process_id = item ?item.processId : null;
     const data = await apiExports.checkPublishRecord(
       levelParam,
       parseInt(user_id),
@@ -343,7 +290,7 @@ const Dashboard = () => {
 
 
   const NavigateOnClick = async (item) => {
-    const data = await checkPublishData(item.processId)
+    const data = await checkPublishData(item)
     if (data.status) {
       navigate("/published-map-level", { state: { id: parseInt(item.processId), title: getProcessTitle(item.processId), user: item } })
 
@@ -419,7 +366,7 @@ const Dashboard = () => {
                       {/* Three dots menu */}
                       <IconButton
                         sx={{ position: "absolute", top: 10, right: 10 }}
-                        onClick={(event) => handleOpenMenu(event, item.processId)}
+                        onClick={(event) => handleOpenMenu(event, item)}
                       >
                         <MoreVertIcon />
                       </IconButton>
@@ -604,7 +551,7 @@ const Dashboard = () => {
                       {/* Three dots menu */}
                       <IconButton
                         sx={{ position: "absolute", top: 10, right: 10 }}
-                        onClick={(event) => handleOpenMenu(event, item.processId)}
+                        onClick={(event) => handleOpenMenu(event, item)}
                       >
                         <MoreVertIcon />
                       </IconButton>

@@ -71,7 +71,7 @@ const SwimlineDiamondNode = ({ data }) => {
           <div className="popupHeader" style={styles.popupHeader}>
             <h3 style={styles.popupTitle}>
               {/* {data.details.title} */}
-              {data.details.title?.replace(/<br\s*\/?>/gi, " ")}
+              {data.details.title?.replace(/<br\s*\/?>/gi, " ").replace(/&nbsp;/g, " ") || ""}
 
               </h3>
             <button style={styles.closeButton} onClick={handleClosePopup}>
@@ -101,7 +101,7 @@ const SwimlineDiamondNode = ({ data }) => {
         <div style={styles.diamondWrapper} className="diamond_Wrapper">
           <div style={{ ...styles.diamond, width: nodebgheights-10, height: nodebgheights-10 }} className="diamond_header">
             <div ref={titleRef} style={styles.title}>
-            {data.details.title?.replace(/<br\s*\/?>/gi, " ")}
+            {data.details.title?.replace(/<br\s*\/?>/gi, " ").replace(/&nbsp;/g, " ") || ""}
             </div>
           </div>
           <Handle className="topdot" type="target" position={Position.Top} id="top-target" style={styles.handle} />

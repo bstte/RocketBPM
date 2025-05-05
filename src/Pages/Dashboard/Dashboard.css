@@ -410,7 +410,6 @@ span.ss_hm_dash_home_icon {
 
 .ss_hm_dash_home_icon span {
     display: flex;
-    text-transform: capitalize;
     line-height: 22px;
 }
 

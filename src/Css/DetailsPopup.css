@@ -25,7 +25,7 @@
     width: 100%; /* Take full width */
     padding: 4px 0; /* Add a little spacing */
     /* text-align: center;  */
-    text-transform: capitalize;
+    /* text-transform: capitalize; */
   }
   
   .popup-title-input::placeholder {
