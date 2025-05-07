@@ -82,17 +82,34 @@ const Dashboard = () => {
         }, {});
 
         // ✅ Add missing processes (which have no nodes)
-        response.ProcessTitle.forEach((process) => {
-          const processId = String(process.id);
-          if (!categorizedNodes[processId]) {
-            categorizedNodes[processId] = {
-              processId,
-              type: "self",
-              id: user_id,
-              role: "None",
-            };
-          }
-        });
+        // ✅ Add missing processes based on ProcessTitle
+response.ProcessTitle.forEach((process) => {
+  const processId = String(process.id);
+  if (!categorizedNodes[processId]) {
+    // 🔍 Check if this process is assigned to someone
+    const assignment = response.assignedProcesses.find(
+      (a) => a.process_id === process.id
+    );
+
+    if (assignment) {
+      categorizedNodes[processId] = {
+        processId,
+        type: assignment.user_id === user_id ? "assign" : "assign",
+        id: assignment.user_id,
+        role: assignment.Role,
+      };
+    } else {
+      // If not assigned to anyone, set default
+      categorizedNodes[processId] = {
+        processId,
+        type: "self",
+        id: user_id,
+        role: "None",
+      };
+    }
+  }
+});
+
 
         const processedNodes = Object.values(categorizedNodes);
         console.log("processedNodes", processedNodes);

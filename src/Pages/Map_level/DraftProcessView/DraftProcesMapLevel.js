@@ -216,9 +216,11 @@ const DraftProcesMapLevel = () => {
         } else {
           setgetPublishedDate("");
         }
-        console.log(levelParam,
+        console.log("testing",levelParam,
           parseInt(user_id),
           Process_id)
+
+          console.log("data checking",data)
         setprocess_img(data.process_img)
         const parsedNodes = data.nodes.map((node) => {
           const parsedData = JSON.parse(node.data);

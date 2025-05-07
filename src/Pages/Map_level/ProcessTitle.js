@@ -37,7 +37,7 @@ const ProcessTitle = () => {
 
               <div className="ss_body_div ss_add_title">
       <div className="ss_add_user_bx">
-      <div className="ss_add_user_img_dv1"><img src="https://newprocesslab.com/wp-content/uploads/2021/12/cropped-Logo_NewProcessLab_60x523-1-1.png" alt=''/></div>
+      <div className="ss_add_user_img_dv1"><img src="/img/RocketBPM_rocket_logo.png" alt=''/></div>
      
       <h1>Process Title</h1>
 
