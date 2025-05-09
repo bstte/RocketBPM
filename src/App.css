@@ -136,16 +136,17 @@ textarea {
 }
 
 .menuitems {
-    padding: 8px 12px;
-    cursor: pointer;
-    background-color: rgb(231, 231, 231);
-    color: rgb(1, 31, 96);
-    border: 0;
-    border-bottom: 1px solid rgb(255, 255, 255);
-    width: 100%;
-    text-align: left;
-    font-weight: 300;
-    font-size: 1rem;
+    padding: 8px 12px !important;
+    cursor: pointer !important;
+    background-color: rgb(231, 231, 231) !important;
+    color: rgb(1, 31, 96) !important;
+    border: 0 !important;
+    border-bottom: 1px solid rgb(255, 255, 255) !important;
+    width: 100% !important;
+    text-align: left !important;
+    font-weight: 300 !important;
+    font-size: 1rem !important;
+    margin: 0 !important;
 }
 .menuitems:hover,
 .newpopmenuitems button:hover {

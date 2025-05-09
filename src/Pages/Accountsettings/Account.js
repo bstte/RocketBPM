@@ -80,7 +80,6 @@ const Account = () => {
             alert("User not authenticated! Please login.");
             return;
         }
-
         if (newPassword && newPassword !== repeatNewPassword) {
             alert("New passwords do not match.");
             return;

@@ -787,7 +787,9 @@ const SwimlaneModel = () => {
       } else if (row === 6 && col > 0) {
         options = ["Add Process"];
       } else {
-        options = ["Add Activity", "Add Decision", "Sticky Note"];
+        // options = ["Add Activity", "Add Decision", "Sticky Note"];
+        options = ["Add Activity", "Add Decision"];
+
       }
       setPosition({ x: event.clientX, y: event.clientY });
       setOptions(options);

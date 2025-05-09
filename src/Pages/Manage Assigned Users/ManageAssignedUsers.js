@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getProcessAssignUsers } from '../../API/api';
 import CustomHeader from '../../components/CustomHeader';
-import { FaEdit } from "react-icons/fa";
+// import { FaEdit } from "react-icons/fa";
 
 import "./Manageuser.css";
 const ManageAssignedUsers = () => {
@@ -49,10 +49,12 @@ const ManageAssignedUsers = () => {
               <th>Last Name</th>
               <th>Email</th>
               <th>Role</th>
-              <th>User Status</th>
-              <th>Process Status</th>
+                            <th>Status</th>
 
-              <th>Action</th>
+              {/* <th>User Status</th> */}
+              {/* <th>Process Status</th>
+
+              <th>Action</th> */}
 
             </tr>
           </thead>
@@ -65,7 +67,7 @@ const ManageAssignedUsers = () => {
                   <td>{user.assigned_user?.email || 'N/A'}</td>
                   <td>{user?.Role || 'N/A'}</td>
                   <td>{user.assigned_user?.status || 'N/A'}</td>
-                  <td>{user?.status || 'N/A'}</td>
+                  {/* <td>{user?.status || 'N/A'}</td>
 
                   <td>
 
@@ -74,7 +76,7 @@ const ManageAssignedUsers = () => {
                         <FaEdit />
 
                     </button>
-                  </td>
+                  </td> */}
 
                 </tr>
               ))

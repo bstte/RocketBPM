@@ -51,7 +51,12 @@
 }
 
 .ss_dash_slid_bx .MuiBox-root {
-    padding: 10px !important;
+    padding: 0px !important;
+    overflow: hidden;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    top: 45px;
+    right: 30px;
 }
 
 .ss_title_bar .css-1ygil4i-MuiToolbar-root {
@@ -134,6 +139,7 @@
 .ss_title_bar .MuiToolbar-root.MuiToolbar-gutters.MuiToolbar-regular.boxHead {
     min-height: 37px;
     border: 1px solid #002060;
+    box-shadow: 0px -5px 10px #afadad5e;
 }
 
 .ss_add_proces_img img {
@@ -164,6 +170,7 @@
 .ss_container .col-lg-8 {
     width: 66%;
     border: 1px solid #002060;
+    box-shadow: 0px 0px 10px #afadad5e;
 }
 
 .ss_container h4 {
@@ -262,7 +269,7 @@ td {
 .ss_logo_hed_sec {
     display: flex;
     gap: 20px;
-    padding-bottom: 5px;
+    padding-bottom:12px;
     align-items: center;
 }
 
@@ -280,8 +287,8 @@ td {
 }
 
 .ss_profile_rit_div img {
-    width: 22px !important;
-    height: 22px;
+    width: 34px !important;
+    height: 34px;
     border-radius: 100px;
     display: block;
     object-fit: cover;
@@ -441,12 +448,12 @@ button.header_share_btn img {
 }
 
 .ss_new_hed {
-    margin-bottom: 8px !important;
+    margin-bottom: 12.5px !important;
 }
 
 .app-header {
     padding:11.5px 10.5px 11px 9px !important;
-    box-shadow: 0px 0px 10px #afadad5e;
+    box-shadow: 0px -5px 10px #afadad5e;
 }
 
 .ss_hed_box_mn {

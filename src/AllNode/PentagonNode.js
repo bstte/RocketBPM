@@ -1,30 +1,40 @@
 import { memo, useState, useEffect, useRef } from 'react';
 import { NodeResizer } from '@xyflow/react';
 
-const PentagonNode = ({ data }) => {
-  const [label, setLabel] = useState(data.label || ''); 
-  const arrowref = useRef(null); 
+const PentagonNode = ({ data, id, selectedNodeId }) => {
+  const [label, setLabel] = useState(data.label || '');
   const [autoFocus, setAutoFocus] = useState(data.autoFocus);
-  const [isResizing, setIsResizing] = useState(false);
-  const [isClickable, setIsClickable] = useState(false);
+  const [width, setWidth] = useState(data.width_height?.width || 150);
+  const [height, setHeight] = useState(data.width_height?.height || 150);
+  const textareaRef = useRef(null);
 
+  const isClickable = selectedNodeId === id;
+
+  // Sync label from data
   useEffect(() => {
-    setLabel(data.label || ''); 
+    setLabel(data.label || '');
   }, [data.label]);
 
+  // Sync width/height when data.width_height changes (publish -> edit)
   useEffect(() => {
-    if (autoFocus && arrowref.current) {
+    if (data.width_height?.width && data.width_height?.height) {
+      setWidth(data.width_height.width);
+      setHeight(data.width_height.height);
+    }
+  }, [data.width_height]);
+
+  // Focus textarea if autoFocus is true
+  useEffect(() => {
+    if (autoFocus && textareaRef.current) {
       setTimeout(() => {
-        arrowref.current.focus();
-        setAutoFocus(false); 
+        textareaRef.current.focus();
+        setAutoFocus(false);
       }, 0);
     }
   }, [autoFocus]);
 
-  
-
   const handleChange = (e) => {
-    const newValue = e.target.value || ''; // Prevent undefined
+    const newValue = e.target.value || '';
     setLabel(newValue);
     if (data.onLabelChange) {
       data.onLabelChange(newValue);
@@ -37,38 +47,39 @@ const PentagonNode = ({ data }) => {
     }
   };
 
-  const handleResizeStart = () => {
-    setIsResizing(true);
-  };
+  const handleResize = (e, size) => {
+    if (!size || typeof size.width === 'undefined' || typeof size.height === 'undefined') {
+      console.warn('Invalid resize size', size);
+      return;
+    }
+    setWidth(size.width);
+    setHeight(size.height);
 
-  const handleResizeStop = () => {
-    setIsResizing(false);
-  };
-
-  const handleClick = () => {
-    setIsClickable(!isClickable); // Toggle clickable state
+    if (data.updateWidthHeight) {
+      data.updateWidthHeight(id, { width: size.width, height: size.height });
+    }
   };
 
   return (
-    <div style={styles.wrapper} onClick={handleClick}>
+    <div style={styles.wrapper}>
       {/* Pentagon Box */}
       <div
         style={{
           ...styles.pentagonBox,
-          minWidth: isResizing ? 'auto' : data.width_height ? data.width_height.width : '150px',
-          minHeight: isResizing ? 'auto' : data.width_height ? data.width_height.height : '150px',
+          width: `${width}px`,
+          height: `${height}px`,
+          clipPath: 'polygon(50% 0%, 100% 30%, 100% 100%, 0% 100%, 0% 30%)',
         }}
       >
         <textarea
-          ref={arrowref}
+          ref={textareaRef}
           value={label}
           onChange={handleChange}
           onBlur={handleBlur}
-          placeholder="Type ...."
+          placeholder="Type..."
           style={styles.textarea}
           rows={1}
-          maxLength={200} // Optional: limit characters
-
+          maxLength={200}
         />
       </div>
 
@@ -76,13 +87,9 @@ const PentagonNode = ({ data }) => {
         <NodeResizer
           minWidth={100}
           minHeight={50}
-          onResizeStart={handleResizeStart}
-          onResizeStop={handleResizeStop}
+          onResize={handleResize}
         />
       )}
-
-    
-
     </div>
   );
 };
@@ -100,14 +107,12 @@ const styles = {
     textAlign: 'center',
     backgroundColor: 'red',
     color: '#002060',
-    width: '100%',
-    height: '100%',
-    clipPath: 'polygon(50% 0%, 100% 30%, 100% 100%, 0% 100%, 0% 30%)',
-    boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
     padding: '10px',
     boxSizing: 'border-box',
     overflow: 'hidden',
     border: 'none',
+    boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+    transition: 'width 0.2s ease, height 0.2s ease',
   },
   textarea: {
     background: 'transparent',
@@ -123,7 +128,6 @@ const styles = {
     fontFamily: "'Poppins', sans-serif",
     minHeight: '20px',
   },
-  
 };
 
 export default memo(PentagonNode);

@@ -430,7 +430,8 @@ response.ProcessTitle.forEach((process) => {
                                         },
                                       })
                                     }
-                                    style={{ cursor: "pointer", margin: 0 }}
+                                   
+                                    className="menuitems"
                                   >
                                     View published
                                   </p>
@@ -445,7 +446,8 @@ response.ProcessTitle.forEach((process) => {
                                       },
                                     })
                                   }
-                                  style={{ cursor: "pointer", margin: 0 }}
+                                  
+                                  className="menuitems"
                                 >
                                   View draft
                                 </p>
@@ -457,7 +459,7 @@ response.ProcessTitle.forEach((process) => {
                                       },
                                     })
                                   }
-                                  style={{ cursor: "pointer", margin: 0 }}
+                                  className="menuitems"
                                 >
                                   Manage users
                                 </p>
@@ -467,7 +469,7 @@ response.ProcessTitle.forEach((process) => {
                                       state: { ProcessId: parseInt(item.processId) },
                                     })
                                   }
-                                  style={{ cursor: "pointer", margin: 0 }}
+                                  className="menuitems"
                                 >
                                   Edit settings
                                 </p>
@@ -486,7 +488,7 @@ response.ProcessTitle.forEach((process) => {
                                         },
                                       })
                                     }
-                                    style={{ cursor: "pointer", margin: 0 }}
+                                    className="menuitems"
                                   >
                                     View published
                                   </p>
@@ -505,7 +507,7 @@ response.ProcessTitle.forEach((process) => {
                                             },
                                           })
                                         }
-                                        style={{ cursor: "pointer", margin: 0 }}
+                                        className="menuitems"
                                       >
                                         View published
                                       </p>
@@ -520,7 +522,7 @@ response.ProcessTitle.forEach((process) => {
                                           },
                                         })
                                       }
-                                      style={{ cursor: "pointer", margin: 0 }}
+                                      className="menuitems"
                                     >
                                       View draft
                                     </p>
