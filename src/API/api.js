@@ -51,6 +51,22 @@ export const getNodes = async (level = null, user_id = null, Process_id = null) 
   }
 };
 
+export const getallpublishObject_Tolinkexistingmodel = async (level = null, user_id = null, Process_id = null) => {
+  try {
+    const response = await api.get('/getallpublishObject_Tolinkexistingmodel', {
+      params: {
+        level,
+        user_id,
+        Process_id
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching nodes:', error);
+    throw error;
+  }
+};
+
 export const checkRecord = async (level = null, user_id = null, Process_id = null) => {
   try {
     const response = await api.get('/check-record', {
@@ -469,6 +485,6 @@ export const submitSignupForm = async (newUserObject = null) => {
 
 
 
-const apiExports = { saveNodes, getNodes, checkPublishRecord, GetPublishedDate, checkRecord, Login, saveProcessTitle, defaultApi, filter_draft, getPublishedNodes, getdataByNodeId };
+const apiExports = { saveNodes,getallpublishObject_Tolinkexistingmodel, getNodes, checkPublishRecord, GetPublishedDate, checkRecord, Login, saveProcessTitle, defaultApi, filter_draft, getPublishedNodes, getdataByNodeId };
 
 export default apiExports;

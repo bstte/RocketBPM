@@ -9,8 +9,8 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState(data.details.title);
   const [autoFocus, setAutoFocus] = useState(data.autoFocus);
-  const [isHovered, setIsHovered] = useState(false); 
- const { addBreadcrumb, removeBreadcrumbsAfter } =
+  const [isHovered, setIsHovered] = useState(false);
+  const { addBreadcrumb, removeBreadcrumbsAfter } =
     useContext(BreadcrumbsContext);
   const contentEditableRef = useRef(null);
 
@@ -31,9 +31,9 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
   };
 
   const handleFocus = (e) => {
-     const selection = window.getSelection();
+    const selection = window.getSelection();
     const range = document.createRange();
-  
+
     if (e.target.firstChild) {
       range.setStart(e.target.firstChild, e.target.selectionStart || 0);
       range.collapse(true);
@@ -41,8 +41,8 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
       selection.addRange(range);
     }
   };
-  
-  
+
+
   const handleBlur = () => {
     setIsEditing(false);
     if (onTitleChange) {
@@ -72,11 +72,20 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
             id: response.data[0].user_id,
           };
 
-          const newLevel = 1;
+          let newLevel = 1;
+          if (data.link !== null) {
+            const match = data.link.match(/^Level(\d+)/); 
+            if (match && match[1]) {
+              const currentLevel = parseInt(match[1], 10);
+              newLevel = currentLevel + 1;
+            }
+          }
+
           const levelParam =
             data.link !== null
               ? `Level${newLevel}_${data.link}`
               : `Level${newLevel}`;
+              console.log("newLevel",levelParam)
 
           const nodeData = await api.checkRecord(
             levelParam,
@@ -97,18 +106,18 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
               });
             }
             if (nodeData.Page_Title === "Swimlane") {
-            addBreadcrumb(
-              `${nodeDataParsed.label || ""} `,
-              `/swimlane/level/${newLevel}/${data.link}`,
-              {
-                id,
-                title: nodeDataParsed.label || "",
-                user,
-                parentId: data.link,
-                level: newLevel,
-                ParentPageGroupId: response.data[0]?.PageGroupId,
-              }
-            );
+              addBreadcrumb(
+                `${nodeDataParsed.label || ""} `,
+                `/swimlane/level/${newLevel}/${data.link}`,
+                {
+                  id,
+                  title: nodeDataParsed.label || "",
+                  user,
+                  parentId: data.link,
+                  level: newLevel,
+                  ParentPageGroupId: response.data[0]?.PageGroupId,
+                }
+              );
 
               navigate(`/swimlane/level/${newLevel}/${data.link}`, {
                 state: {
@@ -121,7 +130,7 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
                 },
               });
             }
-          }else{
+          } else {
             alert("First create next model of this existing model")
           }
         } else {
@@ -137,8 +146,8 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
     <div
       style={styles.wrapper}
       onClick={!isEditing ? handleBoxClick : undefined}
-      onMouseEnter={() => setIsHovered(true)} 
-      onMouseLeave={() => setIsHovered(false)} 
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       {/* Arrow Box */}
       <div className="borderBox" style={styles.arrowBox}>
@@ -147,7 +156,7 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
             {data.link && (
               <div>
                 <button style={styles.linkButton} onClick={handleLinkClick}>
-                 {data.details?.title } {title}
+                  {data.details?.title}
                 </button>
               </div>
             )}
@@ -170,20 +179,20 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
       {/* Border overlay as a separate div */}
       <div style={styles.borderOverlay}></div>
 
-   
+
       <Handle
         type="target"
         position={Position.Top}
         id="top-target"
-        style={isHovered ? styles.hoverhandle:styles.handle}
+        style={isHovered ? styles.hoverhandle : styles.handle}
       />
       <Handle
         type="source"
         position={Position.Top}
         id="top-source"
-        style={isHovered ? styles.hoverhandle:styles.handle}
+        style={isHovered ? styles.hoverhandle : styles.handle}
       />
-   
+
     </div>
   );
 };
@@ -209,7 +218,7 @@ const styles = {
     height: "100%",
     // clipPath:
     //   "polygon(0 0, calc(100% - 20px) 0, 100% 50%, calc(100% - 20px) 100%, 0 100%)",
-      clipPath: 'polygon(10px 50%, 0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%)',
+    clipPath: 'polygon(10px 50%, 0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%)',
 
     padding: "10px",
     boxSizing: "border-box",
@@ -252,7 +261,7 @@ const styles = {
     backgroundColor: "transparent",
     padding: "2px",
   },
- 
+
   linkButton: {
     fontSize: "10px",
     color: "white",
@@ -272,7 +281,7 @@ const styles = {
     border: "none",
     width: "0px",
     height: "0px",
-    pointerEvents: "none" ,
+    pointerEvents: "none",
   },
 };
 

@@ -166,7 +166,7 @@ const Header = ({
 
 
           <div style={styles.loginuserbox} className="ss_hed_rit_user_secnew">
-            {Page === "Published" && Procesuser.role !== "User" && (
+            {Page === "Published"  && (
               <>
 
                 <button
@@ -205,7 +205,7 @@ const Header = ({
 
             {(Page === "ViewDraftmodel" || Page === "ViewDraftswimlane") && (
               <>
-                {Procesuser?.type !== "assign" && (
+                { Procesuser.role !== "User" &&(
                   <div>
 
                     <button

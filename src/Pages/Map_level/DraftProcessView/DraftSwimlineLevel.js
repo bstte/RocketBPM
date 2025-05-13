@@ -354,6 +354,8 @@ const DraftSwimlineLevel = () => {
         Page={"ViewDraftswimlane"}
         isFavorite={isFavorite}
         Process_img={process_img}
+        Procesuser={user}
+
         checkpublish={checkpublish}
 
       />

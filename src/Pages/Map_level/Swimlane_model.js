@@ -975,7 +975,7 @@ const SwimlaneModel = () => {
     }
   };
 
-  const { breadcrumbs, removeBreadcrumbsAfter } =
+  const { removeBreadcrumbsAfter } =
     useContext(BreadcrumbsContext);
 
   const linkExistingmodel = async () => {
@@ -988,18 +988,22 @@ const SwimlaneModel = () => {
       setSelectedLinknodeIds([]);
     }
 
-    const fullPath = breadcrumbs[2].path;
-    const extractedValue = fullPath.split("/").pop();
-
+//     const fullPath = breadcrumbs[2].path;
+//     const extractedValue = fullPath.split("/").pop();
+//     console.log("check extractedValue ",extractedValue)
+// console.log("currentParentId",currentParentId)
     const levelParam = "Level0";
     const user_id = user ? user.id : null;
     const Process_id = id ? id : null;
-    const data = await api.getNodes(levelParam, parseInt(user_id), Process_id);
+    const data = await api.getallpublishObject_Tolinkexistingmodel(levelParam, parseInt(user_id), Process_id);
+
+    console.log("check data filteredNodes data",data)
+
     const filteredNodes = data.nodes.filter(
-      (node) => node.node_id !== extractedValue
+      (node) => node.node_id !== currentParentId
     );
     setLinknodeList(filteredNodes);
-    console.log("check data",)
+    console.log("check data filteredNodes",filteredNodes)
     setIsCheckboxPopupOpen(true);
   };
 
@@ -1388,59 +1392,59 @@ const SwimlaneModel = () => {
           </div>
 
           {/* Checkbox Popup */}
-          {isCheckboxPopupOpen && (
-            <div style={popupStyle.container} className="swimlanepopup">
-              <div style={popupStyle.header}>
-                <span>Existing Model</span>
-                <button
-                  style={popupStyle.closeButton}
-                  onClick={() => setIsCheckboxPopupOpen(false)}
-                  aria-label="Close"
-                >
-                  ×
-                </button>
-              </div>
-
-              <input
-                type="text"
-                style={styles.searchInput}
-                placeholder="Search..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-
-              <div style={popupStyle.body}>
-                {filteredData.map((node) => (
-                  <label
-                    key={node.node_id}
-                    style={{
-                      ...popupStyle.label,
-                      backgroundColor:
-                        selectedLinknodeIds === node.node_id
-                          ? "#f0f8ff"
-                          : "transparent",
-                    }}
+            {isCheckboxPopupOpen && (
+              <div style={popupStyle.container} className="swimlanepopup">
+                <div style={popupStyle.header}>
+                  <span>Existing Model</span>
+                  <button
+                    style={popupStyle.closeButton}
+                    onClick={() => setIsCheckboxPopupOpen(false)}
+                    aria-label="Close"
                   >
-                    <input
-                      type="checkbox"
-                      checked={selectedLinknodeIds === node.node_id}
-                      onChange={() => handleCheckboxChange(node.node_id, node.data.label)}
-                      style={popupStyle.checkbox}
-                    />
-                    {node.data.label && node.data.label}
-                  </label>
-                ))}
+                    ×
+                  </button>
+                </div>
+
+                <input
+                  type="text"
+                  style={styles.searchInput}
+                  placeholder="Search..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+
+                <div style={popupStyle.body}>
+                  {filteredData.map((node) => (
+                    <label
+                      key={node.node_id}
+                      style={{
+                        ...popupStyle.label,
+                        backgroundColor:
+                          selectedLinknodeIds === node.node_id
+                            ? "#f0f8ff"
+                            : "transparent",
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedLinknodeIds === node.node_id}
+                        onChange={() => handleCheckboxChange(node.node_id, node.data.label)}
+                        style={popupStyle.checkbox}
+                      />
+                      {node.data.label && node.data.label}
+                    </label>
+                  ))}
+                </div>
+                <div style={popupStyle.footer}>
+                  <button
+                    onClick={saveSelectedNodes}
+                    style={popupStyle.saveButton}
+                  >
+                    Save
+                  </button>
+                </div>
               </div>
-              <div style={popupStyle.footer}>
-                <button
-                  onClick={saveSelectedNodes}
-                  style={popupStyle.saveButton}
-                >
-                  Save
-                </button>
-              </div>
-            </div>
-          )}
+            )}
           <TextInputModal
             isOpen={isModalOpen}
             onClose={() => setIsModalOpen(false)}
@@ -1497,7 +1501,10 @@ const popupStyle = {
   },
   body: {
     marginBottom: "16px",
-  },
+    maxHeight: "250px",
+    overflowY: "auto",
+  }
+,  
   label: {
     display: "flex",
     alignItems: "center",

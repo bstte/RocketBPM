@@ -42,7 +42,7 @@ const Dashboard = () => {
     const process = ProcessTitle?.find((p) => p.id === parseInt(id));
     return process ? process.process_title : "";
   };
- 
+
 
   useEffect(() => {
     const getUserNodesData = async () => {
@@ -83,32 +83,32 @@ const Dashboard = () => {
 
         // ✅ Add missing processes (which have no nodes)
         // ✅ Add missing processes based on ProcessTitle
-response.ProcessTitle.forEach((process) => {
-  const processId = String(process.id);
-  if (!categorizedNodes[processId]) {
-    // 🔍 Check if this process is assigned to someone
-    const assignment = response.assignedProcesses.find(
-      (a) => a.process_id === process.id
-    );
+        response.ProcessTitle.forEach((process) => {
+          const processId = String(process.id);
+          if (!categorizedNodes[processId]) {
+            // 🔍 Check if this process is assigned to someone
+            const assignment = response.assignedProcesses.find(
+              (a) => a.process_id === process.id
+            );
 
-    if (assignment) {
-      categorizedNodes[processId] = {
-        processId,
-        type: assignment.user_id === user_id ? "assign" : "assign",
-        id: assignment.user_id,
-        role: assignment.Role,
-      };
-    } else {
-      // If not assigned to anyone, set default
-      categorizedNodes[processId] = {
-        processId,
-        type: "self",
-        id: user_id,
-        role: "None",
-      };
-    }
-  }
-});
+            if (assignment) {
+              categorizedNodes[processId] = {
+                processId,
+                type: assignment.user_id === user_id ? "assign" : "assign",
+                id: assignment.user_id,
+                role: assignment.Role,
+              };
+            } else {
+              // If not assigned to anyone, set default
+              categorizedNodes[processId] = {
+                processId,
+                type: "self",
+                id: user_id,
+                role: "None",
+              };
+            }
+          }
+        });
 
 
         const processedNodes = Object.values(categorizedNodes);
@@ -248,7 +248,7 @@ response.ProcessTitle.forEach((process) => {
   const checkPublishData = async (item) => {
     const levelParam = 'Level0'
     const user_id = item ? item.id : null;
-    const Process_id = item ?item.processId : null;
+    const Process_id = item ? item.processId : null;
     const data = await apiExports.checkPublishRecord(
       levelParam,
       parseInt(user_id),
@@ -430,7 +430,7 @@ response.ProcessTitle.forEach((process) => {
                                         },
                                       })
                                     }
-                                   
+
                                     className="menuitems"
                                   >
                                     View published
@@ -446,7 +446,7 @@ response.ProcessTitle.forEach((process) => {
                                       },
                                     })
                                   }
-                                  
+
                                   className="menuitems"
                                 >
                                   View draft
@@ -477,7 +477,7 @@ response.ProcessTitle.forEach((process) => {
                             ) : (
                               <>
                                 {/* Show only Published when role is User */}
-                                {item.role === "User" && (
+                                {/* {item.role === "User" && (
                                   <p
                                     onClick={() =>
                                       navigate("/published-map-level", {
@@ -492,9 +492,9 @@ response.ProcessTitle.forEach((process) => {
                                   >
                                     View published
                                   </p>
-                                )}
+                                )} */}
                                 {/* Show Published and View Draft when role is Modeler */}
-                                {item.role === "Modeler" && (
+                                {["User", "Modeler"].includes(item.role) && (
                                   <>
                                     {checkpublish && (
                                       <p
@@ -588,138 +588,140 @@ response.ProcessTitle.forEach((process) => {
 
                       {/* Custom dropdown menu */}
                       {selectedProcess === item.processId && (
-                        <Box
-                          sx={{
-                            position: "absolute",
-                            top: 35,
-                            right: 10,
-                            width: "150px",
-                            bgcolor: "white",
-                            boxShadow: 3,
-                            borderRadius: 1,
-                            padding: 1,
-                            zIndex: 1000,
-                          }}
-                        >
+                       <Box
+                       sx={{
+                         position: "absolute",
+                         top: 35,
+                         right: 10,
+                         width: "150px",
+                         bgcolor: "white",
+                         boxShadow: 3,
+                         borderRadius: 1,
+                         padding: 1,
+                         zIndex: 1000,
+                       }}
+                     >
 
-                          {Loading && (
-                            item.type === "self" ? (
-                              <>
-                                {/* Show all options when type is self */}
-                                {checkpublish && (
-                                  <p
-                                    onClick={() =>
-                                      navigate("/published-map-level", {
-                                        state: {
-                                          id: parseInt(item.processId),
-                                          title: getProcessTitle(item.processId),
-                                          user: item,
-                                        },
-                                      })
-                                    }
-                                    style={{ cursor: "pointer", margin: 0 }}
-                                  >
-                                    View published
-                                  </p>
-                                )}
-                                <p
-                                  onClick={() =>
-                                    navigate("/Draft-Process-View", {
-                                      state: {
-                                        id: parseInt(item.processId),
-                                        title: getProcessTitle(item.processId),
-                                        user: item,
-                                      },
-                                    })
-                                  }
-                                  style={{ cursor: "pointer", margin: 0 }}
-                                >
-                                  View draft
-                                </p>
-                                <p
-                                  onClick={() =>
-                                    navigate("/User-Management", {
-                                      state: {
-                                        process: { id: parseInt(item.processId), user_id: item.id },
-                                      },
-                                    })
-                                  }
-                                  style={{ cursor: "pointer", margin: 0 }}
-                                >
-                                  Manage users
-                                </p>
-                                <p
-                                  onClick={() =>
-                                    navigate("/Setting", {
-                                      state: { ProcessId: parseInt(item.processId) },
-                                    })
-                                  }
-                                  style={{ cursor: "pointer", margin: 0 }}
-                                >
-                                  Edit settings
-                                </p>
-                              </>
-                            ) : (
-                              <>
-                                {/* Show only Published when role is User */}
-                                {item.role === "User" && (
-                                  <p
-                                    onClick={() =>
-                                      navigate("/published-map-level", {
-                                        state: {
-                                          id: parseInt(item.processId),
-                                          title: getProcessTitle(item.processId),
-                                          user: item,
-                                        },
-                                      })
-                                    }
-                                    style={{ cursor: "pointer", margin: 0 }}
-                                  >
-                                    View published
-                                  </p>
-                                )}
-                                {/* Show Published and View Draft when role is Modeler */}
-                                {item.role === "Modeler" && (
-                                  <>
-                                    {checkpublish && (
-                                      <p
-                                        onClick={() =>
-                                          navigate("/published-map-level", {
-                                            state: {
-                                              id: parseInt(item.processId),
-                                              title: getProcessTitle(item.processId),
-                                              user: item,
-                                            },
-                                          })
-                                        }
-                                        style={{ cursor: "pointer", margin: 0 }}
-                                      >
-                                        View published
-                                      </p>
-                                    )}
-                                    <p
-                                      onClick={() =>
-                                        navigate("/Draft-Process-View", {
-                                          state: {
-                                            id: parseInt(item.processId),
-                                            title: getProcessTitle(item.processId),
-                                            user: item,
-                                          },
-                                        })
-                                      }
-                                      style={{ cursor: "pointer", margin: 0 }}
-                                    >
-                                      View draft
-                                    </p>
-                                  </>
-                                )}
-                              </>
-                            )
-                          )}
+                       {Loading && (
+                         item.type === "self" ? (
+                           <>
+                             {/* Show all options when type is self */}
+                             {checkpublish && (
+                               <p
+                                 onClick={() =>
+                                   navigate("/published-map-level", {
+                                     state: {
+                                       id: parseInt(item.processId),
+                                       title: getProcessTitle(item.processId),
+                                       user: item,
+                                     },
+                                   })
+                                 }
+
+                                 className="menuitems"
+                               >
+                                 View published
+                               </p>
+                             )}
+                             <p
+                               onClick={() =>
+                                 navigate("/Draft-Process-View", {
+                                   state: {
+                                     id: parseInt(item.processId),
+                                     title: getProcessTitle(item.processId),
+                                     user: item,
+                                   },
+                                 })
+                               }
+
+                               className="menuitems"
+                             >
+                               View draft
+                             </p>
+                             <p
+                               onClick={() =>
+                                 navigate("/User-Management", {
+                                   state: {
+                                     process: { id: parseInt(item.processId), user_id: item.id },
+                                   },
+                                 })
+                               }
+                               className="menuitems"
+                             >
+                               Manage users
+                             </p>
+                             <p
+                               onClick={() =>
+                                 navigate("/Setting", {
+                                   state: { ProcessId: parseInt(item.processId) },
+                                 })
+                               }
+                               className="menuitems"
+                             >
+                               Edit settings
+                             </p>
+                           </>
+                         ) : (
+                           <>
+                             {/* Show only Published when role is User */}
+                             {/* {item.role === "User" && (
+                               <p
+                                 onClick={() =>
+                                   navigate("/published-map-level", {
+                                     state: {
+                                       id: parseInt(item.processId),
+                                       title: getProcessTitle(item.processId),
+                                       user: item,
+                                     },
+                                   })
+                                 }
+                                 className="menuitems"
+                               >
+                                 View published
+                               </p>
+                             )} */}
+                             {/* Show Published and View Draft when role is Modeler */}
+                             {["User", "Modeler"].includes(item.role) && (
+                               <>
+                                 {checkpublish && (
+                                   <p
+                                     onClick={() =>
+                                       navigate("/published-map-level", {
+                                         state: {
+                                           id: parseInt(item.processId),
+                                           title: getProcessTitle(item.processId),
+                                           user: item,
+                                         },
+                                       })
+                                     }
+                                     className="menuitems"
+                                   >
+                                     View published
+                                   </p>
+                                 )}
+                                 <p
+                                   onClick={() =>
+                                     navigate("/Draft-Process-View", {
+                                       state: {
+                                         id: parseInt(item.processId),
+                                         title: getProcessTitle(item.processId),
+                                         user: item,
+                                       },
+                                     })
+                                   }
+                                   className="menuitems"
+                                 >
+                                   View draft
+                                 </p>
+                               </>
+                             )}
+                           </>
+                         )
+                       )}
 
 
 
-                        </Box>
+                     </Box>
                       )}
                     </Card>
                   ))}

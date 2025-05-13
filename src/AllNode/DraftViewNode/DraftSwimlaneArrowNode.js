@@ -29,7 +29,15 @@ const ArrowBoxNode = ({ data }) => {
             id: response.data[0].user_id,
           };
 
-          const newLevel = 1;
+          // const newLevel = 1;
+          let newLevel = 1;
+          if (data.link !== null) {
+            const match = data.link.match(/^Level(\d+)/); 
+            if (match && match[1]) {
+              const currentLevel = parseInt(match[1], 10);
+              newLevel = currentLevel + 1;
+            }
+          }
           const levelParam =
             data.link !== null
               ? `Level${newLevel}_${data.link}`
