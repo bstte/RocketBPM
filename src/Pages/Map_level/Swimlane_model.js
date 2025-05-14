@@ -975,7 +975,7 @@ const SwimlaneModel = () => {
     }
   };
 
-  const { removeBreadcrumbsAfter } =
+  const {removeBreadcrumbsAfter } =
     useContext(BreadcrumbsContext);
 
   const linkExistingmodel = async () => {
