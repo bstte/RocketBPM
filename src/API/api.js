@@ -347,9 +347,9 @@ export const updateAssignedUserData = async (newUserObject = null) => {
 };
 
 
-export const addFavProcess = async (user_id, process_id, type) => {
+export const addFavProcess = async (user_id, process_id, type,PageGroupId,currentParentId) => {
   try {
-    const response = await api.post('/add-fav-process', { user_id, process_id, type });
+    const response = await api.post('/add-fav-process', { user_id, process_id, type,PageGroupId ,currentParentId});
     return response.data;
   } catch (error) {
     console.error('Error fetching process titles:', error);
@@ -358,9 +358,9 @@ export const addFavProcess = async (user_id, process_id, type) => {
 };
 
 
-export const removeFavProcess = async (user_id, process_id) => {
+export const removeFavProcess = async (user_id, process_id,PageGroupId) => {
   try {
-    const response = await api.post('/remove-fav-process', { user_id, process_id });
+    const response = await api.post('/remove-fav-process', { user_id, process_id ,PageGroupId});
     return response.data;
   } catch (error) {
     console.error('Error removing favorite process:', error);
@@ -370,11 +370,11 @@ export const removeFavProcess = async (user_id, process_id) => {
 
 
 
-export const checkFavProcess = async (user_id, process_id) => {
+export const checkFavProcess = async (user_id, process_id,PageGroupId) => {
   try {
     const response = await api.get('/check-fav-process', {
       params: {
-        user_id, process_id
+        user_id, process_id,PageGroupId
       }
     });
     return response.data;

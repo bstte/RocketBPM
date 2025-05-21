@@ -24,7 +24,7 @@ import { applyNodeChanges, applyEdgeChanges } from "@xyflow/react";
 import Header from "../../components/Header";
 import { v4 as uuidv4 } from "uuid";
 import { useLocation, useNavigate } from "react-router-dom";
-import api, { addFavProcess, checkFavProcess, filter_draft } from "../../API/api";
+import api, { addFavProcess, checkFavProcess, filter_draft, removeFavProcess } from "../../API/api";
 import CustomContextPopup from "../../components/CustomContextPopup";
 import DetailsPopup from "../../components/DetailsPopup";
 import NodeTypes from "./NodeTypes";
@@ -182,20 +182,17 @@ const SwimlaneModel = () => {
     [setChiledNodes, setHasUnsavedChanges]
   );
 
-  useEffect(() => {
+  useEffect(()=>{
     const checkfav = async () => {
       const user_id = LoginUser ? LoginUser.id : null;
       const process_id = id ? id : null;
-
-
       if (!user_id || !process_id) {
         console.error("Missing required fields:", { user_id, process_id });
-        return; // Stop execution if any field is missing
+        return;
       }
-
       try {
-        console.log("Sending data:", { user_id, process_id });
-        const response = await checkFavProcess(user_id, process_id);
+        const PageGroupId=ChildNodes[0]?.PageGroupId;
+        const response = await checkFavProcess(user_id, process_id,PageGroupId);
         console.log("Response:", response);
         setIsFavorite(response.exists)
       } catch (error) {
@@ -203,7 +200,7 @@ const SwimlaneModel = () => {
       }
     }
     checkfav()
-  }, [LoginUser, id])
+  },[LoginUser,id,ChildNodes])
 
   useEffect(() => {
     const fetchNodes = async () => {
@@ -1243,6 +1240,26 @@ const SwimlaneModel = () => {
   //console.log("filtefilteredData", filteredData)  
 
 
+  // const handleFav = async () => {
+  //   const user_id = LoginUser ? LoginUser.id : null;
+  //   const process_id = id ? id : null;
+  //   const type = user ? user.type : null;
+
+  //   if (!user_id || !process_id || !type) {
+  //     console.error("Missing required fields:", { user_id, process_id, type });
+  //     return; // Stop execution if any field is missing
+  //   }
+
+  //   try {
+  //     console.log("Sending data:", { user_id, process_id, type });
+  //     const response = await addFavProcess(user_id, process_id, type);
+  //     setIsFavorite(true)
+  //     console.log("Response:", response);
+  //   } catch (error) {
+  //     console.error("Add fav error:", error);
+  //   }
+  // };
+
   const handleFav = async () => {
     const user_id = LoginUser ? LoginUser.id : null;
     const process_id = id ? id : null;
@@ -1250,20 +1267,27 @@ const SwimlaneModel = () => {
 
     if (!user_id || !process_id || !type) {
       console.error("Missing required fields:", { user_id, process_id, type });
-      return; // Stop execution if any field is missing
+      return;
     }
+
+    const PageGroupId=ChildNodes[0]?.PageGroupId;
+
 
     try {
-      console.log("Sending data:", { user_id, process_id, type });
-      const response = await addFavProcess(user_id, process_id, type);
-      setIsFavorite(true)
-      console.log("Response:", response);
+      if (isFavorite) {
+
+        const response = await removeFavProcess(user_id, process_id,PageGroupId);
+        setIsFavorite(false);
+        console.log("Removed from favorites:", response);
+      } else {
+        const response = await addFavProcess(user_id, process_id, type,PageGroupId,currentParentId);
+        setIsFavorite(true);
+        console.log("Added to favorites:", response);
+      }
     } catch (error) {
-      console.error("Add fav error:", error);
+      console.error("Favorite toggle error:", error);
     }
   };
-
-
   return (
 
     <div>

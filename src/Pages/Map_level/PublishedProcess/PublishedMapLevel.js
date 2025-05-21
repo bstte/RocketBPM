@@ -120,25 +120,7 @@ const LoginUser = useSelector((state) => state.user.user);
   );
 
   useEffect(() => {
-    const checkfav=async()=>{
-                const user_id = LoginUser ? LoginUser.id : null;
-                const process_id = id ? id : null;
-              
-              
-                if (!user_id || !process_id) {
-                  console.error("Missing required fields:", { user_id, process_id });
-                  return; // Stop execution if any field is missing
-                }
-              
-                try {
-                  console.log("Sending data:", { user_id, process_id });
-                  const response = await checkFavProcess(user_id, process_id);
-                  console.log("Response:", response);
-                  setIsFavorite(response.exists)
-                } catch (error) {
-                  console.error("check fav error:", error);
-                }
-              }
+  
 
     const fetchNodes = async () => {
       try {
@@ -204,7 +186,6 @@ const LoginUser = useSelector((state) => state.user.user);
           style: { stroke: "#002060", strokeWidth: 2 },
           type: "step",
         }));
-        checkfav()
         console.log("published process map ,",parsedNodes)
 
         setNodes(parsedNodes);
@@ -218,7 +199,6 @@ const LoginUser = useSelector((state) => state.user.user);
     fetchNodes();
   }, [
     currentLevel,
-    LoginUser,
     handleLabelChange,
     setNodes,
     setEdges,
@@ -227,6 +207,27 @@ const LoginUser = useSelector((state) => state.user.user);
     id,
   ]);
 
+   useEffect(()=>{
+      const checkfav = async () => {
+        const user_id = LoginUser ? LoginUser.id : null;
+        const process_id = id ? id : null;
+        if (!user_id || !process_id) {
+          console.error("Missing required fields:", { user_id, process_id });
+          return;
+        }
+        try {
+          const PageGroupId=nodes[0]?.PageGroupId;
+          const response = await checkFavProcess(user_id, process_id,PageGroupId);
+          console.log("Response:", response);
+          setIsFavorite(response.exists)
+        } catch (error) {
+          console.error("check fav error:", error);
+        }
+      }
+      checkfav()
+    },[LoginUser,id,nodes])
+  
+    
   useEffect(() => {
     const label = currentLevel === 0 ? title : title;
     const path =

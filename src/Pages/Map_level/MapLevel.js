@@ -160,23 +160,10 @@ const MapLevel = () => {
     },
     [setNodes]
   );
+
+
   useEffect(() => {
-    const checkfav = async () => {
-      const user_id = LoginUser ? LoginUser.id : null;
-      const process_id = id ? id : null;
-      if (!user_id || !process_id) {
-        console.error("Missing required fields:", { user_id, process_id });
-        return;
-      }
-      try {
-        console.log("Sending data:", { user_id, process_id });
-        const response = await checkFavProcess(user_id, process_id);
-        console.log("Response:", response);
-        setIsFavorite(response.exists)
-      } catch (error) {
-        console.error("check fav error:", error);
-      }
-    }
+   
     const fetchNodes = async () => {
       try {
         const levelParam =
@@ -192,6 +179,7 @@ const MapLevel = () => {
           api.GetPublishedDate(levelParam, parseInt(user_id), Process_id, draftStatus),
           api.getNodes(levelParam, parseInt(user_id), Process_id),
         ]);
+console.log("data",data)
         if (publishedResponse.status === true) {
           setgetPublishedDate(publishedResponse.created_at || "");
         } else {
@@ -243,11 +231,11 @@ const MapLevel = () => {
         alert("Failed to fetch object. Please refresh this page.");
       }
     };
-    checkfav()
+  
     fetchNodes();
   }, [
     currentLevel,
-    LoginUser,
+
     handleLabelChange,
     setNodes,
     setEdges,
@@ -255,6 +243,29 @@ const MapLevel = () => {
     user,
     id,
   ]);
+
+
+  useEffect(()=>{
+    const checkfav = async () => {
+      const user_id = LoginUser ? LoginUser.id : null;
+      const process_id = id ? id : null;
+      if (!user_id || !process_id) {
+        console.error("Missing required fields:", { user_id, process_id });
+        return;
+      }
+      try {
+        const PageGroupId=nodes[0]?.PageGroupId;
+        const response = await checkFavProcess(user_id, process_id,PageGroupId);
+        console.log("Response:", response);
+        setIsFavorite(response.exists)
+      } catch (error) {
+        console.error("check fav error:", error);
+      }
+    }
+    checkfav()
+  },[LoginUser,id,nodes])
+
+
   useEffect(() => {
     const label = currentLevel === 0 ? title : title;
     const path =
@@ -459,7 +470,6 @@ const MapLevel = () => {
     }
   };
   const handleSaveNodes = async (savetype) => {
-    console.log("ParentPageGroupId", ParentPageGroupId)
     if (savetype === "Published" && currentLevel !== 0) {
 
       try {
@@ -677,14 +687,18 @@ const MapLevel = () => {
       console.error("Missing required fields:", { user_id, process_id, type });
       return;
     }
+
+    const PageGroupId=nodes[0]?.PageGroupId;
+
+
     try {
       if (isFavorite) {
-        console.log("inside")
-        const response = await removeFavProcess(user_id, process_id);
+
+        const response = await removeFavProcess(user_id, process_id,PageGroupId);
         setIsFavorite(false);
         console.log("Removed from favorites:", response);
       } else {
-        const response = await addFavProcess(user_id, process_id, type);
+        const response = await addFavProcess(user_id, process_id, type,PageGroupId,currentParentId);
         setIsFavorite(true);
         console.log("Added to favorites:", response);
       }
