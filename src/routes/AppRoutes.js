@@ -8,7 +8,6 @@ import Login from "../Pages/Login/Login";
 import Signup from "../Pages/Signup/Signup";
 import Forgotpassword from "../Pages/Forgotpassword/Forgotpassword";
 import Account from "../Pages/Accountsettings/Account";
-import Setting from "../Setting/Setting";
 
 // Private Pages (Without Lazy Loading)
 import Dashboard from "../Pages/Dashboard/Dashboard";
@@ -26,6 +25,7 @@ import DraftSwimlineLevel from "../Pages/Map_level/DraftProcessView/DraftSwimlin
 import { ReactFlowProvider } from "@xyflow/react";
 import EditUser from "../Pages/Manage Assigned Users/editUser";
 import SignupForm from "../Pages/Signup/SignupForm";
+import Setting from "../Pages/Setting/Setting";
 
 const AppRoutes = () => {
   return (
@@ -47,26 +47,31 @@ const AppRoutes = () => {
       <Route path="/edit-user" element={<PrivateRoute><EditUser /></PrivateRoute>} />
 
       <Route
-  path="/map-level"
-  element={
-    <PrivateRoute>
-      <ReactFlowProvider>
-        <MapLevel />
-      </ReactFlowProvider>
-    </PrivateRoute>
-  }
-/>
+        path="/map-level"
+        element={
+          <PrivateRoute>
+            <ReactFlowProvider>
+              <MapLevel />
+            </ReactFlowProvider>
+          </PrivateRoute>
+        }
+      />
 
       <Route path="/add-process-title" element={<PrivateRoute><ProcessTitle /></PrivateRoute>} />
       <Route path="/list-process-title" element={<PrivateRoute><ListProcessTitle /></PrivateRoute>} />
       <Route path="/swimlane/level/:level/:parentId" element={<PrivateRoute><SwimlaneModel /></PrivateRoute>} />
       <Route path="/level/:level/:parentId/*" element={<PrivateRoute><MapLevel /></PrivateRoute>} />
-      <Route path="/published-map-level" element={<PrivateRoute><PublishedMapLevel /></PrivateRoute>} />
-      <Route path="/published-map-level/:level/:parentId/*" element={<PrivateRoute><PublishedMapLevel /></PrivateRoute>} />
-      <Route path="/published-swimlane/level/:level/:parentId" element={<PrivateRoute><PublishedSwimlaneModel /></PrivateRoute>} />
-      <Route path="/draft-process-view" element={<PrivateRoute><DraftProcesMapLevel /></PrivateRoute>} />
-      <Route path="/draft-process-view/:level/:parentId/*" element={<PrivateRoute><DraftProcesMapLevel /></PrivateRoute>} />
-      <Route path="/draft-swim-lanes-view/level/:level/:parentId" element={<PrivateRoute><DraftSwimlineLevel /></PrivateRoute>} />
+      {/* <Route path="/published-map-level" element={<PrivateRoute><PublishedMapLevel /></PrivateRoute>} /> */}
+      <Route path="/published-map-level/:processId" element={<PrivateRoute><PublishedMapLevel /></PrivateRoute>} />
+
+      <Route path="/published-map-level/:level/:parentId/:processId/*" element={<PrivateRoute><PublishedMapLevel /></PrivateRoute>} />
+      <Route path="/published-swimlane/level/:level/:parentId/:processId" element={<PrivateRoute><PublishedSwimlaneModel /></PrivateRoute>} />
+      {/* <Route path="/draft-process-view" element={<PrivateRoute><DraftProcesMapLevel /></PrivateRoute>} /> */}
+      <Route path="/draft-process-view/:processId" element={<PrivateRoute><DraftProcesMapLevel /></PrivateRoute>} />
+
+
+      <Route path="/draft-process-view/:level/:parentId/:processId/*" element={<PrivateRoute><DraftProcesMapLevel /></PrivateRoute>} />
+      <Route path="/draft-swim-lanes-view/level/:level/:parentId/:processId" element={<PrivateRoute><DraftSwimlineLevel /></PrivateRoute>} />
 
       {/* Redirect for unknown routes */}
       <Route path="*" element={<Navigate to="/login" />} />

@@ -286,7 +286,7 @@ const Dashboard = () => {
     autoplaySpeed: 3000,
     arrows: true,
     centerMode: false,
-    centerPadding: "20px",
+    centerPadding: "0px",
     adaptiveHeight: true,
 
     responsive: [
@@ -309,16 +309,22 @@ const Dashboard = () => {
   const NavigateOnClick = async (item) => {
     const data = await checkPublishData(item)
     if (data.status) {
-      navigate("/published-map-level", { state: { id: parseInt(item.processId), title: getProcessTitle(item.processId), user: item } })
+   
+      navigate(`/published-map-level/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
+
+
 
     } else {
-      navigate("/Draft-Process-View", {
-        state: {
-          id: parseInt(item.processId),
-          title: getProcessTitle(item.processId),
-          user: item,
-        },
-      })
+
+      navigate(`/Draft-Process-View/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
+
+      // navigate("/Draft-Process-View", {
+      //   state: {
+      //     id: parseInt(item.processId),
+      //     title: getProcessTitle(item.processId),
+      //     user: item,
+      //   },
+      // })
 
     }
     console.log(data)
@@ -520,13 +526,16 @@ const Dashboard = () => {
                                 {checkpublish && (
                                   <p
                                     onClick={() =>
-                                      navigate("/published-map-level", {
-                                        state: {
-                                          id: parseInt(item.processId),
-                                          title: getProcessTitle(item.processId),
-                                          user: item,
-                                        },
-                                      })
+                                      // navigate("/published-map-level", {
+                                      //   state: {
+                                      //     id: parseInt(item.processId),
+                                      //     title: getProcessTitle(item.processId),
+                                      //     user: item,
+                                      //   },
+                                      // })
+
+                                      navigate(`/published-map-level/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
+
                                     }
 
                                     className="menuitems"
@@ -536,13 +545,15 @@ const Dashboard = () => {
                                 )}
                                 <p
                                   onClick={() =>
-                                    navigate("/Draft-Process-View", {
-                                      state: {
-                                        id: parseInt(item.processId),
-                                        title: getProcessTitle(item.processId),
-                                        user: item,
-                                      },
-                                    })
+                                    // navigate("/Draft-Process-View", {
+                                    //   state: {
+                                    //     id: parseInt(item.processId),
+                                    //     title: getProcessTitle(item.processId),
+                                    //     user: item,
+                                    //   },
+                                    // })
+                                    navigate(`/Draft-Process-View/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
+
                                   }
 
                                   className="menuitems"
@@ -581,13 +592,16 @@ const Dashboard = () => {
                                     {checkpublish && (
                                       <p
                                         onClick={() =>
-                                          navigate("/published-map-level", {
-                                            state: {
-                                              id: parseInt(item.processId),
-                                              title: getProcessTitle(item.processId),
-                                              user: item,
-                                            },
-                                          })
+                                          // navigate("/published-map-level", {
+                                          //   state: {
+                                          //     id: parseInt(item.processId),
+                                          //     title: getProcessTitle(item.processId),
+                                          //     user: item,
+                                          //   },
+                                          // })
+
+                                          navigate(`/published-map-level/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
+
                                         }
                                         className="menuitems"
                                       >
@@ -596,13 +610,15 @@ const Dashboard = () => {
                                     )}
                                     <p
                                       onClick={() =>
-                                        navigate("/Draft-Process-View", {
-                                          state: {
-                                            id: parseInt(item.processId),
-                                            title: getProcessTitle(item.processId),
-                                            user: item,
-                                          },
-                                        })
+                                        // navigate("/Draft-Process-View", {
+                                        //   state: {
+                                        //     id: parseInt(item.processId),
+                                        //     title: getProcessTitle(item.processId),
+                                        //     user: item,
+                                        //   },
+                                        // })
+                                        navigate(`/Draft-Process-View/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
+
                                       }
                                       className="menuitems"
                                     >
@@ -621,13 +637,16 @@ const Dashboard = () => {
                     </Card>
                   ))}
                   {user && user.type !== "User" ? (
-                    <div className="ss_add_process_div" style={{ height: `${slideHeight}px` }}>
+                    <div className="ss_add_process_div ss_1" style={{ height: `${slideHeight}px` }}>
                       <div style={{ width: "100%" }}>
-                        <p>
+                        <p style={{margin:0}}>
                           Add process world
                         </p>
-                        <div className="ss_add_proces_img" onClick={() => navigate('/Add-process-title')}>
-                          <img src="../../../img/plus.png" alt="profile img" /></div>
+                        <div className="ss_dash_slid_img">
+                          <div className="ss_add_proces_img" onClick={() => navigate('/Add-process-title')}>
+                            <img src="../../../img/plus.png" alt="profile img" />
+                          </div>
+                        </div>
                       </div>
                     </div>
 
@@ -692,13 +711,16 @@ const Dashboard = () => {
                                 {checkpublish && (
                                   <p
                                     onClick={() =>
-                                      navigate("/published-map-level", {
-                                        state: {
-                                          id: parseInt(item.processId),
-                                          title: getProcessTitle(item.processId),
-                                          user: item,
-                                        },
-                                      })
+                                      // navigate("/published-map-level", {
+                                      //   state: {
+                                      //     id: parseInt(item.processId),
+                                      //     title: getProcessTitle(item.processId),
+                                      //     user: item,
+                                      //   },
+                                      // })
+
+                                      navigate(`/published-map-level/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
+
                                     }
 
                                     className="menuitems"
@@ -708,13 +730,15 @@ const Dashboard = () => {
                                 )}
                                 <p
                                   onClick={() =>
-                                    navigate("/Draft-Process-View", {
-                                      state: {
-                                        id: parseInt(item.processId),
-                                        title: getProcessTitle(item.processId),
-                                        user: item,
-                                      },
-                                    })
+                                    // navigate("/Draft-Process-View", {
+                                    //   state: {
+                                    //     id: parseInt(item.processId),
+                                    //     title: getProcessTitle(item.processId),
+                                    //     user: item,
+                                    //   },
+                                    // })
+                                    navigate(`/Draft-Process-View/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
+
                                   }
 
                                   className="menuitems"
@@ -754,13 +778,15 @@ const Dashboard = () => {
                                     {checkpublish && (
                                       <p
                                         onClick={() =>
-                                          navigate("/published-map-level", {
-                                            state: {
-                                              id: parseInt(item.processId),
-                                              title: getProcessTitle(item.processId),
-                                              user: item,
-                                            },
-                                          })
+                                          // navigate("/published-map-level", {
+                                          //   state: {
+                                          //     id: parseInt(item.processId),
+                                          //     title: getProcessTitle(item.processId),
+                                          //     user: item,
+                                          //   },
+                                          // })
+                                          navigate(`/published-map-level/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
+
                                         }
                                         className="menuitems"
                                       >
@@ -769,13 +795,16 @@ const Dashboard = () => {
                                     )}
                                     <p
                                       onClick={() =>
-                                        navigate("/Draft-Process-View", {
-                                          state: {
-                                            id: parseInt(item.processId),
-                                            title: getProcessTitle(item.processId),
-                                            user: item,
-                                          },
-                                        })
+                                        // navigate("/Draft-Process-View", {
+                                        //   state: {
+                                        //     id: parseInt(item.processId),
+                                        //     title: getProcessTitle(item.processId),
+                                        //     user: item,
+                                        //   },
+                                        // })
+
+                                        navigate(`/Draft-Process-View/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
+
                                       }
                                       className="menuitems"
                                     >
@@ -795,7 +824,7 @@ const Dashboard = () => {
                   ))}
 
                   {user && user.type !== "User" && (
-                    <div className="ss_add_process_div">
+                    <div className="ss_add_process_div ss_2">
                       <div style={{ width: "100%" }}>
                         <p>Add process world</p>
                         <div className="ss_add_proces_img" onClick={() => navigate('/Add-process-title')}>
@@ -806,7 +835,7 @@ const Dashboard = () => {
                   )}
 
                   {user && user.type !== "User" && (
-                    <div className="ss_add_process_div" style={{ opacity: "0" }}>
+                    <div className="ss_add_process_div ss_3" style={{ opacity: "0" }}>
                       <div style={{ width: "100%" }}>
                         <p>Add process world</p>
                         <div className="ss_add_proces_img" onClick={() => navigate('/Add-process-title')}>

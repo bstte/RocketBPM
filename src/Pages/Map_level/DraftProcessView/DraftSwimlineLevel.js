@@ -11,7 +11,7 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import Header from "../../../components/Header";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import api, { checkFavProcess } from "../../../API/api";
 
 import generateNodesAndEdges from "../../../AllNode/SwimlineNodes/generateNodesAndEdges";
@@ -22,6 +22,7 @@ import { BreadcrumbsContext } from "../../../context/BreadcrumbsContext";
 import '../../../Css/Swimlane.css'
 import { useSelector } from "react-redux";
 import apiExports from "../../../API/api";
+import SharePopup from "../../../components/SharePopup";
 
 // const rfStyle = {
 //   width: "100%",
@@ -37,8 +38,28 @@ const DraftSwimlineLevel = () => {
     width: window.innerWidth,
     height: window.innerHeight,
   });
+      const { level, parentId ,processId} = useParams();
+  
   const location = useLocation();
-  const { id, title, user, parentId, level, ParentPageGroupId } = location.state || {};
+  // const { id, title, user, parentId, level, ParentPageGroupId } = location.state || {};
+   const [showSharePopup, setShowSharePopup] = useState(false);
+  
+    const queryParams = new URLSearchParams(location.search);
+    const title = queryParams.get("title");
+    const ParentPageGroupId = queryParams.get("ParentPageGroupId");
+    const user = useMemo(() => {
+      try {
+        const queryParams = new URLSearchParams(location.search);
+        const userParam = queryParams.get("user");
+        return userParam ? JSON.parse(decodeURIComponent(userParam)) : null;
+      } catch (e) {
+        console.error("Failed to parse user from query", e);
+        return null;
+      }
+    }, [location.search]);
+    
+    
+      const id = processId; // string
   const LoginUser = useSelector((state) => state.user.user);
   const [isFavorite, setIsFavorite] = useState(false);
   const [process_img, setprocess_img] = useState("");
@@ -348,7 +369,9 @@ const DraftSwimlineLevel = () => {
     if (id && user) {
 
       page === "editdraft" ? navigate(`/swimlane/level/${currentLevel}/${currentParentId}`, { state: { id: id, title: title, user: user, parentId: currentParentId, level: currentLevel, ParentPageGroupId: ParentPageGroupId } })
-        : navigate(`/published-swimlane/level/${currentLevel}/${currentParentId}`, { state: { id: id, title: title, user: user, parentId: currentParentId, level: currentLevel ,ParentPageGroupId: ParentPageGroupId} })
+        : 
+        // navigate(`/published-swimlane/level/${currentLevel}/${currentParentId}`, { state: { id: id, title: title, user: user, parentId: currentParentId, level: currentLevel ,ParentPageGroupId: ParentPageGroupId} })
+        navigate(`/published-swimlane/level/${currentLevel}/${currentParentId}/${id}?title=${encodeURIComponent(title)}&user=${encodeURIComponent(JSON.stringify(user))}&parentId=${currentParentId}&level=${currentLevel}&ParentPageGroupId=${ParentPageGroupId}`)
 
 
       // removeBreadcrumbsAfter(0);
@@ -357,7 +380,9 @@ const DraftSwimlineLevel = () => {
     }
 
   }
-
+  const handleShareClick = () => {
+    setShowSharePopup(true);
+  };
   return (
     <div>
       <Header
@@ -375,6 +400,7 @@ const DraftSwimlineLevel = () => {
         Procesuser={user}
 
         checkpublish={checkpublish}
+        onShare={()=>handleShareClick()}
 
       />
       <div class="maincontainer" style={{ ...styles.appContainer, height: remainingHeight }}>
@@ -407,7 +433,13 @@ const DraftSwimlineLevel = () => {
             </ReactFlow>
 
           </div>
-
+          {showSharePopup && (
+        <SharePopup
+          processId={id}
+          processName={`ProcessName: ${breadcrumbs.find(crumb => crumb.state?.id === "1")?.label}`}
+          onClose={() => setShowSharePopup(false)}
+        />
+      )}
 
         </ReactFlowProvider>
       </div>

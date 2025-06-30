@@ -82,7 +82,7 @@ const MiniMapPreview = ({ processId, userId }) => {
   if (!nodes.length) return <div style={{ height: 200 }}> <img src="../../../img/dashboard-slider-image.jpg" alt="" /> </div>;
 
   return (
-    <div style={{ width: "100%", height: "165px" }}>
+    <div style={{ width: "100%", }}>
       <ReactFlow
         nodes={nodes}
         edges={edges}

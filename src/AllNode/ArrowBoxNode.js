@@ -17,6 +17,7 @@ const ArrowBoxNode = ({ data, id, selectedNodeId }) => {
       setHeight(data.width_height.height);
     }
   }, [data.width_height]);
+  
 
   useEffect(() => {
     setLabel(data.label || "");

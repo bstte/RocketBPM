@@ -15,10 +15,10 @@
 }
 
 .ss_sett_page_mn_div {
-    border: 2px solid #002060;
+    border: 1px solid #002060;
     padding: 20px;
     border-top: 0;
-    box-shadow: 0px 0px 10px #afadad5e;
+    box-shadow: 0px 5px 10px #afadad5e;
 }
 
 .ss_recheigh p {

@@ -63,7 +63,7 @@ body {
 .maincontainer,
 .publishcontainer,
 .ss_publish_border {
-  box-shadow: 0px 0px 10px #afadad5e;
+  box-shadow: 0px 5px 10px #afadad5e;
 }
 .node-container {
   position: absolute;

@@ -54,37 +54,44 @@ const ArrowBoxNode = ({ data }) => {
           if (nodeData.status === true) {
             removeBreadcrumbsAfter(1);
             if (nodeData.Page_Title === "ProcessMap") {
-              navigate(`/Draft-Process-View/${newLevel}/${data.link}`, {
-                state: {
-                  id,
-                  title: nodeDataParsed.label || "",
-                  user,
-                  ParentPageGroupId: response.data[0]?.PageGroupId,
-                },
-              });
+              // navigate(`/Draft-Process-View/${newLevel}/${data.link}`, {
+              //   state: {
+              //     id,
+              //     title: nodeDataParsed.label || "",
+              //     user,
+              //     ParentPageGroupId: response.data[0]?.PageGroupId,
+              //   },
+              // });
+              navigate(`/Draft-Process-View/${newLevel}/${data.link}/${id}?title=${encodeURIComponent(nodeDataParsed.label || "")}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${response.data[0]?.PageGroupId}`)
+
             }
             if (nodeData.Page_Title === "Swimlane") { 
                 addBreadcrumb(
                     `${nodeDataParsed.label || ""} `,
-                    `/Draft-Swim-lanes-View/level/${newLevel}/${data.link}`,
-                    {    id,
-                        title: nodeDataParsed.label || "",
-                        user,
-                        parentId: data.link,
-                        level: newLevel,
-                        ParentPageGroupId: response.data[0]?.PageGroupId, }
+                    // `/Draft-Swim-lanes-View/level/${newLevel}/${data.link}`,
+                    // {    id,
+                    //     title: nodeDataParsed.label || "",
+                    //     user,
+                    //     parentId: data.link,
+                    //     level: newLevel,
+                    //     ParentPageGroupId: response.data[0]?.PageGroupId, }
+                  `/Draft-Swim-lanes-View/level/${newLevel}/${data.link}/${id}?title=${encodeURIComponent(nodeDataParsed.label || "")}&user=${encodeURIComponent(JSON.stringify(user))}&parentId=${data.link}&level=${newLevel}&ParentPageGroupId=${response.data[0]?.PageGroupId}`
+
                   );
 
-              navigate(`/Draft-Swim-lanes-View/level/${newLevel}/${data.link}`, {
-                state: {
-                  id,
-                  title: nodeDataParsed.label || "",
-                  user,
-                  parentId: data.link,
-                  level: newLevel,
-                  ParentPageGroupId: response.data[0]?.PageGroupId,
-                },
-              });
+              // navigate(`/Draft-Swim-lanes-View/level/${newLevel}/${data.link}`, {
+              //   state: {
+              //     id,
+              //     title: nodeDataParsed.label || "",
+              //     user,
+              //     parentId: data.link,
+              //     level: newLevel,
+              //     ParentPageGroupId: response.data[0]?.PageGroupId,
+              //   },
+              // });
+
+              navigate(`/Draft-Swim-lanes-View/level/${newLevel}/${data.link}/${id}?title=${encodeURIComponent(nodeDataParsed.label || "")}&user=${encodeURIComponent(JSON.stringify(user))}&parentId=${data.link}&level=${newLevel}&ParentPageGroupId=${response.data[0]?.PageGroupId}`)
+
             }
           }else{
             alert("First create next model of this existing model")

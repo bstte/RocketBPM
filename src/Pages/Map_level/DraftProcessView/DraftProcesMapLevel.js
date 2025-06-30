@@ -25,6 +25,7 @@ import PublishPentagonNode from "../../../AllNode/PublishAllNode/PublishPentagon
 import { useSelector } from "react-redux";
 import apiExports from "../../../API/api";
 import StickyNote from "../../../AllNode/StickyNote";
+import SharePopup from "../../../components/SharePopup";
 
 const DraftProcesMapLevel = () => {
 
@@ -32,14 +33,13 @@ const DraftProcesMapLevel = () => {
   const [windowHeight, setWindowHeight] = useState(window.innerHeight);
   const [process_img, setprocess_img] = useState("");
   const [checkpublish, Setcheckpublish] = useState()
+ const [showSharePopup, setShowSharePopup] = useState(false);
 
   const windowSize = {
     width: window.innerWidth - 300,
     height: window.innerHeight - 300,
   };
 
-  // const [height, setHeight] = useState(0);
-  // const [appheaderheight, setahHeight] = useState(0);
   const [remainingHeight, setRemainingHeight] = useState(0);
 
 
@@ -48,14 +48,9 @@ const DraftProcesMapLevel = () => {
       const element = document.querySelector(".ss_new_hed");
       const element2 = document.querySelector(".app-header");
 
-      // Ensure elements are found before accessing height
       const elementHeight = element ? element.getBoundingClientRect().height : 0;
       const appHeaderHeight = element2 ? element2.getBoundingClientRect().height : 0;
 
-      // setHeight(elementHeight);
-      // setahHeight(appHeaderHeight);
-
-      // Correct calculation inside the function
       const newHeight = window.innerHeight - (elementHeight + appHeaderHeight);
       setRemainingHeight(newHeight - 40);
 
@@ -94,11 +89,28 @@ const DraftProcesMapLevel = () => {
   }, []);
 
   const navigate = useNavigate();
-  const { level, parentId } = useParams();
+  const { level, parentId ,processId} = useParams();
   const location = useLocation();
   const LoginUser = useSelector((state) => state.user.user);
 
-  const { id, title, user ,ParentPageGroupId} = location.state || {};
+  // const { id, title, user ,ParentPageGroupId} = location.state || {};
+
+  const queryParams = new URLSearchParams(location.search);
+  const title = queryParams.get("title");
+  const ParentPageGroupId = queryParams.get("ParentPageGroupId");
+  const user = useMemo(() => {
+    try {
+      const queryParams = new URLSearchParams(location.search);
+      const userParam = queryParams.get("user");
+      return userParam ? JSON.parse(decodeURIComponent(userParam)) : null;
+    } catch (e) {
+      console.error("Failed to parse user from query", e);
+      return null;
+    }
+  }, [location.search]);
+  
+  
+    const id = processId; // string
   const currentLevel = level ? parseInt(level, 10) : 0;
   const currentParentId = parentId || null;
   const { addBreadcrumb, removeBreadcrumbsAfter, breadcrumbs, setBreadcrumbs } =
@@ -288,9 +300,10 @@ const DraftProcesMapLevel = () => {
   useEffect(() => {
     const label = currentLevel === 0 ? title : title;
     const path =
-      currentLevel === 0
-        ? "/Draft-Process-View"
-        : `/Draft-Process-View/${currentLevel}/${currentParentId}`;
+    currentLevel === 0
+    ? `/Draft-Process-View/${id}?title=${encodeURIComponent(title)}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${ParentPageGroupId}`
+    : `/Draft-Process-View/${currentLevel}/${currentParentId}/${id}?title=${encodeURIComponent(title)}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${ParentPageGroupId}`;
+
 
     const state = {
       id: id,
@@ -311,6 +324,7 @@ const DraftProcesMapLevel = () => {
     currentLevel,
     isNavigating,
     currentParentId,
+    ParentPageGroupId,
     addBreadcrumb,
     removeBreadcrumbsAfter,
     id,
@@ -337,37 +351,39 @@ const DraftProcesMapLevel = () => {
 
     if (data.status === true) {
       if (data.Page_Title === "ProcessMap") {
-        navigate(`/Draft-Process-View/${newLevel}/${node.id}`, {
-          state: {
-            id: id,
-            title: selectedLabel,
-            user,
-            ParentPageGroupId:  nodes[0]?.PageGroupId,
-          },
-        });
+        // navigate(`/Draft-Process-View/${newLevel}/${node.id}/${id}`, {
+        //   state: {
+        //     id: id,
+        //     title: selectedLabel,
+        //     user,
+        //     ParentPageGroupId:  nodes[0]?.PageGroupId,
+        //   },
+        // });
+        navigate(
+        `/Draft-Process-View/${newLevel}/${node.id}/${id}?title=${selectedLabel}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${nodes[0]?.PageGroupId}`
+        )
       }
 
       if (data.Page_Title === "Swimlane") {
         addBreadcrumb(
           `${selectedLabel} `,
-          `/Draft-Swim-lanes-View/level/${newLevel}/${node.id}`,
-          { id: id, title, user, parentId: node.id, level: newLevel, ParentPageGroupId:  nodes[0]?.PageGroupId,
-          }
+          `/Draft-Swim-lanes-View/level/${newLevel}/${node.id}/${id}?title=${encodeURIComponent(selectedLabel)}&user=${encodeURIComponent(JSON.stringify(user))}&parentId=${node.id}&level=${newLevel}&ParentPageGroupId=${nodes[0]?.PageGroupId}`
         );
+        navigate(`/Draft-Swim-lanes-View/level/${newLevel}/${node.id}/${id}?title=${encodeURIComponent(selectedLabel)}&user=${encodeURIComponent(JSON.stringify(user))}&parentId=${node.id}&level=${newLevel}&ParentPageGroupId=${nodes[0]?.PageGroupId}`)
 
-        navigate(
-          `/Draft-Swim-lanes-View/level/${newLevel}/${node.id}`,
-          {
-            state: {
-              id: id,
-              title: selectedLabel,
-              user,
-              parentId: node.id,
-              level: newLevel,
-              ParentPageGroupId:  nodes[0]?.PageGroupId,
-            },
-          }
-        );
+        // navigate(
+        //   `/Draft-Swim-lanes-View/level/${newLevel}/${node.id}`,
+        //   {
+        //     state: {
+        //       id: id,
+        //       title: selectedLabel,
+        //       user,
+        //       parentId: node.id,
+        //       level: newLevel,
+        //       ParentPageGroupId:  nodes[0]?.PageGroupId,
+        //     },
+        //   }
+        // );
       }
     } else {
       alert("Next level not exist")
@@ -403,16 +419,21 @@ const DraftProcesMapLevel = () => {
     });
 
     setBreadcrumbs(updatedBreadcrumbs);
-    console.log("breadcrumbs", breadcrumbs)
     if (id && user) {
       if (currentLevel === 0) {
         page === "editdraft"
           ? navigate('/Map-level', { state: { id, title, user ,ParentPageGroupId} })
-          : navigate('/published-map-level', { state: { id, title, user,ParentPageGroupId } });
+          : 
+          // navigate('/published-map-level', { state: { id, title, user,ParentPageGroupId } });
+          navigate(`/published-map-level/${id}?title=${title}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${ParentPageGroupId}`)
+
       } else {
         page === "editdraft"
           ? navigate(`/level/${currentLevel}/${currentParentId}`, { state: { id, title, user ,ParentPageGroupId} })
-          : navigate(`/published-map-level/${currentLevel}/${currentParentId}`, { state: { id, title, user,ParentPageGroupId } });
+          : 
+          
+          // navigate(`/published-map-level/${currentLevel}/${currentParentId}`, { state: { id, title, user,ParentPageGroupId } });
+         navigate(`/published-map-level/${currentLevel}/${currentParentId}/${id}?title=${encodeURIComponent(title)}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${ParentPageGroupId}`)
       }
     } else {
       alert("Currently not navigate on draft mode");
@@ -445,7 +466,9 @@ const DraftProcesMapLevel = () => {
       height: "100%",
     },
   };
-
+  const handleShareClick = () => {
+    setShowSharePopup(true);
+  };
 
   return (
     <div>
@@ -464,6 +487,8 @@ const DraftProcesMapLevel = () => {
         Process_img={process_img}
         Procesuser={user}
         checkpublish={checkpublish}
+        onShare={()=>handleShareClick()}
+
       />
       <ReactFlowProvider>
         <div className="app-container" style={{ ...styles.appContainer, height: remainingHeight }}>
@@ -496,6 +521,13 @@ const DraftProcesMapLevel = () => {
             </div>
           </div>
         </div>
+         {showSharePopup && (
+                <SharePopup
+                  processId={id}
+                  processName={`ProcessName: ${breadcrumbs.find(crumb => crumb.state?.id === "1")?.label}`}
+                  onClose={() => setShowSharePopup(false)}
+                />
+              )}
       </ReactFlowProvider>
     </div>
   );

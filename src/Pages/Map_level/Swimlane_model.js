@@ -784,8 +784,8 @@ const SwimlaneModel = () => {
       } else if (row === 6 && col > 0) {
         options = ["Add Process"];
       } else {
-        // options = ["Add Activity", "Add Decision", "Sticky Note"];
-        options = ["Add Activity", "Add Decision"];
+        options = ["Add Activity", "Add Decision", "Sticky Note"];
+        // options = ["Add Activity", "Add Decision"];
 
       }
       setPosition({ x: event.clientX, y: event.clientY });
@@ -985,10 +985,6 @@ const SwimlaneModel = () => {
       setSelectedLinknodeIds([]);
     }
 
-//     const fullPath = breadcrumbs[2].path;
-//     const extractedValue = fullPath.split("/").pop();
-//     console.log("check extractedValue ",extractedValue)
-// console.log("currentParentId",currentParentId)
     const levelParam = "Level0";
     const user_id = user ? user.id : null;
     const Process_id = id ? id : null;
@@ -1084,10 +1080,11 @@ const SwimlaneModel = () => {
     const { x, y } = contextMenu;
     console.log("contextMenu", contextMenu);
 
+    const edgeId=contextMenu.edgeId;
     if (action === "Yes") {
-      addNode("Yes", { x: x - 30, y: y - 125 });
+      addNode("Yes", { x: x - 30, y: y - 125 },edgeId);
     } else if (action === "No") {
-      addNode("No", { x: x - 70, y: y - 125 });
+      addNode("No", { x: x - 70, y: y - 125 },edgeId);
     } else if (action === "addFreeText") {
       setIsModalOpen(true);
 
@@ -1221,9 +1218,12 @@ const SwimlaneModel = () => {
     const confirmcondition = await handleBack(); // Wait for confirmation
     if (confirmcondition) {
       if (id && user) {
-        navigate(`/Draft-Swim-lanes-View/level/${currentLevel}/${currentParentId}`, {
-          state: { id: id, title: title, user: user, parentId: currentParentId, level: currentLevel,ParentPageGroupId }
-        });
+        // navigate(`/Draft-Swim-lanes-View/level/${currentLevel}/${currentParentId}`, {
+        //   state: { id: id, title: title, user: user, parentId: currentParentId, level: currentLevel,ParentPageGroupId }
+        // });
+
+        navigate(`/Draft-Swim-lanes-View/level/${currentLevel}/${currentParentId}/${id}?title=${encodeURIComponent(title)}&user=${encodeURIComponent(JSON.stringify(user))}&parentId=${currentParentId}&level=${currentLevel}&ParentPageGroupId=${ParentPageGroupId}`)
+
       } else {
         alert("Currently not navigate on draft mode");
       }
@@ -1237,28 +1237,7 @@ const SwimlaneModel = () => {
   const filteredData = parsedData.filter(item =>
     item.data.label && item.data.label.toLowerCase().includes(searchQuery.toLowerCase())
   );
-  //console.log("filtefilteredData", filteredData)  
 
-
-  // const handleFav = async () => {
-  //   const user_id = LoginUser ? LoginUser.id : null;
-  //   const process_id = id ? id : null;
-  //   const type = user ? user.type : null;
-
-  //   if (!user_id || !process_id || !type) {
-  //     console.error("Missing required fields:", { user_id, process_id, type });
-  //     return; // Stop execution if any field is missing
-  //   }
-
-  //   try {
-  //     console.log("Sending data:", { user_id, process_id, type });
-  //     const response = await addFavProcess(user_id, process_id, type);
-  //     setIsFavorite(true)
-  //     console.log("Response:", response);
-  //   } catch (error) {
-  //     console.error("Add fav error:", error);
-  //   }
-  // };
 
   const handleFav = async () => {
     const user_id = LoginUser ? LoginUser.id : null;

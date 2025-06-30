@@ -23,6 +23,7 @@ import { BreadcrumbsContext } from "../../../context/BreadcrumbsContext";
 import PublishArrowBoxNode from "../../../AllNode/PublishAllNode/PublishArrowBoxNode";
 import PublishPentagonNode from "../../../AllNode/PublishAllNode/PublishPentagonNode";
 import { useSelector } from "react-redux";
+import SharePopup from "../../../components/SharePopup";
 
 const PublishedMapLevel = () => {
 
@@ -33,8 +34,6 @@ const PublishedMapLevel = () => {
     height: window.innerHeight - 300,
 };
 
-// const [height, setHeight] = useState(0);
-// const [appheaderheight, setahHeight] = useState(0);
 const [remainingHeight, setRemainingHeight] = useState(0);
 
 const LoginUser = useSelector((state) => state.user.user);
@@ -48,15 +47,10 @@ const LoginUser = useSelector((state) => state.user.user);
 
       const element = document.querySelector(".ss_new_hed");
         const element2 = document.querySelector(".app-header");
-  
-        // Ensure elements are found before accessing height
+
         const elementHeight = element ? element.getBoundingClientRect().height : 0;
         const appHeaderHeight = element2 ? element2.getBoundingClientRect().height : 0;
-  
-        // setHeight(elementHeight);
-        // setahHeight(appHeaderHeight);
-  
-        // Correct calculation inside the function
+ 
         const newHeight = window.innerHeight - (elementHeight + appHeaderHeight);
         setRemainingHeight(newHeight - 40);
 
@@ -77,9 +71,27 @@ const LoginUser = useSelector((state) => state.user.user);
   }, []);
 
   const navigate = useNavigate();
-  const { level, parentId } = useParams();
+  const { level, parentId ,processId} = useParams();
   const location = useLocation();
-  const { id, title, user ,ParentPageGroupId} = location.state || {};
+  // const {  ParentPageGroupId } = location.state || {};
+
+const queryParams = new URLSearchParams(location.search);
+const title = queryParams.get("title");
+const ParentPageGroupId = queryParams.get("ParentPageGroupId");
+const user = useMemo(() => {
+  try {
+    const queryParams = new URLSearchParams(location.search);
+    const userParam = queryParams.get("user");
+    return userParam ? JSON.parse(decodeURIComponent(userParam)) : null;
+  } catch (e) {
+    console.error("Failed to parse user from query", e);
+    return null;
+  }
+}, [location.search]);
+
+
+  const id = processId; // string
+
   const currentLevel = level ? parseInt(level, 10) : 0;
   const currentParentId = parentId || null;
   const { addBreadcrumb, removeBreadcrumbsAfter,breadcrumbs,setBreadcrumbs } =
@@ -90,6 +102,8 @@ const LoginUser = useSelector((state) => state.user.user);
   const [getPublishedDate, setgetPublishedDate] = useState("");
   const [process_img, setprocess_img] = useState("");
  const [isNavigating, setIsNavigating] = useState(false);
+ const [showSharePopup, setShowSharePopup] = useState(false);
+
   const memoizedNodeTypes = useMemo(
     () => ({
       progressArrow: PublishArrowBoxNode,
@@ -231,10 +245,15 @@ const LoginUser = useSelector((state) => state.user.user);
   useEffect(() => {
     const label = currentLevel === 0 ? title : title;
     const path =
-      currentLevel === 0
-        ? "/published-map-level"
-        : `/published-map-level/${currentLevel}/${currentParentId}`;
+      // currentLevel === 0
+      //   ? "/published-map-level"
+      //   : `/published-map-level/${currentLevel}/${currentParentId}`;
 
+
+        currentLevel === 0
+        ? `/published-map-level/${id}?title=${encodeURIComponent(title)}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${ParentPageGroupId}`
+        : `/published-map-level/${currentLevel}/${currentParentId}/${id}?title=${encodeURIComponent(title)}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${ParentPageGroupId}`;
+    
     const state = {
       id: id,
       title: title,
@@ -254,6 +273,7 @@ const LoginUser = useSelector((state) => state.user.user);
     currentLevel,
     isNavigating,
     currentParentId,
+    ParentPageGroupId,
     addBreadcrumb,
     removeBreadcrumbsAfter,
     id,
@@ -281,37 +301,43 @@ const LoginUser = useSelector((state) => state.user.user);
 
   if (data.status === true) {
     if (data.Page_Title === "ProcessMap") {
-      navigate(`/published-map-level/${newLevel}/${node.id}`, {
-        state: {
-          id: id,
-          title: selectedLabel,
-          user,
-          ParentPageGroupId: PageGroupId,
-        },
-      });
+      // navigate(`/published-map-level/${newLevel}/${node.id}`, {
+      //   state: {
+      //     id: id,
+      //     title: selectedLabel,
+      //     user,
+      //     ParentPageGroupId: PageGroupId,
+      //   },
+      // });
+      navigate(`/published-map-level/${newLevel}/${node.id}/${id}?title=${encodeURIComponent(selectedLabel)}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${PageGroupId}`)
+
     }
 
     if (data.Page_Title === "Swimlane") {
       addBreadcrumb(
         `${selectedLabel} `,
-        `/published-swimlane/level/${newLevel}/${node.id}`,
-        { id: id, title, user, parentId: node.id, level: newLevel, ParentPageGroupId: PageGroupId,
-        }
+        `/published-swimlane/level/${newLevel}/${node.id}/${id}?title=${encodeURIComponent(selectedLabel)}&user=${encodeURIComponent(JSON.stringify(user))}&parentId=${node.id}&level=${newLevel}&ParentPageGroupId=${PageGroupId}`
+
       );
 
       navigate(
-        `/published-swimlane/level/${newLevel}/${node.id}`,
-        {
-          state: {
-            id: id,
-            title: selectedLabel,
-            user,
-            parentId: node.id,
-            level: newLevel,
-            ParentPageGroupId: PageGroupId,
-          },
-        }
+        `/published-swimlane/level/${newLevel}/${node.id}/${id}?title=${encodeURIComponent(selectedLabel)}&user=${encodeURIComponent(JSON.stringify(user))}&parentId=${node.id}&level=${newLevel}&ParentPageGroupId=${PageGroupId}`
       );
+
+      
+      // navigate(
+      //   `/published-swimlane/level/${newLevel}/${node.id}/${id}`,
+      //   {
+      //     state: {
+      //       id: id,
+      //       title: selectedLabel,
+      //       user,
+      //       parentId: node.id,
+      //       level: newLevel,
+      //       ParentPageGroupId: PageGroupId,
+      //     },
+      //   }
+      // );
     }
   }else{
     alert("Next level not Published")
@@ -340,18 +366,22 @@ const navigateOnDraft=()=>{
 
     return {
       ...crumb,
-      path: crumb.path.replace("published-map-level", "Draft-Process-View") // Path update
+      path: crumb.path.replace("published-map-level", "Draft-Process-View") 
     };
   });
   setBreadcrumbs(updatedBreadcrumbs);
 
 if(id && user){
     if(currentLevel===0){
-      navigate('/Draft-Process-View',{ state: { id:id, title:title, user: user,ParentPageGroupId } })
+      // navigate('/Draft-Process-View',{ state: { id:id, title:title, user: user,ParentPageGroupId } })
+      navigate(
+        `/Draft-Process-View/${id}?title=${title}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${ParentPageGroupId}`
+      );
+      
     
     }else{
-       navigate(`/Draft-Process-View/${currentLevel}/${currentParentId}`,{ state: { id:id, title:title, user: user,ParentPageGroupId } })
-   
+      //  navigate(`/Draft-Process-View/${currentLevel}/${currentParentId}`,{ state: { id:id, title:title, user: user,ParentPageGroupId } })
+   navigate(`/Draft-Process-View/${currentLevel}/${currentParentId}/${id}?title=${encodeURIComponent(title)}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${ParentPageGroupId}`)
     }
    
   }else{
@@ -387,6 +417,10 @@ const styles = {
   },
 };
 
+const handleShareClick = () => {
+  setShowSharePopup(true);
+};
+
   return (
     <div>
       <Header
@@ -403,6 +437,7 @@ const styles = {
         isFavorite={isFavorite}
         Process_img={process_img}
         Procesuser={user}
+        onShare={()=>handleShareClick()}
       />
       <ReactFlowProvider>
       <div className="app-container" style={{ ...styles.appContainer, height: remainingHeight }}>
@@ -435,6 +470,14 @@ const styles = {
             </div>
           </div>
         </div>
+
+        {showSharePopup && (
+        <SharePopup
+          processId={id}
+          processName={`ProcessName: ${breadcrumbs.find(crumb => crumb.state?.id === "1")?.label}`}
+          onClose={() => setShowSharePopup(false)}
+        />
+      )}
       </ReactFlowProvider>
     </div>
   );

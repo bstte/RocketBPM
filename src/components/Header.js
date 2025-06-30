@@ -1,13 +1,10 @@
 import React, { useContext, useState, useRef, useEffect } from "react";
 import { ProgressArrow, Pentagon, Diamond, Box, Label } from "./Icon";
-// import { IconButton } from "@mui/material";
-// import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-// import HomeIcon from "@mui/icons-material/Home";
 import { useNavigate } from "react-router-dom";
 import { logoutUser } from "../redux/userSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { BreadcrumbsContext } from "../context/BreadcrumbsContext";
-// import StarIcon from "@mui/icons-material/Star";
+
 import { ImageBaseUrl } from "../API/api";
 
 
@@ -24,7 +21,7 @@ const Header = ({
   getDraftedDate,
   setIsNavigating,
   Page,
-  savefav, isFavorite, Process_img, Procesuser, checkpublish
+  savefav, isFavorite, Process_img, Procesuser, checkpublish,onShare
 }) => {
   const user = useSelector((state) => state.user.user);
   const [imageSrc, setImageSrc] = useState(null);
@@ -49,6 +46,7 @@ const Header = ({
     label: <Label />,
   };
 
+  console.log("breadcrumbs",breadcrumbs)
 
   useEffect(() => {
     setIsLoading(true); // Start loading
@@ -194,7 +192,7 @@ const Header = ({
                 }
                 
                 
-                <div className="headericons">                
+                <div className="headericons" onClick={onShare}>                
                   <img src={`${process.env.PUBLIC_URL}/img/share.png`} alt="Share" />
                 </div>
                 
@@ -250,7 +248,7 @@ const Header = ({
                   )
                 }
 
-                <div className="headericons">
+                <div className="headericons" onClick={onShare}>
                   
                     <img src={`${process.env.PUBLIC_URL}/img/share.png`} alt="Share" />
                   
@@ -313,7 +311,7 @@ const Header = ({
               </>
             )}
 
-            <div className="ss_profile_rit_div">
+            <div className="ss_profile_rit_div mspage">
 
 
               {/* Dropdown Button */}
@@ -337,19 +335,7 @@ const Header = ({
               </div>
 
             </div>
-            {/* <div style={styles.loginusername}>
-              <div>{` ${user?.first_name || ""}`}</div>
-              <span
-                onClick={handleLogout}
-                style={{
-                  cursor: "pointer",
-                  color: "blue",
-                  textDecoration: "underline",
-                }}
-              >
-                Logout?
-              </span>
-            </div> */}
+           
           </div>
         </div>
       </div>
@@ -358,17 +344,7 @@ const Header = ({
 
       <header className="app-header" style={styles.header}>
         <h1 style={styles.headerTitle} className="sameheight">
-          {/* {currentLevel === 0 && (
-            <IconButton
-              edge="start"
-              color="inherit"
-              aria-label="back"
-              onClick={handlehomeBack}
-            >
-              <ArrowBackIcon fontSize="medium" />
-            </IconButton>
-          )} */}
-
+        
           {title}
         </h1>
 

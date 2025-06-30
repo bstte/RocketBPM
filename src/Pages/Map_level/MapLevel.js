@@ -427,9 +427,12 @@ console.log("data",data)
       if (confirmcondition) {
         if (type === "ProcessMap") {
           if (checkRecord.status === true) {
-            navigate(`/Draft-Process-View/${newLevel}/${selectedNode}`, {
-              state: { id, title: selectedLabel, user, ParentPageGroupId: nodes[0]?.PageGroupId },
-            });
+            // navigate(`/Draft-Process-View/${newLevel}/${selectedNode}`, {
+            //   state: { id, title: selectedLabel, user, ParentPageGroupId: nodes[0]?.PageGroupId },
+            // });
+            navigate(
+            `/Draft-Process-View/${newLevel}/${selectedNode}/${id}?title=${selectedLabel}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${nodes[0]?.PageGroupId}`
+            )
           } else {
             navigate(`/level/${newLevel}/${selectedNode}`, {
               state: { id, title: selectedLabel, user, ParentPageGroupId: nodes[0]?.PageGroupId },
@@ -711,9 +714,12 @@ console.log("data",data)
     if (confirmcondition) {
       if (id && user) {
         if (currentLevel === 0) {
-          navigate('/Draft-Process-View', { state: { id: id, title: title, user: user } })
+          navigate(`/Draft-Process-View/${id}?title=${encodeURIComponent(title)}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${ParentPageGroupId}`
+        )
+          // navigate('/Draft-Process-View', { state: { id: id, title: title, user: user } })
         } else {
-          navigate(`/Draft-Process-View/${currentLevel}/${currentParentId}`, { state: { id: id, title: title, user: user } })
+          navigate(`/Draft-Process-View/${currentLevel}/${currentParentId}/${id}?title=${encodeURIComponent(title)}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${ParentPageGroupId}`)
+          // navigate(`/Draft-Process-View/${currentLevel}/${currentParentId}`, { state: { id: id, title: title, user: user } })
         }
 
       } else {

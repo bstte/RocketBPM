@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import CustomHeader from "../components/CustomHeader";
+import CustomHeader from "../../components/CustomHeader";
 import "./Setting.css";
 import {  useLocation, useNavigate } from "react-router-dom";
-import { getProcessTitleById, updateProcess, ImageBaseUrl, deleteProcess, removeProcessImage } from "../API/api";
-import CustomAlert from "../components/CustomAlert";
+import { getProcessTitleById, updateProcess, ImageBaseUrl, deleteProcess, removeProcessImage } from "../../API/api";
+import CustomAlert from "../../components/CustomAlert";
 
 const Setting = () => {
   const location = useLocation();

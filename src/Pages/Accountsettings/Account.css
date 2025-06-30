@@ -1,7 +1,6 @@
     .account-container {
         border: 1px solid #002060;
-        box-shadow: 0px 0px 0px 0px #002060;
-        width: 99.8%;
+        box-shadow: 0px 5px 10px #afadad5e;
         margin-top: 0 !important;
         border-top:0;
     }

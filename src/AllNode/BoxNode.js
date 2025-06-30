@@ -114,7 +114,7 @@ const styles = {
     background: 'transparent',
     border: 'none',
     color: 'inherit',
-    fontSize: '22px',
+    fontSize: '1rem',
     width: '100%',
     resize: 'none',
     outline: 'none',

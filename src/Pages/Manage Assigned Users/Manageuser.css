@@ -1,10 +1,10 @@
 .ss_mang_user_mn_dv {
-    border: 2px solid #002060;
+    border: 1px solid #002060;
     border-top: 0;
     height: calc(100vh - 180px);
     padding: 15px;
     position: relative;
-    
+    box-shadow: 0px 5px 10px #afadad5e;
 }
 
 .ss_body_div{

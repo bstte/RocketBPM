@@ -12,10 +12,7 @@ const YesNode = ({ data }) => {
           ...styles.labelBox,
         }}
       >
-        <span className="yeslabel" style={styles.text}>
-
-          yes
-        </span>
+        <span className="yeslabel" style={styles.text}>yes</span>
       </div>
     </div>
   );

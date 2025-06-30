@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import './Login.css'; // Import the CSS file for styling
 import { loginUser, setUser } from '../../redux/userSlice';
 import { CurrentUser } from '../../API/api';
@@ -11,7 +11,11 @@ const Login = () => {
   const [error, setError] = useState('');
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
+  const location = useLocation();
+  const from = location.state?.from?.pathname
+  ? location.state.from.pathname + (location.state.from.search || '')
+  : '/dashboard';
+  
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
@@ -26,7 +30,7 @@ const Login = () => {
 
     // Navigate to dashboard after setting user
     setTimeout(() => {
-      navigate('/dashboard', { replace: true });
+      navigate(from, { replace: true }); // ⬅️ Go to original path
     }, 500);
 
 
