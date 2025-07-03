@@ -7,7 +7,10 @@ const SwimlineRightsideBox = ({ data}) => {
 
   const [autoFocus, setAutoFocus] = useState(data.autoFocus);
 
-
+  useEffect(() => {
+    setTitle(data.details.title);
+  }, [data.details.title]);
+  
   const handleChange = (e) => {
     setTitle(e.target.value);
     if (data.onLabelChange) {

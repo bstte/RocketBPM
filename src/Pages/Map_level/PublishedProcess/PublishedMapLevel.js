@@ -101,6 +101,8 @@ const user = useMemo(() => {
   const [headerTitle, setHeaderTitle] = useState(`${title} `);
   const [getPublishedDate, setgetPublishedDate] = useState("");
   const [process_img, setprocess_img] = useState("");
+    const [process_udid, setprocess_udid] = useState("");
+  
  const [isNavigating, setIsNavigating] = useState(false);
  const [showSharePopup, setShowSharePopup] = useState(false);
 
@@ -164,6 +166,7 @@ const user = useMemo(() => {
         }
 
         setprocess_img(data.process_img)
+        setprocess_udid(data.process_uid)
         const parsedNodes = data.nodes.filter((node) => node.type !== "StickyNote").map((node) => {
           const parsedData = JSON.parse(node.data);
           const parsedPosition = JSON.parse(node.position);
@@ -180,6 +183,8 @@ const user = useMemo(() => {
               autoFocus: true,
               node_id: node.node_id,
               nodeResize: true,
+              LinkToStatus: node.LinkToStatus, 
+
             },
             type: node.type,
             id: node.node_id,
@@ -469,6 +474,29 @@ const handleShareClick = () => {
               ></ReactFlow>
             </div>
           </div>
+
+          <div style={{
+  position: "absolute",
+  bottom: "10px",
+  left: "20px",
+  margin: "20px",
+  fontSize: "18px",
+  color: "#002060",
+  fontFamily: "'Poppins', sans-serif",
+  display: "flex",
+  alignItems: "center",
+  gap: "8px"  // Optional spacing between image and text
+}}>
+  <img 
+    src={`${process.env.PUBLIC_URL}/img/rocket-solid.svg`} 
+    alt="Rocket" 
+    style={{ width: "20px", height: "20px" }}  // optional: control image size
+  />
+  {process_udid && (
+    <span>ID {process_udid}</span>
+  )}
+</div>
+
         </div>
 
         {showSharePopup && (

@@ -91,6 +91,8 @@ const MapLevel = () => {
   const [getPublishedDate, setgetPublishedDate] = useState("");
   const [getDraftedDate, setDraftedDate] = useState("");
   const [process_img, setprocess_img] = useState("");
+    const [process_udid, setprocess_udid] = useState("");
+  
   const [contextMenuPosition, setContextMenuPosition] = useState({
     x: 0,
     y: 0,
@@ -191,6 +193,8 @@ console.log("data",data)
           setDraftedDate("");
         }
         setprocess_img(data.process_img)
+        setprocess_udid(data.process_uid)
+
         const parsedNodes = data.nodes.map((node) => {
           const parsedData = JSON.parse(node.data);
           const parsedPosition = JSON.parse(node.position);
@@ -417,7 +421,7 @@ console.log("data",data)
     setHeaderTitle(`${stateTitle}`);
   }, [location.state, currentLevel, title]);
   const handleCreateNewNode = async (type) => {
-    console.log("check nodes section ", nodes[0]?.PageGroupId)
+    // console.log("check nodes section ", nodes[0]?.PageGroupId)
     if (selectedNode) {
       const selectedNodeData = nodes.find((node) => node.id === selectedNode);
       const selectedLabel = selectedNodeData?.data?.label || "";
@@ -441,16 +445,19 @@ console.log("data",data)
         }
         if (type === "Swimlane") {
           if (checkRecord.status === true) {
-            navigate(`/Draft-Swim-lanes-View/level/${newLevel}/${selectedNode}`, {
-              state: {
-                id,
-                title: selectedLabel,
-                user,
-                parentId: selectedNode,
-                level: newLevel,
-                ParentPageGroupId: nodes[0]?.PageGroupId
-              },
-            });
+            // navigate(`/Draft-Swim-lanes-View/level/${newLevel}/${selectedNode}`, {
+            //   state: {
+            //     id,
+            //     title: selectedLabel,
+            //     user,
+            //     parentId: selectedNode,
+            //     level: newLevel,
+            //     ParentPageGroupId: nodes[0]?.PageGroupId
+            //   },
+            // });
+
+            navigate(`/Draft-Swim-lanes-View/level/${newLevel}/${selectedNode}/${id}?title=${encodeURIComponent(selectedLabel || "")}&user=${encodeURIComponent(JSON.stringify(user))}&parentId=${selectedNode}&level=${newLevel}&ParentPageGroupId=${nodes[0]?.PageGroupId}`)
+
           } else {
             addBreadcrumb(
               `${selectedLabel} `,
@@ -860,6 +867,27 @@ console.log("data",data)
               />
             </div>
           </div>
+          <div style={{
+  position: "absolute",
+  bottom: "10px",
+  left: "20px",
+  margin: "20px",
+  fontSize: "18px",
+  color: "#002060",
+  fontFamily: "'Poppins', sans-serif",
+  display: "flex",
+  alignItems: "center",
+  gap: "8px"  // Optional spacing between image and text
+}}>
+  <img 
+    src={`${process.env.PUBLIC_URL}/img/rocket-solid.svg`} 
+    alt="Rocket" 
+    style={{ width: "20px", height: "20px" }}  // optional: control image size
+  />
+  {process_udid && (
+    <span>ID {process_udid}</span>
+  )}
+</div>
         </div>
       </ReactFlowProvider>
     </div>

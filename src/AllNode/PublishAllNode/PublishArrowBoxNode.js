@@ -17,8 +17,12 @@ const PublishArrowBoxNode = ({ data}) => {
 
   return (
     <div
-      style={styles.wrapper}
-    >
+    style={{
+      ...styles.wrapper,
+      filter: data.LinkToStatus ? 'drop-shadow(0px 0px 10px #0000004f)' : 'none',
+    }}
+  >
+  
       <div
         className="borderBox"
         style={{
@@ -26,6 +30,7 @@ const PublishArrowBoxNode = ({ data}) => {
           width: `${width}px`,
           height: `${height}px`,
           clipPath: clipPath,
+
         }}
       >
         <div style={{ cursor: 'pointer' }}>
@@ -43,7 +48,8 @@ const styles = {
     position: 'relative',
     width: '100%',
     height: '100%',
-  },
+  }
+  ,
   arrowBox: {
     display: 'flex',
     alignItems: 'center',

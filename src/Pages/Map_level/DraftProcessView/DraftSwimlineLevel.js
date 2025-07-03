@@ -63,6 +63,7 @@ const DraftSwimlineLevel = () => {
   const LoginUser = useSelector((state) => state.user.user);
   const [isFavorite, setIsFavorite] = useState(false);
   const [process_img, setprocess_img] = useState("");
+  const [process_udid, setprocess_udid] = useState("");
 
   const headerTitle = `${title} `;
   const currentParentId = parentId || null;
@@ -210,6 +211,7 @@ const DraftSwimlineLevel = () => {
 
         setgetPublishedDate(getPublishedDate.status ? getPublishedDate.created_at : "");
         setprocess_img(data.process_img);
+        setprocess_udid(data.process_uid)
 
         const nodebgwidth = document.querySelector(".react-flow__node");
         const nodebgwidths = nodebgwidth ? nodebgwidth.getBoundingClientRect().width : 0;
@@ -431,7 +433,27 @@ const DraftSwimlineLevel = () => {
             >
               <Background color="#fff" gap={16} />
             </ReactFlow>
-
+            <div style={{
+  position: "absolute",
+  bottom: "10px",
+  left: "20px",
+  margin: "20px",
+  fontSize: "18px",
+  color: "#002060",
+  fontFamily: "'Poppins', sans-serif",
+  display: "flex",
+  alignItems: "center",
+  gap: "8px"  // Optional spacing between image and text
+}}>
+  <img 
+    src={`${process.env.PUBLIC_URL}/img/rocket-solid.svg`} 
+    alt="Rocket" 
+    style={{ width: "20px", height: "20px" }}  // optional: control image size
+  />
+  {process_udid && (
+    <span>ID {process_udid}</span>
+  )}
+</div>
           </div>
           {showSharePopup && (
         <SharePopup

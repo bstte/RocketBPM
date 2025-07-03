@@ -3,12 +3,12 @@ import axios from 'axios';
 // const baseUrl = 'https://teamwebdevelopers.com/proto-type/api'
 // export const ImageBaseUrl = 'https://teamwebdevelopers.com/proto-type/public/'
 
-const baseUrl = 'https://admin.rocketbpm.com/api'
-export const ImageBaseUrl = 'https://admin.rocketbpm.com/public/'
+// const baseUrl = 'https://admin.rocketbpm.com/api'
+// export const ImageBaseUrl = 'https://admin.rocketbpm.com/public/'
 
 
-// export const ImageBaseUrl = 'http://localhost:8000/'
-// const baseUrl ='http://localhost:8000/api/'
+export const ImageBaseUrl = 'http://localhost:8000/'
+const baseUrl ='http://localhost:8000/api/'
 export const defaultApi = axios.create({
   baseURL: baseUrl,
   headers: {
@@ -66,6 +66,24 @@ export const getallpublishObject_Tolinkexistingmodel = async (level = null, user
     throw error;
   }
 };
+
+
+export const getexistingrole = async (level = null, user_id = null, Process_id = null) => {
+  try {
+    const response = await api.get('/getexistingrole', {
+      params: {
+        level,
+        user_id,
+        Process_id
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching nodes:', error);
+    throw error;
+  }
+};
+
 
 export const checkRecord = async (level = null, user_id = null, Process_id = null) => {
   try {
@@ -485,6 +503,6 @@ export const submitSignupForm = async (newUserObject = null) => {
 
 
 
-const apiExports = { saveNodes,getallpublishObject_Tolinkexistingmodel, getNodes, checkPublishRecord, GetPublishedDate, checkRecord, Login, saveProcessTitle, defaultApi, filter_draft, getPublishedNodes, getdataByNodeId };
+const apiExports = { saveNodes,getallpublishObject_Tolinkexistingmodel, getexistingrole,getNodes, checkPublishRecord, GetPublishedDate, checkRecord, Login, saveProcessTitle, defaultApi, filter_draft, getPublishedNodes, getdataByNodeId };
 
 export default apiExports;

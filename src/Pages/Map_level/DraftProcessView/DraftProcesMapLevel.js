@@ -32,6 +32,8 @@ const DraftProcesMapLevel = () => {
   const [totalHeight, setTotalHeight] = useState(0);
   const [windowHeight, setWindowHeight] = useState(window.innerHeight);
   const [process_img, setprocess_img] = useState("");
+  const [process_udid, setprocess_udid] = useState("");
+
   const [checkpublish, Setcheckpublish] = useState()
  const [showSharePopup, setShowSharePopup] = useState(false);
 
@@ -218,8 +220,9 @@ const DraftProcesMapLevel = () => {
           parseInt(user_id),
           Process_id)
 
-          console.log("data checking",data)
         setprocess_img(data.process_img)
+        setprocess_udid(data.process_uid)
+
         const parsedNodes = data.nodes.map((node) => {
           const parsedData = JSON.parse(node.data);
           const parsedPosition = JSON.parse(node.position);
@@ -236,6 +239,8 @@ const DraftProcesMapLevel = () => {
               autoFocus: true,
               node_id: node.node_id,
               nodeResize: true,
+              LinkToStatus: node.LinkToStatus, 
+
             },
             type: node.type,
             id: node.node_id,
@@ -371,19 +376,7 @@ const DraftProcesMapLevel = () => {
         );
         navigate(`/Draft-Swim-lanes-View/level/${newLevel}/${node.id}/${id}?title=${encodeURIComponent(selectedLabel)}&user=${encodeURIComponent(JSON.stringify(user))}&parentId=${node.id}&level=${newLevel}&ParentPageGroupId=${nodes[0]?.PageGroupId}`)
 
-        // navigate(
-        //   `/Draft-Swim-lanes-View/level/${newLevel}/${node.id}`,
-        //   {
-        //     state: {
-        //       id: id,
-        //       title: selectedLabel,
-        //       user,
-        //       parentId: node.id,
-        //       level: newLevel,
-        //       ParentPageGroupId:  nodes[0]?.PageGroupId,
-        //     },
-        //   }
-        // );
+     
       }
     } else {
       alert("Next level not exist")
@@ -520,6 +513,28 @@ const DraftProcesMapLevel = () => {
               ></ReactFlow>
             </div>
           </div>
+          <div style={{
+  position: "absolute",
+  bottom: "10px",
+  left: "20px",
+  margin: "20px",
+  fontSize: "18px",
+  color: "#002060",
+  fontFamily: "'Poppins', sans-serif",
+  display: "flex",
+  alignItems: "center",
+  gap: "8px"  // Optional spacing between image and text
+}}>
+  <img 
+    src={`${process.env.PUBLIC_URL}/img/rocket-solid.svg`} 
+    alt="Rocket" 
+    style={{ width: "20px", height: "20px" }}  // optional: control image size
+  />
+  {process_udid && (
+    <span>ID {process_udid}</span>
+  )}
+</div>
+
         </div>
          {showSharePopup && (
                 <SharePopup

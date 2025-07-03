@@ -56,11 +56,19 @@ const SwimlaneModel = () => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isCheckboxPopupOpen, setIsCheckboxPopupOpen] = useState(false);
   const [LinknodeList, setLinknodeList] = useState([]);
+  const [isexistingroleCheckboxPopupOpen, setIsexistingroleCheckboxPopupOpen] = useState(false);
+
+  const [LinkexistingRole, setLinkexistingRole] = useState([]);
+
   const [selectedLinknodeIds, setSelectedLinknodeIds] = useState([]);
+  const [selectedexistigrolenodeIds, setSelectedexistingrolenodeIds] = useState([]);
+
   const [getDraftedDate, setDraftedDate] = useState("");
   const [KeepOldPosition, setKeepOldPosition] = useState(null);
   const [isFavorite, setIsFavorite] = useState(false);
   const [process_img, setprocess_img] = useState("");
+      const [process_udid, setprocess_udid] = useState("");
+  
   const [StickyNoteModeltext, setStickyNoteModeltext] = useState("");
 
 
@@ -129,6 +137,8 @@ const SwimlaneModel = () => {
   const [detailschecking, setdetailschecking] = useState(null);
   const [nodes, setNodes] = useState(initialNodes);
   const [searchQuery, setSearchQuery] = useState("");
+  const [ExistingrolesearchQuery, setExistingrolesearchQuery] = useState("");
+
   const [checkpublish, Setcheckpublish] = useState();
 
   const ChildNodesRef = useRef(ChildNodes);
@@ -182,7 +192,7 @@ const SwimlaneModel = () => {
     [setChiledNodes, setHasUnsavedChanges]
   );
 
-  useEffect(()=>{
+  useEffect(() => {
     const checkfav = async () => {
       const user_id = LoginUser ? LoginUser.id : null;
       const process_id = id ? id : null;
@@ -191,8 +201,8 @@ const SwimlaneModel = () => {
         return;
       }
       try {
-        const PageGroupId=ChildNodes[0]?.PageGroupId;
-        const response = await checkFavProcess(user_id, process_id,PageGroupId);
+        const PageGroupId = ChildNodes[0]?.PageGroupId;
+        const response = await checkFavProcess(user_id, process_id, PageGroupId);
         console.log("Response:", response);
         setIsFavorite(response.exists)
       } catch (error) {
@@ -200,7 +210,7 @@ const SwimlaneModel = () => {
       }
     }
     checkfav()
-  },[LoginUser,id,ChildNodes])
+  }, [LoginUser, id, ChildNodes])
 
   useEffect(() => {
     const fetchNodes = async () => {
@@ -221,6 +231,7 @@ const SwimlaneModel = () => {
         setgetPublishedDate(publishedResponse.status ? publishedResponse.created_at || "" : "");
         setDraftedDate(draftResponse.status ? draftResponse.created_at || "" : "");
         setprocess_img(data.process_img);
+        setprocess_udid(data.process_uid)
 
         const nodebgwidth = document.querySelector(".react-flow__node");
         const nodebgwidths = nodebgwidth ? nodebgwidth.getBoundingClientRect().width : 0;
@@ -364,9 +375,7 @@ const SwimlaneModel = () => {
       console.log("sourceNode", sourceNode);
       console.log("targetNode", targetNode);
 
-
-
-      console.log('Current ChildNodes:', ChildNodesRef.current);
+      // console.log('Current ChildNodes:', ChildNodesRef.current);
 
       const sourcePosition = sourceNode ? sourceNode.position || { x: 0, y: 0 } : { x: 0, y: 0 };
       const targetPosition = targetNode ? targetNode.position || { x: 0, y: 0 } : { x: 0, y: 0 };
@@ -460,7 +469,7 @@ const SwimlaneModel = () => {
       PageGroupId = ChildNodes[0]?.PageGroupId;
     }
 
-    if (type === "Yes" || type === "No" || type === "FreeText" || type==="StickyNote") {
+    if (type === "Yes" || type === "No" || type === "FreeText" || type === "StickyNote") {
       if (!position) {
         alert("Position not defind");
         return;
@@ -972,7 +981,7 @@ const SwimlaneModel = () => {
     }
   };
 
-  const {removeBreadcrumbsAfter } =
+  const { removeBreadcrumbsAfter } =
     useContext(BreadcrumbsContext);
 
   const linkExistingmodel = async () => {
@@ -990,14 +999,36 @@ const SwimlaneModel = () => {
     const Process_id = id ? id : null;
     const data = await api.getallpublishObject_Tolinkexistingmodel(levelParam, parseInt(user_id), Process_id);
 
-    console.log("check data filteredNodes data",data)
+    console.log("check data filteredNodes data", data)
 
     const filteredNodes = data.nodes.filter(
       (node) => node.node_id !== currentParentId
     );
     setLinknodeList(filteredNodes);
-    console.log("check data filteredNodes",filteredNodes)
+    console.log("check data filteredNodes", filteredNodes)
     setIsCheckboxPopupOpen(true);
+  };
+
+
+  const AddexistingRole = async () => {
+    // const existinglink = ChildNodes.find(
+    //   (node) => node.node_id === selectedNodeId
+    // );
+
+
+    const levelParam = "Level0";
+    const user_id = user ? user.id : null;
+    const Process_id = id ? id : null;
+    const data = await api.getexistingrole(levelParam, parseInt(user_id), Process_id);
+
+    console.log("check data getexistingrole data", data)
+
+    const filteredNodes = data.AllexistingRole.filter(
+      (node) => node.node_id !== currentParentId
+    );
+    setLinkexistingRole(filteredNodes);
+    console.log("check data getexistingrole", filteredNodes)
+    setIsexistingroleCheckboxPopupOpen(true);
   };
 
   const handleCheckboxChange = (nodeId, label) => {
@@ -1005,6 +1036,28 @@ const SwimlaneModel = () => {
     setSelectedTitle(label)
   };
 
+  const handleexistingroleCheckboxChange = (nodeId, label) => {
+    setSelectedexistingrolenodeIds(nodeId)
+    setChiledNodes((nds) =>
+      nds.map((node) => {
+        if (node.id === selectedNodeId) {
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              label: label,
+              details: {
+                ...node.data.details,
+                title: label || "no",
+              },
+            },
+          };
+        }
+        return node;
+      })
+    );
+  };
+  
   const saveSelectedNodes = () => {
     if (selectedLinknodeIds) {
       setChiledNodes((nds) =>
@@ -1080,11 +1133,11 @@ const SwimlaneModel = () => {
     const { x, y } = contextMenu;
     console.log("contextMenu", contextMenu);
 
-    const edgeId=contextMenu.edgeId;
+    const edgeId = contextMenu.edgeId;
     if (action === "Yes") {
-      addNode("Yes", { x: x - 30, y: y - 125 },edgeId);
+      addNode("Yes", { x: x - 30, y: y - 125 }, edgeId);
     } else if (action === "No") {
-      addNode("No", { x: x - 70, y: y - 125 },edgeId);
+      addNode("No", { x: x - 70, y: y - 125 }, edgeId);
     } else if (action === "addFreeText") {
       setIsModalOpen(true);
 
@@ -1146,6 +1199,16 @@ const SwimlaneModel = () => {
       ]
       : []),
 
+    ...(detailschecking?.type === "SwimlineRightsideBox"
+      ? [
+        {
+          label: "Add Existing Role",
+          action: () => AddexistingRole(),
+          borderBottom: true,
+        },
+      ]
+      : []),
+
     {
       label: "Delete",
       action: handleDeleteNode,
@@ -1190,7 +1253,7 @@ const SwimlaneModel = () => {
       addNode("progressArrow");
     }
 
-     else if (option === "Sticky Note") {
+    else if (option === "Sticky Note") {
       setIsModalOpenStickyNode(true)
     }
 
@@ -1239,6 +1302,17 @@ const SwimlaneModel = () => {
   );
 
 
+  const parsedDataExistingrole = LinkexistingRole.map(item => ({
+    ...item,
+    data: typeof item.data === "string" ? JSON.parse(item.data) : item.data // safety check
+  }));
+
+  const filteredDataExistingrole = parsedDataExistingrole.filter(item =>
+    item.data?.details?.title &&
+    item.data.details.title.toLowerCase().includes(ExistingrolesearchQuery.toLowerCase())
+  );
+
+
   const handleFav = async () => {
     const user_id = LoginUser ? LoginUser.id : null;
     const process_id = id ? id : null;
@@ -1249,17 +1323,17 @@ const SwimlaneModel = () => {
       return;
     }
 
-    const PageGroupId=ChildNodes[0]?.PageGroupId;
+    const PageGroupId = ChildNodes[0]?.PageGroupId;
 
 
     try {
       if (isFavorite) {
 
-        const response = await removeFavProcess(user_id, process_id,PageGroupId);
+        const response = await removeFavProcess(user_id, process_id, PageGroupId);
         setIsFavorite(false);
         console.log("Removed from favorites:", response);
       } else {
-        const response = await addFavProcess(user_id, process_id, type,PageGroupId,currentParentId);
+        const response = await addFavProcess(user_id, process_id, type, PageGroupId, currentParentId);
         setIsFavorite(true);
         console.log("Added to favorites:", response);
       }
@@ -1395,59 +1469,123 @@ const SwimlaneModel = () => {
           </div>
 
           {/* Checkbox Popup */}
-            {isCheckboxPopupOpen && (
-              <div style={popupStyle.container} className="swimlanepopup">
-                <div style={popupStyle.header}>
-                  <span>Existing Model</span>
-                  <button
-                    style={popupStyle.closeButton}
-                    onClick={() => setIsCheckboxPopupOpen(false)}
-                    aria-label="Close"
-                  >
-                    ×
-                  </button>
-                </div>
-
-                <input
-                  type="text"
-                  style={styles.searchInput}
-                  placeholder="Search..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-
-                <div style={popupStyle.body}>
-                  {filteredData.map((node) => (
-                    <label
-                      key={node.node_id}
-                      style={{
-                        ...popupStyle.label,
-                        backgroundColor:
-                          selectedLinknodeIds === node.node_id
-                            ? "#f0f8ff"
-                            : "transparent",
-                      }}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedLinknodeIds === node.node_id}
-                        onChange={() => handleCheckboxChange(node.node_id, node.data.label)}
-                        style={popupStyle.checkbox}
-                      />
-                      {node.data.label && node.data.label}
-                    </label>
-                  ))}
-                </div>
-                <div style={popupStyle.footer}>
-                  <button
-                    onClick={saveSelectedNodes}
-                    style={popupStyle.saveButton}
-                  >
-                    Save
-                  </button>
-                </div>
+          {isCheckboxPopupOpen && (
+            <div style={popupStyle.container} className="swimlanepopup">
+              <div style={popupStyle.header}>
+                <span>Existing Model</span>
+                <button
+                  style={popupStyle.closeButton}
+                  onClick={() => setIsCheckboxPopupOpen(false)}
+                  aria-label="Close"
+                >
+                  ×
+                </button>
               </div>
-            )}
+
+              <input
+                type="text"
+                style={styles.searchInput}
+                placeholder="Search..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+
+              <div style={popupStyle.body}>
+                {filteredData.map((node) => (
+                  <label
+                    key={node.node_id}
+                    style={{
+                      ...popupStyle.label,
+                      backgroundColor:
+                        selectedLinknodeIds === node.node_id
+                          ? "#f0f8ff"
+                          : "transparent",
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedLinknodeIds === node.node_id}
+                      onChange={() => handleCheckboxChange(node.node_id, node.data.label)}
+                      style={popupStyle.checkbox}
+                    />
+                    {node.data.label && node.data.label}
+                  </label>
+                ))}
+              </div>
+              <div style={popupStyle.footer}>
+                <button
+                  onClick={saveSelectedNodes}
+                  style={popupStyle.saveButton}
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          )}
+
+
+
+          {/* Existing Add role Popup */}
+          {isexistingroleCheckboxPopupOpen && (
+  <div style={popupStyle.container} className="swimlanepopup">
+    <div style={popupStyle.header}>
+      <span>Add Existing Role</span>
+      <button
+        style={popupStyle.closeButton}
+        onClick={() => setIsexistingroleCheckboxPopupOpen(false)}
+        aria-label="Close"
+      >
+        ×
+      </button>
+    </div>
+
+    <input
+      type="text"
+      style={styles.searchInput}
+      placeholder="Search..."
+      value={ExistingrolesearchQuery}
+      onChange={(e) => setExistingrolesearchQuery(e.target.value)}
+    />
+
+    <div style={popupStyle.body}>
+      {filteredDataExistingrole.map((node) => {
+        const isSelected = selectedexistigrolenodeIds === node.node_id;
+        const title = node?.data?.details?.title || "Untitled";
+
+        return (
+          <div
+            key={node.node_id}
+            onClick={() =>
+              handleexistingroleCheckboxChange(node.node_id, title)
+            }
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#e6f7ff")}
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.backgroundColor = isSelected ? "#f0f8ff" : "transparent")
+            }
+            style={{
+              ...popupStyle.label,
+              cursor: "pointer",
+              backgroundColor: isSelected ? "#f0f8ff" : "transparent",
+            }}
+          >
+            {title}
+          </div>
+        );
+      })}
+    </div>
+
+    <div style={popupStyle.footer}>
+      <button
+        onClick={() => setIsexistingroleCheckboxPopupOpen(false)}
+        style={popupStyle.saveButton}
+      >
+        Save
+      </button>
+    </div>
+  </div>
+)}
+
+
           <TextInputModal
             isOpen={isModalOpen}
             onClose={() => setIsModalOpen(false)}
@@ -1468,6 +1606,28 @@ const SwimlaneModel = () => {
               onClose={() => setIsPopupOpen(false)}
             />
           )}
+
+<div style={{
+  position: "absolute",
+  bottom: "10px",
+  left: "20px",
+  margin: "20px",
+  fontSize: "18px",
+  color: "#002060",
+  fontFamily: "'Poppins', sans-serif",
+  display: "flex",
+  alignItems: "center",
+  gap: "8px"  // Optional spacing between image and text
+}}>
+  <img 
+    src={`${process.env.PUBLIC_URL}/img/rocket-solid.svg`} 
+    alt="Rocket" 
+    style={{ width: "20px", height: "20px" }}  // optional: control image size
+  />
+  {process_udid && (
+    <span>ID {process_udid}</span>
+  )}
+</div>
         </ReactFlowProvider>
       </div>
     </div>
@@ -1507,7 +1667,7 @@ const popupStyle = {
     maxHeight: "250px",
     overflowY: "auto",
   }
-,  
+  ,
   label: {
     display: "flex",
     alignItems: "center",
