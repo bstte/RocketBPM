@@ -4,7 +4,9 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import './Signup.css'; 
 
 import CustomAlert from '../../components/CustomAlert';
-import { signup } from '../../API/api';
+import { CurrentUser, signup } from '../../API/api';
+import { setUser } from '../../redux/userSlice';
+import { useDispatch } from 'react-redux';
 
 const Signup = () => {
   const location = useLocation();
@@ -16,8 +18,11 @@ const Signup = () => {
     lastName: '',
     email: '',
     password: '',
+    confirmPassword: '', // ✅ Add this
     role: ''
   });
+  
+  const dispatch = useDispatch();
 
   const getQueryParams = useCallback(() => {
     const searchParams = new URLSearchParams(location.search);
@@ -52,7 +57,11 @@ const Signup = () => {
       CustomAlert.error("Required Field", "Password is required!");
       return;
     }
-
+    if (formData.password !== formData.confirmPassword) {
+      CustomAlert.error("Error", "Passwords do not match!");
+      return;
+    }
+    
     try {
       // Yahan aap API call kar sakte hain signup ke liye
     
@@ -63,9 +72,22 @@ const Signup = () => {
         password: formData.password,
      
       });
-      CustomAlert.success("Success", response.message);
+      // CustomAlert.success("Success", response.message);
     
-      navigate('/login',{ replace: true }); 
+      // navigate('/login',{ replace: true }); 
+
+    // ✅ Store token in localStorage
+    localStorage.setItem('token', response.access_token);
+
+    // ✅ Get current user
+    const userResponse = await CurrentUser(response.access_token);
+    dispatch(setUser(userResponse)); // store in redux
+
+    // ✅ Success
+    CustomAlert.success("Success", response.message);
+
+    // ✅ Go to dashboard directly
+    navigate('/dashboard', { replace: true });
    
     } catch (error) {
       CustomAlert.error("Error", error.response.data.message);
@@ -110,14 +132,7 @@ const Signup = () => {
             className="login-input"
             disabled // Email change na ho
           />
-           <input
-            type="text"
-           
-            value={formData.role}
-          
-            className="login-input"
-            disabled // Email change na ho
-          />
+         
           <input
             type="password"
             name="password"
@@ -126,6 +141,15 @@ const Signup = () => {
             placeholder="Password"
             className="login-input"
           />
+          <input
+  type="password"
+  name="confirmPassword"
+  value={formData.confirmPassword}
+  onChange={handleChange}
+  placeholder="Confirm Password"
+  className="login-input"
+/>
+
           <button type="submit" className="login-button">SIGN UP</button>
           <p>Already a member?<button className="btn_form" type='button' onClick={()=> navigate('/login')}>Sign in</button></p>
         </form>

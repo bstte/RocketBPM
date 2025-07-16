@@ -3,15 +3,16 @@ import React, { useEffect, useState } from "react";
 const TextInputModal = ({ isOpen, onSubmit,initialValue }) => {
   const [text, setText] = useState(initialValue);
   useEffect(() => {
-    setText(initialValue); // Update text when modal opens with a new value
+    setText(initialValue);
   }, [initialValue]);
 
   if (!isOpen) return null;
 
   const onOk=(textdata)=>{
-    setText("")
+    // setText("")
     onSubmit(textdata)
   }
+
 
   return (
     <div style={styles.overlay}>

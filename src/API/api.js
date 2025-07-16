@@ -3,12 +3,12 @@ import axios from 'axios';
 // const baseUrl = 'https://teamwebdevelopers.com/proto-type/api'
 // export const ImageBaseUrl = 'https://teamwebdevelopers.com/proto-type/public/'
 
-// const baseUrl = 'https://admin.rocketbpm.com/api'
-// export const ImageBaseUrl = 'https://admin.rocketbpm.com/public/'
+const baseUrl = 'https://admin.rocketbpm.com/api'
+export const ImageBaseUrl = 'https://admin.rocketbpm.com/public/'
 
 
-export const ImageBaseUrl = 'http://localhost:8000/'
-const baseUrl ='http://localhost:8000/api/'
+// export const ImageBaseUrl = 'http://localhost:8000/'
+// const baseUrl ='http://localhost:8000/api/'
 export const defaultApi = axios.create({
   baseURL: baseUrl,
   headers: {
@@ -501,6 +501,65 @@ export const submitSignupForm = async (newUserObject = null) => {
   }
 };
 
+
+export const versionlist = async (processId ,level,LoginUserId) => {
+  try {
+
+
+    const response = await api.get('/version/list', {
+      params: {
+        process_id: processId,
+        level: level,
+        LoginUserId:LoginUserId
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching process titles:', error);
+    throw error;
+  }
+};
+
+
+export const ReplaceVersion = async (level, processId, version) => {
+  try {
+
+
+    const response = await api.post('/replace-version', {
+      process_id: processId,
+      level: level,
+      version: version,
+
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching process titles:', error);
+    throw error;
+  }
+};
+
+
+export const getVersionViewData = async (processId, level, version, pageTitle) => {
+  try {
+    const response = await api.get(`/process/view/${processId}/${level}/${version}/${pageTitle}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching version view data:', error);
+    throw error;
+  }
+};
+
+
+// Save Process Info (contact + revision)
+export const saveProcessInfo = async (data) => {
+  try {
+    const response = await api.post('/process-info', data);
+    return response.data;
+  } catch (error) {
+    console.error('Error saving process info:', error);
+    throw error;
+  }
+};
 
 
 const apiExports = { saveNodes,getallpublishObject_Tolinkexistingmodel, getexistingrole,getNodes, checkPublishRecord, GetPublishedDate, checkRecord, Login, saveProcessTitle, defaultApi, filter_draft, getPublishedNodes, getdataByNodeId };

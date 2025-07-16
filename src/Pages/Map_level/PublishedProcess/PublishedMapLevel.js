@@ -24,6 +24,7 @@ import PublishArrowBoxNode from "../../../AllNode/PublishAllNode/PublishArrowBox
 import PublishPentagonNode from "../../../AllNode/PublishAllNode/PublishPentagonNode";
 import { useSelector } from "react-redux";
 import SharePopup from "../../../components/SharePopup";
+import VersionPopupView from "../../../components/VersionPopupView";
 
 const PublishedMapLevel = () => {
 
@@ -74,6 +75,7 @@ const LoginUser = useSelector((state) => state.user.user);
   const { level, parentId ,processId} = useParams();
   const location = useLocation();
   // const {  ParentPageGroupId } = location.state || {};
+  const [showVersionPopup, setShowVersionPopup] = useState(false);
 
 const queryParams = new URLSearchParams(location.search);
 const title = queryParams.get("title");
@@ -422,10 +424,20 @@ const styles = {
   },
 };
 
+// ye commom page h
+const navigateToVersion = (process_id, level, version) => {
+  const encodedTitle = encodeURIComponent("swimlane");
+  navigate(`/Draft-Process-Version/${process_id}/${level}/${version}/${encodedTitle}`);
+};
+
+
 const handleShareClick = () => {
   setShowSharePopup(true);
 };
 
+const handleVersionClick = () => {
+  setShowVersionPopup(true);
+};
   return (
     <div>
       <Header
@@ -443,6 +455,8 @@ const handleShareClick = () => {
         Process_img={process_img}
         Procesuser={user}
         onShare={()=>handleShareClick()}
+        onShowVersion={handleVersionClick}
+
       />
       <ReactFlowProvider>
       <div className="app-container" style={{ ...styles.appContainer, height: remainingHeight }}>
@@ -478,7 +492,7 @@ const handleShareClick = () => {
           <div style={{
   position: "absolute",
   bottom: "10px",
-  left: "20px",
+  left: "10px",
   margin: "20px",
   fontSize: "18px",
   color: "#002060",
@@ -490,11 +504,16 @@ const handleShareClick = () => {
   <img 
     src={`${process.env.PUBLIC_URL}/img/rocket-solid.svg`} 
     alt="Rocket" 
-    style={{ width: "20px", height: "20px" }}  // optional: control image size
+    style={{ width: "16px", height: "16px" }}  // optional: control image size
   />
-  {process_udid && (
+  {/* {process_udid && (
     <span>ID {process_udid}</span>
-  )}
+  )} */}
+
+<span>
+  ID {nodes && nodes.length > 0 ? nodes[0].PageGroupId : ""}
+</span>
+
 </div>
 
         </div>
@@ -502,10 +521,22 @@ const handleShareClick = () => {
         {showSharePopup && (
         <SharePopup
           processId={id}
-          processName={`ProcessName: ${breadcrumbs.find(crumb => crumb.state?.id === "1")?.label}`}
+          processName={`ProcessName: ${headerTitle}`}
           onClose={() => setShowSharePopup(false)}
         />
       )}
+
+
+{showVersionPopup && (
+  <VersionPopupView
+    processId={id}
+    currentLevel={currentLevel}
+    onClose={() => setShowVersionPopup(false)}
+    currentParentId={currentParentId}
+    viewVersion={navigateToVersion}  
+    LoginUser={LoginUser}
+    />
+)}
       </ReactFlowProvider>
     </div>
   );

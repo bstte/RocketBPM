@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { logoutUser } from "../redux/userSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { BreadcrumbsContext } from "../context/BreadcrumbsContext";
-
+import { FaArrowLeft } from 'react-icons/fa';
 import { ImageBaseUrl } from "../API/api";
 
 
@@ -21,7 +21,7 @@ const Header = ({
   getDraftedDate,
   setIsNavigating,
   Page,
-  savefav, isFavorite, Process_img, Procesuser, checkpublish,onShare
+  savefav, isFavorite, Process_img, Procesuser, checkpublish, onShare,onShowVersion
 }) => {
   const user = useSelector((state) => state.user.user);
   const [imageSrc, setImageSrc] = useState(null);
@@ -36,7 +36,7 @@ const Header = ({
   const dropdownRef = useRef(null);
 
 
-  const { breadcrumbs,removeBreadcrumbsAfter } = useContext(BreadcrumbsContext);
+  const { breadcrumbs, removeBreadcrumbsAfter } = useContext(BreadcrumbsContext);
 
   const iconComponents = {
     progressArrow: <ProgressArrow />,
@@ -46,7 +46,6 @@ const Header = ({
     label: <Label />,
   };
 
-  console.log("breadcrumbs",breadcrumbs)
 
   useEffect(() => {
     setIsLoading(true); // Start loading
@@ -92,7 +91,7 @@ const Header = ({
     })
     : "";
 
-  const handleBreadcrumbClick = async (path, state,index) => {
+  const handleBreadcrumbClick = async (path, state, index) => {
     const confirmcondition = await handleBackdata();
     console.log("confirmcondition click", confirmcondition)
     if (confirmcondition !== false) {
@@ -128,43 +127,50 @@ const Header = ({
     <>
       <div style={styles.mainheader} className="ss_new_hed">
 
+{
 
-        <div
-          className="breadcrumbs-container"
-          style={styles.mhcolleft}
-        >
-          {breadcrumbs
-            .filter((crumb) => crumb.label !== title)
-            .map((crumb, index, array) => (
-              <span key={index} className="ss_hm_dash_home_icon">
-                {index === 0 ? (
-                  <span
-                    onClick={() => handleBreadcrumbClick(crumb.path, crumb.state)}
-                  >
+  Page!=="ViewProcessmapVersion" && (
 
-                    <img src={`${process.env.PUBLIC_URL}/img/rocket-solid.svg`} alt="Rocket" />
+    <div
+    className="breadcrumbs-container"
+    style={styles.mhcolleft}
+  >
+    {breadcrumbs
+      .filter((crumb) => crumb.label !== title)
+      .map((crumb, index, array) => (
+        <span key={index} className="ss_hm_dash_home_icon">
+          {index === 0 ? (
+            <span
+              onClick={() => handleBreadcrumbClick(crumb.path, crumb.state)}
+            >
 
-                  </span>
-                ) : (
-                  <span
-                    onClick={() => handleBreadcrumbClick(crumb.path, crumb.state,index)}
-                    style={styles.breadcrumbLink}
-                  >
-                    {crumb.label}
-                  </span>
-                )}
-                {index < array.length - 1 && (
-                  <span style={styles.separator}> {">"} </span>
-                )}
-              </span>
-            ))}
-        </div>
+              <img src={`${process.env.PUBLIC_URL}/img/rocket-solid.svg`} alt="Rocket" />
+
+            </span>
+          ) : (
+            <span
+              onClick={() => handleBreadcrumbClick(crumb.path, crumb.state, index)}
+              style={styles.breadcrumbLink}
+            >
+              {crumb.label}
+            </span>
+          )}
+          {index < array.length - 1 && (
+            <span style={styles.separator}> {">"} </span>
+          )}
+        </span>
+      ))}
+  </div>
+  
+  )
+}
+
 
         <div style={styles.mhcolright} className="ss_header_new_right">
 
 
           <div style={styles.loginuserbox} className="ss_hed_rit_user_secnew">
-            {Page === "Published"  && (
+            {Page === "Published" && (
               <>
 
                 <button
@@ -176,26 +182,29 @@ const Header = ({
                 >
                   View Draft
                 </button>
-                
+                <div onClick={onShowVersion} title="Version Info" className="headericons">
+                    i
+                    {/* <img src="/img/info-icon.svg" alt="info" /> */}
+                  </div>
                 {
                   isFavorite ? (
-                    <div className="headericons active">                
-                        <img src={`${process.env.PUBLIC_URL}/img/star-solid.svg`} alt="Star" />
-                      </div>
+                    <div className="headericons active">
+                      <img src={`${process.env.PUBLIC_URL}/img/star-solid.svg`} alt="Star" />
+                    </div>
                   ) : (
                     <>
-                      <div className="headericons">                
+                      <div className="headericons">
                         <img src={`${process.env.PUBLIC_URL}/img/star-regular.svg`} alt="Star" />
                       </div>
                     </>
                   )
                 }
-                
-                
-                <div className="headericons" onClick={onShare}>                
+
+
+                <div className="headericons" onClick={onShare}>
                   <img src={`${process.env.PUBLIC_URL}/img/share.png`} alt="Share" />
                 </div>
-                
+
 
 
               </>
@@ -203,7 +212,7 @@ const Header = ({
 
             {(Page === "ViewDraftmodel" || Page === "ViewDraftswimlane") && (
               <>
-                { Procesuser.role !== "User" &&(
+                {Procesuser.role !== "User" && (
                   <div>
 
                     <button
@@ -234,14 +243,21 @@ const Header = ({
                   )
                 }
 
+               
+                  <div onClick={onShowVersion} title="Version Info" className="headericons">
+                    i
+                    {/* <img src="/img/info-icon.svg" alt="info" /> */}
+                  </div>
+              
+
                 {
                   isFavorite ? (
-                    <div className="headericons active">                
-                        <img src={`${process.env.PUBLIC_URL}/img/star-solid.svg`} alt="Star" />
-                      </div>
+                    <div className="headericons active">
+                      <img src={`${process.env.PUBLIC_URL}/img/star-solid.svg`} alt="Star" />
+                    </div>
                   ) : (
                     <>
-                      <div className="headericons">                
+                      <div className="headericons">
                         <img src={`${process.env.PUBLIC_URL}/img/star-regular.svg`} alt="Star" />
                       </div>
                     </>
@@ -249,9 +265,9 @@ const Header = ({
                 }
 
                 <div className="headericons" onClick={onShare}>
-                  
-                    <img src={`${process.env.PUBLIC_URL}/img/share.png`} alt="Share" />
-                  
+
+                  <img src={`${process.env.PUBLIC_URL}/img/share.png`} alt="Share" />
+
                 </div>
 
               </>
@@ -260,19 +276,24 @@ const Header = ({
             {Page === "Draft" && (
               <>
                 {
-                    isFavorite ? (
-                      <div className="headericons active">                
-                          <img src={`${process.env.PUBLIC_URL}/img/star-solid.svg`} alt="Star" onClick={savefav}/>
-                        </div>
-                    ) : (
-                      <>
-                        <div className="headericons">                
-                          <img src={`${process.env.PUBLIC_URL}/img/star-regular.svg`} alt="Star" onClick={savefav} />
-                        </div>
-                      </>
-                    )
-                  }
-                <div>   
+                  isFavorite ? (
+                    <div className="headericons active">
+                      <img src={`${process.env.PUBLIC_URL}/img/star-solid.svg`} alt="Star" onClick={savefav} />
+                    </div>
+                  ) : (
+                    <>
+                      <div className="headericons">
+                        <img src={`${process.env.PUBLIC_URL}/img/star-regular.svg`} alt="Star" onClick={savefav} />
+                      </div>
+                    </>
+                  )
+                }
+
+<div onClick={onShowVersion} title="Version Info" className="headericons">
+                    i
+                    {/* <img src="/img/info-icon.svg" alt="info" /> */}
+                  </div>
+                <div>
                   <button
                     onClick={() => onSave("draft")}
                     style={{
@@ -290,9 +311,9 @@ const Header = ({
                     onClick={() => onPublish("Published")}
                     style={{
                       ...styles.saveButton,
-                      backgroundColor: !checkpublish? "gray":"#002060",
+                      backgroundColor: !checkpublish ? "gray" : "#002060",
                     }}
-                    title={!checkpublish?"Publish all parent models first":""}
+                    title={!checkpublish ? "Publish all parent models first" : ""}
 
                   >
                     Publish
@@ -314,6 +335,9 @@ const Header = ({
             <div className="ss_profile_rit_div mspage">
 
 
+
+            {Page!=="ViewProcessmapVersion" && (
+              <>
               {/* Dropdown Button */}
               <div ref={dropdownRef} style={{ position: "relative" }}>
                 <div id="dropdownBtn" onClick={toggleDropdown}>
@@ -333,20 +357,36 @@ const Header = ({
                   </div>
                 )}
               </div>
+              </>
+            )}
 
             </div>
-           
+
           </div>
         </div>
       </div>
 
 
-
+     
       <header className="app-header" style={styles.header}>
+      {Page!=="ViewProcessmapVersion" && (
         <h1 style={styles.headerTitle} className="sameheight">
-        
+
           {title}
         </h1>
+        )}
+
+{Page==="ViewProcessmapVersion" && (
+  <h1 style={styles.headerTitle} className="sameheight">
+ <FaArrowLeft 
+      fontSize="large" 
+      style={{ cursor: "pointer" }} 
+      onClick={handleBackdata} 
+    />
+  </h1>
+)}
+
+        
 
         <div style={styles.iconContainer}>
           {Object.keys(iconNames).map((iconKey) => (
@@ -467,7 +507,7 @@ const styles = {
   headerTitle: {
     margin: 0,
     fontSize: "18pt",
-    lineHeight:"18pt",
+    lineHeight: "18pt",
     fontWeight: "300",
     color: "#002060",
     display: "flex",
@@ -540,7 +580,7 @@ const styles = {
   pdate: {
     textAlign: "right",
     fontSize: "7pt",
-    color:"#002060"
+    color: "#002060"
   },
   flexbox: {
     display: "flex",

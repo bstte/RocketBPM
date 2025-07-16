@@ -26,6 +26,7 @@ import { ReactFlowProvider } from "@xyflow/react";
 import EditUser from "../Pages/Manage Assigned Users/editUser";
 import SignupForm from "../Pages/Signup/SignupForm";
 import Setting from "../Pages/Setting/Setting";
+import DraftProcessMapVersion from "../Pages/Map_level/DraftProcessMapVersion";
 
 const AppRoutes = () => {
   return (
@@ -72,6 +73,9 @@ const AppRoutes = () => {
 
       <Route path="/draft-process-view/:level/:parentId/:processId/*" element={<PrivateRoute><DraftProcesMapLevel /></PrivateRoute>} />
       <Route path="/draft-swim-lanes-view/level/:level/:parentId/:processId" element={<PrivateRoute><DraftSwimlineLevel /></PrivateRoute>} />
+
+
+      <Route path="/Draft-Process-Version/:processId/:level/:version/:pageTitle" element={<DraftProcessMapVersion />} />
 
       {/* Redirect for unknown routes */}
       <Route path="*" element={<Navigate to="/login" />} />

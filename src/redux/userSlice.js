@@ -1,6 +1,7 @@
 // src/redux/userSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { Login,defaultApi} from '../API/api';
+import CustomAlert from '../components/CustomAlert';
 
 export const loginUser = createAsyncThunk('user/login', async ({ email, password }, { rejectWithValue }) => {
   try {
@@ -11,6 +12,8 @@ export const loginUser = createAsyncThunk('user/login', async ({ email, password
     return user;
   } catch (error) {
     console.error("login error", error);
+    CustomAlert.error("Error", error.response.data.message);
+
     return rejectWithValue(error.response?.data || 'An error occurred'); // Improved error handling
   }
 });

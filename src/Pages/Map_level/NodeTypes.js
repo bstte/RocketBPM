@@ -6,7 +6,7 @@ import LabelNode from '../../AllNode/LabelNode';
 import YesNode from '../../AllNode/YesNode';
 import NoNode from '../../AllNode/NoNode';
 import FreeTextNode from '../../AllNode/FreeTextNode';
-import StickyNote from '../../AllNode/StickyNote';
+// import StickyNote from '../../AllNode/StickyNote';
 
 const NodeTypes = {
   progressArrow: SwimlineArrowBoxNode,
@@ -17,7 +17,7 @@ const NodeTypes = {
   Yes: YesNode,
   No: NoNode,
   FreeText: FreeTextNode,
-  StickyNote: StickyNote,
+  // StickyNote: StickyNote,
 
 };
 

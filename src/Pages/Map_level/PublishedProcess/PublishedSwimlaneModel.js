@@ -23,6 +23,7 @@ import { BreadcrumbsContext } from "../../../context/BreadcrumbsContext";
 import '../../../Css/Swimlane.css'
 import { useSelector } from "react-redux";
 import SharePopup from "../../../components/SharePopup";
+import VersionPopupView from "../../../components/VersionPopupView";
 
 
 const PublishedSwimlaneModel = () => {
@@ -73,6 +74,7 @@ const PublishedSwimlaneModel = () => {
   const location = useLocation();
   // const { id, title, user,ParentPageGroupId } = location.state || {};
  const [showSharePopup, setShowSharePopup] = useState(false);
+  const [showVersionPopup, setShowVersionPopup] = useState(false);
 
   const queryParams = new URLSearchParams(location.search);
   const title = queryParams.get("title");
@@ -186,7 +188,7 @@ const PublishedSwimlaneModel = () => {
         const childWidth = groupWidth * 0.9;
         const childHeight = groupHeight * 0.9;
 
-        const parsedNodes = data.nodes.map((node) => {
+        const parsedNodes = data.nodes.filter((node) => node.type !== "StickyNote").map((node) => {
           const parsedData = JSON.parse(node.data || "{}");
           const parsedPosition = JSON.parse(node.position || "{\"x\":0,\"y\":0}");
           const parsedMeasured = JSON.parse(node.measured || "{\"width\":40,\"height\":40}");
@@ -300,10 +302,20 @@ const PublishedSwimlaneModel = () => {
 
   }
 
+  // ye commom page h
+const navigateToVersion = (process_id, level, version) => {
+  const encodedTitle = encodeURIComponent("swimlane");
+  navigate(`/Draft-Process-Version/${process_id}/${level}/${version}/${encodedTitle}`);
+};
+
+
   const handleShareClick = () => {
     setShowSharePopup(true);
   };
 
+  const handleVersionClick = () => {
+    setShowVersionPopup(true);
+  };
   return (
     <div>
       <Header
@@ -321,6 +333,8 @@ const PublishedSwimlaneModel = () => {
         Process_img={process_img}
         Procesuser={user}
         onShare={()=>handleShareClick()}
+        onShowVersion={handleVersionClick}
+
 
       />
       <div style={{ ...styles.appContainer, height: remainingHeight }}>
@@ -355,33 +369,46 @@ const PublishedSwimlaneModel = () => {
             <div style={{
   position: "absolute",
   bottom: "10px",
-  left: "20px",
+  left: "6px",
   margin: "20px",
-  fontSize: "18px",
+  fontSize: "15px",
   color: "#002060",
   fontFamily: "'Poppins', sans-serif",
   display: "flex",
   alignItems: "center",
   gap: "8px"  // Optional spacing between image and text
 }}>
-  <img 
-    src={`${process.env.PUBLIC_URL}/img/rocket-solid.svg`} 
-    alt="Rocket" 
-    style={{ width: "20px", height: "20px" }}  // optional: control image size
-  />
-  {process_udid && (
-    <span>ID {process_udid}</span>
-  )}
+  <img
+              src={`${process.env.PUBLIC_URL}/img/rocket-solid.svg`}
+              alt="Rocket"
+              style={{ width: "16px", height: "16px" }}  // optional: control image size
+            />
+         
+            <span>
+              ID {ChildNodes && ChildNodes.length > 0 ? ChildNodes[0].PageGroupId : ""}
+            </span>
 </div>
           </div>
 
           {showSharePopup && (
         <SharePopup
           processId={id}
-          processName={`ProcessName: ${breadcrumbs.find(crumb => crumb.state?.id === "1")?.label}`}
+          processName={`ProcessName: ${headerTitle}`}
           onClose={() => setShowSharePopup(false)}
         />
       )}
+
+
+{showVersionPopup && (
+  <VersionPopupView
+    processId={id}
+    currentLevel={currentLevel}
+    onClose={() => setShowVersionPopup(false)}
+    currentParentId={currentParentId}
+    viewVersion={navigateToVersion}  
+    LoginUser={LoginUser}
+    />
+)}
         </ReactFlowProvider>
       </div>
     </div>

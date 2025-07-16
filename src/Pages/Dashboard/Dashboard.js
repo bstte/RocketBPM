@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState, useRef, useCallback } from "rea
 import { Box, Card, IconButton, CircularProgress } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { useSelector } from "react-redux";
-import apiExports, { checkRecord, getFavProcessesByUser, getUserNodes, getvideo } from "../../API/api";
+import apiExports, { checkRecord, getFavProcessesByUser, getUserNodes, getvideo, ImageBaseUrl } from "../../API/api";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -44,6 +44,14 @@ const Dashboard = () => {
     return process ? process.process_title : "";
   };
 
+
+  const getProcessImage = (id) => {
+    const process = ProcessTitle?.find((p) => p.id === parseInt(id));
+    // If image exists, return full URL else return default logo
+    return process && process.Process_img
+      ? `${ImageBaseUrl}${process.Process_img}`
+      : "/img/RocketBPM_rocket_logo.png";
+  };
 
   useEffect(() => {
     const getUserNodesData = async () => {
@@ -99,7 +107,8 @@ const Dashboard = () => {
                 id: assignment.user_id,
                 role: assignment.Role,
               };
-            } else {
+            }
+             else {
               // If not assigned to anyone, set default
               categorizedNodes[processId] = {
                 processId,
@@ -309,7 +318,7 @@ const Dashboard = () => {
   const NavigateOnClick = async (item) => {
     const data = await checkPublishData(item)
     if (data.status) {
-   
+
       navigate(`/published-map-level/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
 
 
@@ -354,7 +363,7 @@ const Dashboard = () => {
   }, []);
 
 
-  const handlefavClick = async (Process_id, user_id, Level, PageGroupId,label) => {
+  const handlefavClick = async (Process_id, user_id, Level, PageGroupId, label) => {
 
     try {
 
@@ -377,7 +386,7 @@ const Dashboard = () => {
         Level !== null
           ? `Level${newLevel}_${Level}`
           : `Level${newLevel}`;
-          
+
       console.log("levelParam", levelParam)
       const nodeData = await checkRecord(
         levelParam,
@@ -385,14 +394,14 @@ const Dashboard = () => {
         Process_id
       );
 
-      console.log("user_id",user_id)
-      console.log("Process_id",Process_id)
+      console.log("user_id", user_id)
+      console.log("Process_id", Process_id)
 
 
-      console.log("nodeData",nodeData)
+      console.log("nodeData", nodeData)
       if (nodeData.status === true) {
         if (nodeData.Page_Title === "ProcessMap") {
-          if(newLevel===0){
+          if (newLevel === 0) {
             navigate(`/Map-level`, {
               state: {
                 id,
@@ -401,7 +410,7 @@ const Dashboard = () => {
                 ParentPageGroupId: PageGroupId,
               },
             });
-          }else{
+          } else {
             navigate(`/level/${newLevel}/${Level}`, {
               state: {
                 id,
@@ -411,7 +420,7 @@ const Dashboard = () => {
               },
             });
           }
-        
+
         }
         if (nodeData.Page_Title === "Swimlane") {
           addBreadcrumb(
@@ -430,7 +439,7 @@ const Dashboard = () => {
           navigate(`/swimlane/level/${newLevel}/${Level}`, {
             state: {
               id,
-              title:label || "",
+              title: label || "",
               user,
               parentId: Level,
               level: newLevel,
@@ -483,24 +492,36 @@ const Dashboard = () => {
                       }}
                     >
                       {/* Three dots menu */}
-                      <IconButton
+                      {/* <IconButton
                         sx={{ position: "absolute", top: 10, right: 10 }}
                         onClick={(event) => handleOpenMenu(event, item)}
                       >
                         <MoreVertIcon />
-                      </IconButton>
+                      </IconButton> */}
+
+
+                      <div className="menu_button" onClick={(e) => handleOpenMenu(e, item)}>
+                        <div className="circle_icon">
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="white">
+                            <path d="M7 10l5 5 5-5H7z" />
+                          </svg>
+                        </div>
+                      </div>
 
                       <label className="text_blue"> {getProcessTitle(item.processId)}</label>
+                      <div className="ss_title_underline"></div>
+                      <img
+                        src={getProcessImage(item.processId)}
+                        alt="Process Logo"
+                        className="process_logo"
+                      />
 
                       {/* React Flow Component */}
                       <div className="ss_dash_slid_img" onClick={() => NavigateOnClick(item)}>
                         {/* <img src="../../../img/dashboard-slider-image.jpg" alt="" /> */}
                         <MiniMapPreview processId={item.processId} userId={item.id} />
 
-                        <button>
-                          Preview Image of Level 1
-                        </button>
-                        {/* <a href="#"></a> */}
+
                       </div>
 
                       {/* Custom dropdown menu */}
@@ -526,13 +547,6 @@ const Dashboard = () => {
                                 {checkpublish && (
                                   <p
                                     onClick={() =>
-                                      // navigate("/published-map-level", {
-                                      //   state: {
-                                      //     id: parseInt(item.processId),
-                                      //     title: getProcessTitle(item.processId),
-                                      //     user: item,
-                                      //   },
-                                      // })
 
                                       navigate(`/published-map-level/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
 
@@ -545,13 +559,7 @@ const Dashboard = () => {
                                 )}
                                 <p
                                   onClick={() =>
-                                    // navigate("/Draft-Process-View", {
-                                    //   state: {
-                                    //     id: parseInt(item.processId),
-                                    //     title: getProcessTitle(item.processId),
-                                    //     user: item,
-                                    //   },
-                                    // })
+
                                     navigate(`/Draft-Process-View/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
 
                                   }
@@ -585,20 +593,13 @@ const Dashboard = () => {
                               </>
                             ) : (
                               <>
-                               
+
                                 {/* Show Published and View Draft when role is Modeler */}
                                 {["User", "Modeler"].includes(item.role) && (
                                   <>
                                     {checkpublish && (
                                       <p
                                         onClick={() =>
-                                          // navigate("/published-map-level", {
-                                          //   state: {
-                                          //     id: parseInt(item.processId),
-                                          //     title: getProcessTitle(item.processId),
-                                          //     user: item,
-                                          //   },
-                                          // })
 
                                           navigate(`/published-map-level/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
 
@@ -610,13 +611,7 @@ const Dashboard = () => {
                                     )}
                                     <p
                                       onClick={() =>
-                                        // navigate("/Draft-Process-View", {
-                                        //   state: {
-                                        //     id: parseInt(item.processId),
-                                        //     title: getProcessTitle(item.processId),
-                                        //     user: item,
-                                        //   },
-                                        // })
+
                                         navigate(`/Draft-Process-View/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
 
                                       }
@@ -639,7 +634,7 @@ const Dashboard = () => {
                   {user && user.type !== "User" ? (
                     <div className="ss_add_process_div ss_1" style={{ height: `${slideHeight}px` }}>
                       <div style={{ width: "100%" }}>
-                        <p style={{margin:0}}>
+                        <p style={{ margin: 0 }}>
                           Add process world
                         </p>
                         <div className="ss_dash_slid_img">
@@ -668,24 +663,28 @@ const Dashboard = () => {
                         border: "1px solid #ddd",
                       }}
                     >
-                      {/* Three dots menu */}
-                      <IconButton
-                        sx={{ position: "absolute", top: 10, right: 10 }}
-                        onClick={(event) => handleOpenMenu(event, item)}
-                      >
-                        <MoreVertIcon />
-                      </IconButton>
-
+                   
+                      <div className="menu_button" onClick={(e) => handleOpenMenu(e, item)}>
+                        <div className="circle_icon">
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="white">
+                            <path d="M7 10l5 5 5-5H7z" />
+                          </svg>
+                        </div>
+                      </div>
                       <label className="text_blue"> {getProcessTitle(item.processId)}</label>
+                      <div className="ss_title_underline"></div>
+                      <img
+                        src={getProcessImage(item.processId)}
+                        alt="Process Logo"
+                        className="process_logo"
+                      />
 
                       {/* React Flow Component */}
                       <div className="ss_dash_slid_img" onClick={() => NavigateOnClick(item)}>
                         {/* <img src="../../../img/dashboard-slider-image.jpg" alt="" /> */}
                         <MiniMapPreview processId={item.processId} userId={item.id} />
 
-                        <button>
-                          Preview Image of Level 1
-                        </button>
+
                       </div>
 
                       {/* Custom dropdown menu */}
@@ -711,13 +710,6 @@ const Dashboard = () => {
                                 {checkpublish && (
                                   <p
                                     onClick={() =>
-                                      // navigate("/published-map-level", {
-                                      //   state: {
-                                      //     id: parseInt(item.processId),
-                                      //     title: getProcessTitle(item.processId),
-                                      //     user: item,
-                                      //   },
-                                      // })
 
                                       navigate(`/published-map-level/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
 
@@ -730,13 +722,7 @@ const Dashboard = () => {
                                 )}
                                 <p
                                   onClick={() =>
-                                    // navigate("/Draft-Process-View", {
-                                    //   state: {
-                                    //     id: parseInt(item.processId),
-                                    //     title: getProcessTitle(item.processId),
-                                    //     user: item,
-                                    //   },
-                                    // })
+
                                     navigate(`/Draft-Process-View/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
 
                                   }
@@ -778,13 +764,7 @@ const Dashboard = () => {
                                     {checkpublish && (
                                       <p
                                         onClick={() =>
-                                          // navigate("/published-map-level", {
-                                          //   state: {
-                                          //     id: parseInt(item.processId),
-                                          //     title: getProcessTitle(item.processId),
-                                          //     user: item,
-                                          //   },
-                                          // })
+
                                           navigate(`/published-map-level/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
 
                                         }
@@ -795,13 +775,6 @@ const Dashboard = () => {
                                     )}
                                     <p
                                       onClick={() =>
-                                        // navigate("/Draft-Process-View", {
-                                        //   state: {
-                                        //     id: parseInt(item.processId),
-                                        //     title: getProcessTitle(item.processId),
-                                        //     user: item,
-                                        //   },
-                                        // })
 
                                         navigate(`/Draft-Process-View/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
 
@@ -825,17 +798,6 @@ const Dashboard = () => {
 
                   {user && user.type !== "User" && (
                     <div className="ss_add_process_div ss_2">
-                      <div style={{ width: "100%" }}>
-                        <p>Add process world</p>
-                        <div className="ss_add_proces_img" onClick={() => navigate('/Add-process-title')}>
-                          <img src="../../../img/plus.png" alt="profile img" />
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {user && user.type !== "User" && (
-                    <div className="ss_add_process_div ss_3" style={{ opacity: "0" }}>
                       <div style={{ width: "100%" }}>
                         <p>Add process world</p>
                         <div className="ss_add_proces_img" onClick={() => navigate('/Add-process-title')}>
@@ -905,7 +867,7 @@ const Dashboard = () => {
                           {/* <td onClick={() => handlefavClick(item.process_id, item.node?.user_id, item.parentId, item.PageGroupId,label)}>
                             {label || "-"}
                           </td> */}
-                           <td onClick={() => handlefavClick(item.process_id, item.user_id, item.parentId, item.PageGroupId,label)}>
+                          <td onClick={() => handlefavClick(item.process_id, item.user_id, item.parentId, item.PageGroupId, label)}>
                             {label || "-"}
                           </td>
                           <td>{formattedDate(publishedDates[item.process_id])}</td>

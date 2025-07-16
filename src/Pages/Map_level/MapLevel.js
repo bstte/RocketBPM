@@ -31,6 +31,7 @@ import { useSelector } from "react-redux";
 import "../../Css/MapLevel.css";
 import StickyNote from "../../AllNode/StickyNote";
 import StickyNoteModel from "../../components/StickyNoteModel";
+import VersionPopup from "./VersionPopup";
 const MapLevel = () => {
   const [totalHeight, setTotalHeight] = useState(0);
   const [windowHeight, setWindowHeight] = useState(window.innerHeight);
@@ -79,6 +80,8 @@ const MapLevel = () => {
   const LoginUser = useSelector((state) => state.user.user);
   const { id, title, user, ParentPageGroupId } = location.state || {};
   const currentLevel = level ? parseInt(level, 10) : 0;
+  const [showVersionPopup, setShowVersionPopup] = useState(false);
+
   const currentParentId = parentId || null;
   const { addBreadcrumb, removeBreadcrumbsAfter } = useContext(BreadcrumbsContext);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -91,8 +94,8 @@ const MapLevel = () => {
   const [getPublishedDate, setgetPublishedDate] = useState("");
   const [getDraftedDate, setDraftedDate] = useState("");
   const [process_img, setprocess_img] = useState("");
-    const [process_udid, setprocess_udid] = useState("");
-  
+  const [process_udid, setprocess_udid] = useState("");
+
   const [contextMenuPosition, setContextMenuPosition] = useState({
     x: 0,
     y: 0,
@@ -113,7 +116,7 @@ const MapLevel = () => {
     () => ({
       progressArrow: (props) => <ArrowBoxNode {...props} selectedNodeId={selectedNodeId} />,
       pentagon: (props) => <PentagonNode {...props} selectedNodeId={selectedNodeId} />,
-      StickyNote: (props) => <StickyNote {...props} selectedNodeId={selectedNodeId} />,
+      StickyNote: (props) => <StickyNote {...props} selectedNodeId={selectedNodeId} editable={true} />,
     }),
     [selectedNodeId]
   );
@@ -165,7 +168,7 @@ const MapLevel = () => {
 
 
   useEffect(() => {
-   
+
     const fetchNodes = async () => {
       try {
         const levelParam =
@@ -181,7 +184,7 @@ const MapLevel = () => {
           api.GetPublishedDate(levelParam, parseInt(user_id), Process_id, draftStatus),
           api.getNodes(levelParam, parseInt(user_id), Process_id),
         ]);
-console.log("data",data)
+        console.log("data", data)
         if (publishedResponse.status === true) {
           setgetPublishedDate(publishedResponse.created_at || "");
         } else {
@@ -209,7 +212,9 @@ console.log("data",data)
               autoFocus: true,
               nodeResize: true,
               node_id: node.node_id,
-              isClickable: false
+              isClickable: false,
+              LinkToStatus: node.LinkToStatus,
+
             },
             type: node.type,
             id: node.node_id,
@@ -235,7 +240,7 @@ console.log("data",data)
         alert("Failed to fetch object. Please refresh this page.");
       }
     };
-  
+
     fetchNodes();
   }, [
     currentLevel,
@@ -249,7 +254,7 @@ console.log("data",data)
   ]);
 
 
-  useEffect(()=>{
+  useEffect(() => {
     const checkfav = async () => {
       const user_id = LoginUser ? LoginUser.id : null;
       const process_id = id ? id : null;
@@ -258,8 +263,8 @@ console.log("data",data)
         return;
       }
       try {
-        const PageGroupId=nodes[0]?.PageGroupId;
-        const response = await checkFavProcess(user_id, process_id,PageGroupId);
+        const PageGroupId = nodes[0]?.PageGroupId;
+        const response = await checkFavProcess(user_id, process_id, PageGroupId);
         console.log("Response:", response);
         setIsFavorite(response.exists)
       } catch (error) {
@@ -267,7 +272,7 @@ console.log("data",data)
       }
     }
     checkfav()
-  },[LoginUser,id,nodes])
+  }, [LoginUser, id, nodes])
 
 
   useEffect(() => {
@@ -305,10 +310,13 @@ console.log("data",data)
     const newNodeId = uuidv4();
     let PageGroupId;
     if (nodes.length === 0) {
-      PageGroupId = uuidv4();
+      // PageGroupId = uuidv4();
+      PageGroupId = Math.floor(100000000 + Math.random() * 900000000);
+
     } else {
       PageGroupId = nodes[0]?.PageGroupId;
     }
+    console.log("page groupid", PageGroupId)
     const newNode = {
       id:
         currentParentId !== null
@@ -335,12 +343,12 @@ console.log("data",data)
             prevNodes.map((node) =>
               node.id === id
                 ? {
-                    ...node,
-                    data: {
-                      ...node.data,
-                      width_height: size,
-                    },
-                  }
+                  ...node,
+                  data: {
+                    ...node.data,
+                    width_height: size,
+                  },
+                }
                 : node
             )
           );
@@ -368,6 +376,14 @@ console.log("data",data)
   };
   const deleteNode = useCallback(() => {
     if (selectedNode) {
+      if (checkRecord?.status === true) {
+        // 👉 Prevent delete — show info alert only
+        CustomAlert.warning(
+          "Cannot Delete",
+          "This node has objects inside. Please delete them first."
+        );
+        return; 
+      }
       CustomAlert.confirm(
         "Delete Node",
         "Are you sure you want to delete this node?",
@@ -388,9 +404,9 @@ console.log("data",data)
   }, [selectedNode, setNodes, setEdges, title]);
   const handleNodeRightClick = async (event, node) => {
     setShowContextMenu(false);
-    if (node.type === "StickyNote") {
-      return;
-    }
+    // if (node.type === "StickyNote") {
+    //   return;
+    // }
     event.preventDefault();
     const newLevel = currentLevel + 1;
     const levelParam =
@@ -435,7 +451,7 @@ console.log("data",data)
             //   state: { id, title: selectedLabel, user, ParentPageGroupId: nodes[0]?.PageGroupId },
             // });
             navigate(
-            `/Draft-Process-View/${newLevel}/${selectedNode}/${id}?title=${selectedLabel}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${nodes[0]?.PageGroupId}`
+              `/Draft-Process-View/${newLevel}/${selectedNode}/${id}?title=${selectedLabel}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${nodes[0]?.PageGroupId}`
             )
           } else {
             navigate(`/level/${newLevel}/${selectedNode}`, {
@@ -501,11 +517,14 @@ console.log("data",data)
     const user_id = user && user.id;
     const Process_id = id && id;
     const datasavetype = savetype;
+    const LoginUserId = LoginUser ? LoginUser.id : null;
+
     try {
       const response = await api.saveNodes({
         Level,
         user_id,
         Process_id,
+        LoginUserId,
         datasavetype,
         nodes: nodes.map(
           ({
@@ -601,7 +620,10 @@ console.log("data",data)
   const handleContextMenuOptionClick = (type) => {
     setShowContextMenu(false);
     if (type === "StickyNote") {
+
       setIsModalOpen(true);
+      setModalText("")
+      console.log("modalText", modalText)
 
     } else {
       addNode(type, { x: OriginalPosition.x, y: OriginalPosition.y });
@@ -660,7 +682,7 @@ console.log("data",data)
     }
     return true;
   };
-  
+
   const styles = {
     appContainer: {
       display: "flex",
@@ -675,7 +697,7 @@ console.log("data",data)
       // borderLeft: "1px solid #002060",
       // borderRight: "1px solid #002060",
       // borderBottom: "1px solid #002060",
-      
+
       border: '2px solid #FF364A',
     },
     flowContainer: {
@@ -698,17 +720,17 @@ console.log("data",data)
       return;
     }
 
-    const PageGroupId=nodes[0]?.PageGroupId;
+    const PageGroupId = nodes[0]?.PageGroupId;
 
 
     try {
       if (isFavorite) {
 
-        const response = await removeFavProcess(user_id, process_id,PageGroupId);
+        const response = await removeFavProcess(user_id, process_id, PageGroupId);
         setIsFavorite(false);
         console.log("Removed from favorites:", response);
       } else {
-        const response = await addFavProcess(user_id, process_id, type,PageGroupId,currentParentId);
+        const response = await addFavProcess(user_id, process_id, type, PageGroupId, currentParentId);
         setIsFavorite(true);
         console.log("Added to favorites:", response);
       }
@@ -722,7 +744,7 @@ console.log("data",data)
       if (id && user) {
         if (currentLevel === 0) {
           navigate(`/Draft-Process-View/${id}?title=${encodeURIComponent(title)}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${ParentPageGroupId}`
-        )
+          )
           // navigate('/Draft-Process-View', { state: { id: id, title: title, user: user } })
         } else {
           navigate(`/Draft-Process-View/${currentLevel}/${currentParentId}/${id}?title=${encodeURIComponent(title)}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${ParentPageGroupId}`)
@@ -759,13 +781,14 @@ console.log("data",data)
       );
     }
   };
+  // console.log("nodes",nodes)
   const handleNodeClick = (event, node) => {
     setSelectedNodeId(node.id);
-    if (node.type === "StickyNote") {
-      setSelectedNodeStickyNoteId(node.id);
-      setModalText(node.data.label || "");
-      setIsModalOpen(true)
-    }
+    // if (node.type === "StickyNote") {
+    //   setSelectedNodeStickyNoteId(node.id);
+    //   setModalText(node.data.label || "");
+    //   setIsModalOpen(true)
+    // }
   };
   const handleTextSubmit = (enteredText) => {
     setIsModalOpen(false);
@@ -783,6 +806,16 @@ console.log("data",data)
       addNode("StickyNote", { x: OriginalPosition.x, y: OriginalPosition.y }, enteredText);
 
     }
+  };
+
+  // ye common page h
+  const navigateToVersion = (process_id, level, version) => {
+    const encodedTitle = encodeURIComponent("swimlane");
+    navigate(`/Draft-Process-Version/${process_id}/${level}/${version}/${encodedTitle}`);
+  };
+
+  const handleVersionClick = () => {
+    setShowVersionPopup(true);
   };
   return (
     <div>
@@ -803,6 +836,8 @@ console.log("data",data)
         isFavorite={isFavorite}
         Process_img={process_img}
         checkpublish={checkpublish}
+        onShowVersion={handleVersionClick}
+
       />
       {/* <button onClick={checkbreadcrums}>
         Test
@@ -868,27 +903,44 @@ console.log("data",data)
             </div>
           </div>
           <div style={{
-  position: "absolute",
-  bottom: "10px",
-  left: "20px",
-  margin: "20px",
-  fontSize: "18px",
-  color: "#002060",
-  fontFamily: "'Poppins', sans-serif",
-  display: "flex",
-  alignItems: "center",
-  gap: "8px"  // Optional spacing between image and text
-}}>
-  <img 
-    src={`${process.env.PUBLIC_URL}/img/rocket-solid.svg`} 
-    alt="Rocket" 
-    style={{ width: "20px", height: "20px" }}  // optional: control image size
-  />
-  {process_udid && (
+            position: "absolute",
+            bottom: "10px",
+            left: "10px",
+            margin: "20px",
+            fontSize: "18px",
+            color: "#002060",
+            fontFamily: "'Poppins', sans-serif",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px"  // Optional spacing between image and text
+          }}>
+            <img
+              src={`${process.env.PUBLIC_URL}/img/rocket-solid.svg`}
+              alt="Rocket"
+              style={{ width: "16px", height: "16px" }}  // optional: control image size
+            />
+            {/* {process_udid && (
     <span>ID {process_udid}</span>
-  )}
-</div>
+  )} */}
+
+            <span>
+              ID {nodes && nodes.length > 0 ? nodes[0].PageGroupId : ""}
+            </span>
+
+          </div>
         </div>
+
+
+        {showVersionPopup && (
+          <VersionPopup
+            processId={id}
+            currentLevel={currentLevel}
+            onClose={() => setShowVersionPopup(false)}
+            currentParentId={currentParentId}
+            viewVersion={navigateToVersion}
+            LoginUser={LoginUser}
+          />
+        )}
       </ReactFlowProvider>
     </div>
   );

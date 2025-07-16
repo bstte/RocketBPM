@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './Login.css'; // Import the CSS file for styling
@@ -16,6 +16,16 @@ const Login = () => {
   ? location.state.from.pathname + (location.state.from.search || '')
   : '/dashboard';
   
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const emailParam = params.get('email');
+    if (emailParam) {
+      setEmail(emailParam);
+    }
+  }, []);
+
+
   const handleLogin = async (e) => {
     e.preventDefault();
     try {

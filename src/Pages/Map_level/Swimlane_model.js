@@ -36,6 +36,8 @@ import '../../Css/Swimlane.css';
 import { useSelector } from "react-redux";
 import TextInputModal from "../../components/TextInputModal";
 import StickyNoteModel from "../../components/StickyNoteModel";
+import VersionPopup from "./VersionPopup";
+import StickyNote from "../../AllNode/StickyNote";
 // import apiExports from "../../API/api";
 
 const SwimlaneModel = () => {
@@ -67,8 +69,8 @@ const SwimlaneModel = () => {
   const [KeepOldPosition, setKeepOldPosition] = useState(null);
   const [isFavorite, setIsFavorite] = useState(false);
   const [process_img, setprocess_img] = useState("");
-      const [process_udid, setprocess_udid] = useState("");
-  
+  const [process_udid, setprocess_udid] = useState("");
+
   const [StickyNoteModeltext, setStickyNoteModeltext] = useState("");
 
 
@@ -131,6 +133,7 @@ const SwimlaneModel = () => {
   const [selectedNodeId, setSelectedNodeId] = useState(null);
   const [selectedNodefreetextId, setSelectedNodefreetextId] = useState(null);
   const [selectedNodeStickyNoteId, setSelectedNodeStickyNoteId] = useState(null);
+  const [showVersionPopup, setShowVersionPopup] = useState(false);
 
   const [selectedEdge, setSelectedEdge] = useState(null);
   const [getPublishedDate, setgetPublishedDate] = useState("");
@@ -203,7 +206,7 @@ const SwimlaneModel = () => {
       try {
         const PageGroupId = ChildNodes[0]?.PageGroupId;
         const response = await checkFavProcess(user_id, process_id, PageGroupId);
-        console.log("Response:", response);
+        // console.log("Response:", response);
         setIsFavorite(response.exists)
       } catch (error) {
         console.error("check fav error:", error);
@@ -252,7 +255,7 @@ const SwimlaneModel = () => {
           const parsedData = JSON.parse(node.data);
           const parsedPosition = JSON.parse(node.position);
           const parsedMeasured = JSON.parse(node.measured);
-          console.log('parsedMeasured: ' + parsedMeasured);
+          // console.log('parsedMeasured: ' + parsedMeasured);
           let centeredPosition = parsedPosition || { x: 0, y: 0 };
 
           // Parent node positioning
@@ -274,7 +277,7 @@ const SwimlaneModel = () => {
           }
 
           const nodeStyle =
-            node.type === "Yes" || node.type === "No" || node.type === "FreeText"
+            node.type === "Yes" || node.type === "No" || node.type === "FreeText" || node.type === "StickyNote"
               ? {} // No styles applied for these node types
               : {
                 width: groupWidth,
@@ -335,7 +338,7 @@ const SwimlaneModel = () => {
         });
 
         // isInitialLoad.current = false;
-        console.log("on load time data", data);
+        // console.log("on load time data", data);
         setChiledNodes(parsedNodes);
         setEdges(parsedEdges);
       } catch (error) {
@@ -371,9 +374,7 @@ const SwimlaneModel = () => {
     (params) => {
       const sourceNode = ChildNodesRef.current.find((node) => node.node_id === params.source);
       const targetNode = ChildNodesRef.current.find((node) => node.node_id === params.target);
-      console.log("params", params);
-      console.log("sourceNode", sourceNode);
-      console.log("targetNode", targetNode);
+
 
       // console.log('Current ChildNodes:', ChildNodesRef.current);
 
@@ -386,7 +387,6 @@ const SwimlaneModel = () => {
 
       const edgeType = (isSameRow || isSameColumn) ? "default" : "step";
 
-      console.log("on connecting edge type", edgeType)
       setEdges((eds) =>
         addEdge(
           {
@@ -419,18 +419,10 @@ const SwimlaneModel = () => {
   const handleNodeClick = useCallback(
     (event, node) => {
       setSelectedEdge(null);
+      setSelectedNodeId(node.id);
+
       setOptions([]);
-      if (node.type === "FreeText") {
-        setSelectedNodefreetextId(node.id);
-        setModalText(node.data.label || ""); // Store existing text
 
-        setIsModalOpen(true)
-      } else if (node.type === "StickyNote") {
-
-        setSelectedNodeStickyNoteId(node.id)
-        setStickyNoteModeltext(node.data.label || "");
-        setIsModalOpenStickyNode(true)
-      }
 
     },
 
@@ -464,7 +456,9 @@ const SwimlaneModel = () => {
     let PageGroupId;
 
     if (ChildNodes.length === 0) {
-      PageGroupId = uuidv4();
+      // PageGroupId = uuidv4();
+      PageGroupId = Math.floor(100000000 + Math.random() * 900000000);
+
     } else {
       PageGroupId = ChildNodes[0]?.PageGroupId;
     }
@@ -500,7 +494,6 @@ const SwimlaneModel = () => {
         status: "draft",
         PageGroupId: PageGroupId,
       };
-      console.log("after adding value,", newNode)
 
       setChiledNodes((nds) => [...nds, newNode]);
       setHasUnsavedChanges(true);
@@ -592,15 +585,19 @@ const SwimlaneModel = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const memoizedNodeTypes = useMemo(() => nodeTypes, [nodeTypes]);
+  const memoizedNodeTypes = useMemo(() => ({
+    ...NodeTypes,
+    StickyNote: (props) => <StickyNote {...props} selectedNodeId={selectedNodeId} editable={true} />,
+  }), [selectedNodeId]);
+
   const memoizedEdgeTypes = useMemo(() => edgeTypes, [edgeTypes]);
 
   const handleSaveNodes = async (savetype) => {
-    console.log("ChildNodes", ChildNodes);
+    // console.log("ChildNodes", ChildNodes);
     if (savetype === "Published" && currentLevel !== 0) {
       try {
         const response = await filter_draft(ParentPageGroupId);
-        console.log("inside first", response)
+        // console.log("inside first", response)
         if (response.data === true) {
           alert("Publish all parent models first");
           return false;
@@ -612,7 +609,6 @@ const SwimlaneModel = () => {
       }
     }
 
-    console.log("direct outside,")
 
     const Level =
       currentParentId !== null
@@ -621,6 +617,7 @@ const SwimlaneModel = () => {
     const user_id = user && user.id;
     const Process_id = id && id;
     const datasavetype = savetype;
+    const LoginUserId = LoginUser ? LoginUser.id : null;
 
     try {
       const response = await api.saveNodes({
@@ -628,6 +625,7 @@ const SwimlaneModel = () => {
         user_id,
         Process_id,
         datasavetype,
+        LoginUserId,
         nodes: ChildNodes.map(
           ({
             id,
@@ -760,10 +758,17 @@ const SwimlaneModel = () => {
   };
 
   const handleNodeRightClick = (event, node) => {
+    console.log("node id", node)
     setSelectedEdge(null);
     if (node.Page_Title === "Swimlane") {
       setOptions([]);
-      setSelectedNodeId(node.node_id);
+      if (node.node_id) {
+        setSelectedNodeId(node.node_id);
+
+      } else {
+        setSelectedNodeId(node.id);
+
+      }
 
       setdetailschecking(node);
       event.preventDefault();
@@ -793,7 +798,7 @@ const SwimlaneModel = () => {
       } else if (row === 6 && col > 0) {
         options = ["Add Process"];
       } else {
-        options = ["Add Activity", "Add Decision", "Sticky Note"];
+        options = ["Add Activity", "Add Decision", "Add Sticky Note"];
         // options = ["Add Activity", "Add Decision"];
 
       }
@@ -857,7 +862,7 @@ const SwimlaneModel = () => {
 
 
   const handleNodeDragStop = (event, node) => {
-    console.log("old nodes ", node);
+    // console.log("old nodes ", node);
 
     if (node.id.startsWith("Level")) {
       // Find the nearest parent node
@@ -1002,10 +1007,11 @@ const SwimlaneModel = () => {
     console.log("check data filteredNodes data", data)
 
     const filteredNodes = data.nodes.filter(
-      (node) => node.node_id !== currentParentId
+      (node) => node.type !== "StickyNote",
+      (node) => node.node_id !== currentParentId,
     );
     setLinknodeList(filteredNodes);
-    console.log("check data filteredNodes", filteredNodes)
+    // console.log("check data filteredNodes", filteredNodes)
     setIsCheckboxPopupOpen(true);
   };
 
@@ -1021,13 +1027,13 @@ const SwimlaneModel = () => {
     const Process_id = id ? id : null;
     const data = await api.getexistingrole(levelParam, parseInt(user_id), Process_id);
 
-    console.log("check data getexistingrole data", data)
+    // console.log("check data getexistingrole data", data)
 
     const filteredNodes = data.AllexistingRole.filter(
       (node) => node.node_id !== currentParentId
     );
     setLinkexistingRole(filteredNodes);
-    console.log("check data getexistingrole", filteredNodes)
+    // console.log("check data getexistingrole", filteredNodes)
     setIsexistingroleCheckboxPopupOpen(true);
   };
 
@@ -1057,13 +1063,13 @@ const SwimlaneModel = () => {
       })
     );
   };
-  
+
   const saveSelectedNodes = () => {
     if (selectedLinknodeIds) {
       setChiledNodes((nds) =>
         nds.map((node) => {
           if (node.id === selectedNodeId) {
-            console.log("link existin gmodel", node)
+            // console.log("link existin gmodel", node)
             return {
               ...node,
               data: {
@@ -1092,7 +1098,7 @@ const SwimlaneModel = () => {
 
     if (!enteredText) return;
 
-
+    console.log("selectedNodefreetextId", selectedNodefreetextId)
 
     // If selectedNodeId is null, create a new node
     if (selectedNodefreetextId) {
@@ -1124,14 +1130,36 @@ const SwimlaneModel = () => {
       });
       setSelectedNodeStickyNoteId(null)
     } else {
-      addNode("StickyNote", { x: modalPosition.x, y: modalPosition.y }, enteredText);
+      addNode("StickyNote", { x: position.x, y: position.y }, enteredText);
 
     }
   };
 
+  const UpdateText = () => {
+    const data = ChildNodes.find(
+      (node) => node.id === selectedNodeId
+    );
+
+    setSelectedNodefreetextId(data.id);
+    setModalText(data.data.label || "");
+    setIsModalOpen(true)
+    // console.log("this is free text udpate ",selectedNodeId)
+  }
+
+
+  const Updatestickynotes = () => {
+    const data = ChildNodes.find(
+      (node) => node.id === selectedNodeId
+    );
+
+    setSelectedNodeStickyNoteId(data.id)
+    setStickyNoteModeltext(data.data.label || "");
+    setIsModalOpenStickyNode(true)
+  }
+
   const handlePopupAction = (action) => {
     const { x, y } = contextMenu;
-    console.log("contextMenu", contextMenu);
+    // console.log("contextMenu", contextMenu);
 
     const edgeId = contextMenu.edgeId;
     if (action === "Yes") {
@@ -1140,7 +1168,7 @@ const SwimlaneModel = () => {
       addNode("No", { x: x - 70, y: y - 125 }, edgeId);
     } else if (action === "addFreeText") {
       setIsModalOpen(true);
-
+      setModalText("")
       setModalPosition({ x, y }); // Store x, y in state
 
     } else if (action === "addDetails") {
@@ -1155,7 +1183,9 @@ const SwimlaneModel = () => {
       detailschecking?.type !== "progressArrow" &&
       detailschecking?.type !== "Yes" &&
       detailschecking?.type !== "No" &&
-      detailschecking?.type !== "FreeText"
+      detailschecking?.type !== "FreeText" &&
+      detailschecking?.type !== "StickyNote"
+
       ? [
         {
           label:
@@ -1209,6 +1239,27 @@ const SwimlaneModel = () => {
       ]
       : []),
 
+
+    ...(detailschecking?.type === "FreeText"
+      ? [
+        {
+          label: "Edit Text",
+          action: () => UpdateText(),
+          borderBottom: true,
+        },
+      ]
+      : []),
+
+    ...(detailschecking?.type === "StickyNote"
+      ? [
+        {
+          label: "Edit Sticky Note",
+          action: () => Updatestickynotes(),
+          borderBottom: true,
+        },
+      ]
+      : []),
+
     {
       label: "Delete",
       action: handleDeleteNode,
@@ -1217,7 +1268,17 @@ const SwimlaneModel = () => {
   ];
 
   const iconNames = {};
+  // if (node.type === "FreeText") {
+  //   setSelectedNodefreetextId(node.id);
+  //   setModalText(node.data.label || ""); 
 
+  //   setIsModalOpen(true)
+  // } else if (node.type === "StickyNote") {
+
+  //   setSelectedNodeStickyNoteId(node.id)
+  //   setStickyNoteModeltext(node.data.label || "");
+  //   setIsModalOpenStickyNode(true)
+  // }
   const deleteEdge = () => {
     setEdges((eds) => eds.filter((e) => e.id !== selectedEdge.id));
     setSelectedEdge(null);
@@ -1232,6 +1293,7 @@ const SwimlaneModel = () => {
   const onEdgeClick = useCallback((event, edge) => {
     const { clientX, clientY } = event;
     setPosition({ x: clientX, y: clientY });
+    console.log("asdf", event)
     setMenuVisible(false);
     setOptions([]);
     setSelectedEdge(edge);
@@ -1253,8 +1315,9 @@ const SwimlaneModel = () => {
       addNode("progressArrow");
     }
 
-    else if (option === "Sticky Note") {
+    else if (option === "Add Sticky Note") {
       setIsModalOpenStickyNode(true)
+      setStickyNoteModeltext("")
     }
 
     setOptions([]);
@@ -1341,6 +1404,17 @@ const SwimlaneModel = () => {
       console.error("Favorite toggle error:", error);
     }
   };
+
+  // ye common page h
+  const navigateToVersion = (process_id, level, version) => {
+    const encodedTitle = encodeURIComponent("swimlane");
+    navigate(`/Draft-Process-Version/${process_id}/${level}/${version}/${encodedTitle}`);
+  };
+
+
+  const handleVersionClick = () => {
+    setShowVersionPopup(true);
+  };
   return (
 
     <div>
@@ -1360,6 +1434,7 @@ const SwimlaneModel = () => {
         isFavorite={isFavorite}
         Process_img={process_img}
         checkpublish={checkpublish}
+        onShowVersion={handleVersionClick}
 
       />
 
@@ -1527,63 +1602,63 @@ const SwimlaneModel = () => {
 
           {/* Existing Add role Popup */}
           {isexistingroleCheckboxPopupOpen && (
-  <div style={popupStyle.container} className="swimlanepopup">
-    <div style={popupStyle.header}>
-      <span>Add Existing Role</span>
-      <button
-        style={popupStyle.closeButton}
-        onClick={() => setIsexistingroleCheckboxPopupOpen(false)}
-        aria-label="Close"
-      >
-        ×
-      </button>
-    </div>
+            <div style={popupStyle.container} className="swimlanepopup">
+              <div style={popupStyle.header}>
+                <span>Add Existing Role</span>
+                <button
+                  style={popupStyle.closeButton}
+                  onClick={() => setIsexistingroleCheckboxPopupOpen(false)}
+                  aria-label="Close"
+                >
+                  ×
+                </button>
+              </div>
 
-    <input
-      type="text"
-      style={styles.searchInput}
-      placeholder="Search..."
-      value={ExistingrolesearchQuery}
-      onChange={(e) => setExistingrolesearchQuery(e.target.value)}
-    />
+              <input
+                type="text"
+                style={styles.searchInput}
+                placeholder="Search..."
+                value={ExistingrolesearchQuery}
+                onChange={(e) => setExistingrolesearchQuery(e.target.value)}
+              />
 
-    <div style={popupStyle.body}>
-      {filteredDataExistingrole.map((node) => {
-        const isSelected = selectedexistigrolenodeIds === node.node_id;
-        const title = node?.data?.details?.title || "Untitled";
+              <div style={popupStyle.body}>
+                {filteredDataExistingrole.map((node) => {
+                  const isSelected = selectedexistigrolenodeIds === node.node_id;
+                  const title = node?.data?.details?.title || "Untitled";
 
-        return (
-          <div
-            key={node.node_id}
-            onClick={() =>
-              handleexistingroleCheckboxChange(node.node_id, title)
-            }
-            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#e6f7ff")}
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.backgroundColor = isSelected ? "#f0f8ff" : "transparent")
-            }
-            style={{
-              ...popupStyle.label,
-              cursor: "pointer",
-              backgroundColor: isSelected ? "#f0f8ff" : "transparent",
-            }}
-          >
-            {title}
-          </div>
-        );
-      })}
-    </div>
+                  return (
+                    <div
+                      key={node.node_id}
+                      onClick={() =>
+                        handleexistingroleCheckboxChange(node.node_id, title)
+                      }
+                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#e6f7ff")}
+                      onMouseLeave={(e) =>
+                        (e.currentTarget.style.backgroundColor = isSelected ? "#f0f8ff" : "transparent")
+                      }
+                      style={{
+                        ...popupStyle.label,
+                        cursor: "pointer",
+                        backgroundColor: isSelected ? "#f0f8ff" : "transparent",
+                      }}
+                    >
+                      {title}
+                    </div>
+                  );
+                })}
+              </div>
 
-    <div style={popupStyle.footer}>
-      <button
-        onClick={() => setIsexistingroleCheckboxPopupOpen(false)}
-        style={popupStyle.saveButton}
-      >
-        Save
-      </button>
-    </div>
-  </div>
-)}
+              <div style={popupStyle.footer}>
+                <button
+                  onClick={() => setIsexistingroleCheckboxPopupOpen(false)}
+                  style={popupStyle.saveButton}
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          )}
 
 
           <TextInputModal
@@ -1607,27 +1682,63 @@ const SwimlaneModel = () => {
             />
           )}
 
-<div style={{
-  position: "absolute",
-  bottom: "10px",
-  left: "20px",
-  margin: "20px",
-  fontSize: "18px",
-  color: "#002060",
-  fontFamily: "'Poppins', sans-serif",
-  display: "flex",
-  alignItems: "center",
-  gap: "8px"  // Optional spacing between image and text
-}}>
-  <img 
-    src={`${process.env.PUBLIC_URL}/img/rocket-solid.svg`} 
-    alt="Rocket" 
-    style={{ width: "20px", height: "20px" }}  // optional: control image size
-  />
-  {process_udid && (
-    <span>ID {process_udid}</span>
-  )}
-</div>
+          {/* <div style={{
+            position: "absolute",
+            bottom: "0px",
+            left: "8px",
+            margin: "20px",
+            fontSize: "15px",
+            color: "#002060",
+            fontFamily: "'Poppins', sans-serif",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px"  // Optional spacing between image and text
+          }}>
+            <img
+              src={`${process.env.PUBLIC_URL}/img/rocket-solid.svg`}
+              alt="Rocket"
+              style={{ width: "20px", height: "20px" }}  // optional: control image size
+            />
+            {process_udid && (
+              <span>ID {process_udid}</span>
+            )}
+          </div> */}
+
+
+          <div style={{
+            position: "absolute",
+            bottom: "0px",
+            left: "8px",
+            margin: "20px",
+            fontSize: "15px",
+            color: "#002060",
+            fontFamily: "'Poppins', sans-serif",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px"  // Optional spacing between image and text
+          }}>
+            <img
+              src={`${process.env.PUBLIC_URL}/img/rocket-solid.svg`}
+              alt="Rocket"
+              style={{ width: "16px", height: "16px" }}  // optional: control image size
+            />
+         
+            <span>
+              ID {ChildNodes && ChildNodes.length > 0 ? ChildNodes[0].PageGroupId : ""}
+            </span>
+
+          </div>
+
+          {showVersionPopup && (
+            <VersionPopup
+              processId={id}
+              currentLevel={currentLevel}
+              onClose={() => setShowVersionPopup(false)}
+              currentParentId={currentParentId}
+              viewVersion={navigateToVersion}
+              LoginUser={LoginUser}
+            />
+          )}
         </ReactFlowProvider>
       </div>
     </div>

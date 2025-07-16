@@ -86,7 +86,10 @@ const ArrowBoxNode = ({ data, id, selectedNodeId }) => {
   }, [label, width, height, selectedNodeId]);
 
   return (
-    <div style={styles.wrapper}>
+    <div   style={{
+      ...styles.wrapper,
+      filter: data.LinkToStatus ? 'drop-shadow(0px 0px 10px #0000004f)' : 'none',
+    }}>
       <div
         className="borderBox"
         style={{

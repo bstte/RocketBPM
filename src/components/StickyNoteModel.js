@@ -3,13 +3,14 @@ import React, { useEffect, useState } from "react";
 const StickyNoteModel = ({ isOpen, onSubmit,initialValue }) => {
   const [text, setText] = useState(initialValue);
   useEffect(() => {
-    setText(initialValue); 
-  }, [initialValue]);
+    if (isOpen) {
+      setText(initialValue || "");
+    }
+  }, [isOpen, initialValue]);
 
   if (!isOpen) return null;
 
   const onOk=(textdata)=>{
-    setText("")
     onSubmit(textdata)
   }
 

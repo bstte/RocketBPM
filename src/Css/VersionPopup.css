@@ -1,0 +1,285 @@
+.version-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.version-popup {
+  position: relative;
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  z-index: 1000;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+  max-height: 90vh;
+  overflow-y: auto;
+  width: 600px;
+  display: flex;
+  flex-direction: column;
+}
+
+.version-popup h2,
+.version-popup h3 {
+  margin-bottom: 10px;
+}
+
+/* Header with title and close button */
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #999;
+  transition: color 0.3s ease;
+}
+
+.close-btn:hover {
+  color: #000;
+}
+
+/* Tabs */
+.tab-buttons {
+  display: flex;
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.tab-buttons button {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #002060;
+  background-color: white;
+  color: #002060;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: 0.3s ease;
+  font-weight: 500;
+}
+
+.tab-buttons button.active {
+  background-color: #002060;
+  color: white;
+}
+
+/* Tab Content */
+.tab-content {
+  margin-top: 10px;
+}
+
+/* Contact Tab */
+.contact-tab .contact-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.contact-tab input {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.contact-tab label {
+  min-width: 150px;
+  font-weight: 500;
+}
+
+.contact-tab button {
+  padding: 6px 12px;
+  background-color: #002060;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.contact-tab button:hover {
+  background-color: #001747;
+}
+
+/* Revision Tab */
+.revision-tab .ql-container {
+  height: 200px;
+}
+
+/* Version Tab */
+.version-tab ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.version-tab li {
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+  margin-bottom: 8px;
+}
+
+.version-tab strong {
+  display: inline-block;
+  min-width: 80px;
+}
+
+/* Action buttons */
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.actions button {
+  flex: 1;
+  background-color: #002060;
+  color: white;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  white-space: nowrap;
+  transition: background-color 0.3s ease;
+}
+
+.actions button:hover {
+  background-color: #001747;
+}
+
+.email-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.3);
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.email-popup {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  max-height: 80vh;
+  overflow-y: auto;
+  width: 450px;
+  box-shadow: 0 0 30px rgba(0,0,0,0.3);
+  position: relative;
+}
+
+.email-popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.popup-role {
+  color: #002060;
+  text-transform: capitalize;
+}
+
+.popup-close-btn {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #666;
+  transition: color 0.3s;
+}
+
+.popup-close-btn:hover {
+  color: #000;
+}
+
+.email-list-container {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+.email-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.email-item input[type="checkbox"] {
+  margin-right: 10px;
+}
+
+.email-item label {
+  flex: 1;
+  font-size: 14px;
+  color: #333;
+}
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.popup-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.save-btn {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.save-btn:hover {
+  background-color: #218838;
+}
+
+
+.email-chip {
+  display: inline-block;
+  background: #002060;
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 12px;
+  margin: 5px 5px 0 0;
+  font-size: 12px;
+}
+.email-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.email-chip {
+  background-color: #002060;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 13px;
+  white-space: nowrap;
+}

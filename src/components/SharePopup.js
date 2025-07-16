@@ -3,6 +3,8 @@ import React from 'react';
 import { copyLinkToClipboard, copyNameAndLinkToClipboard } from '../utils/shareHelper';
 
 const SharePopup = ({ processId, processName, onClose }) => {
+
+  console.log("process name",processName)
   const styles = {
     popup: {
       position: 'fixed',

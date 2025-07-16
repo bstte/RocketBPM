@@ -26,6 +26,7 @@ import { useSelector } from "react-redux";
 import apiExports from "../../../API/api";
 import StickyNote from "../../../AllNode/StickyNote";
 import SharePopup from "../../../components/SharePopup";
+import VersionPopupView from "../../../components/VersionPopupView";
 
 const DraftProcesMapLevel = () => {
 
@@ -33,6 +34,7 @@ const DraftProcesMapLevel = () => {
   const [windowHeight, setWindowHeight] = useState(window.innerHeight);
   const [process_img, setprocess_img] = useState("");
   const [process_udid, setprocess_udid] = useState("");
+  const [showVersionPopup, setShowVersionPopup] = useState(false);
 
   const [checkpublish, Setcheckpublish] = useState()
  const [showSharePopup, setShowSharePopup] = useState(false);
@@ -338,6 +340,10 @@ const DraftProcesMapLevel = () => {
   ]);
 
   const handlenodeClick = async (event, node) => {
+    console.log("node",node?.type)
+    if(node?.type ==="StickyNote"){
+      return;
+    }
     event.preventDefault();
     const selectedLabel = node.data.label || "";
     // const PageGroupId = node.PageGroupId;
@@ -434,6 +440,14 @@ const DraftProcesMapLevel = () => {
   };
 
 
+
+// ye common page h
+  const navigateToVersion = (process_id, level, version) => {
+    const encodedTitle = encodeURIComponent("swimlane");
+    navigate(`/Draft-Process-Version/${process_id}/${level}/${version}/${encodedTitle}`);
+  };
+  
+
   const styles = {
     appContainer: {
       display: "flex",
@@ -461,6 +475,10 @@ const DraftProcesMapLevel = () => {
   };
   const handleShareClick = () => {
     setShowSharePopup(true);
+    console.log("breadcrumbs",breadcrumbs)
+  };
+  const handleVersionClick = () => {
+    setShowVersionPopup(true);
   };
 
   return (
@@ -481,6 +499,7 @@ const DraftProcesMapLevel = () => {
         Procesuser={user}
         checkpublish={checkpublish}
         onShare={()=>handleShareClick()}
+        onShowVersion={handleVersionClick}
 
       />
       <ReactFlowProvider>
@@ -488,6 +507,27 @@ const DraftProcesMapLevel = () => {
           <div className="content-wrapper" style={styles.contentWrapper}>
 
             <div className="flow-container" style={styles.flowContainer}>
+
+            <div
+  style={{
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%) rotate(-35deg)", // Center + Diagonal tilt
+    fontSize: "72px", // Bigger for watermark effect
+    fontWeight: "bold",
+    color: "#0020601A", // 10% opacity for watermark style
+    fontFamily: "'Poppins', sans-serif",
+    zIndex: 0,
+    pointerEvents: "none",
+    whiteSpace: "nowrap",
+    textTransform: "uppercase", // Optional: for all caps
+    letterSpacing: "4px", // Optional: wider spacing
+  }}
+>
+  View Draft
+</div>
+
               <ReactFlow
                 nodes={nodes}
                 edges={edges}
@@ -513,7 +553,11 @@ const DraftProcesMapLevel = () => {
               ></ReactFlow>
             </div>
           </div>
-          <div style={{
+     
+
+
+          
+          {/* <div style={{
   position: "absolute",
   bottom: "10px",
   left: "20px",
@@ -533,16 +577,55 @@ const DraftProcesMapLevel = () => {
   {process_udid && (
     <span>ID {process_udid}</span>
   )}
+</div> */}
+
+<div style={{
+  position: "absolute",
+  bottom: "10px",
+  left: "10px",
+  margin: "20px",
+  fontSize: "18px",
+  color: "#002060",
+  fontFamily: "'Poppins', sans-serif",
+  display: "flex",
+  alignItems: "center",
+  gap: "8px"  // Optional spacing between image and text
+}}>
+  <img 
+    src={`${process.env.PUBLIC_URL}/img/rocket-solid.svg`} 
+    alt="Rocket" 
+    style={{ width: "16px", height: "16px" }}  // optional: control image size
+  />
+  {/* {process_udid && (
+    <span>ID {process_udid}</span>
+  )} */}
+
+<span>
+  ID {nodes && nodes.length > 0 ? nodes[0].PageGroupId : ""}
+</span>
+
 </div>
 
         </div>
          {showSharePopup && (
                 <SharePopup
                   processId={id}
-                  processName={`ProcessName: ${breadcrumbs.find(crumb => crumb.state?.id === "1")?.label}`}
+                  processName={`ProcessName: ${headerTitle}`}
                   onClose={() => setShowSharePopup(false)}
                 />
               )}
+
+{showVersionPopup && (
+  <VersionPopupView
+    processId={id}
+    currentLevel={currentLevel}
+    onClose={() => setShowVersionPopup(false)}
+    currentParentId={currentParentId}
+    viewVersion={navigateToVersion}  
+    LoginUser={LoginUser}
+    />
+)}
+
       </ReactFlowProvider>
     </div>
   );

@@ -21,47 +21,52 @@ const Popup = ({
       }}
     >
       <div className="newpopmenuitems" style={styles.popupTitle}>
-        {condition.status === true ? (
-          <button
-            onClick={() => handleCreateNewNode(condition.Page_Title)}
-            style={styles.popupButton}
-          >
-            Open Model
-          </button>
-        ) : (
+        {selectedNodeType !== "StickyNote" && (
           <>
-            <button
-              onClick={() => handleCreateNewNode("ProcessMap")}
-              style={styles.popupButton}
-            >
-              Create New Process Map Model
-            </button>
-            <button
-              onClick={() => handleCreateNewNode("Swimlane")}
-              style={styles.popupButton}
-            >
-              Create New Swimlane Model
-            </button>
+            {condition.status === true ? (
+              <button
+                onClick={() => handleCreateNewNode(condition.Page_Title)}
+                style={styles.popupButton}
+              >
+                Open Model
+              </button>
+            ) : (
+              <>
+                <button
+                  onClick={() => handleCreateNewNode("ProcessMap")}
+                  style={styles.popupButton}
+                >
+                  Create New Process Map Model
+                </button>
+                <button
+                  onClick={() => handleCreateNewNode("Swimlane")}
+                  style={styles.popupButton}
+                >
+                  Create New Swimlane Model
+                </button>
+              </>
+            )}
+
+
+
+            {selectedNodeType === "progressArrow" && (
+              <button
+                onClick={() => switchNodeType("pentagon")}
+                style={styles.popupButton}
+              >
+                {`Switch shape to Steer & Enable Process`}
+              </button>
+            )}
+            {selectedNodeType === "pentagon" && (
+              <button
+                onClick={() => switchNodeType("progressArrow")}
+                style={styles.popupButton}
+              >
+                {`Switch shape to Value Adding Process`}
+              </button>
+            )}
+
           </>
-        )}
-
-
-
-        {selectedNodeType === "progressArrow" && (
-          <button
-            onClick={() => switchNodeType("pentagon")}
-            style={styles.popupButton}
-          >
-            {`Switch shape to Steer & Enable Process`}
-          </button>
-        )}
-        {selectedNodeType === "pentagon" && (
-          <button
-            onClick={() => switchNodeType("progressArrow")}
-            style={styles.popupButton}
-          >
-            {`Switch shape to Value Adding Process`}
-          </button>
         )}
 
 

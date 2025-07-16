@@ -23,6 +23,7 @@ import '../../../Css/Swimlane.css'
 import { useSelector } from "react-redux";
 import apiExports from "../../../API/api";
 import SharePopup from "../../../components/SharePopup";
+import VersionPopupView from "../../../components/VersionPopupView";
 
 // const rfStyle = {
 //   width: "100%",
@@ -43,6 +44,7 @@ const DraftSwimlineLevel = () => {
   const location = useLocation();
   // const { id, title, user, parentId, level, ParentPageGroupId } = location.state || {};
    const [showSharePopup, setShowSharePopup] = useState(false);
+    const [showVersionPopup, setShowVersionPopup] = useState(false);
   
     const queryParams = new URLSearchParams(location.search);
     const title = queryParams.get("title");
@@ -385,6 +387,11 @@ const DraftSwimlineLevel = () => {
   const handleShareClick = () => {
     setShowSharePopup(true);
   };
+
+  const handleVersionClick = () => {
+    setShowVersionPopup(true);
+  };
+
   return (
     <div>
       <Header
@@ -403,6 +410,8 @@ const DraftSwimlineLevel = () => {
 
         checkpublish={checkpublish}
         onShare={()=>handleShareClick()}
+        onShowVersion={handleVersionClick}
+
 
       />
       <div class="maincontainer" style={{ ...styles.appContainer, height: remainingHeight }}>
@@ -436,33 +445,43 @@ const DraftSwimlineLevel = () => {
             <div style={{
   position: "absolute",
   bottom: "10px",
-  left: "20px",
+  left: "6px",
   margin: "20px",
-  fontSize: "18px",
+  fontSize: "15px",
   color: "#002060",
   fontFamily: "'Poppins', sans-serif",
   display: "flex",
   alignItems: "center",
   gap: "8px"  // Optional spacing between image and text
 }}>
-  <img 
-    src={`${process.env.PUBLIC_URL}/img/rocket-solid.svg`} 
-    alt="Rocket" 
-    style={{ width: "20px", height: "20px" }}  // optional: control image size
-  />
-  {process_udid && (
-    <span>ID {process_udid}</span>
-  )}
+  <img
+              src={`${process.env.PUBLIC_URL}/img/rocket-solid.svg`}
+              alt="Rocket"
+              style={{ width: "16px", height: "16px" }}  // optional: control image size
+            />
+         
+            <span>
+              ID {ChildNodes && ChildNodes.length > 0 ? ChildNodes[0].PageGroupId : ""}
+            </span>
 </div>
           </div>
           {showSharePopup && (
         <SharePopup
           processId={id}
-          processName={`ProcessName: ${breadcrumbs.find(crumb => crumb.state?.id === "1")?.label}`}
+          processName={`ProcessName: ${headerTitle}`}
           onClose={() => setShowSharePopup(false)}
         />
       )}
 
+{showVersionPopup && (
+  <VersionPopupView
+    processId={id}
+    currentLevel={currentLevel}
+    onClose={() => setShowVersionPopup(false)}
+    currentParentId={currentParentId}
+    LoginUser={LoginUser}
+  />
+)}
         </ReactFlowProvider>
       </div>
     </div>

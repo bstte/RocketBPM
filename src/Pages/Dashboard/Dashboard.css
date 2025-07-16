@@ -128,6 +128,25 @@
     left: 0;
     margin: auto;
 }
+.process_logo {
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+  }
+  .circle_icon {
+    background: #002060;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+  }
+  
 
 .MuiBox-root.css-1t50xtz p {
     font-size: 14px;

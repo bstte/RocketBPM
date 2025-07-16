@@ -267,7 +267,7 @@ const styles = {
     color: "white",
     background: "none",
     border: "none",
-    textDecoration: "underline",
+    // textDecoration: "underline",
     cursor: "pointer",
   },
   hoverhandle: {
