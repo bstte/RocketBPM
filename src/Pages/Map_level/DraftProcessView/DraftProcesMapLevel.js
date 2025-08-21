@@ -18,7 +18,7 @@ import {
 import "@xyflow/react/dist/style.css";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Header from "../../../components/Header";
-import api, { checkFavProcess } from "../../../API/api";
+import api, { addFavProcess, checkFavProcess, removeFavProcess } from "../../../API/api";
 import { BreadcrumbsContext } from "../../../context/BreadcrumbsContext";
 import PublishArrowBoxNode from "../../../AllNode/PublishAllNode/PublishArrowBoxNode";
 import PublishPentagonNode from "../../../AllNode/PublishAllNode/PublishPentagonNode";
@@ -27,6 +27,9 @@ import apiExports from "../../../API/api";
 import StickyNote from "../../../AllNode/StickyNote";
 import SharePopup from "../../../components/SharePopup";
 import VersionPopupView from "../../../components/VersionPopupView";
+import { useDynamicHeight } from "../../../hooks/useDynamicHeight";
+import useCheckFavorite from "../../../hooks/useCheckFavorite";
+import { usePageGroupIdViewer } from "../../../hooks/usePageGroupIdViewer";
 
 const DraftProcesMapLevel = () => {
 
@@ -37,39 +40,15 @@ const DraftProcesMapLevel = () => {
   const [showVersionPopup, setShowVersionPopup] = useState(false);
 
   const [checkpublish, Setcheckpublish] = useState()
- const [showSharePopup, setShowSharePopup] = useState(false);
+  const [showSharePopup, setShowSharePopup] = useState(false);
 
   const windowSize = {
     width: window.innerWidth - 300,
     height: window.innerHeight - 300,
   };
 
-  const [remainingHeight, setRemainingHeight] = useState(0);
+  const { remainingHeight } = useDynamicHeight();
 
-
-  useEffect(() => {
-    const calculateHeights = () => {
-      const element = document.querySelector(".ss_new_hed");
-      const element2 = document.querySelector(".app-header");
-
-      const elementHeight = element ? element.getBoundingClientRect().height : 0;
-      const appHeaderHeight = element2 ? element2.getBoundingClientRect().height : 0;
-
-      const newHeight = window.innerHeight - (elementHeight + appHeaderHeight);
-      setRemainingHeight(newHeight - 40);
-
-
-    };
-
-    // Initial setup
-    calculateHeights();
-
-    // Handle window resize
-    window.addEventListener("resize", calculateHeights);
-
-    // Cleanup on unmount
-    return () => window.removeEventListener("resize", calculateHeights);
-  }, []);
 
   useEffect(() => {
     const calculateHeight = () => {
@@ -93,7 +72,7 @@ const DraftProcesMapLevel = () => {
   }, []);
 
   const navigate = useNavigate();
-  const { level, parentId ,processId} = useParams();
+  const { level, parentId, processId } = useParams();
   const location = useLocation();
   const LoginUser = useSelector((state) => state.user.user);
 
@@ -112,9 +91,9 @@ const DraftProcesMapLevel = () => {
       return null;
     }
   }, [location.search]);
-  
-  
-    const id = processId; // string
+
+
+  const id = processId; // string
   const currentLevel = level ? parseInt(level, 10) : 0;
   const currentParentId = parentId || null;
   const { addBreadcrumb, removeBreadcrumbsAfter, breadcrumbs, setBreadcrumbs } =
@@ -130,7 +109,7 @@ const DraftProcesMapLevel = () => {
     () => ({
       progressArrow: PublishArrowBoxNode,
       pentagon: PublishPentagonNode,
-      StickyNote:StickyNote
+      StickyNote: StickyNote
     }),
     []
   );
@@ -160,9 +139,9 @@ const DraftProcesMapLevel = () => {
     // console.log("currentLevel",currentLevel)
     // const levelParam = 'Level0';
     const levelParam =
-    currentParentId !== null
-      ? `Level${currentLevel}_${currentParentId}`
-      : `Level${currentLevel}`;
+      currentParentId !== null
+        ? `Level${currentLevel}_${currentParentId}`
+        : `Level${currentLevel}`;
     const user_id = user ? user.id : null;
     const Process_id = processId ? processId : null;
     const data = await apiExports.checkPublishRecord(
@@ -170,28 +149,28 @@ const DraftProcesMapLevel = () => {
       parseInt(user_id),
       Process_id
     );
-  
+
     return data;
-  }, [user,currentLevel,currentParentId]); 
+  }, [user, currentLevel, currentParentId]);
 
   useEffect(() => {
     const checkpublishfunction = async () => {
       const processId = id ? id : null;
-  
+
       const data = await checkPublishData(processId);
-  
+
       Setcheckpublish(data?.status);
     };
-  
+
     checkpublishfunction();
   }, [checkPublishData, id]);
-  
 
-  
+
+
 
 
   useEffect(() => {
- 
+
     const fetchNodes = async () => {
       try {
         const levelParam =
@@ -218,9 +197,7 @@ const DraftProcesMapLevel = () => {
         } else {
           setgetPublishedDate("");
         }
-        console.log("testing",levelParam,
-          parseInt(user_id),
-          Process_id)
+
 
         setprocess_img(data.process_img)
         setprocess_udid(data.process_uid)
@@ -241,7 +218,7 @@ const DraftProcesMapLevel = () => {
               autoFocus: true,
               node_id: node.node_id,
               nodeResize: true,
-              LinkToStatus: node.LinkToStatus, 
+              LinkToStatus: node.LinkToStatus,
 
             },
             type: node.type,
@@ -283,33 +260,18 @@ const DraftProcesMapLevel = () => {
     id,
   ]);
 
-  useEffect(()=>{
-    const checkfav = async () => {
-      const user_id = LoginUser ? LoginUser.id : null;
-      const process_id = id ? id : null;
-      if (!user_id || !process_id) {
-        console.error("Missing required fields:", { user_id, process_id });
-        return;
-      }
-      try {
-        const PageGroupId=nodes[0]?.PageGroupId;
-        const response = await checkFavProcess(user_id, process_id,PageGroupId);
-        console.log("Response:", response);
-        setIsFavorite(response.exists)
-      } catch (error) {
-        console.error("check fav error:", error);
-      }
-    }
-    checkfav()
-  },[LoginUser,id,nodes])
-
+  useCheckFavorite({
+    id,
+    nodes,
+    setIsFavorite,
+  });
 
   useEffect(() => {
     const label = currentLevel === 0 ? title : title;
     const path =
-    currentLevel === 0
-    ? `/Draft-Process-View/${id}?title=${encodeURIComponent(title)}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${ParentPageGroupId}`
-    : `/Draft-Process-View/${currentLevel}/${currentParentId}/${id}?title=${encodeURIComponent(title)}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${ParentPageGroupId}`;
+      currentLevel === 0
+        ? `/Draft-Process-View/${id}?title=${encodeURIComponent(title)}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${ParentPageGroupId}`
+        : `/Draft-Process-View/${currentLevel}/${currentParentId}/${id}?title=${encodeURIComponent(title)}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${ParentPageGroupId}`;
 
 
     const state = {
@@ -340,8 +302,8 @@ const DraftProcesMapLevel = () => {
   ]);
 
   const handlenodeClick = async (event, node) => {
-    console.log("node",node?.type)
-    if(node?.type ==="StickyNote"){
+    console.log("node", node?.type)
+    if (node?.type === "StickyNote") {
       return;
     }
     event.preventDefault();
@@ -371,7 +333,7 @@ const DraftProcesMapLevel = () => {
         //   },
         // });
         navigate(
-        `/Draft-Process-View/${newLevel}/${node.id}/${id}?title=${selectedLabel}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${nodes[0]?.PageGroupId}`
+          `/Draft-Process-View/${newLevel}/${node.id}/${id}?title=${selectedLabel}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${nodes[0]?.PageGroupId}`
         )
       }
 
@@ -382,7 +344,7 @@ const DraftProcesMapLevel = () => {
         );
         navigate(`/Draft-Swim-lanes-View/level/${newLevel}/${node.id}/${id}?title=${encodeURIComponent(selectedLabel)}&user=${encodeURIComponent(JSON.stringify(user))}&parentId=${node.id}&level=${newLevel}&ParentPageGroupId=${nodes[0]?.PageGroupId}`)
 
-     
+
       }
     } else {
       alert("Next level not exist")
@@ -405,7 +367,7 @@ const DraftProcesMapLevel = () => {
   const iconNames = {};
 
   const navigateOnDraft = (page) => {
- 
+
     const updatedBreadcrumbs = breadcrumbs.map((crumb, index) => {
       if (index === 0) return crumb; // First breadcrumb remains unchanged
 
@@ -421,18 +383,19 @@ const DraftProcesMapLevel = () => {
     if (id && user) {
       if (currentLevel === 0) {
         page === "editdraft"
-          ? navigate('/Map-level', { state: { id, title, user ,ParentPageGroupId} })
-          : 
+          ? navigate(`/map-level/${id}?title=${encodeURIComponent(title || "")}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${ParentPageGroupId}`)
+          :
           // navigate('/published-map-level', { state: { id, title, user,ParentPageGroupId } });
           navigate(`/published-map-level/${id}?title=${title}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${ParentPageGroupId}`)
 
       } else {
         page === "editdraft"
-          ? navigate(`/level/${currentLevel}/${currentParentId}`, { state: { id, title, user ,ParentPageGroupId} })
-          : 
-          
+          ? navigate(`/level/${currentLevel}/${currentParentId}/${id}?title=${encodeURIComponent(title || "")}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${ParentPageGroupId}`)
+
+          :
+
           // navigate(`/published-map-level/${currentLevel}/${currentParentId}`, { state: { id, title, user,ParentPageGroupId } });
-         navigate(`/published-map-level/${currentLevel}/${currentParentId}/${id}?title=${encodeURIComponent(title)}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${ParentPageGroupId}`)
+          navigate(`/published-map-level/${currentLevel}/${currentParentId}/${id}?title=${encodeURIComponent(title)}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${ParentPageGroupId}`)
       }
     } else {
       alert("Currently not navigate on draft mode");
@@ -441,12 +404,12 @@ const DraftProcesMapLevel = () => {
 
 
 
-// ye common page h
+  // ye common page h
   const navigateToVersion = (process_id, level, version) => {
-    const encodedTitle = encodeURIComponent("swimlane");
+    const encodedTitle = encodeURIComponent("ProcessMap");
     navigate(`/Draft-Process-Version/${process_id}/${level}/${version}/${encodedTitle}`);
   };
-  
+
 
   const styles = {
     appContainer: {
@@ -475,10 +438,40 @@ const DraftProcesMapLevel = () => {
   };
   const handleShareClick = () => {
     setShowSharePopup(true);
-    console.log("breadcrumbs",breadcrumbs)
+    console.log("breadcrumbs", breadcrumbs)
   };
   const handleVersionClick = () => {
     setShowVersionPopup(true);
+  };
+
+
+  const handleFav = async () => {
+    const user_id = LoginUser ? LoginUser.id : null;
+    const process_id = id ? id : null;
+    const type = user ? user.type : null;
+
+    if (!user_id || !process_id || !type) {
+      console.error("Missing required fields:", { user_id, process_id, type });
+      return;
+    }
+
+    const PageGroupId = nodes[0]?.PageGroupId;
+
+
+    try {
+      if (isFavorite) {
+
+        const response = await removeFavProcess(user_id, process_id, PageGroupId);
+        setIsFavorite(false);
+        console.log("Removed from favorites:", response);
+      } else {
+        const response = await addFavProcess(user_id, process_id, type, PageGroupId, currentParentId);
+        setIsFavorite(true);
+        console.log("Added to favorites:", response);
+      }
+    } catch (error) {
+      console.error("Favorite toggle error:", error);
+    }
   };
 
   return (
@@ -498,8 +491,10 @@ const DraftProcesMapLevel = () => {
         Process_img={process_img}
         Procesuser={user}
         checkpublish={checkpublish}
-        onShare={()=>handleShareClick()}
+        onShare={() => handleShareClick()}
         onShowVersion={handleVersionClick}
+        savefav={handleFav}
+
 
       />
       <ReactFlowProvider>
@@ -508,25 +503,25 @@ const DraftProcesMapLevel = () => {
 
             <div className="flow-container" style={styles.flowContainer}>
 
-            <div
-  style={{
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%) rotate(-35deg)", // Center + Diagonal tilt
-    fontSize: "72px", // Bigger for watermark effect
-    fontWeight: "bold",
-    color: "#0020601A", // 10% opacity for watermark style
-    fontFamily: "'Poppins', sans-serif",
-    zIndex: 0,
-    pointerEvents: "none",
-    whiteSpace: "nowrap",
-    textTransform: "uppercase", // Optional: for all caps
-    letterSpacing: "4px", // Optional: wider spacing
-  }}
->
-  View Draft
-</div>
+              <div
+                style={{
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%) rotate(-35deg)", // Center + Diagonal tilt
+                  fontSize: "72px", // Bigger for watermark effect
+                  fontWeight: "bold",
+                  color: "#0020601A", // 10% opacity for watermark style
+                  fontFamily: "'Poppins', sans-serif",
+                  zIndex: 0,
+                  pointerEvents: "none",
+                  whiteSpace: "nowrap",
+                  textTransform: "uppercase", // Optional: for all caps
+                  letterSpacing: "4px", // Optional: wider spacing
+                }}
+              >
+                View Draft
+              </div>
 
               <ReactFlow
                 nodes={nodes}
@@ -553,78 +548,31 @@ const DraftProcesMapLevel = () => {
               ></ReactFlow>
             </div>
           </div>
-     
-
-
-          
-          {/* <div style={{
-  position: "absolute",
-  bottom: "10px",
-  left: "20px",
-  margin: "20px",
-  fontSize: "18px",
-  color: "#002060",
-  fontFamily: "'Poppins', sans-serif",
-  display: "flex",
-  alignItems: "center",
-  gap: "8px"  // Optional spacing between image and text
-}}>
-  <img 
-    src={`${process.env.PUBLIC_URL}/img/rocket-solid.svg`} 
-    alt="Rocket" 
-    style={{ width: "20px", height: "20px" }}  // optional: control image size
-  />
-  {process_udid && (
-    <span>ID {process_udid}</span>
-  )}
-</div> */}
-
-<div style={{
-  position: "absolute",
-  bottom: "10px",
-  left: "10px",
-  margin: "20px",
-  fontSize: "18px",
-  color: "#002060",
-  fontFamily: "'Poppins', sans-serif",
-  display: "flex",
-  alignItems: "center",
-  gap: "8px"  // Optional spacing between image and text
-}}>
-  <img 
-    src={`${process.env.PUBLIC_URL}/img/rocket-solid.svg`} 
-    alt="Rocket" 
-    style={{ width: "16px", height: "16px" }}  // optional: control image size
-  />
-  {/* {process_udid && (
-    <span>ID {process_udid}</span>
-  )} */}
-
-<span>
-  ID {nodes && nodes.length > 0 ? nodes[0].PageGroupId : ""}
-</span>
-
-</div>
+     {usePageGroupIdViewer(nodes)}
 
         </div>
-         {showSharePopup && (
-                <SharePopup
-                  processId={id}
-                  processName={`ProcessName: ${headerTitle}`}
-                  onClose={() => setShowSharePopup(false)}
-                />
-              )}
+        {showSharePopup && (
+          <SharePopup
+            processId={id}
+            processName={`${headerTitle}`}
+            onClose={() => setShowSharePopup(false)}
+          />
+        )}
 
-{showVersionPopup && (
-  <VersionPopupView
-    processId={id}
-    currentLevel={currentLevel}
-    onClose={() => setShowVersionPopup(false)}
-    currentParentId={currentParentId}
-    viewVersion={navigateToVersion}  
-    LoginUser={LoginUser}
-    />
-)}
+        {showVersionPopup && (
+          <VersionPopupView
+            processId={id}
+            currentLevel={currentLevel}
+            onClose={() => setShowVersionPopup(false)}
+            currentParentId={currentParentId}
+            viewVersion={navigateToVersion}
+            LoginUser={LoginUser}
+            title={headerTitle}
+            status={"draft"}
+            type={"ProcessMaps"}
+
+          />
+        )}
 
       </ReactFlowProvider>
     </div>

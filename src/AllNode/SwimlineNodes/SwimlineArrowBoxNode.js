@@ -1,7 +1,7 @@
 import { memo, useRef, useState, useEffect, useContext } from "react";
 import { Handle, Position } from "@xyflow/react";
 import ContentEditable from "react-contenteditable";
-import api, { getdataByNodeId } from "../../API/api";
+import api, { checkRecordWithGetLinkDraftData, getdataByNodeId } from "../../API/api";
 import { useNavigate } from "react-router-dom";
 import { BreadcrumbsContext } from "../../context/BreadcrumbsContext";
 
@@ -58,89 +58,98 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
     }
   }, [autoFocus]);
 
-  const handleLinkClick = async () => {
-    if (data.link) {
-      try {
+  useEffect(() => {
+    setTitle(data.details.title || "");
+  }, [data.details.title]);
+  
+  // const handleLinkClick = async () => {
+  //   if (data.link) {
+  //     try {
 
-        const response = await getdataByNodeId(data.link, "draft");
-        if (response.data && response.data.length > 0) {
-          const user_id = response.data[0].user_id;
-          const Process_id = response.data[0].Process_id;
-          const id = response.data[0].Process_id;
+  //       const response = await getdataByNodeId(data.link, "draft");
+  //       if (response.data && response.data.length > 0) {
+  //         const user_id = response.data[0].user_id;
+  //         const Process_id = response.data[0].Process_id;
+  //         const id = response.data[0].Process_id;
 
-          const user = {
-            id: response.data[0].user_id,
-          };
+  //         const user = {
+  //           id: response.data[0].user_id,
+  //         };
 
-          let newLevel = 1;
-          if (data.link !== null) {
-            const match = data.link.match(/^Level(\d+)/); 
-            if (match && match[1]) {
-              const currentLevel = parseInt(match[1], 10);
-              newLevel = currentLevel + 1;
-            }
-          }
+  //         let newLevel = 1;
+  //         if (data.link !== null) {
+  //           const match = data.link.match(/^Level(\d+)/);
+  //           if (match && match[1]) {
+  //             const currentLevel = parseInt(match[1], 10);
+  //             newLevel = currentLevel + 1;
+  //           }
+  //         }
 
-          const levelParam =
-            data.link !== null
-              ? `Level${newLevel}_${data.link}`
-              : `Level${newLevel}`;
-              console.log("newLevel",levelParam)
+  //         const levelParam =
+  //           data.link !== null
+  //             ? `Level${newLevel}_${data.link}`
+  //             : `Level${newLevel}`;
+  //         console.log("newLevel", levelParam)
 
-          const nodeData = await api.checkRecord(
-            levelParam,
-            parseInt(user_id),
-            Process_id
-          );
-          const nodeDataParsed = JSON.parse(response.data[0].data);
-          if (nodeData.status === true) {
-            removeBreadcrumbsAfter(1);
-            if (nodeData.Page_Title === "ProcessMap") {
-              navigate(`/level/${newLevel}/${data.link}`, {
-                state: {
-                  id,
-                  title: nodeDataParsed.label || "",
-                  user,
-                  ParentPageGroupId: response.data[0]?.PageGroupId,
-                },
-              });
-            }
-            if (nodeData.Page_Title === "Swimlane") {
-              addBreadcrumb(
-                `${nodeDataParsed.label || ""} `,
-                `/swimlane/level/${newLevel}/${data.link}`,
-                {
-                  id,
-                  title: nodeDataParsed.label || "",
-                  user,
-                  parentId: data.link,
-                  level: newLevel,
-                  ParentPageGroupId: response.data[0]?.PageGroupId,
-                }
-              );
+  //         const nodeData = await checkRecordWithGetLinkDraftData(
+  //           levelParam,
+  //           parseInt(user_id),
+  //           Process_id,
+  //           data.link
+  //         );
+  //         const nodeDataParsed = JSON.parse(response.data[0].data);
+  //         if (nodeData.status === true) {
+  //           removeBreadcrumbsAfter(1);
 
-              navigate(`/swimlane/level/${newLevel}/${data.link}`, {
-                state: {
-                  id,
-                  title: nodeDataParsed.label || "",
-                  user,
-                  parentId: data.link,
-                  level: newLevel,
-                  ParentPageGroupId: response.data[0]?.PageGroupId,
-                },
-              });
-            }
-          } else {
-            alert("First create next model of this existing model")
-          }
-        } else {
-          console.error("No data found in response.data");
-        }
-      } catch (error) {
-        console.error("Error fetching link data:", error);
-      }
-    }
-  };
+  //           const allNodes = nodeData.allNodes; // 👈 API se mila array
+  //           if (Array.isArray(allNodes) && allNodes.length > 0) {
+  //             // sabse highest level se start
+  //             allNodes.forEach((node) => {
+  //               const parsedData = JSON.parse(node.data || '{}');
+  //               const label = parsedData.label || '';
+  //               const node_id = node.node_id;
+  //               const process_id = node.Process_id;
+            
+  //               // ✅ Level number get karo
+  //               let currentLevel = 0;
+  //               const match = node_id.match(/^Level(\d+)/);
+  //               if (match && match[1]) {
+  //                 currentLevel = parseInt(match[1], 10);
+  //               }
+  //               const newLevel = currentLevel + 1;
+            
+  //               const user = { id: node.user_id };
+            
+  //               // ✅ URL banao
+  //               const url = `/Draft-Process-View/${newLevel}/${node_id}/${process_id}?title=${encodeURIComponent(label)}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${node.PageGroupId}`;
+  //           console.log("addbreadcrums time",node)
+  //               // ✅ Breadcrumb add karo
+  //               addBreadcrumb(label, url);
+  //             });
+  //           }
+            
+            
+  //           if (nodeData.Page_Title === "ProcessMap") {
+           
+  //             navigate(`/Draft-Process-View/${newLevel}/${data.link}/${id}?title=${encodeURIComponent(nodeDataParsed.label || "")}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${response.data[0]?.PageGroupId}`)
+
+  //           }
+  //           if (nodeData.Page_Title === "Swimlane") {
+         
+  //             navigate(`/Draft-Swim-lanes-View/level/${newLevel}/${data.link}/${id}?title=${encodeURIComponent(nodeDataParsed.label || "")}&user=${encodeURIComponent(JSON.stringify(user))}&parentId=${data.link}&level=${newLevel}&ParentPageGroupId=${response.data[0]?.PageGroupId}`)
+
+  //           }
+  //         } else {
+  //           alert("First create next model of this existing model")
+  //         }
+  //       } else {
+  //         console.error("No data found in response.data");
+  //       }
+  //     } catch (error) {
+  //       console.error("Error fetching link data:", error);
+  //     }
+  //   }
+  // };
 
   return (
     <div
@@ -150,12 +159,40 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Arrow Box */}
-      <div className="borderBox" style={styles.arrowBox}>
-        {!isEditing && data.link ? (
+      <div className="borderBox"  style={{
+    ...styles.arrowBox,
+    filter: data.link ? 'drop-shadow(0px 0px 10px #0000004f)' : 'none',
+  }}>
+        {/* {!isEditing && data.link ? (
           <div style={styles.textView}>
             {data.link && (
               <div>
                 <button style={styles.linkButton} onClick={handleLinkClick}>
+                  {data.details?.title}
+                </button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <ContentEditable
+            innerRef={contentEditableRef}
+            html={title}
+            onFocus={handleFocus}
+            onChange={(e) =>
+              handleChange({ target: { value: e.target.value } })
+            }
+            onBlur={handleBlur}
+            placeholder="Type title here..."
+            style={styles.label}
+          />
+        )} */}
+
+
+        {data.link ? (
+          <div style={styles.textView}>
+            {data.link && (
+              <div>
+                <button style={styles.linkButton} >
                   {data.details?.title}
                 </button>
               </div>
@@ -267,6 +304,7 @@ const styles = {
     color: "white",
     background: "none",
     border: "none",
+
     // textDecoration: "underline",
     cursor: "pointer",
   },

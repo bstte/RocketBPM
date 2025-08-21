@@ -23,8 +23,8 @@ import "@xyflow/react/dist/style.css";
 import { applyNodeChanges, applyEdgeChanges } from "@xyflow/react";
 import Header from "../../components/Header";
 import { v4 as uuidv4 } from "uuid";
-import { useLocation, useNavigate } from "react-router-dom";
-import api, { addFavProcess, checkFavProcess, filter_draft, removeFavProcess } from "../../API/api";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import api, { addFavProcess, checkFavProcess, checkRecordWithGetLinkDraftData, filter_draft, getdataByNodeId, getNextPageGroupId, removeFavProcess, saveProcessInfo } from "../../API/api";
 import CustomContextPopup from "../../components/CustomContextPopup";
 import DetailsPopup from "../../components/DetailsPopup";
 import NodeTypes from "./NodeTypes";
@@ -35,20 +35,42 @@ import { BreadcrumbsContext } from "../../context/BreadcrumbsContext";
 import '../../Css/Swimlane.css';
 import { useSelector } from "react-redux";
 import TextInputModal from "../../components/TextInputModal";
-import StickyNoteModel from "../../components/StickyNoteModel";
 import VersionPopup from "./VersionPopup";
 import StickyNote from "../../AllNode/StickyNote";
-// import apiExports from "../../API/api";
+import CustomAlert from "../../components/CustomAlert";
+import { useDynamicHeight } from "../../hooks/useDynamicHeight";
+import useCheckFavorite from "../../hooks/useCheckFavorite";
+import { useTranslation } from "../../hooks/useTranslation";
+import { usePageGroupIdViewer } from "../../hooks/usePageGroupIdViewer";
 
 const SwimlaneModel = () => {
   const [windowSize, setWindowSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
   });
+  const { level, parentId, processId } = useParams();
+  const t = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
-  const { id, title, user, parentId, level, ParentPageGroupId } =
-    location.state || {};
+  // const { id, title, user, parentId, level, ParentPageGroupId } =
+  //   location.state || {};
+
+  const queryParams = new URLSearchParams(location.search);
+  const title = queryParams.get("title");
+  const ParentPageGroupId = queryParams.get("ParentPageGroupId");
+  const user = useMemo(() => {
+    try {
+      const queryParams = new URLSearchParams(location.search);
+      const userParam = queryParams.get("user");
+      return userParam ? JSON.parse(decodeURIComponent(userParam)) : null;
+    } catch (e) {
+      console.error("Failed to parse user from query", e);
+      return null;
+    }
+  }, [location.search]);
+
+
+  const id = processId; // string
   const headerTitle = `${title} `;
   const currentParentId = parentId || null;
   const currentLevel = level ? parseInt(level, 10) : 0;
@@ -63,61 +85,23 @@ const SwimlaneModel = () => {
   const [LinkexistingRole, setLinkexistingRole] = useState([]);
 
   const [selectedLinknodeIds, setSelectedLinknodeIds] = useState([]);
-  const [selectedexistigrolenodeIds, setSelectedexistingrolenodeIds] = useState([]);
+  const [selectedexistigrolenodeId, setSelectedexistingrolenodeId] = useState("");
+
 
   const [getDraftedDate, setDraftedDate] = useState("");
   const [KeepOldPosition, setKeepOldPosition] = useState(null);
   const [isFavorite, setIsFavorite] = useState(false);
   const [process_img, setprocess_img] = useState("");
-  const [process_udid, setprocess_udid] = useState("");
-
   const [StickyNoteModeltext, setStickyNoteModeltext] = useState("");
-
-
-
   const LoginUser = useSelector((state) => state.user.user);
-  // const [mcheight, setmcHeight] = useState(0);
-  const [height, setHeight] = useState(0);
-  const [appheaderheight, setahHeight] = useState(0);
-  const [remainingHeight, setRemainingHeight] = useState(0);
+  const { height, appHeaderHeight, remainingHeight } = useDynamicHeight();
+
   const [selectedTitle, setSelectedTitle] = useState("");
 
-  useEffect(() => {
-    const calculateHeights = () => {
-      const element = document.querySelector(".ss_new_hed");
-      const element2 = document.querySelector(".app-header");
-      // const element3 = document.querySelector(".maincontainer");
 
-      // Ensure elements are found before accessing height
-      const elementHeight = element ? element.getBoundingClientRect().height : 0;
-      const appHeaderHeight = element2 ? element2.getBoundingClientRect().height : 0;
-      // const mainContainerHeight = element3 ? element3.getBoundingClientRect().height : 0;
-
-      setHeight(elementHeight);
-      setahHeight(appHeaderHeight);
-
-      // Correct calculation inside the function
-      const newHeight = window.innerHeight - (elementHeight + appHeaderHeight - 13);
-      setRemainingHeight(newHeight - 46);
-    };
-
-    // Initial setup
-    calculateHeights();
-
-    // Handle window resize
-    window.addEventListener("resize", calculateHeights);
-
-    // Cleanup on unmount
-    return () => window.removeEventListener("resize", calculateHeights);
-  }, []);
-
-  // alert(`Window Height: ${window.innerHeight}, App Div Height: ${appheaderheight}, Header Height: ${height}, New Height: ${remainingHeight}`);
-
-
-  // Pass updated heights into generateNodesAndEdges
   const { nodes: initialNodes } = useMemo(
-    () => generateNodesAndEdges(windowSize.width, windowSize.height, '', height + 10, appheaderheight, remainingHeight),
-    [windowSize, height, appheaderheight, remainingHeight]
+    () => generateNodesAndEdges(windowSize.width, windowSize.height, '', height + 10, appHeaderHeight, remainingHeight),
+    [windowSize, height, appHeaderHeight, remainingHeight]
   );
 
 
@@ -132,8 +116,8 @@ const SwimlaneModel = () => {
   const [selectedNode, setSelectedNode] = useState(null);
   const [selectedNodeId, setSelectedNodeId] = useState(null);
   const [selectedNodefreetextId, setSelectedNodefreetextId] = useState(null);
-  const [selectedNodeStickyNoteId, setSelectedNodeStickyNoteId] = useState(null);
   const [showVersionPopup, setShowVersionPopup] = useState(false);
+  const [versionPopupPayload, setversionPopupPayload] = useState("");
 
   const [selectedEdge, setSelectedEdge] = useState(null);
   const [getPublishedDate, setgetPublishedDate] = useState("");
@@ -151,7 +135,7 @@ const SwimlaneModel = () => {
 
   const [edges, setEdges] = useState([]);
   const isInitialLoad = useRef(true);
-  const nodeTypes = NodeTypes;
+  // const nodeTypes = NodeTypes;
   const edgeTypes = useMemo(
     () => ({
       smoothstep: SmoothStepEdge,
@@ -178,10 +162,14 @@ const SwimlaneModel = () => {
               ...node,
               data: {
                 ...node.data,
-                details: {
-                  ...node.data.details,
-                  title: newLabel,
-                },
+                ...(node.type === "StickyNote"
+                  ? { label: newLabel }
+                  : {
+                    details: {
+                      ...node.data.details,
+                      title: newLabel,
+                    },
+                  }),
               },
             };
           }
@@ -195,25 +183,11 @@ const SwimlaneModel = () => {
     [setChiledNodes, setHasUnsavedChanges]
   );
 
-  useEffect(() => {
-    const checkfav = async () => {
-      const user_id = LoginUser ? LoginUser.id : null;
-      const process_id = id ? id : null;
-      if (!user_id || !process_id) {
-        console.error("Missing required fields:", { user_id, process_id });
-        return;
-      }
-      try {
-        const PageGroupId = ChildNodes[0]?.PageGroupId;
-        const response = await checkFavProcess(user_id, process_id, PageGroupId);
-        // console.log("Response:", response);
-        setIsFavorite(response.exists)
-      } catch (error) {
-        console.error("check fav error:", error);
-      }
-    }
-    checkfav()
-  }, [LoginUser, id, ChildNodes])
+  useCheckFavorite({
+    id,
+    childNodes: ChildNodes,
+    setIsFavorite,
+  });
 
   useEffect(() => {
     const fetchNodes = async () => {
@@ -234,7 +208,7 @@ const SwimlaneModel = () => {
         setgetPublishedDate(publishedResponse.status ? publishedResponse.created_at || "" : "");
         setDraftedDate(draftResponse.status ? draftResponse.created_at || "" : "");
         setprocess_img(data.process_img);
-        setprocess_udid(data.process_uid)
+        // setprocess_udid(data.process_uid)
 
         const nodebgwidth = document.querySelector(".react-flow__node");
         const nodebgwidths = nodebgwidth ? nodebgwidth.getBoundingClientRect().width : 0;
@@ -405,7 +379,7 @@ const SwimlaneModel = () => {
             user_id: user && user.id,
             Process_id: id && id,
             type: edgeType, // ✅ dynamic edge type
-            Page: "Swimlane",
+            Page_Title: "Swimlane",
             status: "draft",
           },
           eds
@@ -419,10 +393,12 @@ const SwimlaneModel = () => {
   const handleNodeClick = useCallback(
     (event, node) => {
       setSelectedEdge(null);
+      setIsexistingroleCheckboxPopupOpen(false)
       setSelectedNodeId(node.id);
-
+      handleClosePopup()
       setOptions([]);
 
+      setIsCheckboxPopupOpen(false)
 
     },
 
@@ -452,17 +428,15 @@ const SwimlaneModel = () => {
     };
     checkpublishfunction();
   }, [ParentPageGroupId, currentLevel]);
-  const addNode = (type, position, label = "") => {
+  const addNode = async (type, position, label = "") => {
     let PageGroupId;
 
-    if (ChildNodes.length === 0) {
-      // PageGroupId = uuidv4();
-      PageGroupId = Math.floor(100000000 + Math.random() * 900000000);
-
+    if (!ChildNodes.PageGroupId) {
+      const response = await getNextPageGroupId();
+      PageGroupId = response.next_PageGroupId;
     } else {
       PageGroupId = ChildNodes[0]?.PageGroupId;
     }
-
     if (type === "Yes" || type === "No" || type === "FreeText" || type === "StickyNote") {
       if (!position) {
         alert("Position not defind");
@@ -479,8 +453,13 @@ const SwimlaneModel = () => {
         data: {
           label: type === "FreeText" || type === "StickyNote" ? label : "",
           shape: type,
-          onLabelChange: (newLabel) => handleLabelChange(newNodeId, newLabel),
-
+          onLabelChange: (newLabel) =>
+            handleLabelChange(
+              currentParentId !== null
+                ? `Level${currentLevel}_${newNodeId}_${currentParentId}`
+                : `Level${currentLevel}_${newNodeId}`,
+              newLabel
+            ),
           defaultwidt: "40px",
           defaultheight: "40px",
           nodeResize: false,
@@ -530,9 +509,9 @@ const SwimlaneModel = () => {
         parentNode: selectedGroupId,
         extent: "parent",
         data: {
-          label: "",
-          details: { title: "", content: "" },
-          link: "",
+          label: label,
+          details: { title: label, content: "" },
+          link: selectedexistigrolenodeId ? selectedexistigrolenodeId : "",
           autoFocus: true,
           shape: type,
           onLabelChange: (newLabel) =>
@@ -594,6 +573,8 @@ const SwimlaneModel = () => {
 
   const handleSaveNodes = async (savetype) => {
     // console.log("ChildNodes", ChildNodes);
+    // console.log("edges", edges);
+
     if (savetype === "Published" && currentLevel !== 0) {
       try {
         const response = await filter_draft(ParentPageGroupId);
@@ -609,6 +590,11 @@ const SwimlaneModel = () => {
       }
     }
 
+    const payload = {
+      savetype,
+      ...versionPopupPayload,
+    };
+
 
     const Level =
       currentParentId !== null
@@ -620,6 +606,11 @@ const SwimlaneModel = () => {
     const LoginUserId = LoginUser ? LoginUser.id : null;
 
     try {
+
+         if (versionPopupPayload) {
+              await saveProcessInfo(payload);
+            }
+      
       const response = await api.saveNodes({
         Level,
         user_id,
@@ -677,7 +668,6 @@ const SwimlaneModel = () => {
           })
         ),
       });
-
       alert(response.message);
       setHasUnsavedChanges(false);
     } catch (error) {
@@ -753,7 +743,6 @@ const SwimlaneModel = () => {
         )
       );
       setHasUnsavedChanges(true);
-      handleClosePopup();
     }
   };
 
@@ -794,12 +783,24 @@ const SwimlaneModel = () => {
       if (row === 6 && col === 0) {
         options = [];
       } else if (col === 0 && row < 6) {
-        options = ["Add Role"];
+        options = [{ label: t("add_role"), value: "Add Role" },
+        {
+          label: `${t("add_existing_role")}`,
+          value: "Add existing role",
+
+        }
+        ];
+
       } else if (row === 6 && col > 0) {
-        options = ["Add Process"];
+        options = [{ label: t("add_process"), value: "Add Process" }];
+
       } else {
-        options = ["Add Activity", "Add Decision", "Add Sticky Note"];
-        // options = ["Add Activity", "Add Decision"];
+
+        options = [
+          { label: t("add_activity"), value: "Add Activity" },
+          { label: t("add_decision"), value: "Add Decision" },
+          { label: t("add_sticky_note	"), value: "Add Sticky Note" },
+        ];
 
       }
       setPosition({ x: event.clientX, y: event.clientY });
@@ -986,7 +987,7 @@ const SwimlaneModel = () => {
     }
   };
 
-  const { removeBreadcrumbsAfter } =
+  const { removeBreadcrumbsAfter, addBreadcrumb } =
     useContext(BreadcrumbsContext);
 
   const linkExistingmodel = async () => {
@@ -1017,10 +1018,6 @@ const SwimlaneModel = () => {
 
 
   const AddexistingRole = async () => {
-    // const existinglink = ChildNodes.find(
-    //   (node) => node.node_id === selectedNodeId
-    // );
-
 
     const levelParam = "Level0";
     const user_id = user ? user.id : null;
@@ -1042,26 +1039,24 @@ const SwimlaneModel = () => {
     setSelectedTitle(label)
   };
 
-  const handleexistingroleCheckboxChange = (nodeId, label) => {
-    setSelectedexistingrolenodeIds(nodeId)
-    setChiledNodes((nds) =>
-      nds.map((node) => {
-        if (node.id === selectedNodeId) {
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              label: label,
-              details: {
-                ...node.data.details,
-                title: label || "no",
-              },
-            },
-          };
-        }
-        return node;
-      })
-    );
+  const handleexistingroleCheckboxChange = (nodeId) => {
+    setSelectedexistingrolenodeId(nodeId)
+
+  };
+
+  const handleSaveExistingRole = () => {
+    if (selectedexistigrolenodeId) {
+
+      const selectedNode = parsedDataExistingrole.find(
+        (item) => item.node_id === selectedexistigrolenodeId
+      );
+
+      const title = selectedNode?.data?.details?.title || "Untitled";
+
+      setIsexistingroleCheckboxPopupOpen(false);
+      addNode("SwimlineRightsideBox", "", title);
+      setSelectedexistingrolenodeId("")
+    }
   };
 
   const saveSelectedNodes = () => {
@@ -1093,19 +1088,151 @@ const SwimlaneModel = () => {
       alert("Please select a node before saving.");
     }
   };
+  const removeExistingLink = () => {
+    if (!selectedNodeId) return;
+
+    CustomAlert.confirm(
+      "Are you sure?",
+      "This will remove the link.",
+      () => {
+        setChiledNodes((nds) =>
+          nds.map((node) => {
+            if (node.id === selectedNodeId || node.parentId === selectedNodeId) {
+              return {
+                ...node,
+                data: {
+                  ...node.data,
+                  link: null, // remove link
+                  details: {
+                    ...(node.data.details || {}),
+                    title: "", // clear title too
+                  },
+                },
+              };
+            }
+            return node;
+          })
+        );
+
+        setHasUnsavedChanges(true);
+
+        CustomAlert.success(
+          "Link Removed",
+          "Link and title have been removed from the selected node and its child nodes."
+        );
+      },
+      () => {
+        CustomAlert.info("Cancelled", "No changes were made.");
+      }
+    );
+  };
+
+
+  const openExistingModel = async (nodelink) => {
+    const confirmcondition = await handleBack(); // Wait for confirmation
+    if (confirmcondition) {
+      if (nodelink) {
+        try {
+
+          const response = await getdataByNodeId(nodelink, "draft");
+          if (response.data && response.data.length > 0) {
+            const user_id = response.data[0].user_id;
+            const Process_id = response.data[0].Process_id;
+            const id = response.data[0].Process_id;
+
+            const user = {
+              id: response.data[0].user_id,
+            };
+
+            let newLevel = 1;
+            if (nodelink !== null) {
+              const match = nodelink.match(/^Level(\d+)/);
+              if (match && match[1]) {
+                const currentLevel = parseInt(match[1], 10);
+                newLevel = currentLevel + 1;
+              }
+            }
+
+            const levelParam =
+              nodelink !== null
+                ? `Level${newLevel}_${nodelink}`
+                : `Level${newLevel}`;
+            console.log("newLevel", levelParam)
+
+            const nodeData = await checkRecordWithGetLinkDraftData(
+              levelParam,
+              parseInt(user_id),
+              Process_id,
+              nodelink
+            );
+            const nodeDataParsed = JSON.parse(response.data[0].data);
+            if (nodeData.status === true) {
+              removeBreadcrumbsAfter(1);
+
+              const allNodes = nodeData.allNodes; // 👈 API se mila array
+              if (Array.isArray(allNodes) && allNodes.length > 0) {
+                // sabse highest level se start
+                allNodes.forEach((node) => {
+                  const parsedData = JSON.parse(node.data || '{}');
+                  const label = parsedData.label || '';
+                  const node_id = node.node_id;
+                  const process_id = node.Process_id;
+
+                  // ✅ Level number get karo
+                  let currentLevel = 0;
+                  const match = node_id.match(/^Level(\d+)/);
+                  if (match && match[1]) {
+                    currentLevel = parseInt(match[1], 10);
+                  }
+                  const newLevel = currentLevel + 1;
+
+                  const user = { id: node.user_id };
+
+                  // ✅ URL banao
+                  const url = `/Draft-Process-View/${newLevel}/${node_id}/${process_id}?title=${encodeURIComponent(label)}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${node.PageGroupId}`;
+                  console.log("addbreadcrums time", node)
+                  // ✅ Breadcrumb add karo
+                  addBreadcrumb(label, url);
+                });
+              }
+
+
+              if (nodeData.Page_Title === "ProcessMap") {
+
+                navigate(`/Draft-Process-View/${newLevel}/${nodelink}/${id}?title=${encodeURIComponent(nodeDataParsed.label || "")}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${response.data[0]?.PageGroupId}`)
+
+              }
+              if (nodeData.Page_Title === "Swimlane") {
+
+                navigate(`/Draft-Swim-lanes-View/level/${newLevel}/${nodelink}/${id}?title=${encodeURIComponent(nodeDataParsed.label || "")}&user=${encodeURIComponent(JSON.stringify(user))}&parentId=${nodelink}&level=${newLevel}&ParentPageGroupId=${response.data[0]?.PageGroupId}`)
+
+              }
+            } else {
+              alert("First create next model of this existing model")
+            }
+          } else {
+            console.error("No data found in response.data");
+          }
+        } catch (error) {
+          console.error("Error fetching link data:", error);
+        }
+      }
+    }
+
+  }
   const handleTextSubmit = (enteredText) => {
     setIsModalOpen(false);
 
     if (!enteredText) return;
 
-    console.log("selectedNodefreetextId", selectedNodefreetextId)
+    setHasUnsavedChanges(true);
 
     // If selectedNodeId is null, create a new node
     if (selectedNodefreetextId) {
       setChiledNodes((prevNodes) => {
         return prevNodes.map((node) =>
           node.id === selectedNodefreetextId
-            ? { ...node, data: { ...node.data, label: enteredText } } // 🔄 Update existing node
+            ? { ...node, data: { ...node.data, label: enteredText } }
             : node
         );
       });
@@ -1117,23 +1244,6 @@ const SwimlaneModel = () => {
   };
 
 
-  const handlestickyNoteTextSubmit = (enteredText) => {
-    setIsModalOpenStickyNode(false);
-    if (!enteredText) return;
-    if (selectedNodeStickyNoteId) {
-      setChiledNodes((prevNodes) => {
-        return prevNodes.map((node) =>
-          node.id === selectedNodeStickyNoteId
-            ? { ...node, data: { ...node.data, label: enteredText } }
-            : node
-        );
-      });
-      setSelectedNodeStickyNoteId(null)
-    } else {
-      addNode("StickyNote", { x: position.x, y: position.y }, enteredText);
-
-    }
-  };
 
   const UpdateText = () => {
     const data = ChildNodes.find(
@@ -1143,19 +1253,10 @@ const SwimlaneModel = () => {
     setSelectedNodefreetextId(data.id);
     setModalText(data.data.label || "");
     setIsModalOpen(true)
+
     // console.log("this is free text udpate ",selectedNodeId)
   }
 
-
-  const Updatestickynotes = () => {
-    const data = ChildNodes.find(
-      (node) => node.id === selectedNodeId
-    );
-
-    setSelectedNodeStickyNoteId(data.id)
-    setStickyNoteModeltext(data.data.label || "");
-    setIsModalOpenStickyNode(true)
-  }
 
   const handlePopupAction = (action) => {
     const { x, y } = contextMenu;
@@ -1194,8 +1295,8 @@ const SwimlaneModel = () => {
                 detailschecking?.data?.details?.title === "") &&
               (!detailschecking?.data?.details?.content ||
                 detailschecking?.data?.details?.content === "")
-              ? "Add details"
-              : "Edit details",
+              ? `${t("add_details")}`
+              : `${t("edit_details")}`,
           action: () => handlePopupAction("addDetails"),
           borderBottom: true,
         },
@@ -1204,7 +1305,7 @@ const SwimlaneModel = () => {
     ...(detailschecking?.type === "box"
       ? [
         {
-          label: "Switch shape to Decision",
+          label: `${t("switch_shape_to_decision")}`,
           action: () => switchNodeType("diamond"),
           borderBottom: true,
         },
@@ -1213,7 +1314,7 @@ const SwimlaneModel = () => {
     ...(detailschecking?.type === "diamond"
       ? [
         {
-          label: "Switch shape to Activity",
+          label: `${t("switch_shape_to_activity")}`,
           action: () => switchNodeType("box"),
           borderBottom: true,
         },
@@ -1221,64 +1322,48 @@ const SwimlaneModel = () => {
       : []),
     ...(detailschecking?.type === "progressArrow"
       ? [
-        {
-          label: "Link Existing Model",
-          action: () => linkExistingmodel(),
-          borderBottom: true,
-        },
+        ...(detailschecking?.data?.link
+          ? [
+            {
+              label: `${t("open_existing_model")}`,
+              action: () => openExistingModel(detailschecking?.data?.link),
+              borderBottom: true,
+            },
+            {
+              label: `${t("remove_existing_model")}`,
+              action: () => removeExistingLink(),
+              borderBottom: true,
+            },
+          ]
+          : [
+            {
+              label: `${t("link_existing_model")}`,
+              action: () => linkExistingmodel(),
+              borderBottom: true,
+            },
+          ]),
       ]
       : []),
-
-    ...(detailschecking?.type === "SwimlineRightsideBox"
-      ? [
-        {
-          label: "Add Existing Role",
-          action: () => AddexistingRole(),
-          borderBottom: true,
-        },
-      ]
-      : []),
-
 
     ...(detailschecking?.type === "FreeText"
       ? [
         {
-          label: "Edit Text",
+          label: `${t("edit_text")}`,
           action: () => UpdateText(),
           borderBottom: true,
         },
       ]
       : []),
 
-    ...(detailschecking?.type === "StickyNote"
-      ? [
-        {
-          label: "Edit Sticky Note",
-          action: () => Updatestickynotes(),
-          borderBottom: true,
-        },
-      ]
-      : []),
-
     {
-      label: "Delete",
+      label: `${t("Delete")}`,
       action: handleDeleteNode,
       borderBottom: false,
     },
   ];
 
   const iconNames = {};
-  // if (node.type === "FreeText") {
-  //   setSelectedNodefreetextId(node.id);
-  //   setModalText(node.data.label || ""); 
 
-  //   setIsModalOpen(true)
-  // } else if (node.type === "StickyNote") {
-
-  //   setSelectedNodeStickyNoteId(node.id)
-  //   setStickyNoteModeltext(node.data.label || "");
-  //   setIsModalOpenStickyNode(true)
-  // }
   const deleteEdge = () => {
     setEdges((eds) => eds.filter((e) => e.id !== selectedEdge.id));
     setSelectedEdge(null);
@@ -1307,7 +1392,10 @@ const SwimlaneModel = () => {
   const handleOptionClick = (option) => {
     if (option === "Add Role") {
       addNode("SwimlineRightsideBox");
-    } else if (option === "Add Activity") {
+    } else if (option === "Add existing role") {
+      AddexistingRole()
+    }
+    else if (option === "Add Activity") {
       addNode("box");
     } else if (option === "Add Decision") {
       addNode("diamond");
@@ -1316,8 +1404,8 @@ const SwimlaneModel = () => {
     }
 
     else if (option === "Add Sticky Note") {
-      setIsModalOpenStickyNode(true)
-      setStickyNoteModeltext("")
+      addNode("StickyNote", { x: position.x, y: position.y });
+
     }
 
     setOptions([]);
@@ -1344,10 +1432,6 @@ const SwimlaneModel = () => {
     const confirmcondition = await handleBack(); // Wait for confirmation
     if (confirmcondition) {
       if (id && user) {
-        // navigate(`/Draft-Swim-lanes-View/level/${currentLevel}/${currentParentId}`, {
-        //   state: { id: id, title: title, user: user, parentId: currentParentId, level: currentLevel,ParentPageGroupId }
-        // });
-
         navigate(`/Draft-Swim-lanes-View/level/${currentLevel}/${currentParentId}/${id}?title=${encodeURIComponent(title)}&user=${encodeURIComponent(JSON.stringify(user))}&parentId=${currentParentId}&level=${currentLevel}&ParentPageGroupId=${ParentPageGroupId}`)
 
       } else {
@@ -1408,13 +1492,19 @@ const SwimlaneModel = () => {
   // ye common page h
   const navigateToVersion = (process_id, level, version) => {
     const encodedTitle = encodeURIComponent("swimlane");
-    navigate(`/Draft-Process-Version/${process_id}/${level}/${version}/${encodedTitle}`);
+    navigate(`/Swimlane-Version/${process_id}/${level}/${version}/${encodedTitle}`);
   };
 
 
   const handleVersionClick = () => {
     setShowVersionPopup(true);
   };
+
+
+  const handleSaveVersionDetails = (payload) => {
+    setversionPopupPayload(payload)
+    setShowVersionPopup(false)
+  }
   return (
 
     <div>
@@ -1496,9 +1586,9 @@ const SwimlaneModel = () => {
                 {/* Menu Items */}
 
                 {[
-                  { label: "Add yes label", action: "Yes" },
-                  { label: "Add no label", action: "No" },
-                  { label: "Add free text", action: "addFreeText" },
+                  { label: `${t("add_yes_label")}`, action: "Yes" },
+                  { label: `{${t("add_no_label")}}`, action: "No" },
+                  { label: `${t("add_free_text")}`, action: "addFreeText" },
                 ].map((item, index) => (
                   <div
                     className="menuitems"
@@ -1519,7 +1609,7 @@ const SwimlaneModel = () => {
                   }}
 
                 >
-                  Delete Arrow
+                  {t("delete_arrow")}
                 </div>
 
               </div>
@@ -1547,14 +1637,7 @@ const SwimlaneModel = () => {
           {isCheckboxPopupOpen && (
             <div style={popupStyle.container} className="swimlanepopup">
               <div style={popupStyle.header}>
-                <span>Existing Model</span>
-                <button
-                  style={popupStyle.closeButton}
-                  onClick={() => setIsCheckboxPopupOpen(false)}
-                  aria-label="Close"
-                >
-                  ×
-                </button>
+                <span>{t("existing_model")}</span>
               </div>
 
               <input
@@ -1592,7 +1675,7 @@ const SwimlaneModel = () => {
                   onClick={saveSelectedNodes}
                   style={popupStyle.saveButton}
                 >
-                  Save
+                  {t("Save")}
                 </button>
               </div>
             </div>
@@ -1604,34 +1687,28 @@ const SwimlaneModel = () => {
           {isexistingroleCheckboxPopupOpen && (
             <div style={popupStyle.container} className="swimlanepopup">
               <div style={popupStyle.header}>
-                <span>Add Existing Role</span>
-                <button
-                  style={popupStyle.closeButton}
-                  onClick={() => setIsexistingroleCheckboxPopupOpen(false)}
-                  aria-label="Close"
-                >
-                  ×
-                </button>
+                <span>{t('add_existing_role')}</span>
+
               </div>
 
               <input
                 type="text"
                 style={styles.searchInput}
-                placeholder="Search..."
+                placeholder={t("search")}
                 value={ExistingrolesearchQuery}
                 onChange={(e) => setExistingrolesearchQuery(e.target.value)}
               />
 
               <div style={popupStyle.body}>
                 {filteredDataExistingrole.map((node) => {
-                  const isSelected = selectedexistigrolenodeIds === node.node_id;
+                  const isSelected = selectedexistigrolenodeId === node.node_id;
                   const title = node?.data?.details?.title || "Untitled";
 
                   return (
                     <div
                       key={node.node_id}
                       onClick={() =>
-                        handleexistingroleCheckboxChange(node.node_id, title)
+                        handleexistingroleCheckboxChange(node.node_id)
                       }
                       onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#e6f7ff")}
                       onMouseLeave={(e) =>
@@ -1651,10 +1728,10 @@ const SwimlaneModel = () => {
 
               <div style={popupStyle.footer}>
                 <button
-                  onClick={() => setIsexistingroleCheckboxPopupOpen(false)}
+                  onClick={handleSaveExistingRole}
                   style={popupStyle.saveButton}
                 >
-                  Save
+                  {t("Save")}
                 </button>
               </div>
             </div>
@@ -1667,12 +1744,7 @@ const SwimlaneModel = () => {
             onSubmit={handleTextSubmit}
             initialValue={modalText} // Pass existing value to modal
           />
-          <StickyNoteModel
-            isOpen={isModalOpenStickyNode}
-            onClose={() => setIsModalOpenStickyNode(false)}
-            onSubmit={handlestickyNoteTextSubmit}
-            initialValue={StickyNoteModeltext}
-          />
+
           {options.length > 0 && (
             <AddObjectRole
               position={position}
@@ -1682,52 +1754,8 @@ const SwimlaneModel = () => {
             />
           )}
 
-          {/* <div style={{
-            position: "absolute",
-            bottom: "0px",
-            left: "8px",
-            margin: "20px",
-            fontSize: "15px",
-            color: "#002060",
-            fontFamily: "'Poppins', sans-serif",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px"  // Optional spacing between image and text
-          }}>
-            <img
-              src={`${process.env.PUBLIC_URL}/img/rocket-solid.svg`}
-              alt="Rocket"
-              style={{ width: "20px", height: "20px" }}  // optional: control image size
-            />
-            {process_udid && (
-              <span>ID {process_udid}</span>
-            )}
-          </div> */}
+          {usePageGroupIdViewer(ChildNodes)}
 
-
-          <div style={{
-            position: "absolute",
-            bottom: "0px",
-            left: "8px",
-            margin: "20px",
-            fontSize: "15px",
-            color: "#002060",
-            fontFamily: "'Poppins', sans-serif",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px"  // Optional spacing between image and text
-          }}>
-            <img
-              src={`${process.env.PUBLIC_URL}/img/rocket-solid.svg`}
-              alt="Rocket"
-              style={{ width: "16px", height: "16px" }}  // optional: control image size
-            />
-         
-            <span>
-              ID {ChildNodes && ChildNodes.length > 0 ? ChildNodes[0].PageGroupId : ""}
-            </span>
-
-          </div>
 
           {showVersionPopup && (
             <VersionPopup
@@ -1737,6 +1765,10 @@ const SwimlaneModel = () => {
               currentParentId={currentParentId}
               viewVersion={navigateToVersion}
               LoginUser={LoginUser}
+              title={headerTitle}
+              handleSaveVersionDetails={handleSaveVersionDetails}
+            status={"draft"}
+
             />
           )}
         </ReactFlowProvider>

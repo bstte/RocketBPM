@@ -17,12 +17,12 @@ const AddObjectRole = ({ position, options, onOptionClick, onClose }) => {
         <div className="menuitems" key={index}>
           <div            
             onClick={() => {
-              onOptionClick(option);
+              onOptionClick(option.value);
               onClose();
             }}
             
           >
-            {option}
+            {option.label}
           </div>
 
           {/* Add a white line between options except for the last one */}

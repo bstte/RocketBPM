@@ -115,3 +115,27 @@ button.login-button {
   min-height: 22px;
   display: block;
 }
+
+.or-separator {
+  display: flex;
+  align-items: center;
+  margin: 20px 0;
+}
+
+.or-separator .line {
+  flex: 1;
+  height: 1px;
+  background: #ccc;
+}
+
+.or-separator .or-text {
+  margin: 0 10px;
+  font-weight: bold;
+  color: #666;
+}
+
+.google-login {
+  text-align: center;
+}
+
+

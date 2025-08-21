@@ -4,12 +4,14 @@ import "./Setting.css";
 import {  useLocation, useNavigate } from "react-router-dom";
 import { getProcessTitleById, updateProcess, ImageBaseUrl, deleteProcess, removeProcessImage } from "../../API/api";
 import CustomAlert from "../../components/CustomAlert";
+import { useTranslation } from "../../hooks/useTranslation";
 
 const Setting = () => {
   const location = useLocation();
   const { ProcessId } = location.state || {};
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true); // ✅ Loading state added
+ const t = useTranslation();
 
   const [processData, setProcessData] = useState({
     process_title: "",
@@ -133,12 +135,12 @@ const Setting = () => {
   return (
     <div>
       <div className="ss_title_bar">
-        <CustomHeader title="Settings" />
+        <CustomHeader title={t('Settings')} />
       </div>
 
       <div className="ss_sett_page_mn_div">
         <div className="ss_sett_lft_div">
-          <h4>Edit Properties</h4>
+          <h4>{t('Edit_Properties')}</h4>
           <div className="ss_logo_lft_div">
           {loading ? (
               <p>Loading...</p> 
@@ -147,17 +149,17 @@ const Setting = () => {
             ) : processData.Process_img ? (
               <img src={`${ImageBaseUrl}/${processData.Process_img}`} alt="Process" className="profile-image" />
             ) : (
-              <label>No Image</label>
+              <label>{t('No_Image')}</label>
             )}
 
            
           </div>
 
           <div className="ss_recheigh">
-            <p>Recommended height: 34 pixel</p>
+            <p>{t('Recommended_height')}</p>
             <ul>
-              <li><button onClick={() => fileInputRef.current.click()}>UPDATE</button></li>
-              <li><button onClick={handleRemoveImage}>REMOVE</button></li>
+              <li><button onClick={() => fileInputRef.current.click()}>{t('UPDATE')}</button></li>
+              <li><button onClick={handleRemoveImage}>{t('REMOVE')}</button></li>
             </ul>
           </div>
 
@@ -172,21 +174,21 @@ const Setting = () => {
                   onChange={(e) => setProcessData({ ...processData, process_title: e.target.value })}
                 />
               </li>
-              <li>Max. 35 characters</li>
+              <li>{t('Max_35_characters')}</li>
             </ul>
           </div>
         </div>
 
         <div className="ss_sett_delete">
-          <h4>Delete Process World</h4>
-          <p>Be careful. Deleting a process world will really delete it.</p>
-          <button onClick={handleDeleteProcess}>Delete</button>
+          <h4>{t('Delete_Process_World')}</h4>
+          <p>{t('Be_careful_delete_msg')}</p>
+          <button onClick={handleDeleteProcess}>{t('Delete')}</button>
         </div>
 
         <div className="ss_table_btm_btn">
           <ul>
-            <li><button className="ss_add_user_btn" onClick={() => navigate(-1)}>Cancel</button></li>
-            <li><button className="ss_add_user_btn" onClick={updateProcessdata}>Save</button></li>
+            <li><button className="ss_add_user_btn" onClick={() => navigate(-1)}>{t('Cancel')}</button></li>
+            <li><button className="ss_add_user_btn" onClick={updateProcessdata}>{t('Save')}</button></li>
           </ul>
         </div>
       </div>

@@ -1,6 +1,4 @@
-// components/MiniMapPreview.js
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-// import {ReactFlow, Background, Controls } from "@xyflow/react";
 import {
     ReactFlow,
     SmoothStepEdge,
@@ -79,7 +77,7 @@ const MiniMapPreview = ({ processId, userId }) => {
           fetchNodes();
         }
       }, [fetchNodes,processId,userId]); 
-  if (!nodes.length) return <div style={{ height: 200 }}> <img src="../../../img/dashboard-slider-image.jpg" alt="" /> </div>;
+  if (!nodes.length) return <div style={{ height: 200 }}>  </div>;
 
   return (
     <div style={{ width: "100%", }}>

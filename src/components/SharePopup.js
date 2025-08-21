@@ -1,10 +1,10 @@
 // components/SharePopup.js
 import React from 'react';
 import { copyLinkToClipboard, copyNameAndLinkToClipboard } from '../utils/shareHelper';
+import { useTranslation } from '../hooks/useTranslation';
 
 const SharePopup = ({ processId, processName, onClose }) => {
-
-  console.log("process name",processName)
+  const t = useTranslation();
   const styles = {
     popup: {
       position: 'fixed',
@@ -56,7 +56,7 @@ const SharePopup = ({ processId, processName, onClose }) => {
             onClose();
           }}
         >
-          Copy link to clipboard
+        {t("copy_link_to_clipboard")}
         </button>
         <button
           style={styles.button}
@@ -65,7 +65,7 @@ const SharePopup = ({ processId, processName, onClose }) => {
             onClose();
           }}
         >
-          Copy process name and link
+          {t("copy_process_name_and_link")}
         </button>
       </div>
     </div>

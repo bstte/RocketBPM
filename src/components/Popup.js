@@ -1,84 +1,93 @@
 // Popup.js
 import React from "react";
 import PropTypes from "prop-types";
-
+import { useTranslation } from "../hooks/useTranslation";
 const Popup = ({
   showPopup,
   popupPosition,
   handleCreateNewNode,
   deleteNode,
+  translation,
   selectedNodeType,
   switchNodeType,
   condition,
-}) =>
-  showPopup && (
-    <div
-      className="popup"
-      style={{
-        ...styles.popup,
-        left: `${popupPosition.x}px`,
-        top: `${popupPosition.y}px`,
-      }}
-    >
-      <div className="newpopmenuitems" style={styles.popupTitle}>
-        {selectedNodeType !== "StickyNote" && (
-          <>
-            {condition.status === true ? (
-              <button
-                onClick={() => handleCreateNewNode(condition.Page_Title)}
-                style={styles.popupButton}
-              >
-                Open Model
-              </button>
-            ) : (
-              <>
+}) => {
+  const t = useTranslation();
+
+  return (
+    showPopup && (
+      <div
+        className="popup"
+        style={{
+          ...styles.popup,
+          left: `${popupPosition.x}px`,
+          top: `${popupPosition.y}px`,
+        }}
+      >
+        <div className="newpopmenuitems" style={styles.popupTitle}>
+          {selectedNodeType !== "StickyNote" && (
+            <>
+              {condition.status === true ? (
                 <button
-                  onClick={() => handleCreateNewNode("ProcessMap")}
+                  onClick={() => handleCreateNewNode(condition.Page_Title)}
                   style={styles.popupButton}
                 >
-                  Create New Process Map Model
+                  {t("Open_Model")}
                 </button>
+              ) : (
+                <>
+                  <button
+                    onClick={() => handleCreateNewNode("ProcessMap")}
+                    style={styles.popupButton}
+                  >
+                    {t('Create_New_Process_Map_Model')}
+                  </button>
+                  <button
+                    onClick={() => handleCreateNewNode("Swimlane")}
+                    style={styles.popupButton}
+                  >
+                    {t('Create_New_Swimlane_Model')}
+                  </button>
+                </>
+              )}
+
+
+
+              {selectedNodeType === "progressArrow" && (
                 <button
-                  onClick={() => handleCreateNewNode("Swimlane")}
+                  onClick={() => switchNodeType("pentagon")}
                   style={styles.popupButton}
                 >
-                  Create New Swimlane Model
+                  {t('switch_shape_to_steer_enable_process')}
                 </button>
-              </>
-            )}
+              )}
+              {selectedNodeType === "pentagon" && (
+                <button
+                  onClick={() => switchNodeType("progressArrow")}
+                  style={styles.popupButton}
+                >
+
+                  {t('switch_shape_to_value_adding_process')}
+                </button>
+              )}
+
+            </>
+          )}
+
+          <button onClick={translation} style={styles.popupButton}>
+            {t("translation")}
+          </button>
+
+          <button onClick={deleteNode} style={styles.popupButton}>
+            {t("Delete")}
+          </button>
 
 
-
-            {selectedNodeType === "progressArrow" && (
-              <button
-                onClick={() => switchNodeType("pentagon")}
-                style={styles.popupButton}
-              >
-                {`Switch shape to Steer & Enable Process`}
-              </button>
-            )}
-            {selectedNodeType === "pentagon" && (
-              <button
-                onClick={() => switchNodeType("progressArrow")}
-                style={styles.popupButton}
-              >
-                {`Switch shape to Value Adding Process`}
-              </button>
-            )}
-
-          </>
-        )}
-
-
-        <button onClick={deleteNode} style={styles.popupButton}>
-          {`Delete`}
-        </button>
-
-
+        </div>
       </div>
-    </div>
+    )
   );
-
+};
 const styles = {
   popup: {
     position: "absolute",

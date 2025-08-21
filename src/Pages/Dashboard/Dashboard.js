@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState, useRef, useCallback } from "react";
-import { Box, Card, IconButton, CircularProgress } from "@mui/material";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
+import { Box, Card, CircularProgress } from "@mui/material";
+// import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { useSelector } from "react-redux";
 import apiExports, { checkRecord, getFavProcessesByUser, getUserNodes, getvideo, ImageBaseUrl } from "../../API/api";
 import Slider from "react-slick";
@@ -11,6 +11,7 @@ import "./Dashboard.css";
 import { useNavigate } from "react-router-dom";
 import { BreadcrumbsContext } from "../../context/BreadcrumbsContext";
 import MiniMapPreview from "./MiniMapPreview";
+import { useTranslation } from "../../hooks/useTranslation";
 // import { Opacity } from "@mui/icons-material";
 
 const Dashboard = () => {
@@ -35,6 +36,8 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
+  const t = useTranslation();
+
   const { addBreadcrumb, resetBreadcrumbs } = useContext(BreadcrumbsContext);
 
 
@@ -108,7 +111,7 @@ const Dashboard = () => {
                 role: assignment.Role,
               };
             }
-             else {
+            else {
               // If not assigned to anyone, set default
               categorizedNodes[processId] = {
                 processId,
@@ -139,16 +142,18 @@ const Dashboard = () => {
 
 
 
-  const getPublishedDatedata = useCallback(async (processId) => {
+
+  const getPublishedDatedata = useCallback(async (processId,PageGroupId) => {
     const user_id = user?.id;
     const publishedStatus = "Published";
+  
+
 
     if (!user_id) return null;
 
     try {
-      const response = await apiExports.GetPublishedDate("Level0", parseInt(user_id), processId, publishedStatus);
-      console.log("publisd date respone", response?.created_at)
-      return response?.created_at || null; // Ensure a valid date is returned
+      const response = await apiExports.GetPublishedDate("Level0", parseInt(user_id), processId, publishedStatus,PageGroupId);
+      return response?.updated_at || null; // Ensure a valid date is returned
     } catch (error) {
       console.error("Error fetching published date:", error);
       return null;
@@ -156,15 +161,19 @@ const Dashboard = () => {
   }, [user?.id]);
 
   const [publishedDates, setPublishedDates] = useState({});
-
   useEffect(() => {
     const fetchPublishedDates = async () => {
       const dates = {};
       for (const item of getFavProcessesUser) {
-        dates[item.process_id] = await getPublishedDatedata(item.process_id);
+        const date = await getPublishedDatedata(item.process_id, item.PageGroupId);
+        // Make key: processId + PageGroupId
+        const key = `${item.process_id}_${item.PageGroupId}`;
+        dates[key] = date;
       }
+      console.log("final date data", dates);
       setPublishedDates(dates);
     };
+    
 
     if (getFavProcessesUser.length > 0) {
       fetchPublishedDates();
@@ -214,7 +223,7 @@ const Dashboard = () => {
       try {
 
         const response = await getFavProcessesByUser(user_id,);
-        console.log("Response:", response);
+        console.log("Response fav:", response);
         setgetFavProcessesUser(response.data);
         localStorage.setItem("favProcesses", JSON.stringify(response.data));
       } catch (error) {
@@ -305,7 +314,7 @@ const Dashboard = () => {
   };
 
   const formattedDate = (dateString) => {
-    if (!dateString) return "";
+    if (!dateString) return "draft";
     const date = new Date(dateString);
     return isNaN(date.getTime()) ? "Invalid Date" : date.toLocaleDateString("en-US", {
       year: "numeric",
@@ -322,19 +331,9 @@ const Dashboard = () => {
       navigate(`/published-map-level/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
 
 
-
     } else {
 
       navigate(`/Draft-Process-View/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
-
-      // navigate("/Draft-Process-View", {
-      //   state: {
-      //     id: parseInt(item.processId),
-      //     title: getProcessTitle(item.processId),
-      //     user: item,
-      //   },
-      // })
-
     }
     console.log(data)
   }
@@ -362,107 +361,61 @@ const Dashboard = () => {
     return () => window.removeEventListener("resize", updateHeight);
   }, []);
 
-
   const handlefavClick = async (Process_id, user_id, Level, PageGroupId, label) => {
-
     try {
-
       const id = Process_id;
-
-      const user = {
-        id: user_id,
-      };
-
-      let newLevel = 0;
-      if (Level !== null) {
-        const match = Level.match(/^Level(\d+)/);
-        if (match && match[1]) {
-          const currentLevel = parseInt(match[1], 10);
-          newLevel = currentLevel + 1;
-        }
+      const user = { id: user_id,type:"dashboard on click time" };
+  
+      // Extract level number if possible, else 0
+      const newLevel = Level?.match(/^Level(\d+)/)?.[1]
+        ? parseInt(Level.match(/^Level(\d+)/)[1], 10) + 1
+        : 0;
+  
+      const levelParam = `Level${newLevel}${Level ? `_${Level}` : ""}`;
+  
+  
+      const [nodeData, publishdata] = await Promise.all([
+        checkRecord(levelParam, parseInt(user_id), Process_id),
+        apiExports.checkPublishRecord(levelParam, parseInt(user_id), Process_id),
+      ]);
+  
+      if (!nodeData.status) {
+        alert("First create next model of this existing model");
+        return;
       }
-
-      const levelParam =
-        Level !== null
-          ? `Level${newLevel}_${Level}`
-          : `Level${newLevel}`;
-
-      console.log("levelParam", levelParam)
-      const nodeData = await checkRecord(
-        levelParam,
-        parseInt(user_id),
-        Process_id
-      );
-
-      console.log("user_id", user_id)
-      console.log("Process_id", Process_id)
-
-
-      console.log("nodeData", nodeData)
-      if (nodeData.status === true) {
-        if (nodeData.Page_Title === "ProcessMap") {
-          if (newLevel === 0) {
-            navigate(`/Map-level`, {
-              state: {
-                id,
-                title: label || "",
-                user,
-                ParentPageGroupId: PageGroupId,
-              },
-            });
-          } else {
-            navigate(`/level/${newLevel}/${Level}`, {
-              state: {
-                id,
-                title: label || "",
-                user,
-                ParentPageGroupId: PageGroupId,
-              },
-            });
-          }
-
-        }
-        if (nodeData.Page_Title === "Swimlane") {
-          addBreadcrumb(
-            `${label || ""} `,
-            `/swimlane/level/${newLevel}/${Level}`,
-            {
-              id,
-              title: label || "",
-              user,
-              parentId: Level,
-              level: newLevel,
-              ParentPageGroupId: PageGroupId,
-            }
-          );
-
-          navigate(`/swimlane/level/${newLevel}/${Level}`, {
-            state: {
-              id,
-              title: label || "",
-              user,
-              parentId: Level,
-              level: newLevel,
-              ParentPageGroupId: PageGroupId,
-            },
-          });
-        }
-      } else {
-        alert("First create next model of this existing model")
+  
+      const queryParams = [
+        `title=${encodeURIComponent(label || "")}`,
+        `user=${encodeURIComponent(JSON.stringify(user))}`,
+        `ParentPageGroupId=${PageGroupId}`,
+      ].join("&");
+  
+      let url = "";
+  
+      if (nodeData.Page_Title === "ProcessMap") {
+        url = `/${
+          publishdata.status ? "published-map-level" : "Draft-Process-View"
+        }/${newLevel === 0 ? id : `${newLevel}/${Level}/${id}`}?${queryParams}`;
       }
-      // } else {
-      //   console.error("No data found in response.data");
-      // }
+  
+      if (nodeData.Page_Title === "Swimlane") {
+        const extraParams = `parentId=${Level}&level=${newLevel}`;
+        url = `/${
+          publishdata.status ? "published-swimlane/level" : "Draft-Swim-lanes-View/level"
+        }/${newLevel}/${Level}/${id}?${queryParams}&${extraParams}`;
+      }
+  
+      if (url) navigate(url);
     } catch (error) {
       console.error("Error fetching link data:", error);
     }
-
-  }
+  };
+  
   return (
 
     <div >
 
-      <div className="ss_title_bar"> <CustomHeader title="My Process Worlds" /></div>
+      <div className="ss_title_bar"> <CustomHeader title={t('my_process_world')} /></div>
 
       <div className="ss_dash_slider_bx">
 
@@ -479,178 +432,7 @@ const Dashboard = () => {
                   {filteredNodes.map((item) => (
 
                     <Card
-                      key={item.processId}
-                      sx={{
-                        width: "95%",
-                        minHeight: "300px",
-                        padding: 2,
-                        position: "relative",
-                        display: "flex",
-                        flexDirection: "column",
-                        boxShadow: "none", // 
-                        border: "1px solid #ddd",
-                      }}
-                    >
-                      {/* Three dots menu */}
-                      {/* <IconButton
-                        sx={{ position: "absolute", top: 10, right: 10 }}
-                        onClick={(event) => handleOpenMenu(event, item)}
-                      >
-                        <MoreVertIcon />
-                      </IconButton> */}
-
-
-                      <div className="menu_button" onClick={(e) => handleOpenMenu(e, item)}>
-                        <div className="circle_icon">
-                          <svg width="10" height="10" viewBox="0 0 24 24" fill="white">
-                            <path d="M7 10l5 5 5-5H7z" />
-                          </svg>
-                        </div>
-                      </div>
-
-                      <label className="text_blue"> {getProcessTitle(item.processId)}</label>
-                      <div className="ss_title_underline"></div>
-                      <img
-                        src={getProcessImage(item.processId)}
-                        alt="Process Logo"
-                        className="process_logo"
-                      />
-
-                      {/* React Flow Component */}
-                      <div className="ss_dash_slid_img" onClick={() => NavigateOnClick(item)}>
-                        {/* <img src="../../../img/dashboard-slider-image.jpg" alt="" /> */}
-                        <MiniMapPreview processId={item.processId} userId={item.id} />
-
-
-                      </div>
-
-                      {/* Custom dropdown menu */}
-                      {selectedProcess === item.processId && (
-                        <Box
-                          sx={{
-                            position: "absolute",
-                            top: 35,
-                            right: 10,
-                            width: "150px",
-                            bgcolor: "white",
-                            boxShadow: 3,
-                            borderRadius: 1,
-                            padding: 1,
-                            zIndex: 1000,
-                          }}
-                        >
-
-                          {Loading && (
-                            item.type === "self" ? (
-                              <>
-                                {/* Show all options when type is self */}
-                                {checkpublish && (
-                                  <p
-                                    onClick={() =>
-
-                                      navigate(`/published-map-level/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
-
-                                    }
-
-                                    className="menuitems"
-                                  >
-                                    View published
-                                  </p>
-                                )}
-                                <p
-                                  onClick={() =>
-
-                                    navigate(`/Draft-Process-View/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
-
-                                  }
-
-                                  className="menuitems"
-                                >
-                                  View draft
-                                </p>
-                                <p
-                                  onClick={() =>
-                                    navigate("/User-Management", {
-                                      state: {
-                                        process: { id: parseInt(item.processId), user_id: item.id },
-                                      },
-                                    })
-                                  }
-                                  className="menuitems"
-                                >
-                                  Manage users
-                                </p>
-                                <p
-                                  onClick={() =>
-                                    navigate("/Setting", {
-                                      state: { ProcessId: parseInt(item.processId) },
-                                    })
-                                  }
-                                  className="menuitems"
-                                >
-                                  Edit settings
-                                </p>
-                              </>
-                            ) : (
-                              <>
-
-                                {/* Show Published and View Draft when role is Modeler */}
-                                {["User", "Modeler"].includes(item.role) && (
-                                  <>
-                                    {checkpublish && (
-                                      <p
-                                        onClick={() =>
-
-                                          navigate(`/published-map-level/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
-
-                                        }
-                                        className="menuitems"
-                                      >
-                                        View published
-                                      </p>
-                                    )}
-                                    <p
-                                      onClick={() =>
-
-                                        navigate(`/Draft-Process-View/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
-
-                                      }
-                                      className="menuitems"
-                                    >
-                                      View draft
-                                    </p>
-                                  </>
-                                )}
-                              </>
-                            )
-                          )}
-
-
-
-                        </Box>
-                      )}
-                    </Card>
-                  ))}
-                  {user && user.type !== "User" ? (
-                    <div className="ss_add_process_div ss_1" style={{ height: `${slideHeight}px` }}>
-                      <div style={{ width: "100%" }}>
-                        <p style={{ margin: 0 }}>
-                          Add process world
-                        </p>
-                        <div className="ss_dash_slid_img">
-                          <div className="ss_add_proces_img" onClick={() => navigate('/Add-process-title')}>
-                            <img src="../../../img/plus.png" alt="profile img" />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                  ) : null}
-                </Slider>
-              ) : (
-                <div className="process_boxes">
-                  {filteredNodes.map((item) => (
-                    <Card
+                      className="process_box_item_2"
                       key={item.processId}
                       sx={{
                         width: "95%",
@@ -664,145 +446,352 @@ const Dashboard = () => {
                       }}
                     >
                    
-                      <div className="menu_button" onClick={(e) => handleOpenMenu(e, item)}>
-                        <div className="circle_icon">
-                          <svg width="10" height="10" viewBox="0 0 24 24" fill="white">
-                            <path d="M7 10l5 5 5-5H7z" />
-                          </svg>
+                      <div className="header_withlogo">
+                        <div className="title_and_logo">
+                          <label className="text_blue"> {getProcessTitle(item.processId)}</label>
+                          <div className="menu_button" onClick={(e) => handleOpenMenu(e, item)}>
+                            <div className="circle_icons one">
+                              <svg
+                                fill="#002060"
+                                height="20px"
+                                width="20px"
+                                viewBox="0 0 32 32"
+                              >
+                                <g strokeWidth="0"></g>
+                                <g strokeLinecap="round" strokeLinejoin="round"></g>
+                                <g>
+                                  <path d="M16,2C8.3,2,2,8.3,2,16s6.3,14,14,14s14-6.3,14-14S23.7,2,16,2z M21.7,14.7l-5,5C16.5,19.9,16.3,20,16,20s-0.5-0.1-0.7-0.3 l-5-5c-0.4-0.4-0.4-1,0-1.4s1-0.4,1.4,0l4.3,4.3l4.3-4.3c0.4-0.4,1-0.4,1.4,0S22.1,14.3,21.7,14.7z" />
+                                </g>
+                              </svg>
+                            </div>
+
+                            {/* Custom dropdown menu */}
+                            {selectedProcess === item.processId && (
+                              <Box
+                                sx={{
+                                  position: "absolute",
+                                  top: 35,
+                                  right: 10,
+                                  width: "150px",
+                                  bgcolor: "white",
+                                  boxShadow: 3,
+                                  borderRadius: 1,
+                                  padding: 1,
+                                  zIndex: 1000,
+                                }}
+                              >
+
+                                {Loading && (
+                                  item.type === "self" ? (
+                                    <>
+                                      {/* Show all options when type is self */}
+                                      {checkpublish && (
+                                        <p
+                                          onClick={() =>
+
+                                            navigate(`/published-map-level/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
+
+                                          }
+
+                                          className="menuitems"
+                                        >
+                                          {t('View_published')}
+                                         
+                                        </p>
+                                      )}
+                                      <p
+                                        onClick={() =>
+
+                                          navigate(`/Draft-Process-View/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
+
+                                        }
+
+                                        className="menuitems"
+                                      >
+                                         {t('View_draft')}
+                                        
+                                      </p>
+                                      <p
+                                        onClick={() =>
+                                          navigate("/User-Management", {
+                                            state: {
+                                              process: { id: parseInt(item.processId), user_id: item.id },
+                                            },
+                                          })
+                                        }
+                                        className="menuitems"
+                                      >
+                                        {t('Manage_users')}
+                                        
+                                      </p>
+                                      <p
+                                        onClick={() =>
+                                          navigate("/Setting", {
+                                            state: { ProcessId: parseInt(item.processId) },
+                                          })
+                                        }
+                                        className="menuitems"
+                                      >
+                                        {t('Edit_settings')}
+                                        
+                                      </p>
+                                    </>
+                                  ) : (
+                                    <>
+
+                                      {/* Show Published and View Draft when role is Modeler */}
+                                      {["User", "Modeler"].includes(item.role) && (
+                                        <>
+                                          {checkpublish && (
+                                            <p
+                                              onClick={() =>
+
+                                                navigate(`/published-map-level/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
+
+                                              }
+                                              className="menuitems"
+                                            >
+                                              
+                                              {t('View_published')}
+                                            </p>
+                                          )}
+                                          <p
+                                            onClick={() =>
+
+                                              navigate(`/Draft-Process-View/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
+
+                                            }
+                                            className="menuitems"
+                                          >
+                                            {t('View_draft')}
+                                            
+                                          </p>
+                                        </>
+                                      )}
+                                    </>
+                                  )
+                                )}
+                              </Box>
+                            )}
+                          </div>
+                        </div>
+
+
+                        {/* <div className="ss_title_underline"></div> */}
+                        <div className="header_logo">
+                          <img
+                            src={getProcessImage(item.processId)}
+                            alt="Process Logo"
+                            className="process_logo"
+                          />
+                        </div>
+                        </div>
+                        {/* React Flow Component */}
+                        <div className="ss_dash_slid_img" onClick={() => NavigateOnClick(item)}>
+                          {/* <img src="../../../img/dashboard-slider-image.jpg" alt="" /> */}
+                          <MiniMapPreview processId={item.processId} userId={item.id} />
+                        </div>
+                    </Card>
+                  ))}
+                  {user && user.type !== "User" ? (
+                    <div className="ss_add_process_div ss_1 noprocessimg" style={{ height: `${slideHeight}px` }}>
+                      <div style={{ width: "100%" }}>
+                        <div className="header_withlogo">
+                        {t('Add_process_world')}
+                          
+                        </div>
+                        <div className="ss_dash_slid_img" style={{padding: "10px"}}>
+                          <div className="ss_add_proces_img" onClick={() => navigate('/Add-process-title')}>
+                            <img src="../../../img/plus.png" alt="profile img" />
+                          </div>
+                        </div>
+
+                      </div>
+                    </div>
+
+                  ) : null}
+                </Slider>
+              ) : (
+                <div className="process_boxes">
+                  {filteredNodes.map((item) => (
+                    <Card
+                      className="process_box_item_1"
+                      key={item.processId}
+                      sx={{
+                        width: "95%",
+                        minHeight: "300px",
+                        padding: 2,
+                        position: "relative",
+                        display: "flex",
+                        flexDirection: "column",
+                        boxShadow: "none", // 
+                        border: "1px solid #ddd",
+                      }}
+                    >
+
+                      <div className="header_withlogo">
+
+                        <div className="title_and_logo">
+                          <label className="text_blue"> {getProcessTitle(item.processId)}</label>
+                          <div className="menu_button" onClick={(e) => handleOpenMenu(e, item)}>
+                            <div className="circle_icons two">
+                              <svg
+                                fill="#002060"
+                                height="20px"
+                                width="20px"
+                                viewBox="0 0 32 32"
+                              >
+                                <g strokeWidth="0"></g>
+                                <g strokeLinecap="round" strokeLinejoin="round"></g>
+                                <g>
+                                  <path d="M16,2C8.3,2,2,8.3,2,16s6.3,14,14,14s14-6.3,14-14S23.7,2,16,2z M21.7,14.7l-5,5C16.5,19.9,16.3,20,16,20s-0.5-0.1-0.7-0.3 l-5-5c-0.4-0.4-0.4-1,0-1.4s1-0.4,1.4,0l4.3,4.3l4.3-4.3c0.4-0.4,1-0.4,1.4,0S22.1,14.3,21.7,14.7z" />
+                                </g>
+                              </svg>
+
+                            </div>
+
+                            {/* Custom dropdown menu */}
+                            {selectedProcess === item.processId && (
+                              <Box
+                                sx={{
+                                  position: "absolute",
+                                  top: 25,
+                                  right: 0,
+                                  width: "150px",
+                                  bgcolor: "white",
+                                  boxShadow: 3,
+                                  borderRadius: 1,
+                                  padding: 1,
+                                  zIndex: 1000,
+                                }}
+                              >
+
+                                {Loading && (
+                                  item.type === "self" ? (
+                                    <>
+                                      {/* Show all options when type is self */}
+                                      {checkpublish && (
+                                        <p
+                                          onClick={() =>
+
+                                            navigate(`/published-map-level/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
+
+                                          }
+
+                                          className="menuitems"
+                                        >
+                                          {t('View_published')}
+                                          
+                                        </p>
+                                      )}
+                                      <p
+                                        onClick={() =>
+
+                                          navigate(`/Draft-Process-View/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
+
+                                        }
+
+                                        className="menuitems"
+                                      >
+                                        {t('View_draft')}
+                                        
+                                      </p>
+                                      <p
+                                        onClick={() =>
+                                          navigate("/User-Management", {
+                                            state: {
+                                              process: { id: parseInt(item.processId), user_id: item.id },
+                                            },
+                                          })
+                                        }
+                                        className="menuitems"
+                                      >
+                                         {t('Manage_users')}
+                                        
+                                      </p>
+                                      <p
+                                        onClick={() =>
+                                          navigate("/Setting", {
+                                            state: { ProcessId: parseInt(item.processId) },
+                                          })
+                                        }
+                                        className="menuitems"
+                                      >
+                                        {t('Edit_settings')}
+                                        
+                                      </p>
+                                    </>
+                                  ) : (
+                                    <>
+
+
+                                      {/* Show Published and View Draft when role is user and Modeler */}
+                                      {["User", "Modeler"].includes(item.role) && (
+                                        <>
+                                          {checkpublish && (
+                                            <p
+                                              onClick={() =>
+
+                                                navigate(`/published-map-level/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
+
+                                              }
+                                              className="menuitems"
+                                            >
+                                                {t('View_published')}
+                                              
+                                            </p>
+                                          )}
+                                          <p
+                                            onClick={() =>
+
+                                              navigate(`/Draft-Process-View/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
+
+                                            }
+                                            className="menuitems"
+                                          >
+                                            {t('View_draft')}
+                                            
+                                          </p>
+                                        </>
+                                      )}
+                                    </>
+                                  )
+                                )}
+                              </Box>
+                            )}
+
+                          </div>
+                        </div>
+                        {/* <div className="ss_title_underline"></div> */}
+                        <div className="header_logo">
+                          <img
+                            src={getProcessImage(item.processId)}
+                            alt="Process Logo"
+                            className="process_logo"
+                          />
                         </div>
                       </div>
-                      <label className="text_blue"> {getProcessTitle(item.processId)}</label>
-                      <div className="ss_title_underline"></div>
-                      <img
-                        src={getProcessImage(item.processId)}
-                        alt="Process Logo"
-                        className="process_logo"
-                      />
 
                       {/* React Flow Component */}
                       <div className="ss_dash_slid_img" onClick={() => NavigateOnClick(item)}>
                         {/* <img src="../../../img/dashboard-slider-image.jpg" alt="" /> */}
                         <MiniMapPreview processId={item.processId} userId={item.id} />
-
-
                       </div>
 
-                      {/* Custom dropdown menu */}
-                      {selectedProcess === item.processId && (
-                        <Box
-                          sx={{
-                            position: "absolute",
-                            top: 35,
-                            right: 10,
-                            width: "150px",
-                            bgcolor: "white",
-                            boxShadow: 3,
-                            borderRadius: 1,
-                            padding: 1,
-                            zIndex: 1000,
-                          }}
-                        >
 
-                          {Loading && (
-                            item.type === "self" ? (
-                              <>
-                                {/* Show all options when type is self */}
-                                {checkpublish && (
-                                  <p
-                                    onClick={() =>
-
-                                      navigate(`/published-map-level/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
-
-                                    }
-
-                                    className="menuitems"
-                                  >
-                                    View published
-                                  </p>
-                                )}
-                                <p
-                                  onClick={() =>
-
-                                    navigate(`/Draft-Process-View/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
-
-                                  }
-
-                                  className="menuitems"
-                                >
-                                  View draft
-                                </p>
-                                <p
-                                  onClick={() =>
-                                    navigate("/User-Management", {
-                                      state: {
-                                        process: { id: parseInt(item.processId), user_id: item.id },
-                                      },
-                                    })
-                                  }
-                                  className="menuitems"
-                                >
-                                  Manage users
-                                </p>
-                                <p
-                                  onClick={() =>
-                                    navigate("/Setting", {
-                                      state: { ProcessId: parseInt(item.processId) },
-                                    })
-                                  }
-                                  className="menuitems"
-                                >
-                                  Edit settings
-                                </p>
-                              </>
-                            ) : (
-                              <>
-
-
-                                {/* Show Published and View Draft when role is user and Modeler */}
-                                {["User", "Modeler"].includes(item.role) && (
-                                  <>
-                                    {checkpublish && (
-                                      <p
-                                        onClick={() =>
-
-                                          navigate(`/published-map-level/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
-
-                                        }
-                                        className="menuitems"
-                                      >
-                                        View published
-                                      </p>
-                                    )}
-                                    <p
-                                      onClick={() =>
-
-                                        navigate(`/Draft-Process-View/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
-
-                                      }
-                                      className="menuitems"
-                                    >
-                                      View draft
-                                    </p>
-                                  </>
-                                )}
-                              </>
-                            )
-                          )}
-
-
-
-                        </Box>
-                      )}
                     </Card>
                   ))}
 
                   {user && user.type !== "User" && (
                     <div className="ss_add_process_div ss_2">
                       <div style={{ width: "100%" }}>
-                        <p>Add process world</p>
+                        <div className="header_withlogo">{t('Add_process_world')}</div>
                         <div className="ss_add_proces_img" onClick={() => navigate('/Add-process-title')}>
                           <img src="../../../img/plus.png" alt="profile img" />
                         </div>
+                        <div className="ss_dash_slid_img">
+                          <img src="../../../img/dashboard-slider-image.jpg" alt="" />
+                      </div>
                       </div>
                     </div>
                   )}
@@ -820,7 +809,7 @@ const Dashboard = () => {
       <div className="ss_container">
         <div className="row">
           <div className="col-lg-4">
-            <h4><img src="../../../img/two-fingers.svg" alt="" /> Welcome, {user?.first_name}!</h4>
+            <h4><img src="../../../img/two-fingers.svg" alt="" /> {t('Welcome')}, {user?.first_name}!</h4>
             <div className="ss_dash_sec_2_img">
               <iframe
                 className="video"
@@ -836,15 +825,15 @@ const Dashboard = () => {
           </div>
           <div className="col-lg-8">
             <div className="ss_dash_table_mn">
-              <h4><img src="../../../img/star-solid.svg" alt="" />My Favorites</h4>
+              <h4><img src="../../../img/star-solid.svg" alt="" />{t('my_favorites')}</h4>
 
               <div className="ss_dash_table">
                 <table>
                   <thead>
                     <tr>
-                      <th width="63%">Process</th>
-                      <th width="63%">Process World</th>
-                      <th width="15%">Published</th>
+                      <th width="35%">{t('Process')}</th>
+                      <th width="35%">{t('Process_World')}</th>
+                      <th width="20%">{t('Published')}</th>
                     </tr>
                   </thead>
 
@@ -863,15 +852,13 @@ const Dashboard = () => {
                     return (
                       <tbody key={item.id}>
                         <tr>
-                          <td>{getProcessTitle(item.process_id)}</td>
-                          {/* <td onClick={() => handlefavClick(item.process_id, item.node?.user_id, item.parentId, item.PageGroupId,label)}>
-                            {label || "-"}
-                          </td> */}
-                          <td onClick={() => handlefavClick(item.process_id, item.user_id, item.parentId, item.PageGroupId, label)}>
-                            {label || "-"}
+                        <td  style={{ cursor: 'pointer' }} onClick={() => handlefavClick(item.process_id, item.user_id, item.parentId, item.PageGroupId, label)}>
+                            {label || getProcessTitle(item.process_id)}
                           </td>
-                          <td>{formattedDate(publishedDates[item.process_id])}</td>
-                        </tr>
+                          <td>{getProcessTitle(item.process_id)}</td>
+                    
+                          <td>{formattedDate(publishedDates[`${item.process_id}_${item.PageGroupId}`])}</td>
+                          </tr>
                       </tbody>
                     );
                   })}
@@ -879,7 +866,7 @@ const Dashboard = () => {
 
 
               </div>
-              <div className="ss_table_btm_para"><p>Activate the <img src="../../../img/star-regular.svg" alt="" /> on a process model to add a favorite.
+              <div className="ss_table_btm_para"><p> <img src="../../../img/star-regular.svg" alt="" /> {t('Activate_the_process_model_to_add_a_favorite.')}
               </p></div>
             </div>
 

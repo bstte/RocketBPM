@@ -1,20 +1,24 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import './Account.css';
 import CustomHeader from '../../components/CustomHeader';
-import { deactivateUser, ImageBaseUrl, removeProfileImgage, updateprofile } from '../../API/api'
+import { deactivateUser, getLanguages, ImageBaseUrl, removeProfileImgage, updateprofile } from '../../API/api'
 import CustomAlert from '../../components/CustomAlert';
 import { useNavigate } from 'react-router-dom';
-import { setUser } from '../../redux/userSlice';
+import { setTranslations, setUser } from '../../redux/userSlice';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const Account = () => {
     const user = useSelector((state) => state.user.user);
     const [firstName, setFirstName] = useState(user?.first_name || "");
     const [lastName, setLastName] = useState(user?.last_name || "");
     const [email, setEmail] = useState(user?.email || "");
+    const [languages, setLanguages] = useState([]);
+    const [selectedLanguageId, setSelectedLanguageId] = useState(user?.language_id || "");
+
     const [Profile_link, setProfile_link] = useState(user?.Profile_link || "");
     const dispatch = useDispatch();
-
+ const t = useTranslation();
     const [selectedImage, setSelectedImage] = useState(null);
 
     // Password State 🆕
@@ -22,7 +26,13 @@ const Account = () => {
     const [newPassword, setNewPassword] = useState("");
     const [repeatNewPassword, setRepeatNewPassword] = useState("");
 
-
+    useEffect(() => {
+        async function fetchLanguages() {
+            const response = await getLanguages(); // API se laa ke
+            setLanguages(response.data);
+        }
+        fetchLanguages();
+    }, []);
     const navigate = useNavigate();
 
     // Reference for file input
@@ -37,9 +47,9 @@ const Account = () => {
 
             img.onload = () => {
                 // if (img.width === 300 && img.height === 300) {
-                    setSelectedImage(img.src);
+                setSelectedImage(img.src);
                 // } else {
-                    // alert("Image must be 300 x 300 pixels");
+                // alert("Image must be 300 x 300 pixels");
                 // }
             };
         }
@@ -47,7 +57,7 @@ const Account = () => {
 
 
     // Function to remove selected image
- 
+
     const deactivateUserFunction = async () => {
         CustomAlert.confirm(
             "Deactivate Account",
@@ -59,9 +69,7 @@ const Account = () => {
                     return;
                 }
                 try {
-                    console.log(token)
                     const response = await deactivateUser(token);
-                    console.log("Response:", response);
                     alert("Your account has been deactivated.");
                     localStorage.removeItem('token'); // Clear invalid token
                     navigate('/login'); // Redirect to login page
@@ -89,6 +97,8 @@ const Account = () => {
         formData.append("first_name", firstName);
         formData.append("last_name", lastName);
         formData.append("Profile_link", Profile_link);
+        formData.append("language_id", selectedLanguageId);
+
         formData.append("email", email);
 
         if (currentPassword) {
@@ -102,13 +112,16 @@ const Account = () => {
             const blob = await response.blob();
             formData.append("profile_image", new File([blob], "profile.jpg", { type: "image/jpeg" }));
         }
-console.log("newPassword",newPassword)
-        console.log("form repeatNewPassword,",repeatNewPassword)
+       
+
         try {
             const response = await updateprofile(token, formData); // ✅ Pass formData
-            console.log("Profile updated:", response);
-            alert("Profile updated successfully!");
+            // alert("Profile updated successfully!");
+                    CustomAlert.success("Success", "Profile updated successfully!");
+            
             dispatch(setUser(response.user));
+            dispatch(setTranslations(response.translations)); // ✅ agar helper bana ho toh
+
             navigate('/dashboard')
 
         } catch (error) {
@@ -122,20 +135,20 @@ console.log("newPassword",newPassword)
             "Remove Profile Image",
             "Are you sure you want to remove your profile image?",
             async () => {
-                if(selectedImage){
+                if (selectedImage) {
                     setSelectedImage(null);
 
-                }else{
+                } else {
                     const token = localStorage.getItem("token");
                     if (!token) {
                         alert("User not authenticated! Please login.");
                         return;
                     }
-        
+
                     try {
                         const response = await removeProfileImgage(token);
                         const data = response.data; // Fix here
-        
+
                         if (response.status === 200) { // Check status code
                             alert("Profile image removed successfully!");
                             setSelectedImage(null); // Update UI
@@ -143,17 +156,17 @@ console.log("newPassword",newPassword)
                         } else {
                             alert(data.message || "Failed to remove profile image.");
                         }
-                        
+
                     } catch (error) {
                         console.error("Error removing profile image:", error);
                         alert("Something went wrong. Please try again.");
                     }
                 }
-              
+
             }
         );
     };
-    
+
 
 
     return (
@@ -161,12 +174,12 @@ console.log("newPassword",newPassword)
             <div className="ss_title_bar"> <CustomHeader title="Account Setting" /></div>
 
             <div className="account-container" style={{ marginTop: "50px" }}>
-               
+
 
                 <div className="account_header">
                     <div className="account_main_wrapper">
                         <div className="account_Edit_heading">
-                            <h2>Edit Profile</h2>
+                            <h2>{t('Edit_Profile')}</h2>
 
                             <div className="account_Edit_user">
                                 <div className="account_Edit_user_wrapper">
@@ -174,9 +187,13 @@ console.log("newPassword",newPassword)
                                         {selectedImage ? (
                                             <img src={selectedImage} alt="Profile" className="profile-image" />
                                         ) : user?.Profile_image ? (
-                                            <img src={`${ImageBaseUrl}uploads/profile_images/${user?.Profile_image}`} alt="Profile" className="profile-image" />
+                                            <img src={
+                                                user?.Profile_image.startsWith('http')
+                                                  ? user.Profile_image // ✅ Google ka full URL
+                                                  : `${ImageBaseUrl}uploads/profile_images/${user.Profile_image}` // ✅ Local image
+                                              }  alt="Profile" className="profile-image" />
                                         ) : (
-                                            <img src="/img/user-circle-solid.svg" alt="User"/>
+                                            <img src="/img/user-circle-solid.svg" alt="User" />
                                         )}
 
                                     </div>
@@ -213,6 +230,17 @@ console.log("newPassword",newPassword)
                                         placeholder="Email"
                                         className="login-input"
                                     />
+
+<select
+                                        className="login-input"
+                                        value={selectedLanguageId}
+                                        onChange={(e) => setSelectedLanguageId(e.target.value)}
+                                    >
+                                        <option value="">Select Language</option>
+                                        {languages && languages.map((lang) => (
+                                            <option key={lang.id} value={lang.id}>{lang.name}</option>
+                                        ))}
+                                    </select>
                                     <input
                                         type="text"
                                         value={Profile_link}
@@ -220,6 +248,9 @@ console.log("newPassword",newPassword)
                                         placeholder="Link to LinkedIn Profile"
                                         className="login-input"
                                     />
+
+                                 
+
                                 </form>
                             </div>
                         </div>
@@ -255,7 +286,7 @@ console.log("newPassword",newPassword)
                     </div>
 
                     <div className="account_Edit_buttons_CANCEL">
-                        <button type="button" className="button_account" onClick={() => navigate(-1) }>CANCEL</button>
+                        <button type="button" className="button_account" onClick={() => navigate(-1)}>CANCEL</button>
                         <button type="button" className="button_account" onClick={updateProfile}>SAVE</button>
                     </div>
 

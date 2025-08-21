@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { ImageBaseUrl } from '../API/api';
 import { useDispatch, useSelector } from 'react-redux';
 import { logoutUser } from '../redux/userSlice';
+import { useTranslation } from '../hooks/useTranslation';
 
 const CustomHeader = ({ title }) => {
   const user = useSelector((state) => state.user.user);
@@ -11,7 +12,7 @@ const CustomHeader = ({ title }) => {
   const dispatch = useDispatch();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
-
+ const t = useTranslation();
   const handleBack = () => {
     navigate(-1); // Go back to the previous page
   };
@@ -51,38 +52,25 @@ const CustomHeader = ({ title }) => {
         </div>
 
         <div className="ss_profile_rit_div" style={{ flexDirection: "row" }}>
-           {/* { user?.Profile_image ? (
-            <img src={`${ImageBaseUrl}uploads/profile_images/${user?.Profile_image}`} alt="Profile" className="profile-image" onClick={()=>navigate('/Account')} />
-          ) : (
-            <img src="../../../img/user-circle-solid.svg" alt="" onClick={()=>navigate('/Account')}/>
-          )} */}
-        {/* <div >
-              <div>{`Hi, ${user?.first_name || ""}`}</div>
-              <span
-                onClick={handleLogout}
-                style={{
-                  cursor: "pointer",
-                  color: "blue",
-                  textDecoration: "underline",
-                }}
-              >
-                Logout?
-              </span>
-            </div> */}
+         
 
           {/* Dropdown Button */}
-          <div ref={dropdownRef} style={{ position: "relative" }}>
+          <div className='ss_header_new_right' ref={dropdownRef} style={{ position: "relative" }}>
             <div id="dropdownBtn" onClick={toggleDropdown}> 
             { user?.Profile_image ? (
-            <img src={`${ImageBaseUrl}uploads/profile_images/${user?.Profile_image}`} alt="Profile" className="profile-image"  />
+            <img src={
+              user?.Profile_image.startsWith('http')
+                ? user.Profile_image // ✅ Google ka full URL
+                : `${ImageBaseUrl}uploads/profile_images/${user.Profile_image}` // ✅ Local image
+            } alt="Profile" className="profile-image"  />
           ) : (
             <img src="../../../img/user-circle-solid.svg" alt="" />
           )} 
             </div>
             {dropdownOpen && (
             <div className="dropdown-content">
-            <button onClick={() => navigate('/Account')} className="dropdown-link">Edit Profile</button>
-            <button onClick={() => handleLogout()} className="dropdown-link">Log out</button>
+            <button onClick={() => navigate('/Account')} className="dropdown-link">{t('Edit_Profile')}</button>
+            <button onClick={() => handleLogout()} className="dropdown-link">{t("Log_out")}</button>
           </div>
           
             )}

@@ -27,6 +27,7 @@ import EditUser from "../Pages/Manage Assigned Users/editUser";
 import SignupForm from "../Pages/Signup/SignupForm";
 import Setting from "../Pages/Setting/Setting";
 import DraftProcessMapVersion from "../Pages/Map_level/DraftProcessMapVersion";
+import SwimlaneMapVersion from "../Pages/Map_level/SwimlaneMapVersion";
 
 const AppRoutes = () => {
   return (
@@ -48,7 +49,7 @@ const AppRoutes = () => {
       <Route path="/edit-user" element={<PrivateRoute><EditUser /></PrivateRoute>} />
 
       <Route
-        path="/map-level"
+        path="/map-level/:processId/*"
         element={
           <PrivateRoute>
             <ReactFlowProvider>
@@ -57,12 +58,10 @@ const AppRoutes = () => {
           </PrivateRoute>
         }
       />
-
+   <Route path="/level/:level/:parentId/:processId/*" element={<PrivateRoute><MapLevel /></PrivateRoute>} />
       <Route path="/add-process-title" element={<PrivateRoute><ProcessTitle /></PrivateRoute>} />
       <Route path="/list-process-title" element={<PrivateRoute><ListProcessTitle /></PrivateRoute>} />
-      <Route path="/swimlane/level/:level/:parentId" element={<PrivateRoute><SwimlaneModel /></PrivateRoute>} />
-      <Route path="/level/:level/:parentId/*" element={<PrivateRoute><MapLevel /></PrivateRoute>} />
-      {/* <Route path="/published-map-level" element={<PrivateRoute><PublishedMapLevel /></PrivateRoute>} /> */}
+      <Route path="/swimlane/level/:level/:parentId/:processId/*" element={<PrivateRoute><SwimlaneModel /></PrivateRoute>} />
       <Route path="/published-map-level/:processId" element={<PrivateRoute><PublishedMapLevel /></PrivateRoute>} />
 
       <Route path="/published-map-level/:level/:parentId/:processId/*" element={<PrivateRoute><PublishedMapLevel /></PrivateRoute>} />
@@ -74,6 +73,7 @@ const AppRoutes = () => {
       <Route path="/draft-process-view/:level/:parentId/:processId/*" element={<PrivateRoute><DraftProcesMapLevel /></PrivateRoute>} />
       <Route path="/draft-swim-lanes-view/level/:level/:parentId/:processId" element={<PrivateRoute><DraftSwimlineLevel /></PrivateRoute>} />
 
+      <Route path="/Swimlane-Version/:processId/:level/:version/:pageTitle" element={<SwimlaneMapVersion />} />
 
       <Route path="/Draft-Process-Version/:processId/:level/:version/:pageTitle" element={<DraftProcessMapVersion />} />
 

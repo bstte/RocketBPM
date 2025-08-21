@@ -102,7 +102,7 @@ const CustomDrawer = ({ title }) => {
           {/* Logout Button */}
           <Box sx={{ backgroundColor: '#3f51b5', color: "white" }}>
             <ListItem button onClick={handleLogout}>
-              <ListItemText primary="Logout" />
+              {/* <ListItemText primary="Logout" /> */}
             </ListItem>
           </Box>
         </Box>

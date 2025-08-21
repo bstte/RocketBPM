@@ -3,8 +3,8 @@ import { NodeResizer } from "@xyflow/react";
 
 const StickyNote = ({ data, id, selectedNodeId ,editable}) => {
   const [label, setLabel] = useState(data.label || "");
-  const [width, setWidth] = useState(data.width_height?.width || 326);
-  const [height, setHeight] = useState(data.width_height?.height || 90);
+  const [width, setWidth] = useState(data.width_height?.width || 240);
+  const [height, setHeight] = useState(data.width_height?.height || 180);
   const textareaRef = useRef();
   const isClickable = selectedNodeId === id;
 
@@ -93,14 +93,14 @@ const styles = {
     position: "relative",
     width: "100%",
     height: "100%",
+    filter: 'drop-shadow(2px 2px 10px rgba(0, 32, 96, 0.1))',
   },
   note: {
     background: "#FFFF88", // sticky yellow
-    borderRadius: "8px",
     padding: "8px",
     boxSizing: "border-box",
     overflow: "hidden",
-    boxShadow: "2px 2px 10px rgba(0, 32, 96, 0.2)",
+    clipPath: 'polygon(0 0, 85% 0%, 100% 18%, 100% 100%, 0 100%, 0 100%)',
     display: "flex",
     alignItems: "center",
     justifyContent: "center",

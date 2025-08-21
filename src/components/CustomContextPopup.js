@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaTimes } from 'react-icons/fa';
+// import { FaTimes } from 'react-icons/fa';
 
 const CustomContextPopup = ({
   isVisible,
@@ -21,7 +21,7 @@ const CustomContextPopup = ({
         minWidth: '150px', 
       }}
     >
-      <div className='swimlanemenuclose' style={{
+      {/* <div className='swimlanemenuclose' style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -47,7 +47,7 @@ const CustomContextPopup = ({
         >
           <FaTimes />
         </span>
-      </div>
+      </div> */}
 
       {menuItems.map((item, index) => (
         <div

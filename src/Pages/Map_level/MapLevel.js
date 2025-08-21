@@ -23,38 +23,24 @@ import Header from "../../components/Header";
 import Popup from "../../components/Popup";
 import ArrowBoxNode from "../../AllNode/ArrowBoxNode";
 import PentagonNode from "../../AllNode/PentagonNode";
-import api, { addFavProcess, checkFavProcess, filter_draft, removeFavProcess } from "../../API/api";
+import api, { addFavProcess, filter_draft, getNextPageGroupId, removeFavProcess, saveProcessInfo } from "../../API/api";
 import { BreadcrumbsContext } from "../../context/BreadcrumbsContext";
 import CustomContextMenu from "../../components/CustomContextMenu";
 import CustomAlert from "../../components/CustomAlert";
 import { useSelector } from "react-redux";
 import "../../Css/MapLevel.css";
 import StickyNote from "../../AllNode/StickyNote";
-import StickyNoteModel from "../../components/StickyNoteModel";
 import VersionPopup from "./VersionPopup";
+import { useDynamicHeight } from "../../hooks/useDynamicHeight";
+import useCheckFavorite from "../../hooks/useCheckFavorite";
+import { usePageGroupIdViewer } from "../../hooks/usePageGroupIdViewer";
 const MapLevel = () => {
   const [totalHeight, setTotalHeight] = useState(0);
   const [windowHeight, setWindowHeight] = useState(window.innerHeight);
   const [selectedNodeId, setSelectedNodeId] = useState(null);
   const [checkpublish, Setcheckpublish] = useState(true);
-  const [remainingHeight, setRemainingHeight] = useState(0);
+  const { remainingHeight } = useDynamicHeight();
 
-  // const flowcontainer = document.querySelector(".flow-container");
-  // const flowcontainerwidth = flowcontainer ? flowcontainer.getBoundingClientRect().width : 0;
-  // alert(flowcontainerwidth);
-  useEffect(() => {
-    const calculateHeights = () => {
-      const element = document.querySelector(".ss_new_hed");
-      const element2 = document.querySelector(".app-header");
-      const elementHeight = element ? element.getBoundingClientRect().height : 0;
-      const appHeaderHeight = element2 ? element2.getBoundingClientRect().height : 0;
-      const newHeight = window.innerHeight - (elementHeight + appHeaderHeight);
-      setRemainingHeight(newHeight - 40);
-    };
-    calculateHeights();
-    window.addEventListener("resize", calculateHeights);
-    return () => window.removeEventListener("resize", calculateHeights);
-  }, []);
   useEffect(() => {
     const calculateHeight = () => {
       const breadcrumbsElement = document.querySelector(".breadcrumbs-container");
@@ -75,10 +61,27 @@ const MapLevel = () => {
     };
   }, []);
   const navigate = useNavigate();
-  const { level, parentId } = useParams();
+  const { level, parentId, processId } = useParams();
   const location = useLocation();
   const LoginUser = useSelector((state) => state.user.user);
-  const { id, title, user, ParentPageGroupId } = location.state || {};
+  // const { id, title, user, ParentPageGroupId } = location.state || {};
+
+  const queryParams = new URLSearchParams(location.search);
+  const title = queryParams.get("title");
+  const ParentPageGroupId = queryParams.get("ParentPageGroupId");
+  const user = useMemo(() => {
+    try {
+      const queryParams = new URLSearchParams(location.search);
+      const userParam = queryParams.get("user");
+      return userParam ? JSON.parse(decodeURIComponent(userParam)) : null;
+    } catch (e) {
+      console.error("Failed to parse user from query", e);
+      return null;
+    }
+  }, [location.search]);
+
+
+  const id = processId; // string
   const currentLevel = level ? parseInt(level, 10) : 0;
   const [showVersionPopup, setShowVersionPopup] = useState(false);
 
@@ -94,7 +97,7 @@ const MapLevel = () => {
   const [getPublishedDate, setgetPublishedDate] = useState("");
   const [getDraftedDate, setDraftedDate] = useState("");
   const [process_img, setprocess_img] = useState("");
-  const [process_udid, setprocess_udid] = useState("");
+  const [versionPopupPayload, setversionPopupPayload] = useState("");
 
   const [contextMenuPosition, setContextMenuPosition] = useState({
     x: 0,
@@ -104,14 +107,11 @@ const MapLevel = () => {
     x: 0,
     y: 0,
   });
-  const [selectedNodeStickyNoteId, setSelectedNodeStickyNoteId] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   const [headerTitle, setHeaderTitle] = useState(`${title} `);
   const [isNavigating, setIsNavigating] = useState(false);
-  const [modalText, setModalText] = useState("");
   const [isFavorite, setIsFavorite] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const memoizedNodeTypes = useMemo(
     () => ({
       progressArrow: (props) => <ArrowBoxNode {...props} selectedNodeId={selectedNodeId} />,
@@ -179,12 +179,13 @@ const MapLevel = () => {
         const Process_id = id ? id : null;
         const publishedStatus = "Published";
         const draftStatus = "Draft";
+        const PageGroupId = nodes[0]?.PageGroupId
         const [publishedResponse, draftResponse, data] = await Promise.all([
-          api.GetPublishedDate(levelParam, parseInt(user_id), Process_id, publishedStatus),
-          api.GetPublishedDate(levelParam, parseInt(user_id), Process_id, draftStatus),
+          api.GetPublishedDate(levelParam, parseInt(user_id), Process_id, publishedStatus, PageGroupId),
+          api.GetPublishedDate(levelParam, parseInt(user_id), Process_id, draftStatus, PageGroupId),
           api.getNodes(levelParam, parseInt(user_id), Process_id),
         ]);
-        console.log("data", data)
+
         if (publishedResponse.status === true) {
           setgetPublishedDate(publishedResponse.created_at || "");
         } else {
@@ -196,7 +197,7 @@ const MapLevel = () => {
           setDraftedDate("");
         }
         setprocess_img(data.process_img)
-        setprocess_udid(data.process_uid)
+        // setprocess_udid(data.process_uid)
 
         const parsedNodes = data.nodes.map((node) => {
           const parsedData = JSON.parse(node.data);
@@ -244,7 +245,6 @@ const MapLevel = () => {
     fetchNodes();
   }, [
     currentLevel,
-
     handleLabelChange,
     setNodes,
     setEdges,
@@ -254,25 +254,12 @@ const MapLevel = () => {
   ]);
 
 
-  useEffect(() => {
-    const checkfav = async () => {
-      const user_id = LoginUser ? LoginUser.id : null;
-      const process_id = id ? id : null;
-      if (!user_id || !process_id) {
-        console.error("Missing required fields:", { user_id, process_id });
-        return;
-      }
-      try {
-        const PageGroupId = nodes[0]?.PageGroupId;
-        const response = await checkFavProcess(user_id, process_id, PageGroupId);
-        console.log("Response:", response);
-        setIsFavorite(response.exists)
-      } catch (error) {
-        console.error("check fav error:", error);
-      }
-    }
-    checkfav()
-  }, [LoginUser, id, nodes])
+  useCheckFavorite({
+    id,
+    nodes,
+    setIsFavorite,
+  });
+
 
 
   useEffect(() => {
@@ -305,13 +292,12 @@ const MapLevel = () => {
   const onConnect = useCallback((connection) => {
     console.log('Connected:', connection);
   }, []);
-  const addNode = (type, position, label = "") => {
-    console.log("position", position);
+  const addNode = async (type, position, label = "") => {
     const newNodeId = uuidv4();
     let PageGroupId;
-    if (nodes.length === 0) {
-      // PageGroupId = uuidv4();
-      PageGroupId = Math.floor(100000000 + Math.random() * 900000000);
+    if (!nodes.PageGroupId) {
+      const response = await getNextPageGroupId();
+      PageGroupId = response.next_PageGroupId;
 
     } else {
       PageGroupId = nodes[0]?.PageGroupId;
@@ -334,7 +320,9 @@ const MapLevel = () => {
           ),
         defaultwidt: 326,
         defaultheight: 90,
-        width_height: { width: 326, height: 90 },
+        width_height: type === "StickyNote"
+          ? { width: 240, height: 180 }
+          : { width: 326, height: 90 },
         nodeResize: true,
         autoFocus: true,
         isClickable: true,
@@ -374,15 +362,29 @@ const MapLevel = () => {
       );
     }, 1000);
   };
+
+  const translation = () => {
+
+  }
   const deleteNode = useCallback(() => {
     if (selectedNode) {
+      const selectedNodeData = nodes.find((node) => node.id === selectedNode);
+
+      // ✅ Agar LinkToStatus true hai to delete block karo
+      if (selectedNodeData?.data?.LinkToStatus === true) {
+        CustomAlert.warning(
+          "Cannot Delete",
+          "This node is already linked. You cannot delete a linked node."
+        );
+        return;
+      }
       if (checkRecord?.status === true) {
         // 👉 Prevent delete — show info alert only
         CustomAlert.warning(
           "Cannot Delete",
           "This node has objects inside. Please delete them first."
         );
-        return; 
+        return;
       }
       CustomAlert.confirm(
         "Delete Node",
@@ -401,12 +403,10 @@ const MapLevel = () => {
         }
       );
     }
-  }, [selectedNode, setNodes, setEdges, title]);
+  }, [selectedNode, setNodes, setEdges, title, checkRecord]);
   const handleNodeRightClick = async (event, node) => {
     setShowContextMenu(false);
-    // if (node.type === "StickyNote") {
-    //   return;
-    // }
+
     event.preventDefault();
     const newLevel = currentLevel + 1;
     const levelParam =
@@ -437,7 +437,6 @@ const MapLevel = () => {
     setHeaderTitle(`${stateTitle}`);
   }, [location.state, currentLevel, title]);
   const handleCreateNewNode = async (type) => {
-    // console.log("check nodes section ", nodes[0]?.PageGroupId)
     if (selectedNode) {
       const selectedNodeData = nodes.find((node) => node.id === selectedNode);
       const selectedLabel = selectedNodeData?.data?.label || "";
@@ -447,49 +446,30 @@ const MapLevel = () => {
       if (confirmcondition) {
         if (type === "ProcessMap") {
           if (checkRecord.status === true) {
-            // navigate(`/Draft-Process-View/${newLevel}/${selectedNode}`, {
-            //   state: { id, title: selectedLabel, user, ParentPageGroupId: nodes[0]?.PageGroupId },
-            // });
+
             navigate(
               `/Draft-Process-View/${newLevel}/${selectedNode}/${id}?title=${selectedLabel}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${nodes[0]?.PageGroupId}`
             )
           } else {
-            navigate(`/level/${newLevel}/${selectedNode}`, {
-              state: { id, title: selectedLabel, user, ParentPageGroupId: nodes[0]?.PageGroupId },
-            });
+
+            navigate(`/level/${newLevel}/${selectedNode}/${id}?title=${encodeURIComponent(selectedLabel || "")}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${nodes[0]?.PageGroupId}`)
+
           }
         }
         if (type === "Swimlane") {
           if (checkRecord.status === true) {
-            // navigate(`/Draft-Swim-lanes-View/level/${newLevel}/${selectedNode}`, {
-            //   state: {
-            //     id,
-            //     title: selectedLabel,
-            //     user,
-            //     parentId: selectedNode,
-            //     level: newLevel,
-            //     ParentPageGroupId: nodes[0]?.PageGroupId
-            //   },
-            // });
-
             navigate(`/Draft-Swim-lanes-View/level/${newLevel}/${selectedNode}/${id}?title=${encodeURIComponent(selectedLabel || "")}&user=${encodeURIComponent(JSON.stringify(user))}&parentId=${selectedNode}&level=${newLevel}&ParentPageGroupId=${nodes[0]?.PageGroupId}`)
 
           } else {
+
             addBreadcrumb(
-              `${selectedLabel} `,
-              `/swimlane/level/${newLevel}/${selectedNode}`,
-              { id, title, user, parentId: selectedNode, level: newLevel }
+              `${selectedLabel || ""} `,
+
+              `/swimlane/level/${newLevel}/${selectedNode}/${id}?title=${encodeURIComponent(selectedLabel || "")}&user=${encodeURIComponent(JSON.stringify(user))}&parentId=${selectedNode}&level=${newLevel}&ParentPageGroupId=${nodes[0]?.PageGroupId}`
+
             );
-            navigate(`/swimlane/level/${newLevel}/${selectedNode}`, {
-              state: {
-                id,
-                title: selectedLabel,
-                user,
-                parentId: selectedNode,
-                level: newLevel,
-                ParentPageGroupId: nodes[0]?.PageGroupId
-              },
-            });
+            navigate(`/swimlane/level/${newLevel}/${selectedNode}/${id}?title=${encodeURIComponent(selectedLabel || "")}&user=${encodeURIComponent(JSON.stringify(user))}&parentId=${selectedNode}&level=${newLevel}&ParentPageGroupId=${nodes[0]?.PageGroupId}`)
+
           }
         }
       }
@@ -510,6 +490,14 @@ const MapLevel = () => {
         console.error("filter draft error", error)
       }
     }
+
+    const payload = {
+      savetype,
+      ...versionPopupPayload,
+    };
+
+
+
     const Level =
       currentParentId !== null
         ? `Level${currentLevel}_${currentParentId}`
@@ -520,6 +508,10 @@ const MapLevel = () => {
     const LoginUserId = LoginUser ? LoginUser.id : null;
 
     try {
+      if (versionPopupPayload) {
+        await saveProcessInfo(payload);
+      }
+
       const response = await api.saveNodes({
         Level,
         user_id,
@@ -621,9 +613,9 @@ const MapLevel = () => {
     setShowContextMenu(false);
     if (type === "StickyNote") {
 
-      setIsModalOpen(true);
-      setModalText("")
-      console.log("modalText", modalText)
+
+      addNode("StickyNote", { x: OriginalPosition.x, y: OriginalPosition.y });
+
 
     } else {
       addNode(type, { x: OriginalPosition.x, y: OriginalPosition.y });
@@ -694,9 +686,6 @@ const MapLevel = () => {
     contentWrapper: {
       display: "flex",
       flex: 1,
-      // borderLeft: "1px solid #002060",
-      // borderRight: "1px solid #002060",
-      // borderBottom: "1px solid #002060",
 
       border: '2px solid #FF364A',
     },
@@ -781,42 +770,25 @@ const MapLevel = () => {
       );
     }
   };
-  // console.log("nodes",nodes)
+
   const handleNodeClick = (event, node) => {
     setSelectedNodeId(node.id);
-    // if (node.type === "StickyNote") {
-    //   setSelectedNodeStickyNoteId(node.id);
-    //   setModalText(node.data.label || "");
-    //   setIsModalOpen(true)
-    // }
-  };
-  const handleTextSubmit = (enteredText) => {
-    setIsModalOpen(false);
-    if (!enteredText) return;
-    if (selectedNodeStickyNoteId) {
-      setNodes((prevNodes) => {
-        return prevNodes.map((node) =>
-          node.id === selectedNodeStickyNoteId
-            ? { ...node, data: { ...node.data, label: enteredText } }
-            : node
-        );
-      });
-      setSelectedNodeStickyNoteId(null)
-    } else {
-      addNode("StickyNote", { x: OriginalPosition.x, y: OriginalPosition.y }, enteredText);
 
-    }
   };
 
-  // ye common page h
   const navigateToVersion = (process_id, level, version) => {
-    const encodedTitle = encodeURIComponent("swimlane");
+    const encodedTitle = encodeURIComponent("ProcessMap");
     navigate(`/Draft-Process-Version/${process_id}/${level}/${version}/${encodedTitle}`);
   };
 
   const handleVersionClick = () => {
     setShowVersionPopup(true);
   };
+
+  const handleSaveVersionDetails = (payload) => {
+    setversionPopupPayload(payload)
+    setShowVersionPopup(false)
+  }
   return (
     <div>
       <Header
@@ -882,12 +854,6 @@ const MapLevel = () => {
                 contextMenuPosition={contextMenuPosition}
                 handleContextMenuOptionClick={handleContextMenuOptionClick}
               />
-              <StickyNoteModel
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                onSubmit={handleTextSubmit}
-                initialValue={modalText}
-              />
               <Popup
                 showPopup={showPopup}
                 popupPosition={popupPosition}
@@ -898,36 +864,15 @@ const MapLevel = () => {
                 switchNodeType={switchNodeType}
                 handleCreateNewNode={handleCreateNewNode}
                 deleteNode={deleteNode}
+                translation={translation}
                 condition={checkRecord}
               />
             </div>
           </div>
-          <div style={{
-            position: "absolute",
-            bottom: "10px",
-            left: "10px",
-            margin: "20px",
-            fontSize: "18px",
-            color: "#002060",
-            fontFamily: "'Poppins', sans-serif",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px"  // Optional spacing between image and text
-          }}>
-            <img
-              src={`${process.env.PUBLIC_URL}/img/rocket-solid.svg`}
-              alt="Rocket"
-              style={{ width: "16px", height: "16px" }}  // optional: control image size
-            />
-            {/* {process_udid && (
-    <span>ID {process_udid}</span>
-  )} */}
 
-            <span>
-              ID {nodes && nodes.length > 0 ? nodes[0].PageGroupId : ""}
-            </span>
+          {usePageGroupIdViewer(nodes)}
 
-          </div>
+
         </div>
 
 
@@ -939,6 +884,10 @@ const MapLevel = () => {
             currentParentId={currentParentId}
             viewVersion={navigateToVersion}
             LoginUser={LoginUser}
+            title={headerTitle}
+            handleSaveVersionDetails={handleSaveVersionDetails}
+            status={"draft"}
+            type={"ProcessMaps"}
           />
         )}
       </ReactFlowProvider>

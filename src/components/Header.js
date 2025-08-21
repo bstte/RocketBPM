@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { BreadcrumbsContext } from "../context/BreadcrumbsContext";
 import { FaArrowLeft } from 'react-icons/fa';
 import { ImageBaseUrl } from "../API/api";
+import { useTranslation } from "../hooks/useTranslation";
 
 
 const Header = ({
@@ -35,7 +36,7 @@ const Header = ({
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-
+ const t = useTranslation();
   const { breadcrumbs, removeBreadcrumbsAfter } = useContext(BreadcrumbsContext);
 
   const iconComponents = {
@@ -121,35 +122,42 @@ const Header = ({
     };
   }, []);
 
-
-
+ 
   return (
     <>
       <div style={styles.mainheader} className="ss_new_hed">
 
-{
 
-  Page!=="ViewProcessmapVersion" && (
 
-    <div
-    className="breadcrumbs-container"
-    style={styles.mhcolleft}
-  >
-    {breadcrumbs
-      .filter((crumb) => crumb.label !== title)
+      <div
+  className="breadcrumbs-container"
+  style={styles.mhcolleft}
+>
+  {Page === "ViewProcessmapVersion" ? (
+    <FaArrowLeft
+      fontSize="large"
+      style={{ cursor: "pointer" }}
+      onClick={handleBackdata}
+    />
+  ) : (
+    breadcrumbs
+      .filter((crumb) => crumb.label.trim() !== title.trim())
       .map((crumb, index, array) => (
         <span key={index} className="ss_hm_dash_home_icon">
           {index === 0 ? (
             <span
               onClick={() => handleBreadcrumbClick(crumb.path, crumb.state)}
             >
-
-              <img src={`${process.env.PUBLIC_URL}/img/rocket-solid.svg`} alt="Rocket" />
-
+              <img
+                src={`${process.env.PUBLIC_URL}/img/rocket-solid.svg`}
+                alt="Rocket"
+              />
             </span>
           ) : (
             <span
-              onClick={() => handleBreadcrumbClick(crumb.path, crumb.state, index)}
+              onClick={() =>
+                handleBreadcrumbClick(crumb.path, crumb.state, index)
+              }
               style={styles.breadcrumbLink}
             >
               {crumb.label}
@@ -159,11 +167,11 @@ const Header = ({
             <span style={styles.separator}> {">"} </span>
           )}
         </span>
-      ))}
-  </div>
-  
-  )
-}
+      ))
+  )}
+</div>
+
+ 
 
 
         <div style={styles.mhcolright} className="ss_header_new_right">
@@ -180,21 +188,20 @@ const Header = ({
                     backgroundColor: "#002060",
                   }}
                 >
-                  View Draft
+                  {t("View_draft")}
                 </button>
                 <div onClick={onShowVersion} title="Version Info" className="headericons">
-                    i
-                    {/* <img src="/img/info-icon.svg" alt="info" /> */}
+                <svg height="22px" width="22px" version="1.1" id="x32" viewBox="0 0 512 512" fill="#002060"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <path class="st0" d="M255.992,0.008C114.626,0.008,0,114.626,0,256s114.626,255.992,255.992,255.992 C397.391,511.992,512,397.375,512,256S397.391,0.008,255.992,0.008z M300.942,373.528c-10.355,11.492-16.29,18.322-27.467,29.007 c-16.918,16.177-36.128,20.484-51.063,4.516c-21.467-22.959,1.048-92.804,1.597-95.449c4.032-18.564,12.08-55.667,12.08-55.667 s-17.387,10.644-27.709,14.419c-7.613,2.782-16.225-0.871-18.354-8.234c-1.984-6.822-0.404-11.161,3.774-15.822 c10.354-11.484,16.289-18.314,27.467-28.999c16.934-16.185,36.128-20.483,51.063-4.524c21.467,22.959,5.628,60.732,0.064,87.497 c-0.548,2.653-13.742,63.627-13.742,63.627s17.387-10.645,27.709-14.427c7.628-2.774,16.241,0.887,18.37,8.242 C306.716,364.537,305.12,368.875,300.942,373.528z M273.169,176.123c-23.886,2.096-44.934-15.564-47.031-39.467 c-2.08-23.878,15.58-44.934,39.467-47.014c23.87-2.097,44.934,15.58,47.015,39.458 C314.716,152.979,297.039,174.043,273.169,176.123z"></path> </g> </g></svg>
                   </div>
                 {
                   isFavorite ? (
                     <div className="headericons active">
-                      <img src={`${process.env.PUBLIC_URL}/img/star-solid.svg`} alt="Star" />
+                      <img src={`${process.env.PUBLIC_URL}/img/star-solid.svg`} alt="Star" onClick={savefav} />
                     </div>
                   ) : (
                     <>
                       <div className="headericons">
-                        <img src={`${process.env.PUBLIC_URL}/img/star-regular.svg`} alt="Star" />
+                        <img src={`${process.env.PUBLIC_URL}/img/star-regular.svg`} alt="Star" onClick={savefav}/>
                       </div>
                     </>
                   )
@@ -222,7 +229,7 @@ const Header = ({
                         backgroundColor: "#002060",
                       }}
                     >
-                      {Page === "ViewDraftmodel" ? " EDIT MODEL" : " EDIT SWIMLANE MODEL"}
+                      {Page === "ViewDraftmodel" ? `${t("EDIT_MODEL")}` : `${t("EDIT_SWIMLANE_MODEL")}`}
                     </button>
                   </div>
                 )}
@@ -237,7 +244,8 @@ const Header = ({
                           backgroundColor: "#002060",
                         }}
                       >
-                        VIEW PUBLISHED
+                        {t("View_published")}
+                        
                       </button>
                     </div>
                   )
@@ -245,20 +253,19 @@ const Header = ({
 
                
                   <div onClick={onShowVersion} title="Version Info" className="headericons">
-                    i
-                    {/* <img src="/img/info-icon.svg" alt="info" /> */}
+                  <svg height="22px" width="22px" version="1.1" id="x32" viewBox="0 0 512 512" fill="#002060"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <path class="st0" d="M255.992,0.008C114.626,0.008,0,114.626,0,256s114.626,255.992,255.992,255.992 C397.391,511.992,512,397.375,512,256S397.391,0.008,255.992,0.008z M300.942,373.528c-10.355,11.492-16.29,18.322-27.467,29.007 c-16.918,16.177-36.128,20.484-51.063,4.516c-21.467-22.959,1.048-92.804,1.597-95.449c4.032-18.564,12.08-55.667,12.08-55.667 s-17.387,10.644-27.709,14.419c-7.613,2.782-16.225-0.871-18.354-8.234c-1.984-6.822-0.404-11.161,3.774-15.822 c10.354-11.484,16.289-18.314,27.467-28.999c16.934-16.185,36.128-20.483,51.063-4.524c21.467,22.959,5.628,60.732,0.064,87.497 c-0.548,2.653-13.742,63.627-13.742,63.627s17.387-10.645,27.709-14.427c7.628-2.774,16.241,0.887,18.37,8.242 C306.716,364.537,305.12,368.875,300.942,373.528z M273.169,176.123c-23.886,2.096-44.934-15.564-47.031-39.467 c-2.08-23.878,15.58-44.934,39.467-47.014c23.87-2.097,44.934,15.58,47.015,39.458 C314.716,152.979,297.039,174.043,273.169,176.123z"></path> </g> </g></svg>
                   </div>
               
 
                 {
                   isFavorite ? (
                     <div className="headericons active">
-                      <img src={`${process.env.PUBLIC_URL}/img/star-solid.svg`} alt="Star" />
+                      <img src={`${process.env.PUBLIC_URL}/img/star-solid.svg`} alt="Star" onClick={savefav}/>
                     </div>
                   ) : (
                     <>
                       <div className="headericons">
-                        <img src={`${process.env.PUBLIC_URL}/img/star-regular.svg`} alt="Star" />
+                        <img src={`${process.env.PUBLIC_URL}/img/star-regular.svg`} alt="Star" onClick={savefav}/>
                       </div>
                     </>
                   )
@@ -290,8 +297,7 @@ const Header = ({
                 }
 
 <div onClick={onShowVersion} title="Version Info" className="headericons">
-                    i
-                    {/* <img src="/img/info-icon.svg" alt="info" /> */}
+<svg height="22px" width="22px" version="1.1" id="x32" viewBox="0 0 512 512" fill="#002060"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <path class="st0" d="M255.992,0.008C114.626,0.008,0,114.626,0,256s114.626,255.992,255.992,255.992 C397.391,511.992,512,397.375,512,256S397.391,0.008,255.992,0.008z M300.942,373.528c-10.355,11.492-16.29,18.322-27.467,29.007 c-16.918,16.177-36.128,20.484-51.063,4.516c-21.467-22.959,1.048-92.804,1.597-95.449c4.032-18.564,12.08-55.667,12.08-55.667 s-17.387,10.644-27.709,14.419c-7.613,2.782-16.225-0.871-18.354-8.234c-1.984-6.822-0.404-11.161,3.774-15.822 c10.354-11.484,16.289-18.314,27.467-28.999c16.934-16.185,36.128-20.483,51.063-4.524c21.467,22.959,5.628,60.732,0.064,87.497 c-0.548,2.653-13.742,63.627-13.742,63.627s17.387-10.645,27.709-14.427c7.628-2.774,16.241,0.887,18.37,8.242 C306.716,364.537,305.12,368.875,300.942,373.528z M273.169,176.123c-23.886,2.096-44.934-15.564-47.031-39.467 c-2.08-23.878,15.58-44.934,39.467-47.014c23.87-2.097,44.934,15.58,47.015,39.458 C314.716,152.979,297.039,174.043,273.169,176.123z"></path> </g> </g></svg>
                   </div>
                 <div>
                   <button
@@ -301,7 +307,8 @@ const Header = ({
                       backgroundColor: "#002060",
                     }}
                   >
-                    Save as Draft
+                    {t("Save_as_Draft")}
+                    
                   </button>
                 </div>
 
@@ -316,7 +323,8 @@ const Header = ({
                     title={!checkpublish ? "Publish all parent models first" : ""}
 
                   >
-                    Publish
+                    {t("Publish")}
+                    
                   </button>
                 </div>
 
@@ -327,7 +335,7 @@ const Header = ({
                     backgroundColor: "#002060",
                   }}
                 >
-                  Exit
+                  {t("Exit")}
                 </button>
               </>
             )}
@@ -336,14 +344,18 @@ const Header = ({
 
 
 
-            {Page!=="ViewProcessmapVersion" && (
+        
               <>
               {/* Dropdown Button */}
               <div ref={dropdownRef} style={{ position: "relative" }}>
                 <div id="dropdownBtn" onClick={toggleDropdown}>
 
                   {user?.Profile_image ? (
-                    <img src={`${ImageBaseUrl}uploads/profile_images/${user?.Profile_image}`} alt="Profile" />
+                    <img src={
+                      user?.Profile_image.startsWith('http')
+                        ? user.Profile_image // ✅ Google ka full URL
+                        : `${ImageBaseUrl}uploads/profile_images/${user.Profile_image}` // ✅ Local image
+                    }  alt="Profile" />
                   ) : (
                     <img src="/img/user-circle-solid.svg" alt="User" style={styles.loginuserpic} />
                   )}
@@ -351,14 +363,14 @@ const Header = ({
                 </div>
                 {dropdownOpen && (
                   <div className="dropdown-content">
-                    <button onClick={() => navigate('/Account')}>Edit Profile</button>
-                    <button onClick={() => handleLogout()}>Log out</button>
+                    <button onClick={() => navigate('/Account')}>{t('Edit_Profile')}</button>
+                    <button onClick={() => handleLogout()}>{t("Log_out")}</button>
 
                   </div>
                 )}
               </div>
               </>
-            )}
+        
 
             </div>
 
@@ -369,22 +381,16 @@ const Header = ({
 
      
       <header className="app-header" style={styles.header}>
-      {Page!=="ViewProcessmapVersion" && (
+    
         <h1 style={styles.headerTitle} className="sameheight">
 
           {title}
         </h1>
-        )}
+    
 
-{Page==="ViewProcessmapVersion" && (
-  <h1 style={styles.headerTitle} className="sameheight">
- <FaArrowLeft 
-      fontSize="large" 
-      style={{ cursor: "pointer" }} 
-      onClick={handleBackdata} 
-    />
-  </h1>
-)}
+
+  
+
 
         
 
@@ -418,7 +424,8 @@ const Header = ({
 
               <div style={styles.pdate}>
                 <div>
-                  Draft
+                  
+                {t("Draft")}
                   <br />
                   {formattedDatedraft}
                 </div>
@@ -427,7 +434,8 @@ const Header = ({
 
               <div style={styles.pdate}>
                 <div>
-                  Published
+                {t("Published")}
+                  
                   <br />
                   {formattedDate}
                 </div>
@@ -447,7 +455,7 @@ const Header = ({
               <>
                 <div style={styles.pdate} class="ss_box_hed_right_1">
                   <div>
-                    Published
+                  {t("Published")}
                     <br />
                     {formattedDate}
                   </div>
@@ -469,7 +477,8 @@ const Header = ({
             <>
               <div style={styles.pdate} className="ss_box_hed_right_2">
                 <div>
-                  Draft
+                  
+                  {t("Draft")}
                   <br />
                   {formattedDatedraft}
                 </div>

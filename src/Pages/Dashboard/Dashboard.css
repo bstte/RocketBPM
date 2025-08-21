@@ -2,12 +2,17 @@
     display: flex !important;
     width: 93% !important;
     margin: auto;
-    padding: 12px !important;
+    padding:0 !important;
     border: 1px solid #002060;
     min-height: auto;
     border-radius: 0px;
 }
-
+.ss_dash_slid_bx .MuiPaper-root.process_box_item_1 {
+    margin: inherit;
+}
+.ss_dash_slid_bx .MuiPaper-root .ss_dash_slid_img {
+    padding: 10px;
+}
 .slick-prev:before,
 .slick-next:before {
     color: #002060;
@@ -55,8 +60,8 @@
     overflow: hidden;
     border-radius: 0 !important;
     box-shadow: none !important;
-    top: 45px;
-    right: 30px;
+    top: 25px;
+    left: 0px;
 }
 
 .ss_title_bar .css-1ygil4i-MuiToolbar-root {
@@ -82,7 +87,7 @@
 }
 
 .ss_add_process_div {
-    padding: 12px !important;
+    padding: 0px !important;
     border: 1px solid #002060;
     min-height: auto;
     border-radius: 0px;
@@ -97,9 +102,6 @@
     height: 170px;
 }
 
-.ss_dash_slid_img {
-    margin-top: 13px;
-}
 
 .ss_dash_slid_bx .slick-prev {
     left: -3px;
@@ -124,15 +126,10 @@
     position: absolute;
     bottom: 30px;
     right: 0;
-    top: 25%;
+    top: 13%;
     left: 0;
     margin: auto;
 }
-.process_logo {
-    width: 40px;
-    height: 40px;
-    cursor: pointer;
-  }
   .circle_icon {
     background: #002060;
     border-radius: 50%;
@@ -253,8 +250,8 @@ td {
 
 .ss_dash_slid_img {
     position: relative;
-    max-height: 165px;
-    min-height: 165px;
+    max-height: 185px;
+    min-height: 185px;
     display: flex;
     align-items: start;
     justify-content: center;
@@ -363,7 +360,10 @@ td {
     gap: 15px;
 
 }
-
+.ss_hed_rit_user_secnew>div,
+.ss_hed_rit_user_secnew button {
+    cursor: pointer;
+}
 .ss_header_new_right div button {
     font-size: 12px !important;
     padding: 2px 16px 3px 16px !important;
@@ -375,6 +375,7 @@ td {
     font-size: 15px;
     line-height: 20px;
     color: #002060;
+    display: flex;
 }
 
 .ss_header_new_right div span {
@@ -499,10 +500,58 @@ button.header_share_btn img {
     gap: 2%;
 }
 .process_boxes>div {
-    flex: 0 0 30.3%;
-    max-width: 30.3%;
+    flex: 0 0 32.3%;
+    max-width: 32.3%;
     margin-left: 0 !important;
 }
 .ss_1 {
     display: block !important;
 }
+.title_and_logo {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.title_and_logo .circle_icons {
+    display: flex;
+}
+.menu_button {
+    position: relative;
+}
+.ss_title_underline {
+    height: 1px;
+    background:#002060;
+    display: block;
+    margin: 0 -12px;
+    
+}
+.header_withlogo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 8px;
+    border-bottom: 1px solid #002060;
+}
+.header_logo img {
+    max-width: 150px;
+    display: block;
+    max-height: 24px;
+}
+.ss_add_process_div.ss_2 .ss_dash_slid_img img,
+.noprocessimg .ss_dash_slid_img.previewimg  {
+    position: absolute;
+    opacity: 0;
+    top: 0;
+    max-width: inherit;
+    max-height: inherit;
+    min-height: 200px;
+}
+.ss_add_process_div.ss_2 .ss_dash_slid_img {
+    padding: 10px;
+    user-select: none;
+    z-index: -1;
+}
+
+
+
+

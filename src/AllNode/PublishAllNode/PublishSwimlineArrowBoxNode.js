@@ -1,6 +1,6 @@
 import { memo, useContext } from "react";
 import { Handle, Position } from "@xyflow/react";
-import api, { getdataByNodeId } from "../../API/api";
+import api, { checkRecordWithGetLinkPublishData, getdataByNodeId } from "../../API/api";
 import { useNavigate } from "react-router-dom";
 import { BreadcrumbsContext } from "../../context/BreadcrumbsContext";
 
@@ -12,104 +12,103 @@ const ArrowBoxNode = ({ data }) => {
   const navigate = useNavigate();
 
   
-
-
-  const handleLinkClick = async () => {
-    if (data.link) {
-      try {
-        const response = await getdataByNodeId(data.link, "Published");
-       
-
-        if (response.data && response.data.length > 0) {
-          const user_id = response.data[0].user_id;
-          const Process_id = response.data[0].Process_id;
-          const id = response.data[0].Process_id;
-       
-          const user = {
-            id: response.data[0].user_id,
-          };
-
-          // const newLevel = 1;
-          let newLevel = 1;
-          if (data.link !== null) {
-            const match = data.link.match(/^Level(\d+)/); 
-            if (match && match[1]) {
-              const currentLevel = parseInt(match[1], 10);
-              newLevel = currentLevel + 1;
+    const handleLinkClick = async () => {
+      console.log(data.link)
+      if (data.link) {
+        try {
+  
+          const response = await getdataByNodeId(data.link, "draft");
+          if (response.data && response.data.length > 0) {
+            const user_id = response.data[0].user_id;
+            const Process_id = response.data[0].Process_id;
+            const id = response.data[0].Process_id;
+  
+            const user = {
+              id: response.data[0].user_id,
+            };
+  
+            let newLevel = 1;
+            if (data.link !== null) {
+              const match = data.link.match(/^Level(\d+)/);
+              if (match && match[1]) {
+                const currentLevel = parseInt(match[1], 10);
+                newLevel = currentLevel + 1;
+              }
             }
+  
+            const levelParam =
+              data.link !== null
+                ? `Level${newLevel}_${data.link}`
+                : `Level${newLevel}`;
+            console.log("newLevel", levelParam)
+  
+            const nodeData = await checkRecordWithGetLinkPublishData(
+              levelParam,
+              parseInt(user_id),
+              Process_id,
+              data.link
+            );
+            const nodeDataParsed = JSON.parse(response.data[0].data);
+            if (nodeData.status === true) {
+              removeBreadcrumbsAfter(1);
+  
+              const allNodes = nodeData.allNodes; // 👈 API se mila array
+              if (Array.isArray(allNodes) && allNodes.length > 0) {
+                // sabse highest level se start
+                allNodes.forEach((node) => {
+                  const parsedData = JSON.parse(node.data || '{}');
+                  const label = parsedData.label || '';
+                  const node_id = node.node_id;
+                  const process_id = node.Process_id;
+              
+                  // ✅ Level number get karo
+                  let currentLevel = 0;
+                  const match = node_id.match(/^Level(\d+)/);
+                  if (match && match[1]) {
+                    currentLevel = parseInt(match[1], 10);
+                  }
+                  const newLevel = currentLevel + 1;
+              
+                  const user = { id: node.user_id };
+              
+                  // ✅ URL banao
+                  const url = `/published-map-level/${newLevel}/${node_id}/${process_id}?title=${encodeURIComponent(label)}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${node.PageGroupId}`;
+                  // ✅ Breadcrumb add karo
+                  addBreadcrumb(label, url);
+                });
+              }
+              
+              
+              if (nodeData.Page_Title === "ProcessMap") {
+             
+                navigate(`/published-map-level/${newLevel}/${data.link}/${id}?title=${encodeURIComponent(nodeDataParsed.label || "")}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${response.data[0]?.PageGroupId}`)
+  
+              }
+              if (nodeData.Page_Title === "Swimlane") {
+           
+                navigate(`/published-swimlane/level/${newLevel}/${data.link}/${id}?title=${encodeURIComponent(nodeDataParsed.label || "")}&user=${encodeURIComponent(JSON.stringify(user))}&parentId=${data.link}&level=${newLevel}&ParentPageGroupId=${response.data[0]?.PageGroupId}`)
+  
+              }
+            } else {
+              alert("First create next model of this existing model")
+            }
+          } else {
+            console.error("No data found in response.data");
           }
-          
-          const levelParam =
-            data.link !== null
-              ? `Level${newLevel}_${data.link}`
-              : `Level${newLevel}`;
-
-          const nodeData = await api.checkPublishRecord(
-            levelParam,
-            parseInt(user_id),
-            Process_id
-          );
-         
-
-          const nodeDataParsed = JSON.parse(response.data[0].data);
-          if (nodeData.status === true) {
-            removeBreadcrumbsAfter(1);
-            if (nodeData.Page_Title === "ProcessMap") {
-              // navigate(`/published-map-level/${newLevel}/${data.link}`, {
-              //   state: {
-              //     id,
-              //     title: nodeDataParsed.label || "",
-              //     user,
-              //     ParentPageGroupId: response.data[0]?.PageGroupId,
-              //   },
-              // });
-
-              navigate(`/published-map-level/${newLevel}/${data.link}/${id}?title=${encodeURIComponent( nodeDataParsed.label || "")}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${response.data[0]?.PageGroupId}`)
-
-            }
-            if (nodeData.Page_Title === "Swimlane") { 
-                addBreadcrumb(
-                    `${nodeDataParsed.label || ""} `,
-                    // `/published-swimlane/level/${newLevel}/${data.link}`,
-                    // {    id,
-                    //     title: nodeDataParsed.label || "",
-                    //     user,
-                    //     parentId: data.link,
-                    //     level: newLevel,
-                    //     ParentPageGroupId: response.data[0]?.PageGroupId, }
-
-                `/published-swimlane/level/${newLevel}/${data.link}/${id}?title=${encodeURIComponent(nodeDataParsed.label || "")}&user=${encodeURIComponent(JSON.stringify(user))}&parentId=${data.link}&level=${newLevel}&ParentPageGroupId=${response.data[0]?.PageGroupId}`
-
-                  );
-
-                  navigate(`/published-swimlane/level/${newLevel}/${data.link}/${id}?title=${encodeURIComponent(nodeDataParsed.label || "")}&user=${encodeURIComponent(JSON.stringify(user))}&parentId=${data.link}&level=${newLevel}&ParentPageGroupId=${response.data[0]?.PageGroupId}`)
-
-              // navigate(`/published-swimlane/level/${newLevel}/${data.link}`, {
-              //   state: {
-              //     id,
-              //     title: nodeDataParsed.label || "",
-              //     user,
-              //     parentId: data.link,
-              //     level: newLevel,
-              //     ParentPageGroupId: response.data[0]?.PageGroupId,
-              //   },
-              // });
-            }
-          }else{
-            alert("This model is not published")
-          }
-        } else {
-          console.error("No data found in response.data");
+        } catch (error) {
+          console.error("Error fetching link data:", error);
         }
-      } catch (error) {
-        console.error("Error fetching link data:", error);
       }
-    }
-  };
+    };
+  
 
   return (
     <div
-      style={styles.wrapper}
+    style={{
+      ...styles.arrowBox,
+      filter: data.link ? 'drop-shadow(0px 0px 10px #0000004f)' : 'none',
+    }} 
+      onClick={handleLinkClick}
     >
       {/* Arrow Box */}
       <div className="borderBox" style={styles.arrowBox}>
@@ -264,7 +263,7 @@ const styles = {
     color: "white",
     background: "none",
     border: "none",
-    textDecoration: "underline",
+    // textDecoration: "underline",
     cursor: "pointer",
   },
  withoutlinkButton: {

@@ -92,25 +92,36 @@ const EditUser = () => {
             </div>
 
             {/* Permission Checkboxes */}
-            <div className="ss_permision_mn_dv" style={{ marginBottom: '15px' }}>
+            <div style={{ marginBottom: '15px', textAlign: 'left' }}>
               <label>Permission:</label>
-              <div className="ss_label_per">
-                {['User', 'Modeler'].map((role) => (
-                  <label key={role} style={{ display: 'block', marginTop: '5px' }}>
-                    <input
-                      type="checkbox"
-                      checked={permission === role}
-                      onChange={() => handlePermissionChange(role)}
-                    />
-                    {role}
-                  </label>
-                ))}
-              </div>
+              <select
+                id="permission"
+                value={permission}
+                onChange={(e) => handlePermissionChange(e.target.value)}
+                className="ss_add_eml_in"
+              >
+                <option value="">-- Select Permission --</option>
+                <option value="User">User</option>
+                <option value="Modeler">Modeler</option>
+                <option value="Administrator">Administrator</option>
+              </select>
             </div>
 
+            {/* Buttons */}
+            <div style={{ display: 'flex', gap: '10px', justifyContent: "center" }}>
             <button type="submit" className="ss_add_use_btn">
               Update User
             </button>
+              <button
+                type="button"
+                className="ss_add_use_btn"
+                onClick={() => navigate(-1)}
+                style={{ backgroundColor: '#002060', cursor: 'pointer' }}
+              >
+                CANCEL
+              </button>
+            </div>
+           
           </form>
         </div>
       </div>

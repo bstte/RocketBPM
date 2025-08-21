@@ -18,13 +18,15 @@ import {
 import "@xyflow/react/dist/style.css";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Header from "../../../components/Header";
-import api, { checkFavProcess } from "../../../API/api";
+import api, { addFavProcess, checkFavProcess, removeFavProcess } from "../../../API/api";
 import { BreadcrumbsContext } from "../../../context/BreadcrumbsContext";
 import PublishArrowBoxNode from "../../../AllNode/PublishAllNode/PublishArrowBoxNode";
 import PublishPentagonNode from "../../../AllNode/PublishAllNode/PublishPentagonNode";
 import { useSelector } from "react-redux";
 import SharePopup from "../../../components/SharePopup";
 import VersionPopupView from "../../../components/VersionPopupView";
+import useCheckFavorite from "../../../hooks/useCheckFavorite";
+import { usePageGroupIdViewer } from "../../../hooks/usePageGroupIdViewer";
 
 const PublishedMapLevel = () => {
 
@@ -33,11 +35,11 @@ const PublishedMapLevel = () => {
   const windowSize = {
     width: window.innerWidth - 300,
     height: window.innerHeight - 300,
-};
+  };
 
-const [remainingHeight, setRemainingHeight] = useState(0);
+  const [remainingHeight, setRemainingHeight] = useState(0);
 
-const LoginUser = useSelector((state) => state.user.user);
+  const LoginUser = useSelector((state) => state.user.user);
 
   const [isFavorite, setIsFavorite] = useState(false);
 
@@ -47,13 +49,13 @@ const LoginUser = useSelector((state) => state.user.user);
       const appHeaderElement = document.querySelector(".app-header");
 
       const element = document.querySelector(".ss_new_hed");
-        const element2 = document.querySelector(".app-header");
+      const element2 = document.querySelector(".app-header");
 
-        const elementHeight = element ? element.getBoundingClientRect().height : 0;
-        const appHeaderHeight = element2 ? element2.getBoundingClientRect().height : 0;
- 
-        const newHeight = window.innerHeight - (elementHeight + appHeaderHeight);
-        setRemainingHeight(newHeight - 40);
+      const elementHeight = element ? element.getBoundingClientRect().height : 0;
+      const appHeaderHeight = element2 ? element2.getBoundingClientRect().height : 0;
+
+      const newHeight = window.innerHeight - (elementHeight + appHeaderHeight);
+      setRemainingHeight(newHeight - 40);
 
       if (breadcrumbsElement && appHeaderElement) {
         const combinedHeight = breadcrumbsElement.offsetHeight + appHeaderElement.offsetHeight + 100;
@@ -72,41 +74,41 @@ const LoginUser = useSelector((state) => state.user.user);
   }, []);
 
   const navigate = useNavigate();
-  const { level, parentId ,processId} = useParams();
+  const { level, parentId, processId } = useParams();
   const location = useLocation();
   // const {  ParentPageGroupId } = location.state || {};
   const [showVersionPopup, setShowVersionPopup] = useState(false);
 
-const queryParams = new URLSearchParams(location.search);
-const title = queryParams.get("title");
-const ParentPageGroupId = queryParams.get("ParentPageGroupId");
-const user = useMemo(() => {
-  try {
-    const queryParams = new URLSearchParams(location.search);
-    const userParam = queryParams.get("user");
-    return userParam ? JSON.parse(decodeURIComponent(userParam)) : null;
-  } catch (e) {
-    console.error("Failed to parse user from query", e);
-    return null;
-  }
-}, [location.search]);
+  const queryParams = new URLSearchParams(location.search);
+  const title = queryParams.get("title");
+  const ParentPageGroupId = queryParams.get("ParentPageGroupId");
+  const user = useMemo(() => {
+    try {
+      const queryParams = new URLSearchParams(location.search);
+      const userParam = queryParams.get("user");
+      return userParam ? JSON.parse(decodeURIComponent(userParam)) : null;
+    } catch (e) {
+      console.error("Failed to parse user from query", e);
+      return null;
+    }
+  }, [location.search]);
 
 
   const id = processId; // string
 
   const currentLevel = level ? parseInt(level, 10) : 0;
   const currentParentId = parentId || null;
-  const { addBreadcrumb, removeBreadcrumbsAfter,breadcrumbs,setBreadcrumbs } =
+  const { addBreadcrumb, removeBreadcrumbsAfter, breadcrumbs, setBreadcrumbs } =
     useContext(BreadcrumbsContext);
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [headerTitle, setHeaderTitle] = useState(`${title} `);
   const [getPublishedDate, setgetPublishedDate] = useState("");
   const [process_img, setprocess_img] = useState("");
-    const [process_udid, setprocess_udid] = useState("");
-  
- const [isNavigating, setIsNavigating] = useState(false);
- const [showSharePopup, setShowSharePopup] = useState(false);
+  // const [process_udid, setprocess_udid] = useState("");
+
+  const [isNavigating, setIsNavigating] = useState(false);
+  const [showSharePopup, setShowSharePopup] = useState(false);
 
   const memoizedNodeTypes = useMemo(
     () => ({
@@ -138,7 +140,7 @@ const user = useMemo(() => {
   );
 
   useEffect(() => {
-  
+
 
     const fetchNodes = async () => {
       try {
@@ -166,9 +168,9 @@ const user = useMemo(() => {
         } else {
           setgetPublishedDate("");
         }
-
+        console.log("publish data", data)
         setprocess_img(data.process_img)
-        setprocess_udid(data.process_uid)
+        // setprocess_udid(data.process_uid)
         const parsedNodes = data.nodes.filter((node) => node.type !== "StickyNote").map((node) => {
           const parsedData = JSON.parse(node.data);
           const parsedPosition = JSON.parse(node.position);
@@ -185,7 +187,7 @@ const user = useMemo(() => {
               autoFocus: true,
               node_id: node.node_id,
               nodeResize: true,
-              LinkToStatus: node.LinkToStatus, 
+              LinkToStatus: node.LinkToStatus,
 
             },
             type: node.type,
@@ -207,7 +209,7 @@ const user = useMemo(() => {
           style: { stroke: "#002060", strokeWidth: 2 },
           type: "step",
         }));
-        console.log("published process map ,",parsedNodes)
+        console.log("published process map ,", parsedNodes)
 
         setNodes(parsedNodes);
         setEdges(parsedEdges);
@@ -228,27 +230,12 @@ const user = useMemo(() => {
     id,
   ]);
 
-   useEffect(()=>{
-      const checkfav = async () => {
-        const user_id = LoginUser ? LoginUser.id : null;
-        const process_id = id ? id : null;
-        if (!user_id || !process_id) {
-          console.error("Missing required fields:", { user_id, process_id });
-          return;
-        }
-        try {
-          const PageGroupId=nodes[0]?.PageGroupId;
-          const response = await checkFavProcess(user_id, process_id,PageGroupId);
-          console.log("Response:", response);
-          setIsFavorite(response.exists)
-        } catch (error) {
-          console.error("check fav error:", error);
-        }
-      }
-      checkfav()
-    },[LoginUser,id,nodes])
-  
-    
+  useCheckFavorite({
+    id,
+    nodes,
+    setIsFavorite,
+  });
+
   useEffect(() => {
     const label = currentLevel === 0 ? title : title;
     const path =
@@ -257,10 +244,10 @@ const user = useMemo(() => {
       //   : `/published-map-level/${currentLevel}/${currentParentId}`;
 
 
-        currentLevel === 0
+      currentLevel === 0
         ? `/published-map-level/${id}?title=${encodeURIComponent(title)}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${ParentPageGroupId}`
         : `/published-map-level/${currentLevel}/${currentParentId}/${id}?title=${encodeURIComponent(title)}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${ParentPageGroupId}`;
-    
+
     const state = {
       id: id,
       title: title,
@@ -272,7 +259,7 @@ const user = useMemo(() => {
       const safeIndex = Math.max(1, currentLevel - 1);
       removeBreadcrumbsAfter(safeIndex);
     }
-    
+
     addBreadcrumb(label, path, state);
 
     setIsNavigating(false);
@@ -288,67 +275,52 @@ const user = useMemo(() => {
     user,
   ]);
 
-  const handlenodeClick=async (event, node) => {
+  const handlenodeClick = async (event, node) => {
     event.preventDefault();
     const selectedLabel = node.data.label || "";
-    const PageGroupId=nodes[0]?.PageGroupId;
+    const PageGroupId = nodes[0]?.PageGroupId;
     const newLevel = currentLevel + 1;
-    console.log("newLevel",newLevel)
+    console.log("newLevel", newLevel)
     const levelParam =
-    node.id !== null
-      ? `Level${newLevel}_${node.id}`
-      : `Level${currentLevel}`;
-  const user_id = user ? user.id : null;
-  const Process_id = id ? id : null;
-  const data = await api.checkPublishRecord(
-    levelParam,
-    parseInt(user_id),
-    Process_id
-  );
+      node.id !== null
+        ? `Level${newLevel}_${node.id}`
+        : `Level${currentLevel}`;
+    const user_id = user ? user.id : null;
+    const Process_id = id ? id : null;
+    const data = await api.checkPublishRecord(
+      levelParam,
+      parseInt(user_id),
+      Process_id
+    );
 
-  if (data.status === true) {
-    if (data.Page_Title === "ProcessMap") {
-      // navigate(`/published-map-level/${newLevel}/${node.id}`, {
-      //   state: {
-      //     id: id,
-      //     title: selectedLabel,
-      //     user,
-      //     ParentPageGroupId: PageGroupId,
-      //   },
-      // });
-      navigate(`/published-map-level/${newLevel}/${node.id}/${id}?title=${encodeURIComponent(selectedLabel)}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${PageGroupId}`)
+    if (data.status === true) {
+      if (data.Page_Title === "ProcessMap") {
+        // navigate(`/published-map-level/${newLevel}/${node.id}`, {
+        //   state: {
+        //     id: id,
+        //     title: selectedLabel,
+        //     user,
+        //     ParentPageGroupId: PageGroupId,
+        //   },
+        // });
+        navigate(`/published-map-level/${newLevel}/${node.id}/${id}?title=${encodeURIComponent(selectedLabel)}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${PageGroupId}`)
 
+      }
+
+      if (data.Page_Title === "Swimlane") {
+        addBreadcrumb(
+          `${selectedLabel} `,
+          `/published-swimlane/level/${newLevel}/${node.id}/${id}?title=${encodeURIComponent(selectedLabel)}&user=${encodeURIComponent(JSON.stringify(user))}&parentId=${node.id}&level=${newLevel}&ParentPageGroupId=${PageGroupId}`
+
+        );
+
+        navigate(
+          `/published-swimlane/level/${newLevel}/${node.id}/${id}?title=${encodeURIComponent(selectedLabel)}&user=${encodeURIComponent(JSON.stringify(user))}&parentId=${node.id}&level=${newLevel}&ParentPageGroupId=${PageGroupId}`
+        );
+      }
+    } else {
+      alert("Next level not Published")
     }
-
-    if (data.Page_Title === "Swimlane") {
-      addBreadcrumb(
-        `${selectedLabel} `,
-        `/published-swimlane/level/${newLevel}/${node.id}/${id}?title=${encodeURIComponent(selectedLabel)}&user=${encodeURIComponent(JSON.stringify(user))}&parentId=${node.id}&level=${newLevel}&ParentPageGroupId=${PageGroupId}`
-
-      );
-
-      navigate(
-        `/published-swimlane/level/${newLevel}/${node.id}/${id}?title=${encodeURIComponent(selectedLabel)}&user=${encodeURIComponent(JSON.stringify(user))}&parentId=${node.id}&level=${newLevel}&ParentPageGroupId=${PageGroupId}`
-      );
-
-      
-      // navigate(
-      //   `/published-swimlane/level/${newLevel}/${node.id}/${id}`,
-      //   {
-      //     state: {
-      //       id: id,
-      //       title: selectedLabel,
-      //       user,
-      //       parentId: node.id,
-      //       level: newLevel,
-      //       ParentPageGroupId: PageGroupId,
-      //     },
-      //   }
-      // );
-    }
-  }else{
-    alert("Next level not Published")
-  }
 
   }
 
@@ -365,79 +337,108 @@ const user = useMemo(() => {
 
 
   const iconNames = {};
-const navigateOnDraft=()=>{
+  const navigateOnDraft = () => {
 
 
-  const updatedBreadcrumbs = breadcrumbs.map((crumb, index) => {
-    if (index === 0) return crumb; // First breadcrumb ko as it is rakhna
+    const updatedBreadcrumbs = breadcrumbs.map((crumb, index) => {
+      if (index === 0) return crumb; // First breadcrumb ko as it is rakhna
 
-    return {
-      ...crumb,
-      path: crumb.path.replace("published-map-level", "Draft-Process-View") 
-    };
-  });
-  setBreadcrumbs(updatedBreadcrumbs);
+      return {
+        ...crumb,
+        path: crumb.path.replace("published-map-level", "Draft-Process-View")
+      };
+    });
+    setBreadcrumbs(updatedBreadcrumbs);
 
-if(id && user){
-    if(currentLevel===0){
-      // navigate('/Draft-Process-View',{ state: { id:id, title:title, user: user,ParentPageGroupId } })
-      navigate(
-        `/Draft-Process-View/${id}?title=${title}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${ParentPageGroupId}`
-      );
-      
-    
-    }else{
-      //  navigate(`/Draft-Process-View/${currentLevel}/${currentParentId}`,{ state: { id:id, title:title, user: user,ParentPageGroupId } })
-   navigate(`/Draft-Process-View/${currentLevel}/${currentParentId}/${id}?title=${encodeURIComponent(title)}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${ParentPageGroupId}`)
+    if (id && user) {
+      if (currentLevel === 0) {
+        // navigate('/Draft-Process-View',{ state: { id:id, title:title, user: user,ParentPageGroupId } })
+        navigate(
+          `/Draft-Process-View/${id}?title=${title}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${ParentPageGroupId}`
+        );
+
+
+      } else {
+        //  navigate(`/Draft-Process-View/${currentLevel}/${currentParentId}`,{ state: { id:id, title:title, user: user,ParentPageGroupId } })
+        navigate(`/Draft-Process-View/${currentLevel}/${currentParentId}/${id}?title=${encodeURIComponent(title)}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${ParentPageGroupId}`)
+      }
+
+    } else {
+      alert("Currently not navigate on draft mode")
     }
-   
-  }else{
-    alert("Currently not navigate on draft mode")
+
   }
 
-}
+
+  const styles = {
+    appContainer: {
+      display: "flex",
+      flexDirection: "column",
+      height: totalHeight > 0 ? `${windowHeight - totalHeight}px` : "auto",
+      marginTop: "0px",
+      backgroundColor: "#f8f9fa",
+    },
+    contentWrapper: {
+      display: "flex",
+      flex: 1,
+      borderLeft: "1px solid #002060",
+      borderRight: "1px solid #002060",
+      borderBottom: "1px solid #002060",
+    },
+    flowContainer: {
+      flex: 1,
+      backgroundColor: "#ffffff",
+      position: "relative",
+    },
+    reactFlowStyle: {
+      width: "100%",
+      height: "100%",
+    },
+  };
+
+  // ye commom page h
+  const navigateToVersion = (process_id, level, version) => {
+    const encodedTitle = encodeURIComponent("ProcessMap");
+    navigate(`/Draft-Process-Version/${process_id}/${level}/${version}/${encodedTitle}`);
+  };
 
 
-const styles = {
-  appContainer: {
-    display: "flex",
-    flexDirection: "column",
-    height: totalHeight > 0 ? `${windowHeight - totalHeight}px` : "auto",
-    marginTop: "0px",
-    backgroundColor: "#f8f9fa",
-  },
-  contentWrapper: {
-    display: "flex",
-    flex: 1,
-    borderLeft: "1px solid #002060",
-    borderRight: "1px solid #002060",
-    borderBottom: "1px solid #002060",
-  },
-  flowContainer: {
-    flex: 1,
-    backgroundColor: "#ffffff",
-    position: "relative",
-  },
-  reactFlowStyle: {
-    width: "100%",
-    height: "100%",
-  },
-};
+  const handleShareClick = () => {
+    setShowSharePopup(true);
+  };
 
-// ye commom page h
-const navigateToVersion = (process_id, level, version) => {
-  const encodedTitle = encodeURIComponent("swimlane");
-  navigate(`/Draft-Process-Version/${process_id}/${level}/${version}/${encodedTitle}`);
-};
+  const handleVersionClick = () => {
+    setShowVersionPopup(true);
+  };
 
+  const handleFav = async () => {
+    const user_id = LoginUser ? LoginUser.id : null;
+    const process_id = id ? id : null;
+    const type = user ? user.type : null;
 
-const handleShareClick = () => {
-  setShowSharePopup(true);
-};
+    if (!user_id || !process_id || !type) {
+      console.error("Missing required fields:", { user_id, process_id, type });
+      return;
+    }
 
-const handleVersionClick = () => {
-  setShowVersionPopup(true);
-};
+    const PageGroupId = nodes[0]?.PageGroupId;
+
+    try {
+      if (isFavorite) {
+
+        const response = await removeFavProcess(user_id, process_id, PageGroupId);
+        setIsFavorite(false);
+        console.log("Removed from favorites:", response);
+      } else {
+        const response = await addFavProcess(user_id, process_id, type, PageGroupId, currentParentId);
+        setIsFavorite(true);
+        console.log("Added to favorites:", response);
+      }
+    } catch (error) {
+      console.error("Favorite toggle error:", error);
+    }
+  };
+
   return (
     <div>
       <Header
@@ -454,14 +455,15 @@ const handleVersionClick = () => {
         isFavorite={isFavorite}
         Process_img={process_img}
         Procesuser={user}
-        onShare={()=>handleShareClick()}
+        onShare={() => handleShareClick()}
         onShowVersion={handleVersionClick}
+        savefav={handleFav}
 
       />
       <ReactFlowProvider>
-      <div className="app-container" style={{ ...styles.appContainer, height: remainingHeight }}>
+        <div className="app-container" style={{ ...styles.appContainer, height: remainingHeight }}>
           <div className="content-wrapper" style={styles.contentWrapper}>
-            
+
             <div className="flow-container" style={styles.flowContainer}>
               <ReactFlow
                 nodes={nodes}
@@ -477,66 +479,45 @@ const handleVersionClick = () => {
                 zoomOnPinch={false}
                 fitView
                 translateExtent={[
-                  [1240, 410], 
-                  [windowSize.width, windowSize.height], 
+                  [1240, 410],
+                  [windowSize.width, windowSize.height],
                 ]}
                 panOnDrag={false}
                 panOnScroll={false}
-                proOptions={{hideAttribution: true }}
+                proOptions={{ hideAttribution: true }}
                 maxZoom={0.6}
                 style={styles.reactFlowStyle}
               ></ReactFlow>
             </div>
           </div>
 
-          <div style={{
-  position: "absolute",
-  bottom: "10px",
-  left: "10px",
-  margin: "20px",
-  fontSize: "18px",
-  color: "#002060",
-  fontFamily: "'Poppins', sans-serif",
-  display: "flex",
-  alignItems: "center",
-  gap: "8px"  // Optional spacing between image and text
-}}>
-  <img 
-    src={`${process.env.PUBLIC_URL}/img/rocket-solid.svg`} 
-    alt="Rocket" 
-    style={{ width: "16px", height: "16px" }}  // optional: control image size
-  />
-  {/* {process_udid && (
-    <span>ID {process_udid}</span>
-  )} */}
-
-<span>
-  ID {nodes && nodes.length > 0 ? nodes[0].PageGroupId : ""}
-</span>
-
-</div>
+          {usePageGroupIdViewer(nodes)}
 
         </div>
 
         {showSharePopup && (
-        <SharePopup
-          processId={id}
-          processName={`ProcessName: ${headerTitle}`}
-          onClose={() => setShowSharePopup(false)}
-        />
-      )}
+          <SharePopup
+            processId={id}
+            processName={`${headerTitle}`}
+            onClose={() => setShowSharePopup(false)}
+          />
+        )}
 
 
-{showVersionPopup && (
-  <VersionPopupView
-    processId={id}
-    currentLevel={currentLevel}
-    onClose={() => setShowVersionPopup(false)}
-    currentParentId={currentParentId}
-    viewVersion={navigateToVersion}  
-    LoginUser={LoginUser}
-    />
-)}
+        {showVersionPopup && (
+          <VersionPopupView
+            processId={id}
+            currentLevel={currentLevel}
+            onClose={() => setShowVersionPopup(false)}
+            currentParentId={currentParentId}
+            viewVersion={navigateToVersion}
+            LoginUser={LoginUser}
+            title={headerTitle}
+            status={"Published"}
+            type={"ProcessMaps"}
+
+          />
+        )}
       </ReactFlowProvider>
     </div>
   );

@@ -5,13 +5,16 @@ import CustomHeader from '../../components/CustomHeader';
 import { FaEdit } from "react-icons/fa";
 
 import "./Manageuser.css";
+import { useTranslation } from '../../hooks/useTranslation';
 const ManageAssignedUsers = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { process } = location.state || {};
   const [assignedUsers, setAssignedUsers] = useState([]);
   // const [isLoading, setIsLoading] = useState(true);
+  const t = useTranslation();
 
+  
   useEffect(() => {
     const getProcessAssignUsersData = async () => {
       try {
@@ -33,65 +36,70 @@ const ManageAssignedUsers = () => {
   return (
     <div>
       {/* header */}
-      <div className="ss_title_bar"> <CustomHeader title="User Management" /></div>
+      <div className="ss_title_bar"> <CustomHeader title={t("User_Management")} /></div>
       {/* header */}
       <div className="ss_mang_user_mn_dv">
 
-        <button className="ss_add_user_btn" onClick={() => navigate("/Add-User", { state: { process: process } })}
-        >
-          Add User
-        </button>
+        <div className="ss_table_header">
+          <h3></h3>
+          <button className="ss_add_user_btn" onClick={() => navigate("/Add-User", { state: { process: process } })}>
+            {t("Add_User")}
+          </button>
+        </div>
 
-        <table border="1" cellPadding="10" cellSpacing="0" width="100%">
-          <thead>
-            <tr>
-              <th>First Name</th>
-              <th>Last Name</th>
-              <th>Email</th>
-              <th>Role</th>
-                            {/* <th>Status</th> */}
+        <div className="ss_table_scroll">
 
-              <th>User Status</th>
-               <th>Process Status</th>
 
-              <th>Action</th> 
+          <table border="1" cellPadding="10" cellSpacing="0" width="100%">
+            <thead style={{ position: "sticky", top: 0, background: "#fff",}}>
+              <tr>
+                <th>{t("First_Name")}</th>
+                <th>{t("Last_Name")}</th>
+                <th>{t("Email")}</th>
+                <th>{t("Role")}</th>
+                {/* <th>Status</th> */}
 
-            </tr>
-          </thead>
-          <tbody>
-            {assignedUsers.length > 0 ? (
-              assignedUsers.map((user, index) => (
-                <tr key={index}>
-                  <td>{user.assigned_user?.first_name || 'N/A'}</td>
-                  <td>{user.assigned_user?.last_name || 'N/A'}</td>
-                  <td>{user.assigned_user?.email || 'N/A'}</td>
-                  <td>{user?.Role || 'N/A'}</td>
-                  <td>{user.assigned_user?.status || 'N/A'}</td>
-                  <td>{user?.status || 'N/A'}</td>
+                <th>{t("User_Status")}</th>
+                <th>{t("Process_Status")}</th>
 
-                  <td>
+                <th>{t("Action")}</th>
 
-                    <button className="ss_add_user_btn" onClick={() => navigate("/edit-User", { state: { assignedUsers: user } })}
-                    >
+              </tr>
+            </thead>
+            <tbody>
+              {assignedUsers.length > 0 ? (
+                assignedUsers.map((user, index) => (
+                  <tr key={index}>
+                    <td>{user.assigned_user?.first_name || 'N/A'}</td>
+                    <td>{user.assigned_user?.last_name || 'N/A'}</td>
+                    <td>{user.assigned_user?.email || 'N/A'}</td>
+                    <td>{user?.Role || 'N/A'}</td>
+                    <td>{user.assigned_user?.status || 'N/A'}</td>
+                    <td>{user?.status || 'N/A'}</td>
+
+                    <td>
+
+                      <button className="ss_add_user_btn" onClick={() => navigate("/edit-User", { state: { assignedUsers: user } })}
+                      >
                         <FaEdit />
 
-                    </button>
-                  </td> 
+                      </button>
+                    </td>
 
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="4" style={{ textAlign: 'center', padding: '10px' }}>{t("No_assigned_user_msg")}</td>
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="4" style={{ textAlign: 'center', padding: '10px' }}>No Assigned Users Found</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+              )}
+            </tbody>
+          </table>
+        </div>
 
         <div className="ss_table_btm_btn">
           <ul>
-            <li> <button className="ss_add_user_btn" onClick={() => navigate(-1)}>CLOSE</button></li>
-            {/* <li><button className="ss_add_user_btn">Save</button></li> */}
+            <li> <button className="ss_add_user_btn" onClick={() => navigate(-1)}>{t("CLOSE")}</button></li>
           </ul>
         </div>
 

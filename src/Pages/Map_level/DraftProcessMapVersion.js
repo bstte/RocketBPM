@@ -1,74 +1,50 @@
 import { useNavigate, useParams } from "react-router-dom";
 import React, {
-    useState,
-    useMemo,
-    useEffect,
-  } from "react";
-  import {
-    ReactFlow,
-    ReactFlowProvider,
-  
-    SmoothStepEdge,
-    BezierEdge,
-    StraightEdge,
-  
-  } from "@xyflow/react";
-  import "@xyflow/react/dist/style.css";
+  useState,
+  useMemo,
+  useEffect,
+} from "react";
+import {
+  ReactFlow,
+  ReactFlowProvider,
+
+  SmoothStepEdge,
+  BezierEdge,
+  StraightEdge,
+
+} from "@xyflow/react";
+import "@xyflow/react/dist/style.css";
 import "@xyflow/react/dist/style.css";
 import PublishArrowBoxNode from "../../AllNode/PublishAllNode/PublishArrowBoxNode";
 import PublishPentagonNode from "../../AllNode/PublishAllNode/PublishPentagonNode";
 import StickyNote from "../../AllNode/StickyNote";
 import Header from "../../components/Header";
 import { getVersionViewData } from "../../API/api";
+import { useDynamicHeight } from "../../hooks/useDynamicHeight";
 
 const DraftProcessMapVersion = () => {
   const { processId, level, version, pageTitle } = useParams();
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
-  // const [totalHeight, setTotalHeight] = useState(0);
-  // const [windowHeight, setWindowHeight] = useState();
-const windowHeight=window.innerHeight;
-const totalHeight=0
+  const [Title, SetTitle] = useState("")
+
+  const windowHeight = window.innerHeight;
+  const totalHeight = 0
 
 
-    const windowSize = {
-      width: window.innerWidth - 300,
-      height: window.innerHeight - 300,
-    };
-  
-    const [remainingHeight, setRemainingHeight] = useState(0);
-    
-  
-  useEffect(() => {
-     const calculateHeights = () => {
-       const element = document.querySelector(".ss_new_hed");
-       const element2 = document.querySelector(".app-header");
- 
-       const elementHeight = element ? element.getBoundingClientRect().height : 0;
-       const appHeaderHeight = element2 ? element2.getBoundingClientRect().height : 0;
- 
-       const newHeight = window.innerHeight - (elementHeight + appHeaderHeight);
-       setRemainingHeight(newHeight - 40);
- 
- 
-     };
- 
-     // Initial setup
-     calculateHeights();
- 
-     // Handle window resize
-     window.addEventListener("resize", calculateHeights);
- 
-     // Cleanup on unmount
-     return () => window.removeEventListener("resize", calculateHeights);
-   }, []);
- 
+  const windowSize = {
+    width: window.innerWidth - 300,
+    height: window.innerHeight - 300,
+  };
+
+  const { remainingHeight } = useDynamicHeight();
+
 
   const memoizedNodeTypes = useMemo(
     () => ({
       progressArrow: PublishArrowBoxNode,
       pentagon: PublishPentagonNode,
-      StickyNote:StickyNote
+      StickyNote: StickyNote
     }),
     []
   );
@@ -86,7 +62,7 @@ const totalHeight=0
       try {
         const response = await getVersionViewData(processId, level, version, pageTitle);
         const { nodes, edges } = response;
-console.log(response)
+        SetTitle(nodes[0]?.version)
         const parsedNodes = nodes.map((node) => ({
           ...node,
           data: {
@@ -146,19 +122,19 @@ console.log(response)
   };
   const navigate = useNavigate();
 
-  
+
   return (
     <div>
-        <Header
-  title={"headerTitle"}
-  Page={"ViewProcessmapVersion"}
-  iconNames={{}} // ✅ prevent crash if Header uses Object.keys
-  onSave={() => {}} // optional stub functions
-  onPublish={() => {}}
-  handleBackdata={() => {
-    navigate(-1);
-  }}
-/>
+      <Header
+        title={`Version: ${Title}`}
+        Page={"ViewProcessmapVersion"}
+        iconNames={{}} // ✅ prevent crash if Header uses Object.keys
+        onSave={() => { }} // optional stub functions
+        onPublish={() => { }}
+        handleBackdata={() => {
+          navigate(-1);
+        }}
+      />
       <ReactFlowProvider>
         <div className="app-container" style={{ ...styles.appContainer, height: remainingHeight }}>
           <div className="content-wrapper" style={styles.contentWrapper}>
@@ -168,8 +144,8 @@ console.log(response)
               <ReactFlow
                 nodes={nodes}
                 edges={edges}
-              
-            
+
+
                 nodeTypes={memoizedNodeTypes}
                 edgeTypes={memoizedEdgeTypes}
                 minZoom={0.1}
@@ -190,7 +166,7 @@ console.log(response)
           </div>
 
         </div>
-    
+
 
 
       </ReactFlowProvider>

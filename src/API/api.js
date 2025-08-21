@@ -33,7 +33,15 @@ export const saveNodes = async (data) => {
     throw error;
   }
 };
-
+export const getNextPageGroupId = async () => {
+  try {
+    const response = await api.get('/getNext-PageGroupId');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching nodes:', error);
+    throw error;
+  }
+};
 
 export const getNodes = async (level = null, user_id = null, Process_id = null) => {
   try {
@@ -101,6 +109,41 @@ export const checkRecord = async (level = null, user_id = null, Process_id = nul
   }
 };
 
+
+export const checkRecordWithGetLinkDraftData = async (level = null, user_id = null, Process_id = null,LinkLevel=null) => {
+  try {
+    const response = await api.get('/check-record-withgetlinkdraft-data', {
+      params: {
+        level,
+        user_id,
+        Process_id,
+        LinkLevel
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching nodes:', error);
+    throw error;
+  }
+};
+
+export const checkRecordWithGetLinkPublishData = async (level = null, user_id = null, Process_id = null,LinkLevel=null) => {
+  try {
+    const response = await api.get('/check-record-withgetlinkPublish-data', {
+      params: {
+        level,
+        user_id,
+        Process_id,
+        LinkLevel
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching nodes:', error);
+    throw error;
+  }
+};
+
 export const checkPublishRecord = async (level = null, user_id = null, Process_id = null) => {
   try {
     const response = await api.get('/checkPublishRecord', {
@@ -118,14 +161,15 @@ export const checkPublishRecord = async (level = null, user_id = null, Process_i
 };
 
 
-export const GetPublishedDate = async (level = null, user_id = null, Process_id = null, status = null) => {
+export const GetPublishedDate = async (level = null, user_id = null, Process_id = null, status = null,PageGroupId=null) => {
   try {
     const response = await api.get('/GetPublishedDate', {
       params: {
         level,
         user_id,
         Process_id,
-        status
+        status,
+        PageGroupId
       }
     });
     return response.data;
@@ -502,7 +546,7 @@ export const submitSignupForm = async (newUserObject = null) => {
 };
 
 
-export const versionlist = async (processId ,level,LoginUserId) => {
+export const versionlist = async (processId ,level,LoginUserId,status) => {
   try {
 
 
@@ -510,7 +554,8 @@ export const versionlist = async (processId ,level,LoginUserId) => {
       params: {
         process_id: processId,
         level: level,
-        LoginUserId:LoginUserId
+        LoginUserId:LoginUserId,
+        status:status
       }
     });
     return response.data;
@@ -561,6 +606,38 @@ export const saveProcessInfo = async (data) => {
   }
 };
 
+export const googleOAuth = async (tokenId) => {
+  try {
+    const response = await api.post('/oauth/google', { tokenId });
+    return response.data; // Return JSON directly
+  } catch (error) {
+    console.error('Google OAuth API Error:', error);
+    throw error.response ? error.response.data : error;
+  }
+};
+
+
+// ✅ Microsoft OAuth API Call
+export const microsoftOAuth = async (code) => {
+  try {
+    const response = await api.post('/oauth/microsoft', { code });
+    return response.data;
+  } catch (error) {
+    console.error('Microsoft OAuth API Error:', error);
+    throw error.response ? error.response.data : error;
+  }
+};
+
+
+export const getLanguages = async () => {
+  try {
+    const response = await api.get('/languages');
+    return response;
+  } catch (error) {
+    console.error('Error fetching process titles:', error);
+    throw error;
+  }
+};
 
 const apiExports = { saveNodes,getallpublishObject_Tolinkexistingmodel, getexistingrole,getNodes, checkPublishRecord, GetPublishedDate, checkRecord, Login, saveProcessTitle, defaultApi, filter_draft, getPublishedNodes, getdataByNodeId };
 

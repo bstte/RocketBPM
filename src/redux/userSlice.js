@@ -6,10 +6,10 @@ import CustomAlert from '../components/CustomAlert';
 export const loginUser = createAsyncThunk('user/login', async ({ email, password }, { rejectWithValue }) => {
   try {
     const response = await Login(email, password);
-    const { access_token, user } = response; // Access data correctly
+    const { access_token, user ,translations} = response; // Access data correctly
     localStorage.setItem('token', access_token);
     console.log("access_token", response);
-    return user;
+    return { user, translations };
   } catch (error) {
     console.error("login error", error);
     CustomAlert.error("Error", error.response.data.message);
@@ -40,12 +40,17 @@ export const userSlice = createSlice({
   name: 'user',
   initialState: {
     user: null,
+    translations: {}, // ✅ Add this
+
     loading: false,
     error: null,
   },
   reducers: {
     setUser: (state, action) => {
       state.user = action.payload; // Save the user data in Redux
+    },
+    setTranslations: (state, action) => {
+      state.translations = action.payload;
     },
     logout: (state) => {
       localStorage.removeItem('token');
@@ -59,7 +64,8 @@ export const userSlice = createSlice({
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload;
+        state.user = action.payload.user;
+        state.translations = action.payload.translations || {}; // ✅ Save translations
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
@@ -74,6 +80,6 @@ export const userSlice = createSlice({
   },
 });
 
-export const { setUser, logout } = userSlice.actions;
+export const { setUser,setTranslations, logout } = userSlice.actions;
 
 export default userSlice.reducer;
