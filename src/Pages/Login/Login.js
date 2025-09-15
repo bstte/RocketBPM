@@ -2,9 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './Login.css'; // Import the CSS file for styling
-import { loginUser, setUser } from '../../redux/userSlice';
+import { loginUser, setTranslations, setUser } from '../../redux/userSlice';
 import { CurrentUser, googleOAuth, microsoftOAuth } from '../../API/api';
 import { GoogleLogin } from '@react-oauth/google';
+import { useMsal } from '@azure/msal-react';
+import { loginRequest } from '../../hooks/msalConfig';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -13,6 +15,8 @@ const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+  const { instance } = useMsal();
+
   const from = location.state?.from?.pathname
   ? location.state.from.pathname + (location.state.from.search || '')
   : '/dashboard';
@@ -25,21 +29,45 @@ const Login = () => {
       setEmail(emailParam);
     }
 
-    const code = params.get('code');
-    if (code) {
-      handleMicrosoftCallback(code);
-    }
-
   }, []);
+  const handleMicrosoftLogin = async () => {
+    try {
+      const loginResponse = await instance.loginPopup(loginRequest);
+      const account = loginResponse.account;
+  
+      // Acquire token silently
+      const tokenResponse = await instance.acquireTokenSilent({
+        ...loginRequest,
+        account: account
+      });
+  
+      const accessToken = tokenResponse.accessToken;
+  
+      // Send token to backend
+      const response = await microsoftOAuth(accessToken); // API call
+      localStorage.setItem('token', response.access_token);
+      dispatch(setUser(response.user));
+      if (response.translations) {
+        dispatch(setTranslations(response.translations));
+      }
+      navigate(from, { replace: true });
+  
+    } catch (error) {
+      console.error("Microsoft login failed", error);
+      setError("Microsoft Sign-In Failed");
+    }
+  };
+  
+
   const handleGoogleLoginSuccess = async (credentialResponse) => {
     try {
       const tokenId = credentialResponse.credential;
-
       const data = await googleOAuth(tokenId);
-      console.log('response data', data);
-
       localStorage.setItem('token', data.access_token);
       dispatch(setUser(data.user));
+      if (data.translations) {
+        dispatch(setTranslations(data.translations));
+      }
       navigate(from, { replace: true });
     } catch (err) {
       console.error(err);
@@ -47,31 +75,9 @@ const Login = () => {
     }
   };
 
-  
 
 
 
-  const handleMicrosoftLogin = () => {
-    const clientId = '9d104391-9870-4054-bf64-0edad7f38566';
-    const tenantId = 'd2b5a349-bb86-4820-a3a5-41da5261d2b5';
-    const redirectUri = window.location.origin; // http://localhost:3000 OR your live domain
-
-    const authUrl = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/authorize?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}&response_mode=query&scope=openid profile email offline_access`;
-
-    window.location.href = authUrl; // Redirect user to Microsoft login
-  };
-
-  const handleMicrosoftCallback = async (code) => {
-    try {
-      const data = await microsoftOAuth(code);
-      localStorage.setItem('token', data.access_token);
-      dispatch(setUser(data.user));
-      navigate(from, { replace: true });
-    } catch (err) {
-      console.error(err);
-      setError('Microsoft Sign-In Failed');
-    }
-  };
 
 
   const handleLogin = async (e) => {
@@ -84,6 +90,7 @@ const Login = () => {
 
     // Fetch current user details
     const response = await CurrentUser(token);
+    console.log("inside login",response)
     dispatch(setUser(response)); // Store user in Redux
 
     // Navigate to dashboard after setting user

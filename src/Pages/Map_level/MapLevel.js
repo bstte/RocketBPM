@@ -34,6 +34,8 @@ import VersionPopup from "./VersionPopup";
 import { useDynamicHeight } from "../../hooks/useDynamicHeight";
 import useCheckFavorite from "../../hooks/useCheckFavorite";
 import { usePageGroupIdViewer } from "../../hooks/usePageGroupIdViewer";
+import TranslationPopup from "../../hooks/TranslationPopup";
+import { useLangMap } from "../../hooks/useLangMap";
 const MapLevel = () => {
   const [totalHeight, setTotalHeight] = useState(0);
   const [windowHeight, setWindowHeight] = useState(window.innerHeight);
@@ -64,7 +66,10 @@ const MapLevel = () => {
   const { level, parentId, processId } = useParams();
   const location = useLocation();
   const LoginUser = useSelector((state) => state.user.user);
-  // const { id, title, user, ParentPageGroupId } = location.state || {};
+  const [showTranslationPopup, setShowTranslationPopup] = useState(false);
+  const [translationDefaults, setTranslationDefaults] = useState({ en: "", de: "", es: "" });
+
+  const langMap = useLangMap();
 
   const queryParams = new URLSearchParams(location.search);
   const title = queryParams.get("title");
@@ -97,6 +102,7 @@ const MapLevel = () => {
   const [getPublishedDate, setgetPublishedDate] = useState("");
   const [getDraftedDate, setDraftedDate] = useState("");
   const [process_img, setprocess_img] = useState("");
+  const [processDefaultlanguage_id, setprocessDefaultlanguage_id] = useState(null);
   const [versionPopupPayload, setversionPopupPayload] = useState("");
 
   const [contextMenuPosition, setContextMenuPosition] = useState({
@@ -151,11 +157,27 @@ const MapLevel = () => {
   const handleLabelChange = useCallback(
     (nodeId, newLabel) => {
       setNodes((prevNodes) => {
-        const updatedNodes = prevNodes.map((node) =>
-          node.id === nodeId
-            ? { ...node, data: { ...node.data, label: newLabel } }
-            : node
-        );
+        const updatedNodes = prevNodes.map((node) => {
+          if (node.id !== nodeId) return node;
+
+          // language id → key map
+          const langKey = langMap[processDefaultlanguage_id] || "en";
+
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              // update correct language
+              translations: {
+                ...(node.data.translations || {}),
+                [langKey]: newLabel,
+              },
+              // optional: update "label" field भी ताकि UI compatible रहे
+              label: newLabel,
+            },
+          };
+        });
+
         const changedNode = prevNodes.find((n) => n.id === nodeId);
         if (changedNode && changedNode.data.label !== newLabel) {
           // setHasUnsavedChanges(true);
@@ -163,8 +185,9 @@ const MapLevel = () => {
         return updatedNodes;
       });
     },
-    [setNodes]
+    [setNodes, processDefaultlanguage_id]
   );
+
 
 
   useEffect(() => {
@@ -185,7 +208,6 @@ const MapLevel = () => {
           api.GetPublishedDate(levelParam, parseInt(user_id), Process_id, draftStatus, PageGroupId),
           api.getNodes(levelParam, parseInt(user_id), Process_id),
         ]);
-
         if (publishedResponse.status === true) {
           setgetPublishedDate(publishedResponse.created_at || "");
         } else {
@@ -197,34 +219,47 @@ const MapLevel = () => {
           setDraftedDate("");
         }
         setprocess_img(data.process_img)
-        // setprocess_udid(data.process_uid)
+        setprocessDefaultlanguage_id(data.processDefaultlanguage_id)
 
-        const parsedNodes = data.nodes.map((node) => {
-          const parsedData = JSON.parse(node.data);
-          const parsedPosition = JSON.parse(node.position);
-          const parsedMeasured = JSON.parse(node.measured);
-          return {
-            ...node,
-            data: {
-              ...parsedData,
-              onLabelChange: (newLabel) =>
-                handleLabelChange(node.node_id, newLabel),
-              width_height: parsedMeasured,
-              autoFocus: true,
-              nodeResize: true,
-              node_id: node.node_id,
-              isClickable: false,
-              LinkToStatus: node.LinkToStatus,
+        const parsedNodes = await Promise.all(
+          data.nodes.map(async (node) => {
+            const parsedData = JSON.parse(node.data);
+            const parsedPosition = JSON.parse(node.position);
+            const parsedMeasured = JSON.parse(node.measured);
 
-            },
-            type: node.type,
-            id: node.node_id,
-            measured: parsedMeasured,
-            position: parsedPosition,
-            draggable: Boolean(node.draggable),
-            animated: Boolean(node.animated),
-          };
-        });
+            const newLevel = currentLevel + 1;
+            const levelParam =
+              node.node_id !== null
+                ? `Level${newLevel}_${node.node_id}`
+                : `Level${currentLevel}`;
+            const user_id = user ? user.id : null;
+            const Process_id = id ? id : null;
+            let hasNextLevel = false;
+            try {
+              const check = await api.checkRecord(levelParam, parseInt(user_id), Process_id);
+              hasNextLevel = check?.status === true;
+            } catch (e) {
+              console.error("checkRecord error", e);
+            }
+            return {
+              ...node,
+              data: {
+                ...parsedData,
+                onLabelChange: (newLabel) => handleLabelChange(node.node_id, newLabel),
+
+                width_height: parsedMeasured,
+                node_id: node.node_id,
+                LinkToStatus: node.LinkToStatus,
+                hasNextLevel, // 👈 naya flag add kiya
+              },
+              type: node.type,
+              id: node.node_id,
+              measured: parsedMeasured,
+              position: parsedPosition,
+              draggable: Boolean(node.draggable),
+            };
+          })
+        );
         const parsedEdges = data.edges.map((edge) => ({
           ...edge,
           animated: Boolean(edge.animated),
@@ -302,7 +337,6 @@ const MapLevel = () => {
     } else {
       PageGroupId = nodes[0]?.PageGroupId;
     }
-    console.log("page groupid", PageGroupId)
     const newNode = {
       id:
         currentParentId !== null
@@ -363,9 +397,7 @@ const MapLevel = () => {
     }, 1000);
   };
 
-  const translation = () => {
 
-  }
   const deleteNode = useCallback(() => {
     if (selectedNode) {
       const selectedNodeData = nodes.find((node) => node.id === selectedNode);
@@ -686,8 +718,9 @@ const MapLevel = () => {
     contentWrapper: {
       display: "flex",
       flex: 1,
-
-      border: '2px solid #FF364A',
+      borderLeft: "1px solid #002060",
+      borderRight: "1px solid #002060",
+      borderBottom: "1px solid #002060",
     },
     flowContainer: {
       flex: 1,
@@ -699,6 +732,25 @@ const MapLevel = () => {
       height: "100%",
     },
   };
+
+
+  const translation = () => {
+    const node = nodes.find((n) => n.id === selectedNode);
+    console.log("get node", node)
+    if (node) {
+      // हर बार पूरा structure बनाओ (fallback खाली string)
+      const defaults = {
+        en: node.data?.translations?.en || "",
+        de: node.data?.translations?.de || "",
+        es: node.data?.translations?.es || "",
+      };
+
+
+
+      setTranslationDefaults(defaults);
+      setShowTranslationPopup(true);
+    }
+  }
   const handleFav = async () => {
     const user_id = LoginUser ? LoginUser.id : null;
     const process_id = id ? id : null;
@@ -727,8 +779,14 @@ const MapLevel = () => {
       console.error("Favorite toggle error:", error);
     }
   };
-  const ExitNavigation = async () => {
-    const confirmcondition = await handleBack();
+  const ExitNavigation = async (type) => {
+    let confirmcondition = true;
+
+    // sirf "exit" wale case me hi confirmation lena hai
+    if (type === "exit") {
+      confirmcondition = await handleBack();
+    }
+
     if (confirmcondition) {
       if (id && user) {
         if (currentLevel === 0) {
@@ -784,6 +842,30 @@ const MapLevel = () => {
   const handleVersionClick = () => {
     setShowVersionPopup(true);
   };
+
+  const updateNodeTranslations = (nodeId, translations) => {
+    setNodes((nds) =>
+      nds.map((n) => {
+        if (n.id !== nodeId) return n;
+
+        // current default language ka key nikaalo
+        const langKey = langMap[processDefaultlanguage_id] || "en";
+        const newLabel = translations[langKey] || n.data.label;
+
+        return {
+          ...n,
+          data: {
+            ...n.data,
+            translations,   // ✅ update all translations
+            label: newLabel // ✅ sync label with current language
+          },
+        };
+      })
+    );
+  };
+
+
+
 
   const handleSaveVersionDetails = (payload) => {
     setversionPopupPayload(payload)
@@ -874,6 +956,19 @@ const MapLevel = () => {
 
 
         </div>
+        <TranslationPopup
+          isOpen={showTranslationPopup}
+          onClose={() => setShowTranslationPopup(false)}
+          defaultValues={translationDefaults}
+          onSubmit={(values) => {
+            console.log("Translations:", values);
+
+
+            updateNodeTranslations(selectedNode, values);
+
+            setShowTranslationPopup(false);
+          }}
+        />
 
 
         {showVersionPopup && (
@@ -888,6 +983,7 @@ const MapLevel = () => {
             handleSaveVersionDetails={handleSaveVersionDetails}
             status={"draft"}
             type={"ProcessMaps"}
+            versionPopupPayload={versionPopupPayload}
           />
         )}
       </ReactFlowProvider>

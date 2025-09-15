@@ -11,7 +11,9 @@ const styles = {
   scrollableWrapper: {
     flex: 1,
     overflow: 'hidden', 
-    border: '2px solid #FF364A',
+    borderLeft: "1px solid #002060",
+    borderRight: "1px solid #002060",
+    borderBottom: "1px solid #002060",
 
   },
   reactFlowNodeGroup: {

@@ -136,8 +136,7 @@ const DraftProcesMapLevel = () => {
   );
 
   const checkPublishData = useCallback(async (processId) => {
-    // console.log("currentLevel",currentLevel)
-    // const levelParam = 'Level0';
+
     const levelParam =
       currentParentId !== null
         ? `Level${currentLevel}_${currentParentId}`
@@ -202,11 +201,27 @@ const DraftProcesMapLevel = () => {
         setprocess_img(data.process_img)
         setprocess_udid(data.process_uid)
 
-        const parsedNodes = data.nodes.map((node) => {
+        const parsedNodes = await Promise.all(
+          data.nodes.map(async (node) => {
+            
           const parsedData = JSON.parse(node.data);
           const parsedPosition = JSON.parse(node.position);
           const parsedMeasured = JSON.parse(node.measured);
-
+          const newLevel = currentLevel + 1;
+          const levelParam =
+            node.node_id !== null
+              ? `Level${newLevel}_${node.node_id}`
+              : `Level${currentLevel}`;
+          const user_id = user ? user.id : null;
+          const Process_id = id ? id : null;
+          let hasNextLevel = false;
+          try {
+            const check = await api.checkRecord(levelParam, parseInt(user_id), Process_id);
+           
+            hasNextLevel = check?.status === true;
+          } catch (e) {
+            console.error("checkRecord error", e);
+          }
           return {
             ...node,
             data: {
@@ -219,6 +234,7 @@ const DraftProcesMapLevel = () => {
               node_id: node.node_id,
               nodeResize: true,
               LinkToStatus: node.LinkToStatus,
+              hasNextLevel,
 
             },
             type: node.type,
@@ -229,8 +245,9 @@ const DraftProcesMapLevel = () => {
             draggable: false,
             animated: false,
           };
-        });
-
+       
+        })
+      );
         const parsedEdges = data.edges.map((edge) => ({
           ...edge,
           animated: Boolean(edge.animated),
@@ -240,7 +257,6 @@ const DraftProcesMapLevel = () => {
           style: { stroke: "#002060", strokeWidth: 2 },
           type: "step",
         }));
-
         setNodes(parsedNodes);
         setEdges(parsedEdges);
       } catch (error) {
@@ -324,14 +340,7 @@ const DraftProcesMapLevel = () => {
 
     if (data.status === true) {
       if (data.Page_Title === "ProcessMap") {
-        // navigate(`/Draft-Process-View/${newLevel}/${node.id}/${id}`, {
-        //   state: {
-        //     id: id,
-        //     title: selectedLabel,
-        //     user,
-        //     ParentPageGroupId:  nodes[0]?.PageGroupId,
-        //   },
-        // });
+      
         navigate(
           `/Draft-Process-View/${newLevel}/${node.id}/${id}?title=${selectedLabel}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${nodes[0]?.PageGroupId}`
         )
@@ -494,7 +503,7 @@ const DraftProcesMapLevel = () => {
         onShare={() => handleShareClick()}
         onShowVersion={handleVersionClick}
         savefav={handleFav}
-
+        showSharePopup={showSharePopup}
 
       />
       <ReactFlowProvider>
@@ -503,15 +512,15 @@ const DraftProcesMapLevel = () => {
 
             <div className="flow-container" style={styles.flowContainer}>
 
-              <div
+            <div
                 style={{
                   position: "absolute",
                   top: "50%",
                   left: "50%",
                   transform: "translate(-50%, -50%) rotate(-35deg)", // Center + Diagonal tilt
-                  fontSize: "72px", // Bigger for watermark effect
+                  fontSize: "144px", // Bigger for watermark effect
                   fontWeight: "bold",
-                  color: "#0020601A", // 10% opacity for watermark style
+                  color: "#ff364a0f", // 10% opacity for watermark style
                   fontFamily: "'Poppins', sans-serif",
                   zIndex: 0,
                   pointerEvents: "none",
@@ -520,7 +529,7 @@ const DraftProcesMapLevel = () => {
                   letterSpacing: "4px", // Optional: wider spacing
                 }}
               >
-                View Draft
+                Draft
               </div>
 
               <ReactFlow
@@ -551,21 +560,12 @@ const DraftProcesMapLevel = () => {
      {usePageGroupIdViewer(nodes)}
 
         </div>
-        {showSharePopup && (
-          <SharePopup
-            processId={id}
-            processName={`${headerTitle}`}
-            onClose={() => setShowSharePopup(false)}
-          />
-        )}
-
         {showVersionPopup && (
           <VersionPopupView
             processId={id}
             currentLevel={currentLevel}
             onClose={() => setShowVersionPopup(false)}
             currentParentId={currentParentId}
-            viewVersion={navigateToVersion}
             LoginUser={LoginUser}
             title={headerTitle}
             status={"draft"}

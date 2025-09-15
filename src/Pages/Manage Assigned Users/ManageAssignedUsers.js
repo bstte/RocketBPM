@@ -14,7 +14,7 @@ const ManageAssignedUsers = () => {
   // const [isLoading, setIsLoading] = useState(true);
   const t = useTranslation();
 
-  
+
   useEffect(() => {
     const getProcessAssignUsersData = async () => {
       try {
@@ -51,7 +51,7 @@ const ManageAssignedUsers = () => {
 
 
           <table border="1" cellPadding="10" cellSpacing="0" width="100%">
-            <thead style={{ position: "sticky", top: 0, background: "#fff",}}>
+            <thead style={{ position: "sticky", top: 0, background: "#fff", }}>
               <tr>
                 <th>{t("First_Name")}</th>
                 <th>{t("Last_Name")}</th>
@@ -78,13 +78,16 @@ const ManageAssignedUsers = () => {
                     <td>{user?.status || 'N/A'}</td>
 
                     <td>
-
-                      <button className="ss_add_user_btn" onClick={() => navigate("/edit-User", { state: { assignedUsers: user } })}
-                      >
-                        <FaEdit />
-
-                      </button>
+                      {user.Role !== "Owner" && (
+                        <button
+                          className="ss_add_user_btn"
+                          onClick={() => navigate("/edit-User", { state: { assignedUsers: user } })}
+                        >
+                          <FaEdit />
+                        </button>
+                      )}
                     </td>
+
 
                   </tr>
                 ))

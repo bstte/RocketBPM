@@ -321,9 +321,9 @@ export const removeProfileImgage = async (token) => {
   }
 };
 
-export const saveProcessTitle = async (title, user_id) => {
+export const saveProcessTitle = async (title, user_id,selectedLanguageId) => {
   try {
-    const response = await api.post('/process-titles', { process_title: title, user_id: user_id });
+    const response = await api.post('/process-titles', { process_title: title, user_id: user_id,selectedLanguageId });
     return response.data;
   } catch (error) {
     console.error('Error saving process title:', error);
@@ -618,15 +618,17 @@ export const googleOAuth = async (tokenId) => {
 
 
 // ✅ Microsoft OAuth API Call
-export const microsoftOAuth = async (code) => {
+export const microsoftOAuth = async (access_token) => {
   try {
-    const response = await api.post('/oauth/microsoft', { code });
+    const response = await api.post('/oauth/microsoft', { access_token });
     return response.data;
   } catch (error) {
     console.error('Microsoft OAuth API Error:', error);
     throw error.response ? error.response.data : error;
   }
 };
+
+
 
 
 export const getLanguages = async () => {

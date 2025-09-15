@@ -5,9 +5,13 @@ const PublishPentagonNode = ({ data }) => {
     <div
     style={{
       ...styles.wrapper,
-      filter: data.LinkToStatus ? 'drop-shadow(0px 0px 10px #0000004f)' : 'none',
+      filter:
+        data.LinkToStatus || data.hasNextLevel
+          ? "drop-shadow(0px 0px 10px #0000004f)"
+          : "none",
     }}
   >
+  
       {/* Pentagon Box */}
       <div
         style={{
@@ -17,7 +21,7 @@ const PublishPentagonNode = ({ data }) => {
         }}
       >
        <div style={{ cursor: 'pointer' }}>
-            <span style={{fontSize:"18px", fontFamily: "'Poppins', sans-serif",color:"white"}}> {data.label}</span>
+            <span style={{fontSize:"1rem", fontFamily: "'Poppins', sans-serif",color:"white"}}> {data.label}</span>
         </div>
       </div>
     </div>

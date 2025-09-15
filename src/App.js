@@ -34,7 +34,6 @@ function InitializeUser() {
 
 function App() {
   return (
-    <Provider store={store}>
       <GoogleOAuthProvider clientId="654780250240-92hncbd7gse4bm196fl056l4a2s68aqk.apps.googleusercontent.com">
 
         <BreadcrumbsProvider>
@@ -44,7 +43,6 @@ function App() {
           </Router>
         </BreadcrumbsProvider>
       </GoogleOAuthProvider>
-    </Provider>
   );
 }
 

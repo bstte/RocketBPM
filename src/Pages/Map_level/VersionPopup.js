@@ -17,7 +17,8 @@ const VersionPopup = ({
   title,
   handleSaveVersionDetails,
   status,
-  type
+  type,
+  versionPopupPayload
 }) => {
   const [activeTab, setActiveTab] = useState("contact");
   const [versions, setVersions] = useState([]);
@@ -39,8 +40,28 @@ const VersionPopup = ({
 
   const t = useTranslation();
 
+
+  useEffect(() => {
+    if (versionPopupPayload) {
+      // agar parent me Save dabaya tha to wahi data dikhao
+      setSelectedEmails(versionPopupPayload.contact_info || {
+        domain_owner: [],
+        owner: [],
+        architecture: [],
+        manager: [],
+      });
+      setRevisionText(versionPopupPayload.revision_info || "");
+    }
+  }, [versionPopupPayload]);
+
   useEffect(() => {
     const fetchVersions = async () => {
+
+      if (versionPopupPayload) {
+        // agar parent ne local save kiya hai to API call skip karo
+        return;
+      }
+      
       try {
 
         const LoginUserId = LoginUser ? LoginUser.id : null;
@@ -268,13 +289,13 @@ const VersionPopup = ({
                               <span className="owner-name">
                                 {roleUser.user.first_name} {roleUser.user.last_name}
                               </span>
-                              <div className="owner-actions">
+                              <div className="owner-actions owner-flex">
                                 <a href={`mailto:${roleUser.user.email}`} className="email-icon">
                                   <DefaultemailIcon />
                                 </a>
                                 <button
                                 style={{marginLeft:20}}
-                                  className="popup-button save"
+                                className="popup-button remove"
                                   onClick={() => removeUser(role, roleUser.user.email)}
                                 >
                                   Remove

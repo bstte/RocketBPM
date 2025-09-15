@@ -42,6 +42,8 @@ import { useDynamicHeight } from "../../hooks/useDynamicHeight";
 import useCheckFavorite from "../../hooks/useCheckFavorite";
 import { useTranslation } from "../../hooks/useTranslation";
 import { usePageGroupIdViewer } from "../../hooks/usePageGroupIdViewer";
+import TranslationPopup from "../../hooks/TranslationPopup";
+import { useLangMap } from "../../hooks/useLangMap";
 
 const SwimlaneModel = () => {
   const [windowSize, setWindowSize] = useState({
@@ -97,7 +99,8 @@ const SwimlaneModel = () => {
   const { height, appHeaderHeight, remainingHeight } = useDynamicHeight();
 
   const [selectedTitle, setSelectedTitle] = useState("");
-
+  const [showTranslationPopup, setShowTranslationPopup] = useState(false);
+  const [translationDefaults, setTranslationDefaults] = useState({ en: "", de: "", es: "" });
 
   const { nodes: initialNodes } = useMemo(
     () => generateNodesAndEdges(windowSize.width, windowSize.height, '', height + 10, appHeaderHeight, remainingHeight),
@@ -118,6 +121,7 @@ const SwimlaneModel = () => {
   const [selectedNodefreetextId, setSelectedNodefreetextId] = useState(null);
   const [showVersionPopup, setShowVersionPopup] = useState(false);
   const [versionPopupPayload, setversionPopupPayload] = useState("");
+  const [processDefaultlanguage_id, setprocessDefaultlanguage_id] = useState(null);
 
   const [selectedEdge, setSelectedEdge] = useState(null);
   const [getPublishedDate, setgetPublishedDate] = useState("");
@@ -127,6 +131,7 @@ const SwimlaneModel = () => {
   const [ExistingrolesearchQuery, setExistingrolesearchQuery] = useState("");
 
   const [checkpublish, Setcheckpublish] = useState();
+  const langMap = useLangMap();
 
   const ChildNodesRef = useRef(ChildNodes);
   useEffect(() => {
@@ -145,8 +150,6 @@ const SwimlaneModel = () => {
     []
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isModalOpenStickyNode, setIsModalOpenStickyNode] = useState(false);
-
   const [modalText, setModalText] = useState("");
 
   const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
@@ -157,30 +160,49 @@ const SwimlaneModel = () => {
     (nodeId, newLabel) => {
       setChiledNodes((nds) =>
         nds.map((node) => {
-          if (node.id === nodeId) {
+          if (node.id !== nodeId) return node;
+  
+          // langKey nikaalo
+          const langKey = langMap[processDefaultlanguage_id] || "en";
+  
+          // agar StickyNote hai
+          if (node.type === "StickyNote") {
             return {
               ...node,
               data: {
                 ...node.data,
-                ...(node.type === "StickyNote"
-                  ? { label: newLabel }
-                  : {
-                    details: {
-                      ...node.data.details,
-                      title: newLabel,
-                    },
-                  }),
+                translations: {
+                  ...(node.data.translations || {}),
+                  [langKey]: newLabel,
+                },
+                label: newLabel,
               },
             };
           }
-          return node;
+  
+          // agar Swimlane (ya koi aur jisme details.title hai)
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              translations: {
+                ...(node.data.translations || {}),
+                [langKey]: newLabel,
+              },
+              details: {
+                ...node.data.details,
+                title: newLabel,
+              },
+            },
+          };
         })
       );
+  
       if (!isInitialLoad.current) {
         setHasUnsavedChanges(true);
       }
     },
-    [setChiledNodes, setHasUnsavedChanges]
+    [setChiledNodes, processDefaultlanguage_id, setHasUnsavedChanges]
   );
 
   useCheckFavorite({
@@ -209,6 +231,7 @@ const SwimlaneModel = () => {
         setDraftedDate(draftResponse.status ? draftResponse.created_at || "" : "");
         setprocess_img(data.process_img);
         // setprocess_udid(data.process_uid)
+        setprocessDefaultlanguage_id(data.processDefaultlanguage_id)
 
         const nodebgwidth = document.querySelector(".react-flow__node");
         const nodebgwidths = nodebgwidth ? nodebgwidth.getBoundingClientRect().width : 0;
@@ -462,6 +485,8 @@ const SwimlaneModel = () => {
             ),
           defaultwidt: "40px",
           defaultheight: "40px",
+          autoFocus: true,
+
           nodeResize: false,
         },
         type: type,
@@ -572,7 +597,7 @@ const SwimlaneModel = () => {
   const memoizedEdgeTypes = useMemo(() => edgeTypes, [edgeTypes]);
 
   const handleSaveNodes = async (savetype) => {
-    // console.log("ChildNodes", ChildNodes);
+    console.log("ChildNodes", ChildNodes);
     // console.log("edges", edges);
 
     if (savetype === "Published" && currentLevel !== 0) {
@@ -725,6 +750,23 @@ const SwimlaneModel = () => {
     setSelectedNode(null);
     setdetailschecking(null);
   };
+  const translation = () => {
+    const node = ChildNodes.find((n) => n.id === selectedNodeId);
+    console.log("get node", node)
+    if (node) {
+      // हर बार पूरा structure बनाओ (fallback खाली string)
+      const defaults = {
+        en: node.data?.translations?.en || "",
+        de: node.data?.translations?.de || "",
+        es: node.data?.translations?.es || "",
+      };
+
+
+
+      setTranslationDefaults(defaults);
+      setShowTranslationPopup(true);
+    }
+  }
 
   const handleDeleteNode = () => {
     if (selectedNode) {
@@ -799,7 +841,7 @@ const SwimlaneModel = () => {
         options = [
           { label: t("add_activity"), value: "Add Activity" },
           { label: t("add_decision"), value: "Add Decision" },
-          { label: t("add_sticky_note	"), value: "Add Sticky Note" },
+          { label: t("add_sticky_note"), value: "Add Sticky Note" },
         ];
 
       }
@@ -1005,7 +1047,6 @@ const SwimlaneModel = () => {
     const Process_id = id ? id : null;
     const data = await api.getallpublishObject_Tolinkexistingmodel(levelParam, parseInt(user_id), Process_id);
 
-    console.log("check data filteredNodes data", data)
 
     const filteredNodes = data.nodes.filter(
       (node) => node.type !== "StickyNote",
@@ -1050,6 +1091,10 @@ const SwimlaneModel = () => {
       const selectedNode = parsedDataExistingrole.find(
         (item) => item.node_id === selectedexistigrolenodeId
       );
+      console.log("selectedexistigrolenodeId",selectedexistigrolenodeId)
+
+      console.log("selectedNode",selectedNode)
+
 
       const title = selectedNode?.data?.details?.title || "Untitled";
 
@@ -1355,11 +1400,19 @@ const SwimlaneModel = () => {
       ]
       : []),
 
+      {
+        label: `${t("translation")}`,
+        action: translation,
+        borderBottom: false,
+      },
+
+
     {
       label: `${t("Delete")}`,
       action: handleDeleteNode,
       borderBottom: false,
     },
+   
   ];
 
   const iconNames = {};
@@ -1428,8 +1481,13 @@ const SwimlaneModel = () => {
     return true;
   };
 
-  const ExitNavigation = async () => {
-    const confirmcondition = await handleBack(); // Wait for confirmation
+  const ExitNavigation = async (type) => {
+    let confirmcondition = true;
+
+    // sirf "exit" wale case me hi confirmation lena hai
+    if (type === "exit") {
+      confirmcondition = await handleBack();
+    }
     if (confirmcondition) {
       if (id && user) {
         navigate(`/Draft-Swim-lanes-View/level/${currentLevel}/${currentParentId}/${id}?title=${encodeURIComponent(title)}&user=${encodeURIComponent(JSON.stringify(user))}&parentId=${currentParentId}&level=${currentLevel}&ParentPageGroupId=${ParentPageGroupId}`)
@@ -1500,6 +1558,39 @@ const SwimlaneModel = () => {
     setShowVersionPopup(true);
   };
 
+  const updateNodeTranslations = (nodeId, translations) => {
+    setChiledNodes((nds) =>
+      nds.map((node) => {
+        if (node.id !== nodeId) return node;
+  
+        const langKey = langMap[processDefaultlanguage_id] || "en";
+        const newLabel = translations[langKey] || node.data.label || node.data?.details?.title;
+  
+        if (node.type === "StickyNote") {
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              translations,
+              label: newLabel,
+            },
+          };
+        }
+  
+        return {
+          ...node,
+          data: {
+            ...node.data,
+            translations,
+            details: {
+              ...node.data.details,
+              title: newLabel,
+            },
+          },
+        };
+      })
+    );
+  };
 
   const handleSaveVersionDetails = (payload) => {
     setversionPopupPayload(payload)
@@ -1519,7 +1610,7 @@ const SwimlaneModel = () => {
         getPublishedDate={getPublishedDate}
         getDraftedDate={getDraftedDate}
         setIsNavigating={() => removeBreadcrumbsAfter(currentLevel - 1)}
-        Page={"Draft"}
+        Page={"Swimlane"}
         onExit={ExitNavigation}
         isFavorite={isFavorite}
         Process_img={process_img}
@@ -1755,7 +1846,19 @@ const SwimlaneModel = () => {
           )}
 
           {usePageGroupIdViewer(ChildNodes)}
+   <TranslationPopup
+          isOpen={showTranslationPopup}
+          onClose={() => setShowTranslationPopup(false)}
+          defaultValues={translationDefaults}
+          onSubmit={(values) => {
+            console.log("Translations:", values);
 
+
+            updateNodeTranslations(selectedNodeId, values);
+
+            setShowTranslationPopup(false);
+          }}
+        />
 
           {showVersionPopup && (
             <VersionPopup

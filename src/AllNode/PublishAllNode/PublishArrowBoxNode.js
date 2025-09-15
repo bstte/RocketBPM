@@ -19,9 +19,13 @@ const PublishArrowBoxNode = ({ data}) => {
     <div
     style={{
       ...styles.wrapper,
-      filter: data.LinkToStatus ? 'drop-shadow(0px 0px 10px #0000004f)' : 'none',
+      filter:
+        data.LinkToStatus || data.hasNextLevel
+          ? "drop-shadow(0px 0px 10px #0000004f)"
+          : "none",
     }}
   >
+  
   
       <div
         className="borderBox"

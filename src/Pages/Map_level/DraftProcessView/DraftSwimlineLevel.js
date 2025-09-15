@@ -391,6 +391,27 @@ const DraftSwimlineLevel = () => {
       <div class="maincontainer" style={{ ...styles.appContainer, height: remainingHeight }}>
         <ReactFlowProvider>
           <div className="ss_publish_border" style={styles.scrollableWrapper}>
+
+          <div
+                style={{
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%) rotate(-35deg)", // Center + Diagonal tilt
+                  fontSize: "144px", // Bigger for watermark effect
+                  fontWeight: "bold",
+                  color: "#ff364a0f", // 10% opacity for watermark style
+                  fontFamily: "'Poppins', sans-serif",
+                  zIndex: 1,
+                  pointerEvents: "none",
+                  whiteSpace: "nowrap",
+                  textTransform: "uppercase", // Optional: for all caps
+                  letterSpacing: "4px", // Optional: wider spacing
+                  userSelect: "none", // Prevent text selection
+                }}
+              >
+                Draft
+              </div>
             <ReactFlow
               nodes={[...nodes, ...ChildNodes]}
               edges={edges}
@@ -419,13 +440,13 @@ const DraftSwimlineLevel = () => {
             {usePageGroupIdViewer(ChildNodes)}
 
           </div>
-          {showSharePopup && (
+          {/* {showSharePopup && (
             <SharePopup
               processId={id}
               processName={`${headerTitle}`}
               onClose={() => setShowSharePopup(false)}
             />
-          )}
+          )} */}
 
           {showVersionPopup && (
             <VersionPopupView

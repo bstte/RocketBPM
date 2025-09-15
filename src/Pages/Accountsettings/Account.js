@@ -7,18 +7,19 @@ import CustomAlert from '../../components/CustomAlert';
 import { useNavigate } from 'react-router-dom';
 import { setTranslations, setUser } from '../../redux/userSlice';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useLanguages } from '../../hooks/useLanguages';
 
 const Account = () => {
     const user = useSelector((state) => state.user.user);
     const [firstName, setFirstName] = useState(user?.first_name || "");
     const [lastName, setLastName] = useState(user?.last_name || "");
     const [email, setEmail] = useState(user?.email || "");
-    const [languages, setLanguages] = useState([]);
+    const { languages} = useLanguages(); // 👈 Custom hook use
     const [selectedLanguageId, setSelectedLanguageId] = useState(user?.language_id || "");
 
     const [Profile_link, setProfile_link] = useState(user?.Profile_link || "");
     const dispatch = useDispatch();
- const t = useTranslation();
+    const t = useTranslation();
     const [selectedImage, setSelectedImage] = useState(null);
 
     // Password State 🆕
@@ -26,13 +27,7 @@ const Account = () => {
     const [newPassword, setNewPassword] = useState("");
     const [repeatNewPassword, setRepeatNewPassword] = useState("");
 
-    useEffect(() => {
-        async function fetchLanguages() {
-            const response = await getLanguages(); // API se laa ke
-            setLanguages(response.data);
-        }
-        fetchLanguages();
-    }, []);
+
     const navigate = useNavigate();
 
     // Reference for file input
@@ -112,13 +107,13 @@ const Account = () => {
             const blob = await response.blob();
             formData.append("profile_image", new File([blob], "profile.jpg", { type: "image/jpeg" }));
         }
-       
+
 
         try {
             const response = await updateprofile(token, formData); // ✅ Pass formData
             // alert("Profile updated successfully!");
-                    CustomAlert.success("Success", "Profile updated successfully!");
-            
+            CustomAlert.success("Success", "Profile updated successfully!");
+
             dispatch(setUser(response.user));
             dispatch(setTranslations(response.translations)); // ✅ agar helper bana ho toh
 
@@ -189,9 +184,9 @@ const Account = () => {
                                         ) : user?.Profile_image ? (
                                             <img src={
                                                 user?.Profile_image.startsWith('http')
-                                                  ? user.Profile_image // ✅ Google ka full URL
-                                                  : `${ImageBaseUrl}uploads/profile_images/${user.Profile_image}` // ✅ Local image
-                                              }  alt="Profile" className="profile-image" />
+                                                    ? user.Profile_image // ✅ Google ka full URL
+                                                    : `${ImageBaseUrl}uploads/profile_images/${user.Profile_image}` // ✅ Local image
+                                            } alt="Profile" className="profile-image" />
                                         ) : (
                                             <img src="/img/user-circle-solid.svg" alt="User" />
                                         )}
@@ -231,7 +226,7 @@ const Account = () => {
                                         className="login-input"
                                     />
 
-<select
+                                    <select
                                         className="login-input"
                                         value={selectedLanguageId}
                                         onChange={(e) => setSelectedLanguageId(e.target.value)}
@@ -249,7 +244,7 @@ const Account = () => {
                                         className="login-input"
                                     />
 
-                                 
+
 
                                 </form>
                             </div>

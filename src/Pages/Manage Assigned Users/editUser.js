@@ -109,10 +109,7 @@ const EditUser = () => {
 
             {/* Buttons */}
             <div style={{ display: 'flex', gap: '10px', justifyContent: "center" }}>
-            <button type="submit" className="ss_add_use_btn">
-              Update User
-            </button>
-              <button
+            <button
                 type="button"
                 className="ss_add_use_btn"
                 onClick={() => navigate(-1)}
@@ -120,6 +117,10 @@ const EditUser = () => {
               >
                 CANCEL
               </button>
+            <button type="submit" className="ss_add_use_btn">
+              Update User
+            </button>
+             
             </div>
            
           </form>

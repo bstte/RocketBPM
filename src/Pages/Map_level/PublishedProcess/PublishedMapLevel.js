@@ -171,11 +171,34 @@ const PublishedMapLevel = () => {
         console.log("publish data", data)
         setprocess_img(data.process_img)
         // setprocess_udid(data.process_uid)
-        const parsedNodes = data.nodes.filter((node) => node.type !== "StickyNote").map((node) => {
-          const parsedData = JSON.parse(node.data);
-          const parsedPosition = JSON.parse(node.position);
-          const parsedMeasured = JSON.parse(node.measured);
-
+        const parsedNodes = await Promise.all(
+          data.nodes
+            .filter((node) => node.type !== "StickyNote")
+            .map(async (node) => {
+              const parsedData = JSON.parse(node.data);
+              const parsedPosition = JSON.parse(node.position);
+              const parsedMeasured = JSON.parse(node.measured);
+        
+              // 👇 Next Level check
+              const newLevel = currentLevel + 1;
+              const levelParam =
+                node.node_id !== null
+                  ? `Level${newLevel}_${node.node_id}`
+                  : `Level${currentLevel}`;
+              const user_id = user ? user.id : null;
+              const Process_id = id ? id : null;
+        
+              let hasNextLevel = false;
+              try {
+                const check = await api.checkPublishRecord(
+                  levelParam,
+                  parseInt(user_id),
+                  Process_id
+                );
+                hasNextLevel = check?.status === true;
+              } catch (err) {
+                console.error("checkPublishRecord error:", err);
+              }
           return {
             ...node,
             data: {
@@ -188,6 +211,7 @@ const PublishedMapLevel = () => {
               node_id: node.node_id,
               nodeResize: true,
               LinkToStatus: node.LinkToStatus,
+              hasNextLevel
 
             },
             type: node.type,
@@ -198,8 +222,8 @@ const PublishedMapLevel = () => {
             draggable: false,
             animated: false,
           };
-        });
-
+        })
+    );
         const parsedEdges = data.edges.map((edge) => ({
           ...edge,
           animated: Boolean(edge.animated),
@@ -209,7 +233,7 @@ const PublishedMapLevel = () => {
           style: { stroke: "#002060", strokeWidth: 2 },
           type: "step",
         }));
-        console.log("published process map ,", parsedNodes)
+
 
         setNodes(parsedNodes);
         setEdges(parsedEdges);
@@ -239,11 +263,7 @@ const PublishedMapLevel = () => {
   useEffect(() => {
     const label = currentLevel === 0 ? title : title;
     const path =
-      // currentLevel === 0
-      //   ? "/published-map-level"
-      //   : `/published-map-level/${currentLevel}/${currentParentId}`;
-
-
+    
       currentLevel === 0
         ? `/published-map-level/${id}?title=${encodeURIComponent(title)}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${ParentPageGroupId}`
         : `/published-map-level/${currentLevel}/${currentParentId}/${id}?title=${encodeURIComponent(title)}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${ParentPageGroupId}`;
@@ -280,7 +300,6 @@ const PublishedMapLevel = () => {
     const selectedLabel = node.data.label || "";
     const PageGroupId = nodes[0]?.PageGroupId;
     const newLevel = currentLevel + 1;
-    console.log("newLevel", newLevel)
     const levelParam =
       node.id !== null
         ? `Level${newLevel}_${node.id}`
@@ -295,14 +314,7 @@ const PublishedMapLevel = () => {
 
     if (data.status === true) {
       if (data.Page_Title === "ProcessMap") {
-        // navigate(`/published-map-level/${newLevel}/${node.id}`, {
-        //   state: {
-        //     id: id,
-        //     title: selectedLabel,
-        //     user,
-        //     ParentPageGroupId: PageGroupId,
-        //   },
-        // });
+      
         navigate(`/published-map-level/${newLevel}/${node.id}/${id}?title=${encodeURIComponent(selectedLabel)}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${PageGroupId}`)
 
       }
@@ -352,14 +364,12 @@ const PublishedMapLevel = () => {
 
     if (id && user) {
       if (currentLevel === 0) {
-        // navigate('/Draft-Process-View',{ state: { id:id, title:title, user: user,ParentPageGroupId } })
         navigate(
           `/Draft-Process-View/${id}?title=${title}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${ParentPageGroupId}`
         );
 
 
       } else {
-        //  navigate(`/Draft-Process-View/${currentLevel}/${currentParentId}`,{ state: { id:id, title:title, user: user,ParentPageGroupId } })
         navigate(`/Draft-Process-View/${currentLevel}/${currentParentId}/${id}?title=${encodeURIComponent(title)}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${ParentPageGroupId}`)
       }
 
@@ -403,9 +413,9 @@ const PublishedMapLevel = () => {
   };
 
 
-  const handleShareClick = () => {
-    setShowSharePopup(true);
-  };
+  // const handleShareClick = () => {
+  //   setShowSharePopup(true);
+  // };
 
   const handleVersionClick = () => {
     setShowVersionPopup(true);
@@ -455,7 +465,6 @@ const PublishedMapLevel = () => {
         isFavorite={isFavorite}
         Process_img={process_img}
         Procesuser={user}
-        onShare={() => handleShareClick()}
         onShowVersion={handleVersionClick}
         savefav={handleFav}
 
@@ -494,14 +503,6 @@ const PublishedMapLevel = () => {
           {usePageGroupIdViewer(nodes)}
 
         </div>
-
-        {showSharePopup && (
-          <SharePopup
-            processId={id}
-            processName={`${headerTitle}`}
-            onClose={() => setShowSharePopup(false)}
-          />
-        )}
 
 
         {showVersionPopup && (

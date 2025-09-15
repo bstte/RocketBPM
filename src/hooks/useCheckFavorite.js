@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useSelector } from "react-redux";
 import { checkFavProcess } from "../API/api";
@@ -6,12 +5,14 @@ import { checkFavProcess } from "../API/api";
 const useCheckFavorite = ({ id, nodes = [], childNodes = [], setIsFavorite }) => {
   const LoginUser = useSelector((state) => state.user.user);
 
+  // ✅ PageGroupId ko effect ke bahar nikal lo
+  const PageGroupId =
+    nodes.length > 0 ? nodes[0]?.PageGroupId : childNodes[0]?.PageGroupId;
+
   useEffect(() => {
     const checkFav = async () => {
       const user_id = LoginUser?.id || null;
       const process_id = id || null;
-      const PageGroupId =
-        nodes.length > 0 ? nodes[0]?.PageGroupId : childNodes[0]?.PageGroupId;
 
       if (!user_id || !process_id) {
         console.error("Missing required fields:", { user_id, process_id });
@@ -28,7 +29,7 @@ const useCheckFavorite = ({ id, nodes = [], childNodes = [], setIsFavorite }) =>
     };
 
     checkFav();
-  }, [LoginUser, id]);
+  }, [LoginUser, id, PageGroupId]); // ✅ ab error nahi aayega
 };
 
 export default useCheckFavorite;

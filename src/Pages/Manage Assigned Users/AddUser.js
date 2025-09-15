@@ -201,13 +201,6 @@ const AddUser = () => {
             {/* Buttons */}
             <div style={{ display: 'flex', gap: '10px', justifyContent: "center" }}>
               <button
-                type="submit"
-                className="ss_add_use_btn"
-                disabled={isSelfEmail}
-              >
-                ADD USER
-              </button>
-              <button
                 type="button"
                 className="ss_add_use_btn"
                 onClick={() => navigate(-1)}
@@ -215,7 +208,15 @@ const AddUser = () => {
               >
                 CANCEL
               </button>
+              <button
+                type="submit"
+                className="ss_add_use_btn"
+                disabled={isSelfEmail}
+              >
+                ADD USER
+              </button>
             </div>
+
           </form>
         </div>
       </div>

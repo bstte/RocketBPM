@@ -95,7 +95,19 @@
     color: white;
     text-transform: uppercase;
   }
+  .owner-flex {
+    display: flex;
+  }
   
+  .popup-button.remove {
+    background: #002060;
+    color: white;
+    text-transform: uppercase;
+    padding: 0 10px;
+    font-size: 0.7rem;
+    line-height: 20px;
+    height: 20px;
+}
   .popup-button.save:hover {
     background: #002060;
     transform: scale(1.05); /* Slight pop effect */

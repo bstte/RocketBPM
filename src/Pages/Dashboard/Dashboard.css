@@ -29,8 +29,34 @@
 
 
 .ss_dash_slid_bx .react-flow__viewport {
-    transform: translate(0px, 0px) scale(0.17) !important;
+    transform: translate(-13px, -6px) scale(0.3) !important;
 
+}
+
+@media(min-width:1320px) and (max-width:1500px) {
+    .ss_dash_slid_bx .react-flow__viewport {
+        transform: translate(-13px, -6px) scale(0.26) !important;
+    }
+}
+@media(min-width:1220px) and (max-width:1320px) {
+    .ss_dash_slid_bx .react-flow__viewport {
+        transform: translate(-13px, -6px) scale(0.24) !important;
+    }
+}
+@media(min-width:1120px) and (max-width:1220px) {
+    .ss_dash_slid_bx .react-flow__viewport {
+        transform: translate(-13px, -6px) scale(0.22) !important;
+    }
+}
+@media(min-width:1020px) and (max-width:1120px) {
+    .ss_dash_slid_bx .react-flow__viewport {
+        transform: translate(-13px, -6px) scale(0.20) !important;
+    }
+}
+@media(min-width:920px) and (max-width:1020px) {
+    .ss_dash_slid_bx .react-flow__viewport {
+        transform: translate(-13px, -6px) scale(0.18) !important;
+    }
 }
 
 .ss_title_bar header {
@@ -214,7 +240,12 @@ table {
 
 .ss_dash_table {
     padding: 14px;
+    max-height: 300px;   /* ✅ Max height set */
+    overflow-y: auto;    /* ✅ Vertical scroll enable */
+    overflow-x: hidden;  /* Horizontal scroll hide (optional) */
 }
+
+
 
 th,
 td {
@@ -258,7 +289,7 @@ td {
 }
 
 .ss_table_btm_para {
-    padding: 15px 15px 75px;
+    padding: 15px 15px 5px;
     text-align: center;
 }
 
@@ -375,7 +406,19 @@ td {
     font-size: 15px;
     line-height: 20px;
     color: #002060;
-    display: flex;
+    /* display: flex; */
+}
+.headericons_1,
+.headericons_2 {
+    position: relative;
+    cursor: pointer;
+}
+.headericons .dropdown-content {
+    white-space:nowrap;
+    display: none;
+}
+.headericons .dropdown-content.active {
+    display: block;
 }
 
 .ss_header_new_right div span {

@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { BreadcrumbsContext } from "../../context/BreadcrumbsContext";
 import MiniMapPreview from "./MiniMapPreview";
 import { useTranslation } from "../../hooks/useTranslation";
+import ProcessMenu from "../../components/ProcessMenu";
 // import { Opacity } from "@mui/icons-material";
 
 const Dashboard = () => {
@@ -467,112 +468,13 @@ const Dashboard = () => {
 
                             {/* Custom dropdown menu */}
                             {selectedProcess === item.processId && (
-                              <Box
-                                sx={{
-                                  position: "absolute",
-                                  top: 35,
-                                  right: 10,
-                                  width: "150px",
-                                  bgcolor: "white",
-                                  boxShadow: 3,
-                                  borderRadius: 1,
-                                  padding: 1,
-                                  zIndex: 1000,
-                                }}
-                              >
-
-                                {Loading && (
-                                  item.type === "self" ? (
-                                    <>
-                                      {/* Show all options when type is self */}
-                                      {checkpublish && (
-                                        <p
-                                          onClick={() =>
-
-                                            navigate(`/published-map-level/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
-
-                                          }
-
-                                          className="menuitems"
-                                        >
-                                          {t('View_published')}
-                                         
-                                        </p>
-                                      )}
-                                      <p
-                                        onClick={() =>
-
-                                          navigate(`/Draft-Process-View/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
-
-                                        }
-
-                                        className="menuitems"
-                                      >
-                                         {t('View_draft')}
-                                        
-                                      </p>
-                                      <p
-                                        onClick={() =>
-                                          navigate("/User-Management", {
-                                            state: {
-                                              process: { id: parseInt(item.processId), user_id: item.id },
-                                            },
-                                          })
-                                        }
-                                        className="menuitems"
-                                      >
-                                        {t('Manage_users')}
-                                        
-                                      </p>
-                                      <p
-                                        onClick={() =>
-                                          navigate("/Setting", {
-                                            state: { ProcessId: parseInt(item.processId) },
-                                          })
-                                        }
-                                        className="menuitems"
-                                      >
-                                        {t('Edit_settings')}
-                                        
-                                      </p>
-                                    </>
-                                  ) : (
-                                    <>
-
-                                      {/* Show Published and View Draft when role is Modeler */}
-                                      {["User", "Modeler"].includes(item.role) && (
-                                        <>
-                                          {checkpublish && (
-                                            <p
-                                              onClick={() =>
-
-                                                navigate(`/published-map-level/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
-
-                                              }
-                                              className="menuitems"
-                                            >
-                                              
-                                              {t('View_published')}
-                                            </p>
-                                          )}
-                                          <p
-                                            onClick={() =>
-
-                                              navigate(`/Draft-Process-View/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
-
-                                            }
-                                            className="menuitems"
-                                          >
-                                            {t('View_draft')}
-                                            
-                                          </p>
-                                        </>
-                                      )}
-                                    </>
-                                  )
-                                )}
-                              </Box>
-                            )}
+                        <ProcessMenu
+                          item={item}
+                          ProcessTitle={ProcessTitle}
+                          checkpublish={checkpublish}
+                          t={t}
+                        />
+                      )}
                           </div>
                         </div>
 
@@ -652,113 +554,12 @@ const Dashboard = () => {
 
                             {/* Custom dropdown menu */}
                             {selectedProcess === item.processId && (
-                              <Box
-                                sx={{
-                                  position: "absolute",
-                                  top: 25,
-                                  right: 0,
-                                  width: "150px",
-                                  bgcolor: "white",
-                                  boxShadow: 3,
-                                  borderRadius: 1,
-                                  padding: 1,
-                                  zIndex: 1000,
-                                }}
-                              >
-
-                                {Loading && (
-                                  item.type === "self" ? (
-                                    <>
-                                      {/* Show all options when type is self */}
-                                      {checkpublish && (
-                                        <p
-                                          onClick={() =>
-
-                                            navigate(`/published-map-level/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
-
-                                          }
-
-                                          className="menuitems"
-                                        >
-                                          {t('View_published')}
-                                          
-                                        </p>
-                                      )}
-                                      <p
-                                        onClick={() =>
-
-                                          navigate(`/Draft-Process-View/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
-
-                                        }
-
-                                        className="menuitems"
-                                      >
-                                        {t('View_draft')}
-                                        
-                                      </p>
-                                      <p
-                                        onClick={() =>
-                                          navigate("/User-Management", {
-                                            state: {
-                                              process: { id: parseInt(item.processId), user_id: item.id },
-                                            },
-                                          })
-                                        }
-                                        className="menuitems"
-                                      >
-                                         {t('Manage_users')}
-                                        
-                                      </p>
-                                      <p
-                                        onClick={() =>
-                                          navigate("/Setting", {
-                                            state: { ProcessId: parseInt(item.processId) },
-                                          })
-                                        }
-                                        className="menuitems"
-                                      >
-                                        {t('Edit_settings')}
-                                        
-                                      </p>
-                                    </>
-                                  ) : (
-                                    <>
-
-
-                                      {/* Show Published and View Draft when role is user and Modeler */}
-                                      {["User", "Modeler"].includes(item.role) && (
-                                        <>
-                                          {checkpublish && (
-                                            <p
-                                              onClick={() =>
-
-                                                navigate(`/published-map-level/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
-
-                                              }
-                                              className="menuitems"
-                                            >
-                                                {t('View_published')}
-                                              
-                                            </p>
-                                          )}
-                                          <p
-                                            onClick={() =>
-
-                                              navigate(`/Draft-Process-View/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
-
-                                            }
-                                            className="menuitems"
-                                          >
-                                            {t('View_draft')}
-                                            
-                                          </p>
-                                        </>
-                                      )}
-                                    </>
-                                  )
-                                )}
-                              </Box>
-                            )}
+                        <ProcessMenu
+                          item={item}
+                          checkpublish={checkpublish}
+                          t={t}
+                        />
+                      )}
 
                           </div>
                         </div>

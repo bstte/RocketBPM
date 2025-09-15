@@ -5,7 +5,8 @@ const StickyNote = ({ data, id, selectedNodeId ,editable}) => {
   const [label, setLabel] = useState(data.label || "");
   const [width, setWidth] = useState(data.width_height?.width || 240);
   const [height, setHeight] = useState(data.width_height?.height || 180);
-  const textareaRef = useRef();
+  const stickyFocus = useRef(null);
+  const [autoFocus, setAutoFocus] = useState(data.autoFocus);
   const isClickable = selectedNodeId === id;
 
   // Sync width/height from parent data
@@ -16,12 +17,15 @@ const StickyNote = ({ data, id, selectedNodeId ,editable}) => {
     }
   }, [data.width_height]);
 
-  // Autofocus on mount if needed
+ 
   useEffect(() => {
-    if (data.autoFocus && textareaRef.current) {
-      textareaRef.current.focus();
+    if (autoFocus && stickyFocus.current) {
+      setTimeout(() => {
+        stickyFocus.current.focus();
+        setAutoFocus(false);
+      }, 0);
     }
-  }, [data.autoFocus]);
+  }, [autoFocus]);
 
   // Update label when prop changes
   useEffect(() => {
@@ -44,9 +48,9 @@ const StickyNote = ({ data, id, selectedNodeId ,editable}) => {
   };
 
   useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    if (stickyFocus.current) {
+      stickyFocus.current.style.height = "auto";
+      stickyFocus.current.style.height = `${stickyFocus.current.scrollHeight}px`;
     }
   }, [label, width, height]);
 
@@ -71,7 +75,7 @@ const StickyNote = ({ data, id, selectedNodeId ,editable}) => {
         }}
       >
         <textarea
-          ref={textareaRef}
+          ref={stickyFocus}
           value={label}
           onChange={handleChange}
           onInput={adjustHeight}

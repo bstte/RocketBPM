@@ -70,12 +70,8 @@ const VersionPopupView = ({
 
     fetchVersions();
   }, [processId, currentLevel, currentParentId, LoginUser]);
-
   // ✅ Roles config
-  const roleBlocks =
-    type === "ProcessMaps"
-      ? ["domain_owner", "owner"]
-      : ["owner", "architecture", "manager"];
+
 
   return (
     <div className="version-popup-overlay">
@@ -113,86 +109,80 @@ const VersionPopupView = ({
         {/* Tab Content */}
         <div className="tab-content">
           {activeTab === "contact" && (
-            <div className="contact-tab">
-              {assignedUsers.length === 0 ? (
-                <p>{t("assigned_user_does_not_exist")}</p>
-              ) : (
-                roleBlocks.map((role) => {
-                  const roleUsers = assignedUsers.filter((user) =>
-                    (selectedEmails[role] || []).includes(user.user.email)
-                  );
-
-                  return (
-                    <div key={role} className="contact-item">
-                      <div className="flex_full">
-                        <label style={{ textTransform: "capitalize" }}>
-                          {role === "domain_owner"
-                            ? `${t("process_domain_owner")}`
-                            : role === "owner"
-                            ? `${t("process_owner")}`
-                            : role === "architecture"
-                            ? `${t("process_architecture")}`
-                            : `${t("process_manager")}`}
-                        </label>
+          <div className="contact-tab">
+          {(() => {
+            if (!assignedUsers || assignedUsers.length === 0) {
+              // Agar assignedUsers empty ya undefined
+              return <p>{t("No_Process_Management_Roles_assigned")}</p>;
+            }
+        
+            // Prepare role blocks
+            const roleBlocks =
+              type === "ProcessMaps"
+                ? ["domain_owner", "owner"]
+                : ["owner", "architecture", "manager"];
+        
+            // Filter roles jisme at least ek user assigned ho
+            const roleBlocksWithUsers = roleBlocks
+              .map((role) => {
+                const roleUsers = assignedUsers.filter((user) =>
+                  (selectedEmails[role] || []).includes(user.user?.email)
+                );
+                return { role, roleUsers };
+              })
+              .filter((block) => block.roleUsers.length > 0);
+        
+            if (roleBlocksWithUsers.length === 0) {
+              // Agar koi bhi role me user assigned nahi
+              return <p>{t("no_process_management_roles_assigned")}</p>;
+            }
+        
+            // Display blocks jisme user assigned ho
+            return roleBlocksWithUsers.map((block) => (
+              <div key={block.role} className="contact-item">
+                <div className="flex_full">
+                  <label style={{ textTransform: "capitalize" }}>
+                    {block.role === "domain_owner"
+                      ? `${t("process_domain_owner")}`
+                      : block.role === "owner"
+                      ? `${t("process_owner")}`
+                      : block.role === "architecture"
+                      ? `${t("process_architecture")}`
+                      : `${t("process_manager")}`}
+                  </label>
+                </div>
+        
+                {block.roleUsers.map((roleUser, index) => (
+                  <div key={index} className="owner_details_list">
+                    <div className="owner_details">
+                      <div className="owner-pic">
+                        {roleUser.user?.image ? (
+                          <img
+                            src={`${ImageBaseUrl}uploads/profile_images/${roleUser.user.image}`}
+                            alt="Profile"
+                            style={{ width: "40px", height: "40px", borderRadius: "50%" }}
+                          />
+                        ) : (
+                          <DefaultUserIcon />
+                        )}
                       </div>
-
-                      {roleUsers.length > 0 ? (
-                        roleUsers.map((roleUser, index) => (
-                          <div key={index} className="owner_details_list">
-                            <div className="owner_details">
-                              <div className="owner-pic">
-                                {roleUser.user && roleUser.user.image ? (
-                                  <img
-                                    src={`${ImageBaseUrl}uploads/profile_images/${roleUser.user.image}`}
-                                    alt="Profile"
-                                    style={{
-                                      width: "40px",
-                                      height: "40px",
-                                      borderRadius: "50%",
-                                    }}
-                                  />
-                                ) : (
-                                  <DefaultUserIcon />
-                                )}
-                              </div>
-                              <div className="owner-desc">
-                                <span className="owner-name">
-                                  {`${roleUser.user.first_name} ${
-                                    roleUser.user.last_name || ""
-                                  }`}
-                                </span>
-
-                                <div className="owner-email">
-                                  <DefaultemailIcon />
-                                  <span style={{ marginLeft: "8px" }}>
-                                    {roleUser.user.email}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="owner_details_list">
-                          <div className="owner_details">
-                            <div className="owner-pic">
-                              <DefaultUserIcon />
-                            </div>
-                            <div className="owner-desc">
-                              <span className="owner-name">{t("no_user")}</span>
-                              <div className="owner-email">
-                                <DefaultemailIcon />
-                                <span style={{ marginLeft: "8px" }}></span>
-                              </div>
-                            </div>
-                          </div>
+                      <div className="owner-desc">
+                        <span className="owner-name">
+                          {roleUser.user.first_name} {roleUser.user.last_name || ""}
+                        </span>
+                        <div className="owner-email">
+                          <DefaultemailIcon />
+                          <span style={{ marginLeft: "8px" }}>{roleUser.user.email}</span>
                         </div>
-                      )}
+                      </div>
                     </div>
-                  );
-                })
-              )}
-            </div>
+                  </div>
+                ))}
+              </div>
+            ));
+          })()}
+        </div>
+        
           )}
 
           {activeTab === "revision" && (

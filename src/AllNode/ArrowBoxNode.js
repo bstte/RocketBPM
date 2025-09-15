@@ -17,7 +17,7 @@ const ArrowBoxNode = ({ data, id, selectedNodeId }) => {
       setHeight(data.width_height.height);
     }
   }, [data.width_height]);
-  
+
 
   useEffect(() => {
     setLabel(data.label || "");
@@ -86,10 +86,16 @@ const ArrowBoxNode = ({ data, id, selectedNodeId }) => {
   }, [label, width, height, selectedNodeId]);
 
   return (
-    <div   style={{
-      ...styles.wrapper,
-      filter: data.LinkToStatus ? 'drop-shadow(0px 0px 10px #0000004f)' : 'none',
-    }}>
+    <div
+      style={{
+        ...styles.wrapper,
+        filter:
+          data.LinkToStatus || data.hasNextLevel
+            ? 'drop-shadow(0px 0px 10px #0000004f)'
+            : 'none',
+      }}
+    >
+
       <div
         className="borderBox"
         style={{

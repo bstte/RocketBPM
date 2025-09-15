@@ -310,7 +310,7 @@ const PublishedSwimlaneModel = () => {
         currentLevel={currentLevel}
         getPublishedDate={getPublishedDate}
         setIsNavigating={() => removeBreadcrumbsAfter(currentLevel - 1)}
-        Page={"Published"}
+        Page={"ViewPublishswimlane"}
         isFavorite={isFavorite}
         Process_img={process_img}
         Procesuser={user}
@@ -353,13 +353,13 @@ const PublishedSwimlaneModel = () => {
 
           </div>
 
-          {showSharePopup && (
+          {/* {showSharePopup && (
             <SharePopup
               processId={id}
               processName={`${headerTitle}`}
               onClose={() => setShowSharePopup(false)}
             />
-          )}
+          )} */}
 
 
           {showVersionPopup && (
