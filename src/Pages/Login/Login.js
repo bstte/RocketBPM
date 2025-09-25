@@ -90,7 +90,6 @@ const Login = () => {
 
     // Fetch current user details
     const response = await CurrentUser(token);
-    console.log("inside login",response)
     dispatch(setUser(response)); // Store user in Redux
 
     // Navigate to dashboard after setting user

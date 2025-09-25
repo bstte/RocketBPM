@@ -171,7 +171,6 @@ const Dashboard = () => {
         const key = `${item.process_id}_${item.PageGroupId}`;
         dates[key] = date;
       }
-      console.log("final date data", dates);
       setPublishedDates(dates);
     };
     
@@ -336,7 +335,6 @@ const Dashboard = () => {
 
       navigate(`/Draft-Process-View/${item.processId}?title=${encodeURIComponent(getProcessTitle(item.processId))}&user=${encodeURIComponent(JSON.stringify(item))}`)
     }
-    console.log(data)
   }
 
   const sliderRef = useRef(null);
@@ -633,7 +631,7 @@ const Dashboard = () => {
                   <thead>
                     <tr>
                       <th width="35%">{t('Process')}</th>
-                      <th width="35%">{t('Process_World')}</th>
+                      <th width="35%">{t('process_world')}</th>
                       <th width="20%">{t('Published')}</th>
                     </tr>
                   </thead>

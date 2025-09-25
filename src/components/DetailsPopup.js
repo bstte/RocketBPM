@@ -4,6 +4,7 @@ import Draggable from "react-draggable";
 import "react-quill/dist/quill.snow.css";
 import "../Css/DetailsPopup.css";
 import { ResizableBox } from "react-resizable";
+import TranslationTextAreaPopup from "../hooks/TranslationTextAreaPopup";
 
 const DetailsPopup = ({ isOpen, onClose, onSave, Details }) => {
   const [title, setTitle] = useState("");
@@ -11,6 +12,8 @@ const DetailsPopup = ({ isOpen, onClose, onSave, Details }) => {
   const [popupSize, setPopupSize] = useState({ width: 600, height: 450 });
   const [maxConstraints, setMaxConstraints] = useState([800, 600]);
   const [editorHeight, setEditorHeight] = useState(450);
+  const [showTranslationPopup, setShowTranslationPopup] = useState(false);
+  const [translations, setTranslations] = useState({});
 
   useEffect(() => {
     const updateMaxConstraints = () => {
@@ -23,20 +26,26 @@ const DetailsPopup = ({ isOpen, onClose, onSave, Details }) => {
     return () => window.removeEventListener("resize", updateMaxConstraints);
   }, []);
 
-  useEffect(() => {
-    if (isOpen && Details) {
-console.log("Details.data.details.title,",Details.data.details.title)
-setTitle(
-  Details.data.details.title?.replace(/<br\s*\/?>/gi, " ").replace(/&nbsp;/g, " ") || ""
-);
+useEffect(() => {
+  if (isOpen && Details) {
+    setTitle(
+      Details.data.details.title?.replace(/<br\s*\/?>/gi, " ").replace(/&nbsp;/g, " ") || ""
+    );
+    setContent(Details.data.details.content || ""); 
 
-      setContent(Details.data.details.content || ""); 
-    }
-  }, [Details, isOpen]);
+    // ✅ details.translations ko load karo (agar hai)
+    setTranslations(
+      Details.data.details.translations || { 
+        en: { title: "", content: "" }, 
+        de: { title: "", content: "" }, 
+        es: { title: "", content: "" } 
+      }
+    );
+  }
+}, [Details, isOpen]);
 
 
   if (!isOpen) return null;
-
 
   const handleTitleChange = (e) => {
     setTitle(e.target.value);
@@ -48,10 +57,11 @@ setTitle(
 
   const handleSave = () => {
     if (onSave) {
-      onSave({ title, content });
+      onSave({ title, content, translations }); // ⬅️ translations bhi bhejo
     }
     setContent("");
     setTitle("");
+    setTranslations({});
     onClose();
   };
 
@@ -65,7 +75,7 @@ setTitle(
           maxConstraints={maxConstraints}
           onResizeStop={(e, { size }) => {
             setPopupSize(size);
-            setEditorHeight(size.height - 50); 
+            setEditorHeight(size.height - 50);
           }}
           style={{
             position: "absolute",
@@ -77,28 +87,33 @@ setTitle(
             boxShadow: "0 2px 5px #002060",
             overflow: "hidden",
             zIndex: 1001,
-            padding:"10px"
+            padding: "10px",
           }}
         >
           {/* <div className="popup-overlay"> */}
-          <div className="EditContentPopup" style={{
-            display: "flex",
-            flexDirection: "column",
-            backgroundColor: "#ffffff",
-            border: "0px solid #002060",
-            overflow: "hidden",
-            zIndex: 1001, 
-            width: "100%", 
-            height: "100%",
-            
-          }}>
-            <div className="popup-header" style={{
+          <div
+            className="EditContentPopup"
+            style={{
               display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              padding: "0 10px 10px",
-              cursor: "move"
-            }}>
+              flexDirection: "column",
+              backgroundColor: "#ffffff",
+              border: "0px solid #002060",
+              overflow: "hidden",
+              zIndex: 1001,
+              width: "100%",
+              height: "100%",
+            }}
+          >
+            <div
+              className="popup-header"
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                padding: "0 10px 10px",
+                cursor: "move",
+              }}
+            >
               <input
                 type="text"
                 value={title}
@@ -107,6 +122,12 @@ setTitle(
                 className="popup-title-input"
               />
               <div className="popup-actions">
+                <button
+                  className="popup-button"
+                  onClick={() => setShowTranslationPopup(true)}
+                >
+                  Translations
+                </button>
                 <button className="popup-button cancel" onClick={onClose}>
                   Cancel
                 </button>
@@ -130,13 +151,28 @@ setTitle(
                   ],
                 }}
                 placeholder="Enter your details here. You can include hyperlinks like https://example.com."
-                style={{ height: `${editorHeight - 50}px`, marginBottom: "20px" }} 
+                style={{
+                  height: `${editorHeight - 50}px`,
+                  marginBottom: "20px",
+                }}
               />
             </div>
           </div>
           {/* </div> */}
         </ResizableBox>
       </Draggable>
+
+          {showTranslationPopup && (
+        <TranslationTextAreaPopup
+          isOpen={showTranslationPopup}
+          onClose={() => setShowTranslationPopup(false)}
+          defaultValues={translations}
+          onSubmit={(values) => {
+            setTranslations(values); // state update
+            setShowTranslationPopup(false);
+          }}
+        />
+            )}
     </>
   );
 };

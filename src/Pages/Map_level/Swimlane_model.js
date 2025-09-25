@@ -24,7 +24,16 @@ import { applyNodeChanges, applyEdgeChanges } from "@xyflow/react";
 import Header from "../../components/Header";
 import { v4 as uuidv4 } from "uuid";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import api, { addFavProcess, checkFavProcess, checkRecordWithGetLinkDraftData, filter_draft, getdataByNodeId, getNextPageGroupId, removeFavProcess, saveProcessInfo } from "../../API/api";
+import api, {
+  addFavProcess,
+  checkFavProcess,
+  checkRecordWithGetLinkDraftData,
+  filter_draft,
+  getdataByNodeId,
+  getNextPageGroupId,
+  removeFavProcess,
+  saveProcessInfo,
+} from "../../API/api";
 import CustomContextPopup from "../../components/CustomContextPopup";
 import DetailsPopup from "../../components/DetailsPopup";
 import NodeTypes from "./NodeTypes";
@@ -32,7 +41,7 @@ import generateNodesAndEdges from "../../AllNode/SwimlineNodes/generateNodesAndE
 import styles from "./SwimlaneStyles";
 import AddObjectRole from "../../AllNode/SwimlineNodes/addobjectrole";
 import { BreadcrumbsContext } from "../../context/BreadcrumbsContext";
-import '../../Css/Swimlane.css';
+import "../../Css/Swimlane.css";
 import { useSelector } from "react-redux";
 import TextInputModal from "../../components/TextInputModal";
 import VersionPopup from "./VersionPopup";
@@ -71,7 +80,6 @@ const SwimlaneModel = () => {
     }
   }, [location.search]);
 
-
   const id = processId; // string
   const headerTitle = `${title} `;
   const currentParentId = parentId || null;
@@ -82,13 +90,14 @@ const SwimlaneModel = () => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isCheckboxPopupOpen, setIsCheckboxPopupOpen] = useState(false);
   const [LinknodeList, setLinknodeList] = useState([]);
-  const [isexistingroleCheckboxPopupOpen, setIsexistingroleCheckboxPopupOpen] = useState(false);
+  const [isexistingroleCheckboxPopupOpen, setIsexistingroleCheckboxPopupOpen] =
+    useState(false);
 
   const [LinkexistingRole, setLinkexistingRole] = useState([]);
 
   const [selectedLinknodeIds, setSelectedLinknodeIds] = useState([]);
-  const [selectedexistigrolenodeId, setSelectedexistingrolenodeId] = useState("");
-
+  const [selectedexistigrolenodeId, setSelectedexistingrolenodeId] =
+    useState("");
 
   const [getDraftedDate, setDraftedDate] = useState("");
   const [KeepOldPosition, setKeepOldPosition] = useState(null);
@@ -100,13 +109,24 @@ const SwimlaneModel = () => {
 
   const [selectedTitle, setSelectedTitle] = useState("");
   const [showTranslationPopup, setShowTranslationPopup] = useState(false);
-  const [translationDefaults, setTranslationDefaults] = useState({ en: "", de: "", es: "" });
+  const [translationDefaults, setTranslationDefaults] = useState({
+    en: "",
+    de: "",
+    es: "",
+  });
 
   const { nodes: initialNodes } = useMemo(
-    () => generateNodesAndEdges(windowSize.width, windowSize.height, '', height + 10, appHeaderHeight, remainingHeight),
+    () =>
+      generateNodesAndEdges(
+        windowSize.width,
+        windowSize.height,
+        "",
+        height + 10,
+        appHeaderHeight,
+        remainingHeight
+      ),
     [windowSize, height, appHeaderHeight, remainingHeight]
   );
-
 
   useEffect(() => {
     setNodes(initialNodes);
@@ -121,7 +141,8 @@ const SwimlaneModel = () => {
   const [selectedNodefreetextId, setSelectedNodefreetextId] = useState(null);
   const [showVersionPopup, setShowVersionPopup] = useState(false);
   const [versionPopupPayload, setversionPopupPayload] = useState("");
-  const [processDefaultlanguage_id, setprocessDefaultlanguage_id] = useState(null);
+  const [processDefaultlanguage_id, setprocessDefaultlanguage_id] =
+    useState(null);
 
   const [selectedEdge, setSelectedEdge] = useState(null);
   const [getPublishedDate, setgetPublishedDate] = useState("");
@@ -154,17 +175,15 @@ const SwimlaneModel = () => {
 
   const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
 
-
-
   const handleLabelChange = useCallback(
     (nodeId, newLabel) => {
       setChiledNodes((nds) =>
         nds.map((node) => {
           if (node.id !== nodeId) return node;
-  
+
           // langKey nikaalo
           const langKey = langMap[processDefaultlanguage_id] || "en";
-  
+
           // agar StickyNote hai
           if (node.type === "StickyNote") {
             return {
@@ -179,7 +198,7 @@ const SwimlaneModel = () => {
               },
             };
           }
-  
+
           // agar Swimlane (ya koi aur jisme details.title hai)
           return {
             ...node,
@@ -197,7 +216,7 @@ const SwimlaneModel = () => {
           };
         })
       );
-  
+
       if (!isInitialLoad.current) {
         setHasUnsavedChanges(true);
       }
@@ -222,22 +241,40 @@ const SwimlaneModel = () => {
         const Process_id = id ? id : null;
 
         const [publishedResponse, draftResponse, data] = await Promise.all([
-          api.GetPublishedDate(levelParam, parseInt(user_id), Process_id, "Published"),
-          api.GetPublishedDate(levelParam, parseInt(user_id), Process_id, "Draft"),
+          api.GetPublishedDate(
+            levelParam,
+            parseInt(user_id),
+            Process_id,
+            "Published"
+          ),
+          api.GetPublishedDate(
+            levelParam,
+            parseInt(user_id),
+            Process_id,
+            "Draft"
+          ),
           api.getNodes(levelParam, parseInt(user_id), Process_id),
         ]);
-
-        setgetPublishedDate(publishedResponse.status ? publishedResponse.created_at || "" : "");
-        setDraftedDate(draftResponse.status ? draftResponse.created_at || "" : "");
+        console.log("data", data);
+        setgetPublishedDate(
+          publishedResponse.status ? publishedResponse.created_at || "" : ""
+        );
+        setDraftedDate(
+          draftResponse.status ? draftResponse.created_at || "" : ""
+        );
         setprocess_img(data.process_img);
         // setprocess_udid(data.process_uid)
-        setprocessDefaultlanguage_id(data.processDefaultlanguage_id)
+        setprocessDefaultlanguage_id(data.processDefaultlanguage_id);
 
         const nodebgwidth = document.querySelector(".react-flow__node");
-        const nodebgwidths = nodebgwidth ? nodebgwidth.getBoundingClientRect().width : 0;
+        const nodebgwidths = nodebgwidth
+          ? nodebgwidth.getBoundingClientRect().width
+          : 0;
 
         const nodebgheight = document.querySelector(".react-flow__node");
-        const nodebgheights = nodebgheight ? nodebgheight.getBoundingClientRect().height : 0;
+        const nodebgheights = nodebgheight
+          ? nodebgheight.getBoundingClientRect().height
+          : 0;
 
         // Centralized size calculation
         const totalRows = 7;
@@ -274,18 +311,20 @@ const SwimlaneModel = () => {
           }
 
           const nodeStyle =
-            node.type === "Yes" || node.type === "No" || node.type === "FreeText" || node.type === "StickyNote"
+            node.type === "Yes" ||
+            node.type === "No" ||
+            node.type === "FreeText" ||
+            node.type === "StickyNote"
               ? {} // No styles applied for these node types
               : {
-                width: groupWidth,
-                height: groupHeight,
-                childWidth: childWidth,
-                childHeight: childHeight,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center"
-              };
-
+                  width: groupWidth,
+                  height: groupHeight,
+                  childWidth: childWidth,
+                  childHeight: childHeight,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                };
 
           return {
             ...remainingNodeProps,
@@ -294,7 +333,8 @@ const SwimlaneModel = () => {
             parentId: parentId,
             data: {
               ...parsedData,
-              onLabelChange: (newLabel) => handleLabelChange(node.node_id, newLabel),
+              onLabelChange: (newLabel) =>
+                handleLabelChange(node.node_id, newLabel),
               width_height: parsedMeasured,
               defaultwidt: "40px",
               defaultheight: "40px",
@@ -313,22 +353,36 @@ const SwimlaneModel = () => {
         });
 
         const parsedEdges = data.edges.map((edge) => {
-          const sourceNode = data.nodes.find((node) => node.node_id === edge.source);
-          const targetNode = data.nodes.find((node) => node.node_id === edge.target);
+          const sourceNode = data.nodes.find(
+            (node) => node.node_id === edge.source
+          );
+          const targetNode = data.nodes.find(
+            (node) => node.node_id === edge.target
+          );
 
-          const sourcePosition = sourceNode ? JSON.parse(sourceNode.position || '{"x":0,"y":0}') : { x: 0, y: 0 };
-          const targetPosition = targetNode ? JSON.parse(targetNode.position || '{"x":0,"y":0}') : { x: 0, y: 0 };
+          const sourcePosition = sourceNode
+            ? JSON.parse(sourceNode.position || '{"x":0,"y":0}')
+            : { x: 0, y: 0 };
+          const targetPosition = targetNode
+            ? JSON.parse(targetNode.position || '{"x":0,"y":0}')
+            : { x: 0, y: 0 };
 
           // Check if in same row or same column
           const isSameRow = Math.abs(sourcePosition.y - targetPosition.y) < 10; // 10px tolerance
-          const isSameColumn = Math.abs(sourcePosition.x - targetPosition.x) < 10;
+          const isSameColumn =
+            Math.abs(sourcePosition.x - targetPosition.x) < 10;
 
-          const edgeType = (isSameRow || isSameColumn) ? "default" : "step";
+          const edgeType = isSameRow || isSameColumn ? "default" : "step";
 
           return {
             ...edge,
             animated: Boolean(edge.animated),
-            markerEnd: { type: MarkerType.ArrowClosed, color: "#002060", width: 12, height: 12 },
+            markerEnd: {
+              type: MarkerType.ArrowClosed,
+              color: "#002060",
+              width: 12,
+              height: 12,
+            },
             style: { stroke: "#002060", strokeWidth: 2 },
             type: edgeType,
           };
@@ -366,23 +420,29 @@ const SwimlaneModel = () => {
     [setEdges]
   );
 
-
   const onConnect = useCallback(
     (params) => {
-      const sourceNode = ChildNodesRef.current.find((node) => node.node_id === params.source);
-      const targetNode = ChildNodesRef.current.find((node) => node.node_id === params.target);
-
+      const sourceNode = ChildNodesRef.current.find(
+        (node) => node.node_id === params.source
+      );
+      const targetNode = ChildNodesRef.current.find(
+        (node) => node.node_id === params.target
+      );
 
       // console.log('Current ChildNodes:', ChildNodesRef.current);
 
-      const sourcePosition = sourceNode ? sourceNode.position || { x: 0, y: 0 } : { x: 0, y: 0 };
-      const targetPosition = targetNode ? targetNode.position || { x: 0, y: 0 } : { x: 0, y: 0 };
+      const sourcePosition = sourceNode
+        ? sourceNode.position || { x: 0, y: 0 }
+        : { x: 0, y: 0 };
+      const targetPosition = targetNode
+        ? targetNode.position || { x: 0, y: 0 }
+        : { x: 0, y: 0 };
 
       // Check if in same row or same column
       const isSameRow = Math.abs(sourcePosition.y - targetPosition.y) < 10; // 10px tolerance
       const isSameColumn = Math.abs(sourcePosition.x - targetPosition.x) < 10;
 
-      const edgeType = (isSameRow || isSameColumn) ? "default" : "step";
+      const edgeType = isSameRow || isSameColumn ? "default" : "step";
 
       setEdges((eds) =>
         addEdge(
@@ -416,36 +476,31 @@ const SwimlaneModel = () => {
   const handleNodeClick = useCallback(
     (event, node) => {
       setSelectedEdge(null);
-      setIsexistingroleCheckboxPopupOpen(false)
+      setIsexistingroleCheckboxPopupOpen(false);
       setSelectedNodeId(node.id);
-      handleClosePopup()
+      handleClosePopup();
       setOptions([]);
 
-      setIsCheckboxPopupOpen(false)
-
+      setIsCheckboxPopupOpen(false);
     },
 
     []
   );
 
-
   useEffect(() => {
     const checkpublishfunction = async () => {
       if (currentLevel !== 0) {
         try {
-
           const response = await filter_draft(ParentPageGroupId);
           // console.log("inside first map", response)
 
           if (response?.data === true) {
             Setcheckpublish(false);
-
           } else {
             Setcheckpublish(true);
-
           }
         } catch (error) {
-          console.error("filter draft error", error)
+          console.error("filter draft error", error);
         }
       }
     };
@@ -460,7 +515,12 @@ const SwimlaneModel = () => {
     } else {
       PageGroupId = ChildNodes[0]?.PageGroupId;
     }
-    if (type === "Yes" || type === "No" || type === "FreeText" || type === "StickyNote") {
+    if (
+      type === "Yes" ||
+      type === "No" ||
+      type === "FreeText" ||
+      type === "StickyNote"
+    ) {
       if (!position) {
         alert("Position not defind");
         return;
@@ -505,19 +565,22 @@ const SwimlaneModel = () => {
       const selectedGroup = nodes.find((node) => node.id === selectedGroupId);
 
       const nodebgwidth = document.querySelector(".react-flow__node");
-      const nodebgwidths = nodebgwidth ? nodebgwidth.getBoundingClientRect().width : 0;
+      const nodebgwidths = nodebgwidth
+        ? nodebgwidth.getBoundingClientRect().width
+        : 0;
 
       const nodebgheight = document.querySelector(".react-flow__node");
-      const nodebgheights = nodebgheight ? nodebgheight.getBoundingClientRect().height : 0;
-
+      const nodebgheights = nodebgheight
+        ? nodebgheight.getBoundingClientRect().height
+        : 0;
 
       const groupWidth = nodebgwidths;
       const groupHeight = nodebgheights;
       const childWidth = groupWidth * 0.9;
       const childHeight = groupHeight * 0.9;
       const centeredPosition = {
-        x: (selectedGroup.position.x + (groupWidth - childWidth) / 14) - 1,
-        y: (selectedGroup.position.y + (groupHeight - childHeight) / 14) - 0.5,
+        x: selectedGroup.position.x + (groupWidth - childWidth) / 14 - 1,
+        y: selectedGroup.position.y + (groupHeight - childHeight) / 14 - 0.5,
       };
 
       const newNodeId = uuidv4();
@@ -589,10 +652,19 @@ const SwimlaneModel = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const memoizedNodeTypes = useMemo(() => ({
-    ...NodeTypes,
-    StickyNote: (props) => <StickyNote {...props} selectedNodeId={selectedNodeId} editable={true} />,
-  }), [selectedNodeId]);
+  const memoizedNodeTypes = useMemo(
+    () => ({
+      ...NodeTypes,
+      StickyNote: (props) => (
+        <StickyNote
+          {...props}
+          selectedNodeId={selectedNodeId}
+          editable={true}
+        />
+      ),
+    }),
+    [selectedNodeId]
+  );
 
   const memoizedEdgeTypes = useMemo(() => edgeTypes, [edgeTypes]);
 
@@ -620,7 +692,6 @@ const SwimlaneModel = () => {
       ...versionPopupPayload,
     };
 
-
     const Level =
       currentParentId !== null
         ? `Level${currentLevel}_${currentParentId}`
@@ -631,11 +702,10 @@ const SwimlaneModel = () => {
     const LoginUserId = LoginUser ? LoginUser.id : null;
 
     try {
+      if (versionPopupPayload) {
+        await saveProcessInfo(payload);
+      }
 
-         if (versionPopupPayload) {
-              await saveProcessInfo(payload);
-            }
-      
       const response = await api.saveNodes({
         Level,
         user_id,
@@ -715,34 +785,76 @@ const SwimlaneModel = () => {
     setSelectedNodeId(null);
   };
 
-  const updateNodeDetails = (nodeId, newDetails) => {
+  // const updateNodeDetails = (nodeId, newDetails) => {
 
-    setChiledNodes((nodes) =>
-      nodes.map((node) =>
-        node.node_id === nodeId
-          ? {
+  //   setChiledNodes((nodes) =>
+  //     nodes.map((node) =>
+  //       node.node_id === nodeId
+  //         ? {
+  //           ...node,
+  //           data: {
+  //             ...node.data,
+  //             details: {
+  //               title: newDetails.title,
+  //               content: newDetails.content,
+  //             },
+  //           },
+  //         }
+  //         : node
+  //     )
+  //   );
+  // };
+
+  // const saveDetails = (details) => {
+  //   if (selectedNodeId) {
+  //     updateNodeDetails(selectedNodeId, details);
+  //     setSelectedNodeId(null);
+  //     setHasUnsavedChanges(true);
+  //   }
+  //   closePopup();
+  // };
+
+const saveDetails = (details) => {
+  const langKey = langMap[processDefaultlanguage_id] || "en";
+
+  setChiledNodes((nodes) =>
+    nodes.map((node) =>
+      node.node_id === selectedNodeId
+        ? {
             ...node,
             data: {
               ...node.data,
+              label: details?.title,
+
               details: {
-                title: newDetails.title,
-                content: newDetails.content,
+                ...node.data.details,
+                ...details,
+
+                translations: {
+                  ...(node.data.details?.translations || {}),
+                  [langKey]: {
+                    ...(node.data.details?.translations?.[langKey] || {}),
+                    title: details?.title || "",
+                    content: details?.content || "",
+                  },
+                },
+              },
+
+              translations: {
+                ...(node.data.translations || {}),
+                [langKey]: details?.title || "",
               },
             },
           }
-          : node
-      )
-    );
-  };
+        : node
+    )
+  );
 
-  const saveDetails = (details) => {
-    if (selectedNodeId) {
-      updateNodeDetails(selectedNodeId, details);
-      setSelectedNodeId(null);
-      setHasUnsavedChanges(true);
-    }
-    closePopup();
-  };
+  setHasUnsavedChanges(true);
+  setSelectedNodeId(null);
+};
+
+
 
   const handleClosePopup = () => {
     setContextMenu(null);
@@ -752,7 +864,7 @@ const SwimlaneModel = () => {
   };
   const translation = () => {
     const node = ChildNodes.find((n) => n.id === selectedNodeId);
-    console.log("get node", node)
+    console.log("get node", node);
     if (node) {
       // हर बार पूरा structure बनाओ (fallback खाली string)
       const defaults = {
@@ -761,12 +873,10 @@ const SwimlaneModel = () => {
         es: node.data?.translations?.es || "",
       };
 
-
-
       setTranslationDefaults(defaults);
       setShowTranslationPopup(true);
     }
-  }
+  };
 
   const handleDeleteNode = () => {
     if (selectedNode) {
@@ -789,16 +899,14 @@ const SwimlaneModel = () => {
   };
 
   const handleNodeRightClick = (event, node) => {
-    console.log("node id", node)
+    console.log("node id", node);
     setSelectedEdge(null);
     if (node.Page_Title === "Swimlane") {
       setOptions([]);
       if (node.node_id) {
         setSelectedNodeId(node.node_id);
-
       } else {
         setSelectedNodeId(node.id);
-
       }
 
       setdetailschecking(node);
@@ -813,7 +921,8 @@ const SwimlaneModel = () => {
         newY = event.clientY - popupHeight;
       }
       setContextMenu({
-        x: event.clientX, y: newY,
+        x: event.clientX,
+        y: newY,
         nodeId: node.id,
       });
     } else {
@@ -825,25 +934,21 @@ const SwimlaneModel = () => {
       if (row === 6 && col === 0) {
         options = [];
       } else if (col === 0 && row < 6) {
-        options = [{ label: t("add_role"), value: "Add Role" },
-        {
-          label: `${t("add_existing_role")}`,
-          value: "Add existing role",
-
-        }
+        options = [
+          { label: t("add_role"), value: "Add Role" },
+          {
+            label: `${t("add_existing_role")}`,
+            value: "Add existing role",
+          },
         ];
-
       } else if (row === 6 && col > 0) {
         options = [{ label: t("add_process"), value: "Add Process" }];
-
       } else {
-
         options = [
           { label: t("add_activity"), value: "Add Activity" },
           { label: t("add_decision"), value: "Add Decision" },
           { label: t("add_sticky_note"), value: "Add Sticky Note" },
         ];
-
       }
       setPosition({ x: event.clientX, y: event.clientY });
       setOptions(options);
@@ -853,7 +958,6 @@ const SwimlaneModel = () => {
   };
 
   const centerChildInParent = (parentNode, childNode) => {
-
     const parentCenterX = parentNode.position.x + parentNode.style.width / 11;
     const parentCenterY = parentNode.position.y + parentNode.style.height / 11;
     const updatedChildPosition = {
@@ -882,7 +986,7 @@ const SwimlaneModel = () => {
       const childCenterY = childNode.position.y + childNode.style.height / 2;
 
       const parentLeft = parentNode.position.x;
-      const parentRight = (parentNode.position.x + parentNode.style.width) + 1;
+      const parentRight = parentNode.position.x + parentNode.style.width + 1;
       const parentTop = parentNode.position.y;
       const parentBottom = parentNode.position.y + parentNode.style.height;
 
@@ -900,18 +1004,12 @@ const SwimlaneModel = () => {
     }, null);
   };
 
-
-
-
-
   const handleNodeDragStop = (event, node) => {
     // console.log("old nodes ", node);
 
     if (node.id.startsWith("Level")) {
       // Find the nearest parent node
       const nearestParentNode = getNearestParentNode(node);
-
-
 
       if (node.type === "SwimlineRightsideBox") {
         const [, row, col] =
@@ -971,7 +1069,6 @@ const SwimlaneModel = () => {
         return;
       }
 
-
       if (nearestParentNode) {
         const updatedPosition = centerChildInParent(nearestParentNode, node);
         setHasUnsavedChanges(true);
@@ -979,10 +1076,10 @@ const SwimlaneModel = () => {
           prev.map((child) =>
             child.id === node.id
               ? {
-                ...child,
-                parentNode: nearestParentNode.id,
-                position: updatedPosition,
-              }
+                  ...child,
+                  parentNode: nearestParentNode.id,
+                  position: updatedPosition,
+                }
               : child
           )
         );
@@ -1015,13 +1112,13 @@ const SwimlaneModel = () => {
         nds.map((node) =>
           node.id === selectedNodeId
             ? {
-              ...node,
-              type: type,
-              data: {
-                ...node.data,
-                shape: type,
-              },
-            }
+                ...node,
+                type: type,
+                data: {
+                  ...node.data,
+                  shape: type,
+                },
+              }
             : node
         )
       );
@@ -1045,25 +1142,30 @@ const SwimlaneModel = () => {
     const levelParam = "Level0";
     const user_id = user ? user.id : null;
     const Process_id = id ? id : null;
-    const data = await api.getallpublishObject_Tolinkexistingmodel(levelParam, parseInt(user_id), Process_id);
-
+    const data = await api.getallpublishObject_Tolinkexistingmodel(
+      levelParam,
+      parseInt(user_id),
+      Process_id
+    );
 
     const filteredNodes = data.nodes.filter(
       (node) => node.type !== "StickyNote",
-      (node) => node.node_id !== currentParentId,
+      (node) => node.node_id !== currentParentId
     );
     setLinknodeList(filteredNodes);
     // console.log("check data filteredNodes", filteredNodes)
     setIsCheckboxPopupOpen(true);
   };
 
-
   const AddexistingRole = async () => {
-
     const levelParam = "Level0";
     const user_id = user ? user.id : null;
     const Process_id = id ? id : null;
-    const data = await api.getexistingrole(levelParam, parseInt(user_id), Process_id);
+    const data = await api.getexistingrole(
+      levelParam,
+      parseInt(user_id),
+      Process_id
+    );
 
     // console.log("check data getexistingrole data", data)
 
@@ -1077,30 +1179,27 @@ const SwimlaneModel = () => {
 
   const handleCheckboxChange = (nodeId, label) => {
     setSelectedLinknodeIds(nodeId);
-    setSelectedTitle(label)
+    setSelectedTitle(label);
   };
 
   const handleexistingroleCheckboxChange = (nodeId) => {
-    setSelectedexistingrolenodeId(nodeId)
-
+    setSelectedexistingrolenodeId(nodeId);
   };
 
   const handleSaveExistingRole = () => {
     if (selectedexistigrolenodeId) {
-
       const selectedNode = parsedDataExistingrole.find(
         (item) => item.node_id === selectedexistigrolenodeId
       );
-      console.log("selectedexistigrolenodeId",selectedexistigrolenodeId)
+      console.log("selectedexistigrolenodeId", selectedexistigrolenodeId);
 
-      console.log("selectedNode",selectedNode)
-
+      console.log("selectedNode", selectedNode);
 
       const title = selectedNode?.data?.details?.title || "Untitled";
 
       setIsexistingroleCheckboxPopupOpen(false);
       addNode("SwimlineRightsideBox", "", title);
-      setSelectedexistingrolenodeId("")
+      setSelectedexistingrolenodeId("");
     }
   };
 
@@ -1117,10 +1216,12 @@ const SwimlaneModel = () => {
                 link: selectedLinknodeIds,
                 details: {
                   ...node.data.details,
-                  title: selectedTitle || node.data.details?.title || "Default Title",
+                  title:
+                    selectedTitle ||
+                    node.data.details?.title ||
+                    "Default Title",
                 },
               },
-
             };
           }
           return node;
@@ -1142,7 +1243,10 @@ const SwimlaneModel = () => {
       () => {
         setChiledNodes((nds) =>
           nds.map((node) => {
-            if (node.id === selectedNodeId || node.parentId === selectedNodeId) {
+            if (
+              node.id === selectedNodeId ||
+              node.parentId === selectedNodeId
+            ) {
               return {
                 ...node,
                 data: {
@@ -1172,13 +1276,11 @@ const SwimlaneModel = () => {
     );
   };
 
-
   const openExistingModel = async (nodelink) => {
     const confirmcondition = await handleBack(); // Wait for confirmation
     if (confirmcondition) {
       if (nodelink) {
         try {
-
           const response = await getdataByNodeId(nodelink, "draft");
           if (response.data && response.data.length > 0) {
             const user_id = response.data[0].user_id;
@@ -1202,7 +1304,7 @@ const SwimlaneModel = () => {
               nodelink !== null
                 ? `Level${newLevel}_${nodelink}`
                 : `Level${newLevel}`;
-            console.log("newLevel", levelParam)
+            console.log("newLevel", levelParam);
 
             const nodeData = await checkRecordWithGetLinkDraftData(
               levelParam,
@@ -1218,8 +1320,8 @@ const SwimlaneModel = () => {
               if (Array.isArray(allNodes) && allNodes.length > 0) {
                 // sabse highest level se start
                 allNodes.forEach((node) => {
-                  const parsedData = JSON.parse(node.data || '{}');
-                  const label = parsedData.label || '';
+                  const parsedData = JSON.parse(node.data || "{}");
+                  const label = parsedData.label || "";
                   const node_id = node.node_id;
                   const process_id = node.Process_id;
 
@@ -1234,26 +1336,39 @@ const SwimlaneModel = () => {
                   const user = { id: node.user_id };
 
                   // ✅ URL banao
-                  const url = `/Draft-Process-View/${newLevel}/${node_id}/${process_id}?title=${encodeURIComponent(label)}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${node.PageGroupId}`;
-                  console.log("addbreadcrums time", node)
+                  const url = `/Draft-Process-View/${newLevel}/${node_id}/${process_id}?title=${encodeURIComponent(
+                    label
+                  )}&user=${encodeURIComponent(
+                    JSON.stringify(user)
+                  )}&ParentPageGroupId=${node.PageGroupId}`;
+                  console.log("addbreadcrums time", node);
                   // ✅ Breadcrumb add karo
                   addBreadcrumb(label, url);
                 });
               }
 
-
               if (nodeData.Page_Title === "ProcessMap") {
-
-                navigate(`/Draft-Process-View/${newLevel}/${nodelink}/${id}?title=${encodeURIComponent(nodeDataParsed.label || "")}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${response.data[0]?.PageGroupId}`)
-
+                navigate(
+                  `/Draft-Process-View/${newLevel}/${nodelink}/${id}?title=${encodeURIComponent(
+                    nodeDataParsed.label || ""
+                  )}&user=${encodeURIComponent(
+                    JSON.stringify(user)
+                  )}&ParentPageGroupId=${response.data[0]?.PageGroupId}`
+                );
               }
               if (nodeData.Page_Title === "Swimlane") {
-
-                navigate(`/Draft-Swim-lanes-View/level/${newLevel}/${nodelink}/${id}?title=${encodeURIComponent(nodeDataParsed.label || "")}&user=${encodeURIComponent(JSON.stringify(user))}&parentId=${nodelink}&level=${newLevel}&ParentPageGroupId=${response.data[0]?.PageGroupId}`)
-
+                navigate(
+                  `/Draft-Swim-lanes-View/level/${newLevel}/${nodelink}/${id}?title=${encodeURIComponent(
+                    nodeDataParsed.label || ""
+                  )}&user=${encodeURIComponent(
+                    JSON.stringify(user)
+                  )}&parentId=${nodelink}&level=${newLevel}&ParentPageGroupId=${
+                    response.data[0]?.PageGroupId
+                  }`
+                );
               }
             } else {
-              alert("First create next model of this existing model")
+              alert("First create next model of this existing model");
             }
           } else {
             console.error("No data found in response.data");
@@ -1263,8 +1378,7 @@ const SwimlaneModel = () => {
         }
       }
     }
-
-  }
+  };
   const handleTextSubmit = (enteredText) => {
     setIsModalOpen(false);
 
@@ -1281,27 +1395,25 @@ const SwimlaneModel = () => {
             : node
         );
       });
-      setSelectedNodefreetextId(null)
+      setSelectedNodefreetextId(null);
     } else {
-      addNode("FreeText", { x: modalPosition.x - 70, y: modalPosition.y - 125 }, enteredText);
-
+      addNode(
+        "FreeText",
+        { x: modalPosition.x - 70, y: modalPosition.y - 125 },
+        enteredText
+      );
     }
   };
 
-
-
   const UpdateText = () => {
-    const data = ChildNodes.find(
-      (node) => node.id === selectedNodeId
-    );
+    const data = ChildNodes.find((node) => node.id === selectedNodeId);
 
     setSelectedNodefreetextId(data.id);
     setModalText(data.data.label || "");
-    setIsModalOpen(true)
+    setIsModalOpen(true);
 
     // console.log("this is free text udpate ",selectedNodeId)
-  }
-
+  };
 
   const handlePopupAction = (action) => {
     const { x, y } = contextMenu;
@@ -1314,9 +1426,8 @@ const SwimlaneModel = () => {
       addNode("No", { x: x - 70, y: y - 125 }, edgeId);
     } else if (action === "addFreeText") {
       setIsModalOpen(true);
-      setModalText("")
+      setModalText("");
       setModalPosition({ x, y }); // Store x, y in state
-
     } else if (action === "addDetails") {
       openPopup();
     }
@@ -1326,93 +1437,90 @@ const SwimlaneModel = () => {
 
   const menuItems = [
     ...(detailschecking?.type !== "SwimlineRightsideBox" &&
-      detailschecking?.type !== "progressArrow" &&
-      detailschecking?.type !== "Yes" &&
-      detailschecking?.type !== "No" &&
-      detailschecking?.type !== "FreeText" &&
-      detailschecking?.type !== "StickyNote"
-
+    detailschecking?.type !== "progressArrow" &&
+    detailschecking?.type !== "Yes" &&
+    detailschecking?.type !== "No" &&
+    detailschecking?.type !== "FreeText" &&
+    detailschecking?.type !== "StickyNote"
       ? [
-        {
-          label:
-            detailschecking &&
+          {
+            label:
+              detailschecking &&
               (!detailschecking?.data?.details?.title ||
                 detailschecking?.data?.details?.title === "") &&
               (!detailschecking?.data?.details?.content ||
                 detailschecking?.data?.details?.content === "")
-              ? `${t("add_details")}`
-              : `${t("edit_details")}`,
-          action: () => handlePopupAction("addDetails"),
-          borderBottom: true,
-        },
-      ]
+                ? `${t("add_details")}`
+                : `${t("edit_details")}`,
+            action: () => handlePopupAction("addDetails"),
+            borderBottom: true,
+          },
+        ]
       : []),
     ...(detailschecking?.type === "box"
       ? [
-        {
-          label: `${t("switch_shape_to_decision")}`,
-          action: () => switchNodeType("diamond"),
-          borderBottom: true,
-        },
-      ]
+          {
+            label: `${t("switch_shape_to_decision")}`,
+            action: () => switchNodeType("diamond"),
+            borderBottom: true,
+          },
+        ]
       : []),
     ...(detailschecking?.type === "diamond"
       ? [
-        {
-          label: `${t("switch_shape_to_activity")}`,
-          action: () => switchNodeType("box"),
-          borderBottom: true,
-        },
-      ]
+          {
+            label: `${t("switch_shape_to_activity")}`,
+            action: () => switchNodeType("box"),
+            borderBottom: true,
+          },
+        ]
       : []),
     ...(detailschecking?.type === "progressArrow"
       ? [
-        ...(detailschecking?.data?.link
-          ? [
-            {
-              label: `${t("open_existing_model")}`,
-              action: () => openExistingModel(detailschecking?.data?.link),
-              borderBottom: true,
-            },
-            {
-              label: `${t("remove_existing_model")}`,
-              action: () => removeExistingLink(),
-              borderBottom: true,
-            },
-          ]
-          : [
-            {
-              label: `${t("link_existing_model")}`,
-              action: () => linkExistingmodel(),
-              borderBottom: true,
-            },
-          ]),
-      ]
+          ...(detailschecking?.data?.link
+            ? [
+                {
+                  label: `${t("open_existing_model")}`,
+                  action: () => openExistingModel(detailschecking?.data?.link),
+                  borderBottom: true,
+                },
+                {
+                  label: `${t("remove_existing_model")}`,
+                  action: () => removeExistingLink(),
+                  borderBottom: true,
+                },
+              ]
+            : [
+                {
+                  label: `${t("link_existing_model")}`,
+                  action: () => linkExistingmodel(),
+                  borderBottom: true,
+                },
+              ]),
+        ]
       : []),
 
     ...(detailschecking?.type === "FreeText"
       ? [
-        {
-          label: `${t("edit_text")}`,
-          action: () => UpdateText(),
-          borderBottom: true,
-        },
-      ]
+          {
+            label: `${t("edit_text")}`,
+            action: () => UpdateText(),
+            borderBottom: true,
+          },
+        ]
       : []),
 
-      {
-        label: `${t("translation")}`,
-        action: translation,
-        borderBottom: false,
-      },
-
+    {
+      label: `${t("translation")}`,
+      action: translation,
+      borderBottom: false,
+    },
 
     {
       label: `${t("Delete")}`,
       action: handleDeleteNode,
       borderBottom: false,
     },
-   
   ];
 
   const iconNames = {};
@@ -1431,7 +1539,7 @@ const SwimlaneModel = () => {
   const onEdgeClick = useCallback((event, edge) => {
     const { clientX, clientY } = event;
     setPosition({ x: clientX, y: clientY });
-    console.log("asdf", event)
+    console.log("asdf", event);
     setMenuVisible(false);
     setOptions([]);
     setSelectedEdge(edge);
@@ -1446,19 +1554,15 @@ const SwimlaneModel = () => {
     if (option === "Add Role") {
       addNode("SwimlineRightsideBox");
     } else if (option === "Add existing role") {
-      AddexistingRole()
-    }
-    else if (option === "Add Activity") {
+      AddexistingRole();
+    } else if (option === "Add Activity") {
       addNode("box");
     } else if (option === "Add Decision") {
       addNode("diamond");
     } else if (option === "Add Process") {
       addNode("progressArrow");
-    }
-
-    else if (option === "Add Sticky Note") {
+    } else if (option === "Add Sticky Note") {
       addNode("StickyNote", { x: position.x, y: position.y });
-
     }
 
     setOptions([]);
@@ -1490,33 +1594,41 @@ const SwimlaneModel = () => {
     }
     if (confirmcondition) {
       if (id && user) {
-        navigate(`/Draft-Swim-lanes-View/level/${currentLevel}/${currentParentId}/${id}?title=${encodeURIComponent(title)}&user=${encodeURIComponent(JSON.stringify(user))}&parentId=${currentParentId}&level=${currentLevel}&ParentPageGroupId=${ParentPageGroupId}`)
-
+        navigate(
+          `/Draft-Swim-lanes-View/level/${currentLevel}/${currentParentId}/${id}?title=${encodeURIComponent(
+            title
+          )}&user=${encodeURIComponent(
+            JSON.stringify(user)
+          )}&parentId=${currentParentId}&level=${currentLevel}&ParentPageGroupId=${ParentPageGroupId}`
+        );
       } else {
         alert("Currently not navigate on draft mode");
       }
     }
   };
-  const parsedData = LinknodeList.map(item => ({
+  const parsedData = LinknodeList.map((item) => ({
     ...item,
-    data: JSON.parse(item.data) // Parse the data field
+    data: JSON.parse(item.data), // Parse the data field
   }));
 
-  const filteredData = parsedData.filter(item =>
-    item.data.label && item.data.label.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredData = parsedData.filter(
+    (item) =>
+      item.data.label &&
+      item.data.label.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-
-  const parsedDataExistingrole = LinkexistingRole.map(item => ({
+  const parsedDataExistingrole = LinkexistingRole.map((item) => ({
     ...item,
-    data: typeof item.data === "string" ? JSON.parse(item.data) : item.data // safety check
+    data: typeof item.data === "string" ? JSON.parse(item.data) : item.data, // safety check
   }));
 
-  const filteredDataExistingrole = parsedDataExistingrole.filter(item =>
-    item.data?.details?.title &&
-    item.data.details.title.toLowerCase().includes(ExistingrolesearchQuery.toLowerCase())
+  const filteredDataExistingrole = parsedDataExistingrole.filter(
+    (item) =>
+      item.data?.details?.title &&
+      item.data.details.title
+        .toLowerCase()
+        .includes(ExistingrolesearchQuery.toLowerCase())
   );
-
 
   const handleFav = async () => {
     const user_id = LoginUser ? LoginUser.id : null;
@@ -1530,15 +1642,23 @@ const SwimlaneModel = () => {
 
     const PageGroupId = ChildNodes[0]?.PageGroupId;
 
-
     try {
       if (isFavorite) {
-
-        const response = await removeFavProcess(user_id, process_id, PageGroupId);
+        const response = await removeFavProcess(
+          user_id,
+          process_id,
+          PageGroupId
+        );
         setIsFavorite(false);
         console.log("Removed from favorites:", response);
       } else {
-        const response = await addFavProcess(user_id, process_id, type, PageGroupId, currentParentId);
+        const response = await addFavProcess(
+          user_id,
+          process_id,
+          type,
+          PageGroupId,
+          currentParentId
+        );
         setIsFavorite(true);
         console.log("Added to favorites:", response);
       }
@@ -1550,9 +1670,10 @@ const SwimlaneModel = () => {
   // ye common page h
   const navigateToVersion = (process_id, level, version) => {
     const encodedTitle = encodeURIComponent("swimlane");
-    navigate(`/Swimlane-Version/${process_id}/${level}/${version}/${encodedTitle}`);
+    navigate(
+      `/Swimlane-Version/${process_id}/${level}/${version}/${encodedTitle}`
+    );
   };
-
 
   const handleVersionClick = () => {
     setShowVersionPopup(true);
@@ -1562,10 +1683,11 @@ const SwimlaneModel = () => {
     setChiledNodes((nds) =>
       nds.map((node) => {
         if (node.id !== nodeId) return node;
-  
+
         const langKey = langMap[processDefaultlanguage_id] || "en";
-        const newLabel = translations[langKey] || node.data.label || node.data?.details?.title;
-  
+        const newLabel =
+          translations[langKey] || node.data.label || node.data?.details?.title;
+
         if (node.type === "StickyNote") {
           return {
             ...node,
@@ -1576,7 +1698,7 @@ const SwimlaneModel = () => {
             },
           };
         }
-  
+
         return {
           ...node,
           data: {
@@ -1593,11 +1715,10 @@ const SwimlaneModel = () => {
   };
 
   const handleSaveVersionDetails = (payload) => {
-    setversionPopupPayload(payload)
-    setShowVersionPopup(false)
-  }
+    setversionPopupPayload(payload);
+    setShowVersionPopup(false);
+  };
   return (
-
     <div>
       <Header
         savefav={handleFav}
@@ -1616,10 +1737,12 @@ const SwimlaneModel = () => {
         Process_img={process_img}
         checkpublish={checkpublish}
         onShowVersion={handleVersionClick}
-
       />
 
-      <div className="publishcontainer" style={{ ...styles.appContainer, height: remainingHeight }}>
+      <div
+        className="publishcontainer"
+        style={{ ...styles.appContainer, height: remainingHeight }}
+      >
         <ReactFlowProvider>
           <div style={styles.scrollableWrapper}>
             <ReactFlow
@@ -1639,7 +1762,6 @@ const SwimlaneModel = () => {
               connectionLineStyle={{ stroke: "#002060", strokeWidth: 2.5 }}
               connectionRadius={10}
               connectionMode={ConnectionMode.Loose}
-
               proOptions={{ hideAttribution: true }}
               nodeTypes={memoizedNodeTypes}
               edgeTypes={memoizedEdgeTypes}
@@ -1685,24 +1807,24 @@ const SwimlaneModel = () => {
                     className="menuitems"
                     key={index}
                     onClick={() => handlePopupAction(item.action)}
-
                   >
                     {item.label}
                   </div>
-
                 ))}
                 <div
                   className="menuitems"
                   onClick={() => {
-                    if (window.confirm("Are you sure you want to delete this arrow?")) {
+                    if (
+                      window.confirm(
+                        "Are you sure you want to delete this arrow?"
+                      )
+                    ) {
                       deleteEdge();
                     }
                   }}
-
                 >
                   {t("delete_arrow")}
                 </div>
-
               </div>
             )}
 
@@ -1754,7 +1876,9 @@ const SwimlaneModel = () => {
                     <input
                       type="checkbox"
                       checked={selectedLinknodeIds === node.node_id}
-                      onChange={() => handleCheckboxChange(node.node_id, node.data.label)}
+                      onChange={() =>
+                        handleCheckboxChange(node.node_id, node.data.label)
+                      }
                       style={popupStyle.checkbox}
                     />
                     {node.data.label && node.data.label}
@@ -1772,14 +1896,11 @@ const SwimlaneModel = () => {
             </div>
           )}
 
-
-
           {/* Existing Add role Popup */}
           {isexistingroleCheckboxPopupOpen && (
             <div style={popupStyle.container} className="swimlanepopup">
               <div style={popupStyle.header}>
-                <span>{t('add_existing_role')}</span>
-
+                <span>{t("add_existing_role")}</span>
               </div>
 
               <input
@@ -1801,9 +1922,13 @@ const SwimlaneModel = () => {
                       onClick={() =>
                         handleexistingroleCheckboxChange(node.node_id)
                       }
-                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#e6f7ff")}
+                      onMouseEnter={(e) =>
+                        (e.currentTarget.style.backgroundColor = "#e6f7ff")
+                      }
                       onMouseLeave={(e) =>
-                        (e.currentTarget.style.backgroundColor = isSelected ? "#f0f8ff" : "transparent")
+                        (e.currentTarget.style.backgroundColor = isSelected
+                          ? "#f0f8ff"
+                          : "transparent")
                       }
                       style={{
                         ...popupStyle.label,
@@ -1828,7 +1953,6 @@ const SwimlaneModel = () => {
             </div>
           )}
 
-
           <TextInputModal
             isOpen={isModalOpen}
             onClose={() => setIsModalOpen(false)}
@@ -1846,19 +1970,18 @@ const SwimlaneModel = () => {
           )}
 
           {usePageGroupIdViewer(ChildNodes)}
-   <TranslationPopup
-          isOpen={showTranslationPopup}
-          onClose={() => setShowTranslationPopup(false)}
-          defaultValues={translationDefaults}
-          onSubmit={(values) => {
-            console.log("Translations:", values);
+          <TranslationPopup
+            isOpen={showTranslationPopup}
+            onClose={() => setShowTranslationPopup(false)}
+            defaultValues={translationDefaults}
+            onSubmit={(values) => {
+              console.log("Translations:", values);
 
+              updateNodeTranslations(selectedNodeId, values);
 
-            updateNodeTranslations(selectedNodeId, values);
-
-            setShowTranslationPopup(false);
-          }}
-        />
+              setShowTranslationPopup(false);
+            }}
+          />
 
           {showVersionPopup && (
             <VersionPopup
@@ -1870,8 +1993,7 @@ const SwimlaneModel = () => {
               LoginUser={LoginUser}
               title={headerTitle}
               handleSaveVersionDetails={handleSaveVersionDetails}
-            status={"draft"}
-
+              status={"draft"}
             />
           )}
         </ReactFlowProvider>
@@ -1912,8 +2034,7 @@ const popupStyle = {
     marginBottom: "16px",
     maxHeight: "250px",
     overflowY: "auto",
-  }
-  ,
+  },
   label: {
     display: "flex",
     alignItems: "center",

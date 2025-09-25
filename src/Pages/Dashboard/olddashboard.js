@@ -168,7 +168,7 @@ const Dashboard = () => {
         const key = `${item.process_id}_${item.PageGroupId}`;
         dates[key] = date;
       }
-      console.log("final date data", dates);
+
       setPublishedDates(dates);
     };
     
