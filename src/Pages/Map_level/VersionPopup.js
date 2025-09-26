@@ -54,27 +54,22 @@ const VersionPopup = ({
     }
   }, [versionPopupPayload]);
 
-  useEffect(() => {
-    const fetchVersions = async () => {
+useEffect(() => {
+  const fetchVersions = async () => {
+    try {
+      const LoginUserId = LoginUser ? LoginUser.id : null;
+      const levelParam =
+        currentParentId !== null
+          ? `Level${currentLevel}_${currentParentId}`
+          : `Level${currentLevel}`;
+      const response = await versionlist(processId, levelParam, LoginUserId, status);
 
-      if (versionPopupPayload) {
-        // agar parent ne local save kiya hai to API call skip karo
-        return;
-      }
-      
-      try {
+      setVersions(response.versions || []);
+      setAssignedUsers(response.assigned_users || []);
+      setEmailList((response.assigned_users || []).map((u) => u.user.email));
 
-        const LoginUserId = LoginUser ? LoginUser.id : null;
-        const levelParam =
-          currentParentId !== null
-            ? `Level${currentLevel}_${currentParentId}`
-            : `Level${currentLevel}`;
-        const response = await versionlist(processId, levelParam, LoginUserId, status);
-        setVersions(response.versions || []);
-        setAssignedUsers(response.assigned_users || []);
-
-        setEmailList((response.assigned_users || []).map((u) => u.user.email));
-
+      // 🔑 Only update from API if local payload is not present
+      if (!versionPopupPayload) {
         setSelectedEmails(
           response.contact_info || {
             domain_owner: [],
@@ -83,17 +78,17 @@ const VersionPopup = ({
             manager: [],
           }
         );
-
         setRevisionText(response.revision_info || "");
-      } catch (error) {
-        console.error("Error fetching versions:", error);
-      } finally {
-        setLoading(false);
       }
-    };
+    } catch (error) {
+      console.error("Error fetching versions:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchVersions();
-  }, [processId, currentLevel, currentParentId, LoginUser]);
+  fetchVersions();
+}, [processId, currentLevel, currentParentId, LoginUser, versionPopupPayload]);
 
   // ➕ Popup open
   const openEmailPopup = (role) => {
@@ -312,9 +307,7 @@ const VersionPopup = ({
                           <div className="owner-pic">
                             <DefaultUserIcon />
                           </div>
-                          <div className="owner-desc">
-                            <span className="owner-name">{t("no_user")}</span>
-                          </div>
+                    
                         </div>
                       </div>
                     )}

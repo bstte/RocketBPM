@@ -20,7 +20,7 @@ const PublishArrowBoxNode = ({ data}) => {
     style={{
       ...styles.wrapper,
       filter:
-        data.LinkToStatus || data.hasNextLevel
+        data.hasNextLevel
           ? "drop-shadow(0px 0px 10px #0000004f)"
           : "none",
     }}

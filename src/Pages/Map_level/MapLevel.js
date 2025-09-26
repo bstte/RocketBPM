@@ -694,18 +694,48 @@ const MapLevel = () => {
     },
     [setEdges]
   );
-  const handleBack = async () => {
-    if (hasUnsavedChanges) {
-      const userConfirmed = window.confirm(
-        "You have unsaved changes. Do you want to save them before leaving?"
-      );
-      if (!userConfirmed) {
-        return false;
+// const handleBack = async () => {
+//   if (!hasUnsavedChanges) {
+//     return true; // no unsaved changes, just exit
+//   }
+
+//   // Custom popup instead of window.confirm
+//   return new Promise((resolve) => {
+//     const userChoice = window.confirm(
+//       "You have unsaved changes.\nPress OK to Save & Exit or Cancel to Exit without saving."
+//     );
+
+//     if (userChoice) {
+//       // User wants to save before exit
+//       handleSaveNodes("draft").then(() => resolve(true));
+//     } else {
+//       // Exit without saving
+//       resolve(true);
+//     }
+//   });
+// };
+
+const handleBack = async () => {
+  if (!hasUnsavedChanges) return true; // No unsaved changes, just exit
+
+  return new Promise((resolve) => {
+    CustomAlert.confirmExit(
+      async () => {
+        // Save & Exit
+        await handleSaveNodes("draft");
+        resolve(true);
+      },
+      () => {
+        // Exit without saving
+        resolve(true);
+      },
+      () => {
+        // Cancel
+        resolve(false);
       }
-      await handleSaveNodes("draft");
-    }
-    return true;
-  };
+    );
+  });
+};
 
   const styles = {
     appContainer: {

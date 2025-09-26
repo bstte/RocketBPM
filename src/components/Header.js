@@ -339,7 +339,7 @@ const Header = ({
                 </button>
 
 
-
+{/* 
                 <button
                   onClick={() => onExit("exit_without_saving")}
                   style={{
@@ -348,7 +348,7 @@ const Header = ({
                   }}
                 >
                   {t("exit_without_saving")}
-                </button>
+                </button> */}
               </>
             )}
 

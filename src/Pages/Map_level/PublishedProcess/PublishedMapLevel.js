@@ -168,7 +168,6 @@ const PublishedMapLevel = () => {
         } else {
           setgetPublishedDate("");
         }
-        console.log("publish data", data)
         setprocess_img(data.process_img)
         // setprocess_udid(data.process_uid)
         const parsedNodes = await Promise.all(

@@ -179,41 +179,32 @@ const SwimlaneModel = () => {
     (nodeId, newLabel) => {
       setChiledNodes((nds) =>
         nds.map((node) => {
-          if (node.id !== nodeId) return node;
+          if (node.id === nodeId) {
+            const langKey = langMap[processDefaultlanguage_id] || "en";
 
-          // langKey nikaalo
-          const langKey = langMap[processDefaultlanguage_id] || "en";
-
-          // agar StickyNote hai
-          if (node.type === "StickyNote") {
             return {
               ...node,
               data: {
                 ...node.data,
-                translations: {
-                  ...(node.data.translations || {}),
-                  [langKey]: newLabel,
-                },
-                label: newLabel,
+                ...(node.type === "StickyNote"
+                  ? {
+                      label: newLabel,
+                      translations: {
+                        ...(node.data.translations || {}),
+                        [langKey]: newLabel,
+                      },
+                    }
+                  : {
+                      details: { ...node.data.details, title: newLabel },
+                      translations: {
+                        ...(node.data.translations || {}),
+                        [langKey]: newLabel,
+                      },
+                    }),
               },
             };
           }
-
-          // agar Swimlane (ya koi aur jisme details.title hai)
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              translations: {
-                ...(node.data.translations || {}),
-                [langKey]: newLabel,
-              },
-              details: {
-                ...node.data.details,
-                title: newLabel,
-              },
-            },
-          };
+          return node;
         })
       );
 
@@ -221,8 +212,55 @@ const SwimlaneModel = () => {
         setHasUnsavedChanges(true);
       }
     },
-    [setChiledNodes, processDefaultlanguage_id, setHasUnsavedChanges]
+    [setChiledNodes, setHasUnsavedChanges]
   );
+  // const handleLabelChange = useCallback(
+  //   (nodeId, newLabel) => {
+  //     setChiledNodes((nds) =>
+  //       nds.map((node) => {
+  //         if (node.id !== nodeId) return node;
+
+  //         // langKey nikaalo
+  //         const langKey = langMap[processDefaultlanguage_id] || "en";
+
+  //         if (node.type === "StickyNote") {
+  //           return {
+  //             ...node,
+  //             data: {
+  //               ...node.data,
+  //               label: newLabel,
+  //               translations: {
+  //                 ...(node.data.translations || {}),
+  //                 [langKey]: newLabel,
+  //               },
+  //             },
+  //           };
+  //         }
+
+  //         // Swimlane ya dusre nodes jisme details.title hote hain
+  //         return {
+  //           ...node,
+  //           data: {
+  //             ...node.data,
+  //             details: {
+  //               ...node.data.details,
+  //               title: newLabel,
+  //             },
+  //             translations: {
+  //               ...(node.data.translations || {}),
+  //               [langKey]: newLabel,
+  //             },
+  //           },
+  //         };
+  //       })
+  //     );
+
+  //     if (!isInitialLoad.current) {
+  //       setHasUnsavedChanges(true);
+  //     }
+  //   },
+  //   [setChiledNodes, processDefaultlanguage_id, setHasUnsavedChanges]
+  // );
 
   useCheckFavorite({
     id,
@@ -255,7 +293,6 @@ const SwimlaneModel = () => {
           ),
           api.getNodes(levelParam, parseInt(user_id), Process_id),
         ]);
-        console.log("data", data);
         setgetPublishedDate(
           publishedResponse.status ? publishedResponse.created_at || "" : ""
         );
@@ -389,7 +426,9 @@ const SwimlaneModel = () => {
         });
 
         // isInitialLoad.current = false;
-        // console.log("on load time data", data);
+        console.log("on load time data", data);
+                console.log("data", parsedNodes);
+
         setChiledNodes(parsedNodes);
         setEdges(parsedEdges);
       } catch (error) {
@@ -814,47 +853,36 @@ const SwimlaneModel = () => {
   //   closePopup();
   // };
 
-const saveDetails = (details) => {
-  const langKey = langMap[processDefaultlanguage_id] || "en";
+  const saveDetails = (details) => {
+    const langKey = langMap[processDefaultlanguage_id] || "en";
 
-  setChiledNodes((nodes) =>
-    nodes.map((node) =>
-      node.node_id === selectedNodeId
-        ? {
-            ...node,
-            data: {
-              ...node.data,
-              label: details?.title,
+    setChiledNodes((nodes) =>
+      nodes.map((node) =>
+        node.node_id === selectedNodeId
+          ? {
+              ...node,
+              data: {
+                ...node.data,
+                label: details?.title,
 
-              details: {
-                ...node.data.details,
-                ...details,
+                details: {
+                  ...node.data.details,
+                  ...details,
+                },
 
                 translations: {
-                  ...(node.data.details?.translations || {}),
-                  [langKey]: {
-                    ...(node.data.details?.translations?.[langKey] || {}),
-                    title: details?.title || "",
-                    content: details?.content || "",
-                  },
+                  ...(node.data.translations || {}),
+                  [langKey]: details?.title || "",
                 },
               },
+            }
+          : node
+      )
+    );
 
-              translations: {
-                ...(node.data.translations || {}),
-                [langKey]: details?.title || "",
-              },
-            },
-          }
-        : node
-    )
-  );
-
-  setHasUnsavedChanges(true);
-  setSelectedNodeId(null);
-};
-
-
+    setHasUnsavedChanges(true);
+    setSelectedNodeId(null);
+  };
 
   const handleClosePopup = () => {
     setContextMenu(null);
@@ -1585,12 +1613,34 @@ const saveDetails = (details) => {
     return true;
   };
 
+  const handleExitBack = async () => {
+    if (!hasUnsavedChanges) return true; // No unsaved changes, just exit
+
+    return new Promise((resolve) => {
+      CustomAlert.confirmExit(
+        async () => {
+          // Save & Exit
+          await handleSaveNodes("draft");
+          resolve(true);
+        },
+        () => {
+          // Exit without saving
+          resolve(true);
+        },
+        () => {
+          // Cancel
+          resolve(false);
+        }
+      );
+    });
+  };
+
   const ExitNavigation = async (type) => {
     let confirmcondition = true;
 
     // sirf "exit" wale case me hi confirmation lena hai
     if (type === "exit") {
-      confirmcondition = await handleBack();
+      confirmcondition = await handleExitBack();
     }
     if (confirmcondition) {
       if (id && user) {
@@ -1712,6 +1762,7 @@ const saveDetails = (details) => {
         };
       })
     );
+    setHasUnsavedChanges(true);
   };
 
   const handleSaveVersionDetails = (payload) => {
@@ -1994,6 +2045,7 @@ const saveDetails = (details) => {
               title={headerTitle}
               handleSaveVersionDetails={handleSaveVersionDetails}
               status={"draft"}
+              versionPopupPayload={versionPopupPayload} // <-- ADD THIS
             />
           )}
         </ReactFlowProvider>

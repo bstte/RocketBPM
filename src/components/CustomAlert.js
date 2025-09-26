@@ -1,4 +1,3 @@
-
 import Swal from "sweetalert2";
 
 const CustomAlert = {
@@ -46,8 +45,35 @@ const CustomAlert = {
     }).then((result) => {
       if (result.isConfirmed && confirmCallback) {
         confirmCallback();
-      } else if (result.dismiss === Swal.DismissReason.cancel && cancelCallback) {
+      } else if (
+        result.dismiss === Swal.DismissReason.cancel &&
+        cancelCallback
+      ) {
         cancelCallback();
+      }
+    });
+  },
+
+  confirmExit: (saveCallback, exitWithoutSaveCallback, cancelCallback) => {
+    Swal.fire({
+      icon: "warning",
+      title: "You have unsaved changes",
+      text: "Do you want to save before exiting?",
+      showDenyButton: true,
+      showCancelButton: true,
+      confirmButtonText: "Exit (Save & Exit)",
+      denyButtonText: "Exit without saving",
+      cancelButtonText: "Cancel",
+      confirmButtonColor: "#3085d6",
+      denyButtonColor: "#f39c12",
+      cancelButtonColor: "#aaa",
+    }).then((result) => {
+      if (result.isConfirmed && saveCallback) {
+        saveCallback(); // Save & Exit
+      } else if (result.isDenied && exitWithoutSaveCallback) {
+        exitWithoutSaveCallback(); // Exit without saving
+      } else if (result.isDismissed && cancelCallback) {
+        if (cancelCallback) cancelCallback(); // Just stay on the page
       }
     });
   },
