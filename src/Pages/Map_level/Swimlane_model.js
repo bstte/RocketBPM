@@ -892,7 +892,7 @@ const SwimlaneModel = () => {
   };
   const translation = () => {
     const node = ChildNodes.find((n) => n.id === selectedNodeId);
-    console.log("get node", node);
+    console.log("get node tranlslation", node);
     if (node) {
       // हर बार पूरा structure बनाओ (fallback खाली string)
       const defaults = {

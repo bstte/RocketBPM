@@ -207,8 +207,8 @@ const styles = {
     textAlign: "center",
     backgroundColor: "red",
     color: "#002060",
-    width: "100%",
-    height: "100%",
+    width: "90%",
+    height: "90%",
     clipPath: 'polygon(10px 50%, 0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%)',
 
     padding: "10px",

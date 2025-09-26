@@ -159,3 +159,20 @@ textarea {
 .swimlanemenuclose {
   width: 100%;
 }
+
+@media(min-width: 767px) {
+  .am_rocket-icon {
+    width: 1.184vw;
+  }
+  .am_page-group-id-viewer {
+    font-size: 0.855vw;
+  }
+}
+@media(max-width: 766px) {
+  .am_rocket-icon {
+    width:18px;
+  }
+  .am_page-group-id-viewer {
+    font-size: 13px;
+  }
+}

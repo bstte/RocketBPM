@@ -6,23 +6,24 @@ export function usePageGroupIdViewer(array) {
   );
   return (
     <div
+    className="am_page-group-id-viewer"
       style={{
         position: "absolute",
         bottom: "0px",
         left: "5px",
         margin: "20px",
-        fontSize: "18px",
         color: "#002060",
         fontFamily: "'Poppins', sans-serif",
         display: "flex",
         alignItems: "center",
-        gap: "8px",
+        gap: "5px",
       }}
     >
       <img
         src={`${process.env.PUBLIC_URL}/img/rocket-solid.svg`}
         alt="Rocket"
-        style={{ width: "25px", height: "25px" }}
+       className="am_rocket-icon"
+
       />
 
       <span>ID {nodeWithPageGroupId ? nodeWithPageGroupId.PageGroupId : ""}</span>

@@ -160,7 +160,7 @@ const VersionPopupView = ({
                           <img
                             src={`${ImageBaseUrl}uploads/profile_images/${roleUser.user.image}`}
                             alt="Profile"
-                            style={{ width: "40px", height: "40px", borderRadius: "50%" }}
+                           
                           />
                         ) : (
                           <DefaultUserIcon />
