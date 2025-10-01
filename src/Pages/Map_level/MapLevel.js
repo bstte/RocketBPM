@@ -180,7 +180,7 @@ const MapLevel = () => {
 
         const changedNode = prevNodes.find((n) => n.id === nodeId);
         if (changedNode && changedNode.data.label !== newLabel) {
-          // setHasUnsavedChanges(true);
+          setHasUnsavedChanges(true);
         }
         return updatedNodes;
       });
@@ -269,6 +269,8 @@ const MapLevel = () => {
           style: { stroke: "#002060", strokeWidth: 2 },
           type: "step",
         }));
+        console.log("parsedNodes",parsedNodes)
+
         setNodes(parsedNodes);
         setEdges(parsedEdges);
       } catch (error) {
@@ -508,6 +510,7 @@ const MapLevel = () => {
     }
   };
   const handleSaveNodes = async (savetype) => {
+    console.log("nodes",nodes)
     if (savetype === "Published" && currentLevel !== 0) {
 
       try {
@@ -839,6 +842,7 @@ const handleBack = async () => {
     );
   };
   const handleNodeDragStop = (event, node) => {
+    setHasUnsavedChanges(true)
     const flowContainer = document.querySelector(".flow-container");
     if (!flowContainer) return;
     const { left, top, right, bottom } = flowContainer.getBoundingClientRect();
@@ -923,9 +927,6 @@ const handleBack = async () => {
         onShowVersion={handleVersionClick}
 
       />
-      {/* <button onClick={checkbreadcrums}>
-        Test
-      </button> */}
       <ReactFlowProvider>
         <div className="app-container" style={{ ...styles.appContainer, height: remainingHeight }}>
           <div className="content-wrapper" style={styles.contentWrapper}>
@@ -935,7 +936,7 @@ const handleBack = async () => {
               onContextMenu={handleGlobalContextMenu}
             >
               <ReactFlow
-                //nodeExtent={[[0, 0], [flowcontainerwidth, remainingHeight]]}
+          
                 nodes={nodes}
                 edges={edges}
                 onNodesChange={onNodesChange}
@@ -950,11 +951,11 @@ const handleBack = async () => {
                 zoomOnPinch={false}
                 zoomOnDoubleClick={false}
                 panOnDrag={false}
-                fitView={true}
+                // fitView={true}
                 onNodeDragStart={handleNodeDragStart}
                 onNodeDragStop={handleNodeDragStop}
-                panOnScroll={false}
-                maxZoom={0.5}
+                // panOnScroll={false}
+                // maxZoom={0.5}
                 proOptions={{ hideAttribution: true }}
                 onNodeContextMenu={handleNodeRightClick}
                 preventScrolling={false}

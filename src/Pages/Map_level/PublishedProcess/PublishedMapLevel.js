@@ -18,12 +18,12 @@ import {
 import "@xyflow/react/dist/style.css";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Header from "../../../components/Header";
-import api, { addFavProcess, checkFavProcess, removeFavProcess } from "../../../API/api";
+import api, { addFavProcess, removeFavProcess } from "../../../API/api";
 import { BreadcrumbsContext } from "../../../context/BreadcrumbsContext";
 import PublishArrowBoxNode from "../../../AllNode/PublishAllNode/PublishArrowBoxNode";
 import PublishPentagonNode from "../../../AllNode/PublishAllNode/PublishPentagonNode";
 import { useSelector } from "react-redux";
-import SharePopup from "../../../components/SharePopup";
+// import SharePopup from "../../../components/SharePopup";
 import VersionPopupView from "../../../components/VersionPopupView";
 import useCheckFavorite from "../../../hooks/useCheckFavorite";
 import { usePageGroupIdViewer } from "../../../hooks/usePageGroupIdViewer";
@@ -108,7 +108,7 @@ const PublishedMapLevel = () => {
   // const [process_udid, setprocess_udid] = useState("");
 
   const [isNavigating, setIsNavigating] = useState(false);
-  const [showSharePopup, setShowSharePopup] = useState(false);
+  // const [showSharePopup, setShowSharePopup] = useState(false);
 
   const memoizedNodeTypes = useMemo(
     () => ({

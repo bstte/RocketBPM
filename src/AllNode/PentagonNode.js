@@ -1,21 +1,22 @@
-import { memo, useState, useEffect, useRef } from 'react';
-import { NodeResizer } from '@xyflow/react';
+import { memo, useState, useEffect, useRef } from "react";
+import { NodeResizer } from "@xyflow/react";
+import ContentEditable from "react-contenteditable";
 
 const PentagonNode = ({ data, id, selectedNodeId }) => {
-  const [label, setLabel] = useState(data.label || '');
-  const [autoFocus, setAutoFocus] = useState(data.autoFocus);
+  const [label, setLabel] = useState(data.label || "");
+  const [autoFocus, setAutoFocus] = useState(data.autoFocus || false);
   const [width, setWidth] = useState(data.width_height?.width || 150);
   const [height, setHeight] = useState(data.width_height?.height || 150);
-  const textareaRef = useRef(null);
+  const contentRef = useRef(null);
 
   const isClickable = selectedNodeId === id;
 
-  // Sync label from data
+  // Sync label from parent
   useEffect(() => {
-    setLabel(data.label || '');
+    setLabel(data.label || "");
   }, [data.label]);
 
-  // Sync width/height when data.width_height changes (publish -> edit)
+  // Sync width/height from parent (publish -> edit)
   useEffect(() => {
     if (data.width_height?.width && data.width_height?.height) {
       setWidth(data.width_height.width);
@@ -23,35 +24,44 @@ const PentagonNode = ({ data, id, selectedNodeId }) => {
     }
   }, [data.width_height]);
 
-  // Focus textarea if autoFocus is true
+  // Auto focus once
+
   useEffect(() => {
-    if (autoFocus && textareaRef.current) {
+    if (autoFocus && contentRef.current) {
       setTimeout(() => {
-        textareaRef.current.focus();
+        contentRef.current.focus();
         setAutoFocus(false);
       }, 0);
     }
   }, [autoFocus]);
 
+  // Handle input changes
   const handleChange = (e) => {
-    const newValue = e.target.value || '';
+    const newValue = e.target.value || "";
     setLabel(newValue);
+
     if (data.onLabelChange) {
       data.onLabelChange(newValue);
     }
   };
 
-  const handleBlur = () => {
-    if (data.onLabelChange) {
-      data.onLabelChange(label);
-    }
+  // Ensure caret works when clicking
+  const handleFocus = () => {
+    // Move caret at the end of content
+    const el = contentRef.current;
+    if (!el) return;
+    const selection = window.getSelection();
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    range.collapse(false); // move cursor at end
+    selection.removeAllRanges();
+    selection.addRange(range);
   };
 
+  // Resize handler
   const handleResize = (e, size) => {
-    if (!size || typeof size.width === 'undefined' || typeof size.height === 'undefined') {
-      console.warn('Invalid resize size', size);
-      return;
-    }
+    if (!size?.width || !size?.height) return;
+
     setWidth(size.width);
     setHeight(size.height);
 
@@ -62,41 +72,34 @@ const PentagonNode = ({ data, id, selectedNodeId }) => {
 
   return (
     <div
-    style={{
-      ...styles.wrapper,
-      filter:
-       data.hasNextLevel
-          ? 'drop-shadow(0px 0px 10px #0000004f)'
-          : 'none',
-    }}
-  >
-      {/* Pentagon Box */}
+      style={{
+        ...styles.wrapper,
+        filter: data.hasNextLevel
+          ? "drop-shadow(0px 0px 10px #0000004f)"
+          : "none",
+      }}
+    >
+      {/* Pentagon Shape */}
       <div
         style={{
           ...styles.pentagonBox,
           width: `${width}px`,
           height: `${height}px`,
-          clipPath: 'polygon(50% 0%, 100% 30%, 100% 100%, 0% 100%, 0% 30%)',
+          clipPath: "polygon(50% 0%, 100% 30%, 100% 100%, 0% 100%, 0% 30%)",
         }}
       >
-        <textarea
-          ref={textareaRef}
-          value={label}
+        <ContentEditable
+          innerRef={contentRef}
+          html={label}
           onChange={handleChange}
-          onBlur={handleBlur}
-          placeholder="Type..."
-          style={styles.textarea}
-          rows={1}
-          maxLength={200}
+          onFocus={handleFocus}
+          placeholder="Type title here..."
+          style={styles.label}
         />
       </div>
 
       {isClickable && (
-        <NodeResizer
-          minWidth={100}
-          minHeight={50}
-          onResize={handleResize}
-        />
+        <NodeResizer minWidth={100} minHeight={50} onResize={handleResize} />
       )}
     </div>
   );
@@ -104,37 +107,38 @@ const PentagonNode = ({ data, id, selectedNodeId }) => {
 
 const styles = {
   wrapper: {
-    position: 'relative',
-    width: '100%',
-    height: '100%',
+    position: "relative",
+    width: "100%",
+    height: "100%",
   },
   pentagonBox: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    textAlign: 'center',
-    backgroundColor: 'red',
-    color: '#002060',
-    padding: '10px',
-    boxSizing: 'border-box',
-    overflow: 'hidden',
-    border: 'none',
-    boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
-    transition: 'width 0.2s ease, height 0.2s ease',
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    textAlign: "center",
+    backgroundColor: "red",
+    color: "#002060",
+    padding: "10px",
+    boxSizing: "border-box",
+    overflow: "hidden",
+    border: "none",
+    boxShadow: "0 2px 5px rgba(0, 0, 0, 0.3)",
+    transition: "width 0.2s ease, height 0.2s ease",
+    wordBreak: "break-word",
   },
-  textarea: {
-    background: 'transparent',
-    border: 'none',
-    color: '#fff',
-    fontSize: '1rem',
-    width: '100%',
-    resize: 'none',
-    outline: 'none',
-    textAlign: 'center',
-    overflowWrap: 'break-word',
-    whiteSpace: 'pre-wrap',
+  label: {
+    background: "transparent",
+    border: "none",
+    color: "#fff",
+    fontSize: "1rem",
+    width: "100%",
+    outline: "none",
+    textAlign: "center",
+    overflowWrap: "break-word",
+    whiteSpace: "pre-wrap",
     fontFamily: "'Poppins', sans-serif",
-    minHeight: '20px',
+    minHeight: "20px",
+    cursor: "text",
   },
 };
 

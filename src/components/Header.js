@@ -392,7 +392,15 @@ const Header = ({
 
 
 
-      <header className="app-header" style={styles.header}>
+   <header
+  className={`app-header ${
+    Page === "ViewPublishswimlane" || Page === "ViewDraftswimlane" ||  Page === "Swimlane"
+      ? "hideborder"
+      : ""
+  }`}
+  style={styles.header}
+>
+
 
         <h1 style={styles.headerTitle} className="sameheight">
 
