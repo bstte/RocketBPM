@@ -11,12 +11,12 @@ const ProcessMenu = ({ item, ProcessTitle,checkpublish, t }) => {
   };
 
   const handleNavigate = (type) => {
-    const title = encodeURIComponent(getProcessTitle(item.processId) || "");
-    const user = encodeURIComponent(JSON.stringify(item));
+    // const title = encodeURIComponent(getProcessTitle(item.processId) || "");
+    // const user = encodeURIComponent(JSON.stringify(item));
     if (type === "published") {
-      navigate(`/published-map-level/${item.processId}?title=${title}&user=${user}`);
+      navigate(`/published-map-level/${item.processId}`);
     } else if (type === "draft") {
-      navigate(`/Draft-Process-View/${item.processId}?title=${title}&user=${user}`);
+      navigate(`/Draft-Process-View/${item.processId}`);
     } else if (type === "manage") {
       navigate("/User-Management", { state: { process: { id: parseInt(item.processId), user_id: item.id } } });
     } else if (type === "setting") {

@@ -12,7 +12,7 @@ import {
 import "@xyflow/react/dist/style.css";
 import Header from "../../../components/Header";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import api, { addFavProcess, checkFavProcess, removeFavProcess } from "../../../API/api";
+import api, { addFavProcess, removeFavProcess } from "../../../API/api";
 
 import generateNodesAndEdges from "../../../AllNode/SwimlineNodes/generateNodesAndEdges";
 import styles from "../SwimlaneStyles";
@@ -22,66 +22,32 @@ import { BreadcrumbsContext } from "../../../context/BreadcrumbsContext";
 import '../../../Css/Swimlane.css'
 import { useSelector } from "react-redux";
 import apiExports from "../../../API/api";
-import SharePopup from "../../../components/SharePopup";
 import VersionPopupView from "../../../components/VersionPopupView";
 import { useDynamicHeight } from "../../../hooks/useDynamicHeight";
 import useCheckFavorite from "../../../hooks/useCheckFavorite";
 import { usePageGroupIdViewer } from "../../../hooks/usePageGroupIdViewer";
 
-// const rfStyle = {
-//   width: "100%",
-//   height: "100%",
-//   backgroundColor: "#fff",
-// };
-
 const DraftSwimlineLevel = () => {
-
-
-
   const [windowSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
   });
   const { level, parentId, processId } = useParams();
-
   const location = useLocation();
-  // const { id, title, user, parentId, level, ParentPageGroupId } = location.state || {};
-  const [showSharePopup, setShowSharePopup] = useState(false);
   const [showVersionPopup, setShowVersionPopup] = useState(false);
+  const [title, Settitle] = useState("");
 
-  const queryParams = new URLSearchParams(location.search);
-  const title = queryParams.get("title");
-  const ParentPageGroupId = queryParams.get("ParentPageGroupId");
-  const user = useMemo(() => {
-    try {
-      const queryParams = new URLSearchParams(location.search);
-      const userParam = queryParams.get("user");
-      return userParam ? JSON.parse(decodeURIComponent(userParam)) : null;
-    } catch (e) {
-      console.error("Failed to parse user from query", e);
-      return null;
-    }
-  }, [location.search]);
-
+  const [user, setUser] = useState(null);
 
   const id = processId; // string
   const LoginUser = useSelector((state) => state.user.user);
   const [isFavorite, setIsFavorite] = useState(false);
   const [process_img, setprocess_img] = useState("");
-  // const [process_udid, setprocess_udid] = useState("");
-
   const headerTitle = `${title} `;
   const currentParentId = parentId || null;
   const currentLevel = level ? parseInt(level, 10) : 0;
-
-  // const [mainContainerHeight, setmcHeight] = useState(0);
   const { height, appHeaderHeight, remainingHeight } = useDynamicHeight();
-
   const [checkpublish, Setcheckpublish] = useState()
-
-
-  // alert(`Window Height: ${window.innerHeight}, App Div Height: ${appheaderheight}, Header Height: ${height}, New Height: ${remainingHeight}`);
-
 
   const { nodes: initialNodes } = useMemo(
     () => generateNodesAndEdges(windowSize.width, windowSize.height, 'viewmode', height + 10, appHeaderHeight, remainingHeight),
@@ -109,17 +75,13 @@ const DraftSwimlineLevel = () => {
   const { removeBreadcrumbsAfter, breadcrumbs, setBreadcrumbs } = useContext(BreadcrumbsContext);
 
   const checkPublishData = useCallback(async (processId) => {
-    // console.log("currentLevel",currentLevel)
     const levelParam =
       currentParentId !== null
         ? `Level${currentLevel}_${currentParentId}`
         : `Level${currentLevel}`;
-    // const levelParam = 'Level0';
-    const user_id = user ? user.id : null;
     const Process_id = processId ? processId : null;
     const data = await apiExports.checkPublishRecord(
       levelParam,
-      parseInt(user_id),
       Process_id
     );
 
@@ -147,35 +109,44 @@ const DraftSwimlineLevel = () => {
           currentParentId !== null
             ? `Level${currentLevel}_${currentParentId}`
             : `Level${currentLevel}`;
-        const user_id = user ? user.id : null;
+     const user_id = LoginUser ? LoginUser.id : null;
         const Process_id = id ? id : null;
         const draftStatus = "Draft";
 
         const data = await api.getNodes(
           levelParam,
           parseInt(user_id),
-          Process_id
-        );
-        const getPublishedDate = await api.GetPublishedDate(
-          levelParam,
-          parseInt(user_id),
           Process_id,
-          draftStatus
+          currentParentId
         );
 
-        setgetPublishedDate(getPublishedDate.status ? getPublishedDate.created_at : "");
-        setprocess_img(data.process_img);
-        // setprocess_udid(data.process_uid)
+        
+          if (data && data.user_id) {
+          // Construct user object based on backend logic
+          setUser({
+            id: data.actual_user_id,
+            type: data.type || "self",
+            role: data.role || "self",
+             OwnId: data.user_id,
+            actual_user_id: data.actual_user_id,
+          });
+        }
 
+          const PageGroupId = data.nodes?.[0]?.PageGroupId;
+        const getPublishedDate = await api.GetPublishedDate(
+            Process_id,
+          draftStatus,
+          PageGroupId
+        );
+
+        setgetPublishedDate(getPublishedDate.status ? getPublishedDate.updated_at : "");
+        setprocess_img(data.process_img);
+   Settitle(data.title);
         const nodebgwidth = document.querySelector(".react-flow__node");
         const nodebgwidths = nodebgwidth ? nodebgwidth.getBoundingClientRect().width : 0;
 
         const nodebgheight = document.querySelector(".react-flow__node");
         const nodebgheights = nodebgheight ? nodebgheight.getBoundingClientRect().height : 0;
-
-        // Centralized dimensions
-        // const totalRows = 7;
-        // const totalColumns = 11;
         const groupWidth = nodebgwidths;
         const groupHeight = nodebgheights;
         const childWidth = groupWidth * 0.9;
@@ -278,7 +249,6 @@ const DraftSwimlineLevel = () => {
     setEdges,
     LoginUser,
     currentParentId,
-    user,
     id,
     windowSize,
   ]);
@@ -311,11 +281,11 @@ const DraftSwimlineLevel = () => {
     // console.log("breadcrumbs",breadcrumbs) 
     if (id && user) {
 
-      page === "editdraft" ? navigate(`/swimlane/level/${currentLevel}/${currentParentId}/${id}?title=${encodeURIComponent(title || "")}&user=${encodeURIComponent(JSON.stringify(user))}&parentId=${currentParentId}&level=${currentLevel}&ParentPageGroupId=${ParentPageGroupId}`)
+      page === "editdraft" ? navigate(`/swimlane/level/${currentLevel}/${currentParentId}/${id}`)
 
         :
         // navigate(`/published-swimlane/level/${currentLevel}/${currentParentId}`, { state: { id: id, title: title, user: user, parentId: currentParentId, level: currentLevel ,ParentPageGroupId: ParentPageGroupId} })
-        navigate(`/published-swimlane/level/${currentLevel}/${currentParentId}/${id}?title=${encodeURIComponent(title)}&user=${encodeURIComponent(JSON.stringify(user))}&parentId=${currentParentId}&level=${currentLevel}&ParentPageGroupId=${ParentPageGroupId}`)
+        navigate(`/published-swimlane/level/${currentLevel}/${currentParentId}/${id}`)
 
 
       // removeBreadcrumbsAfter(0);
@@ -324,9 +294,9 @@ const DraftSwimlineLevel = () => {
     }
 
   }
-  const handleShareClick = () => {
-    setShowSharePopup(true);
-  };
+  // const handleShareClick = () => {
+  //   setShowSharePopup(true);
+  // };
 
   const handleVersionClick = () => {
     setShowVersionPopup(true);
@@ -379,12 +349,9 @@ const DraftSwimlineLevel = () => {
         Page={"ViewDraftswimlane"}
         isFavorite={isFavorite}
         Process_img={process_img}
-        Procesuser={user}
-
+        Procesuser={user || { id: null, role: "self", type: "self" }}
         checkpublish={checkpublish}
-        onShare={() => handleShareClick()}
         onShowVersion={handleVersionClick}
-
         savefav={handleFav}
 
       />

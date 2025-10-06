@@ -6,7 +6,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { BreadcrumbsContext } from "../context/BreadcrumbsContext";
 import { FaArrowLeft } from 'react-icons/fa';
 import { ImageBaseUrl } from "../API/api";
-import { copyLinkToClipboard, copyNameAndLinkToClipboard } from "../utils/shareHelper";
 import { useTranslation } from "../hooks/useTranslation";
 import ShareDropdown from "./ShareDropdown";
 
@@ -99,9 +98,9 @@ const Header = ({
 
   const handleBreadcrumbClick = async (path, state, index) => {
     const confirmcondition = await handleBackdata();
-    console.log("confirmcondition click", confirmcondition)
     if (confirmcondition !== false) {
       setIsNavigating(true);
+  
       removeBreadcrumbsAfter(index);
 
       navigate(path, { state });
@@ -339,24 +338,10 @@ const Header = ({
                 </button>
 
 
-{/* 
-                <button
-                  onClick={() => onExit("exit_without_saving")}
-                  style={{
-                    ...styles.saveButton,
-                    backgroundColor: "#002060",
-                  }}
-                >
-                  {t("exit_without_saving")}
-                </button> */}
               </>
             )}
 
             <div className="ss_profile_rit_div mspage">
-
-
-
-
               <>
                 {/* Dropdown Button */}
                 <div ref={dropdownRef} style={{ position: "relative" }}>
@@ -465,7 +450,7 @@ const Header = ({
           )}
 
           {
-            Page === "Published" && (
+           ( Page === "Published" || Page==="ViewPublishswimlane") && (
               <>
                 <div style={styles.pdate} class="ss_box_hed_right_1">
                   <div>

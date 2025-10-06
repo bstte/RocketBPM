@@ -13,16 +13,13 @@ import {
 import "@xyflow/react/dist/style.css";
 import Header from "../../../components/Header";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import api, { addFavProcess, checkFavProcess, removeFavProcess } from "../../../API/api";
-
+import api, { addFavProcess, removeFavProcess } from "../../../API/api";
 import generateNodesAndEdges from "../../../AllNode/SwimlineNodes/generateNodesAndEdges";
 import styles from "../SwimlaneStyles";
 import PublishNodeType from "./PublishNodeType";
 import { BreadcrumbsContext } from "../../../context/BreadcrumbsContext";
-
 import '../../../Css/Swimlane.css'
 import { useSelector } from "react-redux";
-import SharePopup from "../../../components/SharePopup";
 import VersionPopupView from "../../../components/VersionPopupView";
 import { useDynamicHeight } from "../../../hooks/useDynamicHeight";
 import useCheckFavorite from "../../../hooks/useCheckFavorite";
@@ -30,36 +27,27 @@ import { usePageGroupIdViewer } from "../../../hooks/usePageGroupIdViewer";
 
 
 const PublishedSwimlaneModel = () => {
-
   const { height, appHeaderHeight, remainingHeight } = useDynamicHeight();
-
-
   const [windowSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
   });
-
   const { level, parentId, processId } = useParams();
-
-
-  const location = useLocation();
-  // const { id, title, user,ParentPageGroupId } = location.state || {};
-  const [showSharePopup, setShowSharePopup] = useState(false);
+  // const location = useLocation();
   const [showVersionPopup, setShowVersionPopup] = useState(false);
-
-  const queryParams = new URLSearchParams(location.search);
-  const title = queryParams.get("title");
-  const ParentPageGroupId = queryParams.get("ParentPageGroupId");
-  const user = useMemo(() => {
-    try {
-      const queryParams = new URLSearchParams(location.search);
-      const userParam = queryParams.get("user");
-      return userParam ? JSON.parse(decodeURIComponent(userParam)) : null;
-    } catch (e) {
-      console.error("Failed to parse user from query", e);
-      return null;
-    }
-  }, [location.search]);
+  const [title, Settitle] = useState("");
+  // const [ParentPageGroupId, SetParentPageGroupId] = useState(null);
+  const [user, setUser] = useState(null);
+  // const user = useMemo(() => {
+  //   try {
+  //     const queryParams = new URLSearchParams(location.search);
+  //     const userParam = queryParams.get("user");
+  //     return userParam ? JSON.parse(decodeURIComponent(userParam)) : null;
+  //   } catch (e) {
+  //     console.error("Failed to parse user from query", e);
+  //     return null;
+  //   }
+  // }, [location.search]);
 
 
   const id = processId; // string
@@ -110,26 +98,38 @@ const PublishedSwimlaneModel = () => {
           currentParentId !== null
             ? `Level${currentLevel}_${currentParentId}`
             : `Level${currentLevel}`;
-        const user_id = user ? user.id : null;
+        const user_id = LoginUser ? LoginUser.id : null;
         const Process_id = id ? id : null;
         const publishedStatus = "Published";
 
         const data = await api.getPublishedNodes(
           levelParam,
           parseInt(user_id),
-          Process_id
-        );
-        const getPublishedDate = await api.GetPublishedDate(
-          levelParam,
-          parseInt(user_id),
           Process_id,
-          publishedStatus
+          currentParentId
+        );
+          if (data && data.user_id) {
+          // Construct user object based on backend logic
+          setUser({
+            id: data.actual_user_id,
+            type: data.type || "self",
+            role: data.role || "self",
+             OwnId: data.user_id,
+            actual_user_id: data.actual_user_id,
+          });
+        }
+          const PageGroupId = data.nodes?.[0]?.PageGroupId;
+        const getPublishedDate = await api.GetPublishedDate(
+          Process_id,
+          publishedStatus,
+          PageGroupId
         );
 
-        setgetPublishedDate(getPublishedDate.status ? getPublishedDate.created_at : "");
+        setgetPublishedDate(getPublishedDate.status ? getPublishedDate.updated_at : "");
         setprocess_img(data.process_img);
         // setprocess_udid(data.process_uid)
-
+      Settitle(data.title)
+// SetParentPageGroupId(data.PageGroupId)
         const nodebgwidth = document.querySelector(".react-flow__node");
         const nodebgwidths = nodebgwidth ? nodebgwidth.getBoundingClientRect().width : 0;
 
@@ -221,7 +221,6 @@ const PublishedSwimlaneModel = () => {
     setNodes,
     setEdges,
     currentParentId,
-    user,
     id,
     windowSize,
   ]);
@@ -246,7 +245,7 @@ const PublishedSwimlaneModel = () => {
 
     if (id && user) {
       // navigate(`/Draft-Swim-lanes-View/level/${currentLevel}/${currentParentId}`, { state: { id: id, title: title, user: user, parentId: currentParentId, level: currentLevel,ParentPageGroupId } })
-      navigate(`/Draft-Swim-lanes-View/level/${currentLevel}/${currentParentId}/${id}?title=${encodeURIComponent(title)}&user=${encodeURIComponent(JSON.stringify(user))}&parentId=${currentParentId}&level=${currentLevel}&ParentPageGroupId=${ParentPageGroupId}`)
+      navigate(`/Draft-Swim-lanes-View/level/${currentLevel}/${currentParentId}/${id}`)
 
       // removeBreadcrumbsAfter(0);
     } else {
@@ -260,9 +259,6 @@ const PublishedSwimlaneModel = () => {
     navigate(`/Swimlane-Version/${process_id}/${level}/${version}/${encodedTitle}`);
   };
 
-  const handleShareClick = () => {
-    setShowSharePopup(true);
-  };
 
   const handleVersionClick = () => {
     setShowVersionPopup(true);
@@ -314,7 +310,6 @@ const PublishedSwimlaneModel = () => {
         isFavorite={isFavorite}
         Process_img={process_img}
         Procesuser={user}
-        onShare={() => handleShareClick()}
         onShowVersion={handleVersionClick}
 
         savefav={handleFav}

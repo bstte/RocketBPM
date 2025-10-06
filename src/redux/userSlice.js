@@ -48,12 +48,13 @@ export const logoutUser = createAsyncThunk(
   }
 );
 const savedTranslations = localStorage.getItem("translations");
-
+const savedUser = localStorage.getItem("user");
 // Add setUser action to set user data directly
 export const userSlice = createSlice({
   name: "user",
   initialState: {
-    user: null,
+    user: savedUser ? JSON.parse(savedUser) : null, // ✅ Restore user
+
     translations: savedTranslations ? JSON.parse(savedTranslations) : {}, // ✅ localStorage se load
 
     loading: false,
@@ -70,7 +71,7 @@ export const userSlice = createSlice({
     logout: (state) => {
       localStorage.removeItem("token");
       localStorage.removeItem("translations"); // ✅ clear karo
-
+      localStorage.removeItem("user"); // ✅ remove user data too
       state.user = null;
     },
   },
@@ -87,6 +88,7 @@ export const userSlice = createSlice({
           "translations",
           JSON.stringify(state.translations)
         );
+        localStorage.setItem("user", JSON.stringify(action.payload.user)); // ✅ Save user to localStorage
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;

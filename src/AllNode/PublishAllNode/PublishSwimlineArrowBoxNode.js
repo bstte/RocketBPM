@@ -72,7 +72,7 @@ const ArrowBoxNode = ({ data }) => {
                   const user = { id: node.user_id };
               
                   // ✅ URL banao
-                  const url = `/published-map-level/${newLevel}/${node_id}/${process_id}?title=${encodeURIComponent(label)}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${node.PageGroupId}`;
+                  const url = `/published-map-level/${newLevel}/${node_id}/${process_id}`;
                   // ✅ Breadcrumb add karo
                   addBreadcrumb(label, url);
                 });
@@ -81,12 +81,12 @@ const ArrowBoxNode = ({ data }) => {
               
               if (nodeData.Page_Title === "ProcessMap") {
              
-                navigate(`/published-map-level/${newLevel}/${data.link}/${id}?title=${encodeURIComponent(nodeDataParsed.label || "")}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${response.data[0]?.PageGroupId}`)
+                navigate(`/published-map-level/${newLevel}/${data.link}/${id}`)
   
               }
               if (nodeData.Page_Title === "Swimlane") {
            
-                navigate(`/published-swimlane/level/${newLevel}/${data.link}/${id}?title=${encodeURIComponent(nodeDataParsed.label || "")}&user=${encodeURIComponent(JSON.stringify(user))}&parentId=${data.link}&level=${newLevel}&ParentPageGroupId=${response.data[0]?.PageGroupId}`)
+                navigate(`/published-swimlane/level/${newLevel}/${data.link}/${id}`)
   
               }
             } else {

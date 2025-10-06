@@ -23,13 +23,11 @@ import { BreadcrumbsContext } from "../../../context/BreadcrumbsContext";
 import PublishArrowBoxNode from "../../../AllNode/PublishAllNode/PublishArrowBoxNode";
 import PublishPentagonNode from "../../../AllNode/PublishAllNode/PublishPentagonNode";
 import { useSelector } from "react-redux";
-// import SharePopup from "../../../components/SharePopup";
 import VersionPopupView from "../../../components/VersionPopupView";
 import useCheckFavorite from "../../../hooks/useCheckFavorite";
 import { usePageGroupIdViewer } from "../../../hooks/usePageGroupIdViewer";
 
 const PublishedMapLevel = () => {
-
   const [totalHeight, setTotalHeight] = useState(0);
   const [windowHeight, setWindowHeight] = useState(window.innerHeight);
   const windowSize = {
@@ -45,20 +43,27 @@ const PublishedMapLevel = () => {
 
   useEffect(() => {
     const calculateHeight = () => {
-      const breadcrumbsElement = document.querySelector(".breadcrumbs-container");
+      const breadcrumbsElement = document.querySelector(
+        ".breadcrumbs-container"
+      );
       const appHeaderElement = document.querySelector(".app-header");
 
       const element = document.querySelector(".ss_new_hed");
       const element2 = document.querySelector(".app-header");
 
-      const elementHeight = element ? element.getBoundingClientRect().height : 0;
-      const appHeaderHeight = element2 ? element2.getBoundingClientRect().height : 0;
+      const elementHeight = element
+        ? element.getBoundingClientRect().height
+        : 0;
+      const appHeaderHeight = element2
+        ? element2.getBoundingClientRect().height
+        : 0;
 
       const newHeight = window.innerHeight - (elementHeight + appHeaderHeight);
       setRemainingHeight(newHeight - 40);
 
       if (breadcrumbsElement && appHeaderElement) {
-        const combinedHeight = breadcrumbsElement.offsetHeight + appHeaderElement.offsetHeight + 100;
+        const combinedHeight =
+          breadcrumbsElement.offsetHeight + appHeaderElement.offsetHeight + 100;
         setTotalHeight(combinedHeight);
       }
     };
@@ -75,26 +80,12 @@ const PublishedMapLevel = () => {
 
   const navigate = useNavigate();
   const { level, parentId, processId } = useParams();
-  const location = useLocation();
-  // const {  ParentPageGroupId } = location.state || {};
   const [showVersionPopup, setShowVersionPopup] = useState(false);
+  const [title, Settitle] = useState("");
+  // const [ParentPageGroupId, SetParentPageGroupId] = useState(null);
+  const [user, setUser] = useState(null);
 
-  const queryParams = new URLSearchParams(location.search);
-  const title = queryParams.get("title");
-  const ParentPageGroupId = queryParams.get("ParentPageGroupId");
-  const user = useMemo(() => {
-    try {
-      const queryParams = new URLSearchParams(location.search);
-      const userParam = queryParams.get("user");
-      return userParam ? JSON.parse(decodeURIComponent(userParam)) : null;
-    } catch (e) {
-      console.error("Failed to parse user from query", e);
-      return null;
-    }
-  }, [location.search]);
-
-
-  const id = processId; // string
+  const id = processId;
 
   const currentLevel = level ? parseInt(level, 10) : 0;
   const currentParentId = parentId || null;
@@ -105,10 +96,7 @@ const PublishedMapLevel = () => {
   const [headerTitle, setHeaderTitle] = useState(`${title} `);
   const [getPublishedDate, setgetPublishedDate] = useState("");
   const [process_img, setprocess_img] = useState("");
-  // const [process_udid, setprocess_udid] = useState("");
-
   const [isNavigating, setIsNavigating] = useState(false);
-  // const [showSharePopup, setShowSharePopup] = useState(false);
 
   const memoizedNodeTypes = useMemo(
     () => ({
@@ -140,36 +128,48 @@ const PublishedMapLevel = () => {
   );
 
   useEffect(() => {
-
-
     const fetchNodes = async () => {
       try {
         const levelParam =
           currentParentId !== null
             ? `Level${currentLevel}_${currentParentId}`
             : `Level${currentLevel}`;
-        const user_id = user ? user.id : null;
+        const user_id = LoginUser ? LoginUser.id : null;
+
         const Process_id = id ? id : null;
         const publishedStatus = "Published";
-
         const data = await api.getPublishedNodes(
           levelParam,
           parseInt(user_id),
-          Process_id
-        );
-        const getPublishedDate = await api.GetPublishedDate(
-          levelParam,
-          parseInt(user_id),
           Process_id,
-          publishedStatus
+          currentParentId
+        );
+        // ✅ Set user from backend response
+        if (data && data.user_id) {
+          // Construct user object based on backend logic
+          setUser({
+            id: data.actual_user_id,
+            type: data.type || "self",
+            role: data.role || "self",
+             OwnId: data.user_id,
+            actual_user_id: data.actual_user_id,
+          });
+        }
+          const PageGroupId = data.nodes?.[0]?.PageGroupId;
+        const getPublishedDate = await api.GetPublishedDate(
+          Process_id,
+          publishedStatus,
+          PageGroupId
         );
         if (getPublishedDate.status === true) {
-          setgetPublishedDate(getPublishedDate.created_at);
+          setgetPublishedDate(getPublishedDate.updated_at);
         } else {
           setgetPublishedDate("");
         }
-        setprocess_img(data.process_img)
-        // setprocess_udid(data.process_uid)
+        Settitle(data.title);
+
+        // SetParentPageGroupId(data.PageGroupId);
+        setprocess_img(data.process_img);
         const parsedNodes = await Promise.all(
           data.nodes
             .filter((node) => node.type !== "StickyNote")
@@ -177,52 +177,49 @@ const PublishedMapLevel = () => {
               const parsedData = JSON.parse(node.data);
               const parsedPosition = JSON.parse(node.position);
               const parsedMeasured = JSON.parse(node.measured);
-        
+
               // 👇 Next Level check
               const newLevel = currentLevel + 1;
               const levelParam =
                 node.node_id !== null
                   ? `Level${newLevel}_${node.node_id}`
                   : `Level${currentLevel}`;
-              const user_id = user ? user.id : null;
               const Process_id = id ? id : null;
-        
+            
               let hasNextLevel = false;
               try {
                 const check = await api.checkPublishRecord(
                   levelParam,
-                  parseInt(user_id),
                   Process_id
                 );
                 hasNextLevel = check?.status === true;
               } catch (err) {
                 console.error("checkPublishRecord error:", err);
               }
-          return {
-            ...node,
-            data: {
-              ...parsedData,
-              onLabelChange: (newLabel) =>
-                handleLabelChange(node.node_id, newLabel),
+              return {
+                ...node,
+                data: {
+                  ...parsedData,
+                  onLabelChange: (newLabel) =>
+                    handleLabelChange(node.node_id, newLabel),
 
-              width_height: parsedMeasured,
-              autoFocus: true,
-              node_id: node.node_id,
-              nodeResize: true,
-              LinkToStatus: node.LinkToStatus,
-              hasNextLevel
+                  width_height: parsedMeasured,
+                  autoFocus: true,
+                  node_id: node.node_id,
+                  nodeResize: true,
+                  LinkToStatus: node.LinkToStatus,
+                  hasNextLevel,
+                },
+                type: node.type,
+                id: node.node_id,
 
-            },
-            type: node.type,
-            id: node.node_id,
-
-            measured: parsedMeasured,
-            position: parsedPosition,
-            draggable: false,
-            animated: false,
-          };
-        })
-    );
+                measured: parsedMeasured,
+                position: parsedPosition,
+                draggable: false,
+                animated: false,
+              };
+            })
+        );
         const parsedEdges = data.edges.map((edge) => ({
           ...edge,
           animated: Boolean(edge.animated),
@@ -232,7 +229,6 @@ const PublishedMapLevel = () => {
           style: { stroke: "#002060", strokeWidth: 2 },
           type: "step",
         }));
-
 
         setNodes(parsedNodes);
         setEdges(parsedEdges);
@@ -249,7 +245,6 @@ const PublishedMapLevel = () => {
     setNodes,
     setEdges,
     currentParentId,
-    user,
     id,
   ]);
 
@@ -260,124 +255,110 @@ const PublishedMapLevel = () => {
   });
 
   useEffect(() => {
-    const label = currentLevel === 0 ? title : title;
-    const path =
-    
-      currentLevel === 0
-        ? `/published-map-level/${id}?title=${encodeURIComponent(title)}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${ParentPageGroupId}`
-        : `/published-map-level/${currentLevel}/${currentParentId}/${id}?title=${encodeURIComponent(title)}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${ParentPageGroupId}`;
+  if (!title) return;
 
-    const state = {
-      id: id,
-      title: title,
-      user: user,
-    };
+  const label = currentLevel === 0 ? title : title;
+  const path =
+    currentLevel === 0
+      ? `/published-map-level/${id}`
+      : `/published-map-level/${currentLevel}/${currentParentId}/${id}`;
 
+  const exists = breadcrumbs.some((b) => b.path === path);
+  if (!exists) {
     if (currentLevel >= 0 && isNavigating) {
-      // Ensure the 0th breadcrumb is not removed
       const safeIndex = Math.max(1, currentLevel - 1);
       removeBreadcrumbsAfter(safeIndex);
     }
+    addBreadcrumb(label, path, {});
+  }
 
-    addBreadcrumb(label, path, state);
+  setIsNavigating(false);
+}, [
+  currentLevel,
+  isNavigating,
+  currentParentId,
+  addBreadcrumb,
+  removeBreadcrumbsAfter,
+  id,
+  title,
+  breadcrumbs, // ✅ include this
+]);
 
-    setIsNavigating(false);
-  }, [
-    currentLevel,
-    isNavigating,
-    currentParentId,
-    ParentPageGroupId,
-    addBreadcrumb,
-    removeBreadcrumbsAfter,
-    id,
-    title,
-    user,
-  ]);
 
   const handlenodeClick = async (event, node) => {
     event.preventDefault();
     const selectedLabel = node.data.label || "";
-    const PageGroupId = nodes[0]?.PageGroupId;
     const newLevel = currentLevel + 1;
     const levelParam =
-      node.id !== null
-        ? `Level${newLevel}_${node.id}`
-        : `Level${currentLevel}`;
-    const user_id = user ? user.id : null;
+      node.id !== null ? `Level${newLevel}_${node.id}` : `Level${currentLevel}`;
     const Process_id = id ? id : null;
     const data = await api.checkPublishRecord(
       levelParam,
-      parseInt(user_id),
       Process_id
     );
 
     if (data.status === true) {
       if (data.Page_Title === "ProcessMap") {
-      
-        navigate(`/published-map-level/${newLevel}/${node.id}/${id}?title=${encodeURIComponent(selectedLabel)}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${PageGroupId}`)
-
+        navigate(
+          `/published-map-level/${newLevel}/${
+            node.id
+          }/${id}`
+        );
       }
 
       if (data.Page_Title === "Swimlane") {
         addBreadcrumb(
           `${selectedLabel} `,
-          `/published-swimlane/level/${newLevel}/${node.id}/${id}?title=${encodeURIComponent(selectedLabel)}&user=${encodeURIComponent(JSON.stringify(user))}&parentId=${node.id}&level=${newLevel}&ParentPageGroupId=${PageGroupId}`
-
+          `/published-swimlane/level/${newLevel}/${
+            node.id
+          }/${id}`
         );
 
         navigate(
-          `/published-swimlane/level/${newLevel}/${node.id}/${id}?title=${encodeURIComponent(selectedLabel)}&user=${encodeURIComponent(JSON.stringify(user))}&parentId=${node.id}&level=${newLevel}&ParentPageGroupId=${PageGroupId}`
+          `/published-swimlane/level/${newLevel}/${
+            node.id
+          }/${id}`
         );
       }
     } else {
-      alert("Next level not Published")
+      alert("Next level not Published");
     }
-
-  }
-
+  };
 
   const onConnect = useCallback((connection) => {
-    // Your callback logic here
     console.log("Connected:", connection);
   }, []);
 
   useEffect(() => {
-    const stateTitle = location.state?.title || title;
+    const stateTitle = title;
     setHeaderTitle(`${stateTitle}`);
-  }, [location.state, currentLevel, title]);
-
+  }, [currentLevel, title]);
 
   const iconNames = {};
   const navigateOnDraft = () => {
-
-
     const updatedBreadcrumbs = breadcrumbs.map((crumb, index) => {
       if (index === 0) return crumb; // First breadcrumb ko as it is rakhna
 
       return {
         ...crumb,
-        path: crumb.path.replace("published-map-level", "Draft-Process-View")
+        path: crumb.path.replace("published-map-level", "Draft-Process-View"),
       };
     });
     setBreadcrumbs(updatedBreadcrumbs);
-
     if (id && user) {
       if (currentLevel === 0) {
         navigate(
-          `/Draft-Process-View/${id}?title=${title}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${ParentPageGroupId}`
+          `/Draft-Process-View/${id}`
         );
-
-
       } else {
-        navigate(`/Draft-Process-View/${currentLevel}/${currentParentId}/${id}?title=${encodeURIComponent(title)}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${ParentPageGroupId}`)
+        navigate(
+          `/Draft-Process-View/${currentLevel}/${currentParentId}/${id}`
+        );
       }
-
     } else {
-      alert("Currently not navigate on draft mode")
+      alert("Currently not navigate on draft mode");
     }
-
-  }
-
+  };
 
   const styles = {
     appContainer: {
@@ -408,13 +389,10 @@ const PublishedMapLevel = () => {
   // ye commom page h
   const navigateToVersion = (process_id, level, version) => {
     const encodedTitle = encodeURIComponent("ProcessMap");
-    navigate(`/Draft-Process-Version/${process_id}/${level}/${version}/${encodedTitle}`);
+    navigate(
+      `/Draft-Process-Version/${process_id}/${level}/${version}/${encodedTitle}`
+    );
   };
-
-
-  // const handleShareClick = () => {
-  //   setShowSharePopup(true);
-  // };
 
   const handleVersionClick = () => {
     setShowVersionPopup(true);
@@ -434,14 +412,23 @@ const PublishedMapLevel = () => {
 
     try {
       if (isFavorite) {
-
-        const response = await removeFavProcess(user_id, process_id, PageGroupId);
+        const response = await removeFavProcess(
+          user_id,
+          process_id,
+          PageGroupId
+        );
         setIsFavorite(false);
-        console.log("Removed from favorites:", response);
+        // console.log("Removed from favorites:", response);
       } else {
-        const response = await addFavProcess(user_id, process_id, type, PageGroupId, currentParentId);
+        const response = await addFavProcess(
+          user_id,
+          process_id,
+          type,
+          PageGroupId,
+          currentParentId
+        );
         setIsFavorite(true);
-        console.log("Added to favorites:", response);
+        // console.log("Added to favorites:", response);
       }
     } catch (error) {
       console.error("Favorite toggle error:", error);
@@ -466,12 +453,13 @@ const PublishedMapLevel = () => {
         Procesuser={user}
         onShowVersion={handleVersionClick}
         savefav={handleFav}
-
       />
       <ReactFlowProvider>
-        <div className="app-container" style={{ ...styles.appContainer, height: remainingHeight }}>
+        <div
+          className="app-container"
+          style={{ ...styles.appContainer, height: remainingHeight }}
+        >
           <div className="content-wrapper" style={styles.contentWrapper}>
-
             <div className="flow-container" style={styles.flowContainer}>
               <ReactFlow
                 nodes={nodes}
@@ -500,9 +488,7 @@ const PublishedMapLevel = () => {
           </div>
 
           {usePageGroupIdViewer(nodes)}
-
         </div>
-
 
         {showVersionPopup && (
           <VersionPopupView
@@ -515,13 +501,11 @@ const PublishedMapLevel = () => {
             title={headerTitle}
             status={"Published"}
             type={"ProcessMaps"}
-
           />
         )}
       </ReactFlowProvider>
     </div>
   );
 };
-
 
 export default PublishedMapLevel;

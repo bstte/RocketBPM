@@ -30,7 +30,7 @@ const ProcessTitle = () => {
       const response = await saveProcessTitle(title, user_id, selectedLanguageId);
 
       navigate(
-        `/map-level/${response.data.id}?title=${encodeURIComponent(response.data.process_title || "")}&user=${encodeURIComponent(JSON.stringify(user))}`,
+        `/map-level/${response.data.id}`,
         { replace: true }
       );
     } catch (error) {

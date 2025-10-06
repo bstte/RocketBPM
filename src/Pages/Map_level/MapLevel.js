@@ -70,20 +70,9 @@ const MapLevel = () => {
   const [translationDefaults, setTranslationDefaults] = useState({ en: "", de: "", es: "" });
 
   const langMap = useLangMap();
-
-  const queryParams = new URLSearchParams(location.search);
-  const title = queryParams.get("title");
-  const ParentPageGroupId = queryParams.get("ParentPageGroupId");
-  const user = useMemo(() => {
-    try {
-      const queryParams = new URLSearchParams(location.search);
-      const userParam = queryParams.get("user");
-      return userParam ? JSON.parse(decodeURIComponent(userParam)) : null;
-    } catch (e) {
-      console.error("Failed to parse user from query", e);
-      return null;
-    }
-  }, [location.search]);
+  const [title, Settitle] = useState("");
+  const [ParentPageGroupId, SetParentPageGroupId] = useState(null);
+    const [user, setUser] = useState(null);
 
 
   const id = processId; // string
@@ -91,7 +80,7 @@ const MapLevel = () => {
   const [showVersionPopup, setShowVersionPopup] = useState(false);
 
   const currentParentId = parentId || null;
-  const { addBreadcrumb, removeBreadcrumbsAfter } = useContext(BreadcrumbsContext);
+  const { addBreadcrumb, removeBreadcrumbsAfter,breadcrumbs } = useContext(BreadcrumbsContext);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -139,7 +128,6 @@ const MapLevel = () => {
       if (currentLevel !== 0) {
         try {
           const response = await filter_draft(ParentPageGroupId);
-          console.log("inside first map", response)
           if (response?.data === true) {
             Setcheckpublish(false);
 
@@ -198,26 +186,41 @@ const MapLevel = () => {
           currentParentId !== null
             ? `Level${currentLevel}_${currentParentId}`
             : `Level${currentLevel}`;
-        const user_id = user ? user.id : null;
+         const user_id = LoginUser ? LoginUser.id : null;
         const Process_id = id ? id : null;
         const publishedStatus = "Published";
         const draftStatus = "Draft";
-        const PageGroupId = nodes[0]?.PageGroupId
-        const [publishedResponse, draftResponse, data] = await Promise.all([
-          api.GetPublishedDate(levelParam, parseInt(user_id), Process_id, publishedStatus, PageGroupId),
-          api.GetPublishedDate(levelParam, parseInt(user_id), Process_id, draftStatus, PageGroupId),
-          api.getNodes(levelParam, parseInt(user_id), Process_id),
-        ]);
+          const data = await api.getNodes(levelParam, parseInt(user_id), Process_id, currentParentId);
+
+       const PageGroupId = data.nodes?.[0]?.PageGroupId;
+ 
+        const [publishedResponse, draftResponse] = await Promise.all([
+      api.GetPublishedDate(Process_id, publishedStatus, PageGroupId),
+      api.GetPublishedDate(Process_id, draftStatus, PageGroupId),
+    ]);
         if (publishedResponse.status === true) {
-          setgetPublishedDate(publishedResponse.created_at || "");
+          setgetPublishedDate(publishedResponse.updated_at || "");
         } else {
           setgetPublishedDate("");
         }
         if (draftResponse.status === true) {
-          setDraftedDate(draftResponse.created_at || "");
+          setDraftedDate(draftResponse.updated_at || "");
         } else {
           setDraftedDate("");
         }
+
+           if (data && data.user_id) {
+          // Construct user object based on backend logic
+          setUser({
+            id: data.actual_user_id,
+            type: data.type || "self",
+            role: data.role || "self",
+             OwnId: data.user_id,
+            actual_user_id: data.actual_user_id,
+          });
+        }
+           Settitle(data.title);
+        SetParentPageGroupId(data.PageGroupId);
         setprocess_img(data.process_img)
         setprocessDefaultlanguage_id(data.processDefaultlanguage_id)
 
@@ -232,11 +235,10 @@ const MapLevel = () => {
               node.node_id !== null
                 ? `Level${newLevel}_${node.node_id}`
                 : `Level${currentLevel}`;
-            const user_id = user ? user.id : null;
             const Process_id = id ? id : null;
             let hasNextLevel = false;
             try {
-              const check = await api.checkRecord(levelParam, parseInt(user_id), Process_id);
+              const check = await api.checkRecord(levelParam, Process_id);
               hasNextLevel = check?.status === true;
             } catch (e) {
               console.error("checkRecord error", e);
@@ -269,7 +271,6 @@ const MapLevel = () => {
           style: { stroke: "#002060", strokeWidth: 2 },
           type: "step",
         }));
-        console.log("parsedNodes",parsedNodes)
 
         setNodes(parsedNodes);
         setEdges(parsedEdges);
@@ -286,7 +287,6 @@ const MapLevel = () => {
     setNodes,
     setEdges,
     currentParentId,
-    user,
     id,
   ]);
 
@@ -299,33 +299,39 @@ const MapLevel = () => {
 
 
 
-  useEffect(() => {
-    const label = currentLevel === 0 ? title : title;
-    const path =
-      currentLevel === 0
-        ? "/Map-level"
-        : `/level/${currentLevel}/${currentParentId}`;
-    const state = {
-      id: id,
-      title: title,
-      user: user,
-    };
+useEffect(() => {
+  if (!title) return; // Wait until title is available
+
+  const label = currentLevel === 0 ? title : title;
+  const path =
+    currentLevel === 0
+      ? "/Map-level"
+      : `/level/${currentLevel}/${currentParentId}`;
+
+  const state = {};
+
+  // ✅ Check if breadcrumb already exists
+  const exists = breadcrumbs.some((b) => b.path === path);
+  if (!exists) {
     if (currentLevel >= 0 && isNavigating) {
       const safeIndex = Math.max(1, currentLevel - 1);
       removeBreadcrumbsAfter(safeIndex);
     }
     addBreadcrumb(label, path, state);
-    setIsNavigating(false);
-  }, [
-    currentLevel,
-    isNavigating,
-    currentParentId,
-    addBreadcrumb,
-    removeBreadcrumbsAfter,
-    id,
-    title,
-    user,
-  ]);
+  }
+
+  setIsNavigating(false);
+}, [
+  currentLevel,
+  isNavigating,
+  currentParentId,
+  addBreadcrumb,
+  removeBreadcrumbsAfter,
+  id,
+  title,
+  breadcrumbs, // ✅ include breadcrumbs dependency
+]);
+
   const onConnect = useCallback((connection) => {
     console.log('Connected:', connection);
   }, []);
@@ -451,7 +457,6 @@ const MapLevel = () => {
     const Process_id = id ? id : null;
     const data = await api.checkRecord(
       levelParam,
-      parseInt(user_id),
       Process_id
     );
     setcheckRecord(data)
@@ -482,27 +487,27 @@ const MapLevel = () => {
           if (checkRecord.status === true) {
 
             navigate(
-              `/Draft-Process-View/${newLevel}/${selectedNode}/${id}?title=${selectedLabel}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${nodes[0]?.PageGroupId}`
+              `/Draft-Process-View/${newLevel}/${selectedNode}/${id}`
             )
           } else {
 
-            navigate(`/level/${newLevel}/${selectedNode}/${id}?title=${encodeURIComponent(selectedLabel || "")}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${nodes[0]?.PageGroupId}`)
+            navigate(`/level/${newLevel}/${selectedNode}/${id}`)
 
           }
         }
         if (type === "Swimlane") {
           if (checkRecord.status === true) {
-            navigate(`/Draft-Swim-lanes-View/level/${newLevel}/${selectedNode}/${id}?title=${encodeURIComponent(selectedLabel || "")}&user=${encodeURIComponent(JSON.stringify(user))}&parentId=${selectedNode}&level=${newLevel}&ParentPageGroupId=${nodes[0]?.PageGroupId}`)
+            navigate(`/Draft-Swim-lanes-View/level/${newLevel}/${selectedNode}/${id}`)
 
           } else {
 
             addBreadcrumb(
               `${selectedLabel || ""} `,
 
-              `/swimlane/level/${newLevel}/${selectedNode}/${id}?title=${encodeURIComponent(selectedLabel || "")}&user=${encodeURIComponent(JSON.stringify(user))}&parentId=${selectedNode}&level=${newLevel}&ParentPageGroupId=${nodes[0]?.PageGroupId}`
+              `/swimlane/level/${newLevel}/${selectedNode}/${id}`
 
             );
-            navigate(`/swimlane/level/${newLevel}/${selectedNode}/${id}?title=${encodeURIComponent(selectedLabel || "")}&user=${encodeURIComponent(JSON.stringify(user))}&parentId=${selectedNode}&level=${newLevel}&ParentPageGroupId=${nodes[0]?.PageGroupId}`)
+            navigate(`/swimlane/level/${newLevel}/${selectedNode}/${id}`)
 
           }
         }
@@ -697,26 +702,6 @@ const MapLevel = () => {
     },
     [setEdges]
   );
-// const handleBack = async () => {
-//   if (!hasUnsavedChanges) {
-//     return true; // no unsaved changes, just exit
-//   }
-
-//   // Custom popup instead of window.confirm
-//   return new Promise((resolve) => {
-//     const userChoice = window.confirm(
-//       "You have unsaved changes.\nPress OK to Save & Exit or Cancel to Exit without saving."
-//     );
-
-//     if (userChoice) {
-//       // User wants to save before exit
-//       handleSaveNodes("draft").then(() => resolve(true));
-//     } else {
-//       // Exit without saving
-//       resolve(true);
-//     }
-//   });
-// };
 
 const handleBack = async () => {
   if (!hasUnsavedChanges) return true; // No unsaved changes, just exit
@@ -823,11 +808,10 @@ const handleBack = async () => {
     if (confirmcondition) {
       if (id && user) {
         if (currentLevel === 0) {
-          navigate(`/Draft-Process-View/${id}?title=${encodeURIComponent(title)}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${ParentPageGroupId}`
+          navigate(`/Draft-Process-View/${id}`
           )
-          // navigate('/Draft-Process-View', { state: { id: id, title: title, user: user } })
         } else {
-          navigate(`/Draft-Process-View/${currentLevel}/${currentParentId}/${id}?title=${encodeURIComponent(title)}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${ParentPageGroupId}`)
+          navigate(`/Draft-Process-View/${currentLevel}/${currentParentId}/${id}`)
           // navigate(`/Draft-Process-View/${currentLevel}/${currentParentId}`, { state: { id: id, title: title, user: user } })
         }
 

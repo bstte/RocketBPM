@@ -18,29 +18,27 @@ import {
 import "@xyflow/react/dist/style.css";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Header from "../../../components/Header";
-import api, { addFavProcess, checkFavProcess, removeFavProcess } from "../../../API/api";
+import api, { addFavProcess, removeFavProcess } from "../../../API/api";
 import { BreadcrumbsContext } from "../../../context/BreadcrumbsContext";
 import PublishArrowBoxNode from "../../../AllNode/PublishAllNode/PublishArrowBoxNode";
 import PublishPentagonNode from "../../../AllNode/PublishAllNode/PublishPentagonNode";
 import { useSelector } from "react-redux";
 import apiExports from "../../../API/api";
 import StickyNote from "../../../AllNode/StickyNote";
-import SharePopup from "../../../components/SharePopup";
 import VersionPopupView from "../../../components/VersionPopupView";
 import { useDynamicHeight } from "../../../hooks/useDynamicHeight";
 import useCheckFavorite from "../../../hooks/useCheckFavorite";
 import { usePageGroupIdViewer } from "../../../hooks/usePageGroupIdViewer";
 
 const DraftProcesMapLevel = () => {
-
   const [totalHeight, setTotalHeight] = useState(0);
   const [windowHeight, setWindowHeight] = useState(window.innerHeight);
   const [process_img, setprocess_img] = useState("");
   const [process_udid, setprocess_udid] = useState("");
   const [showVersionPopup, setShowVersionPopup] = useState(false);
 
-  const [checkpublish, Setcheckpublish] = useState()
-  const [showSharePopup, setShowSharePopup] = useState(false);
+  const [checkpublish, Setcheckpublish] = useState();
+  // const [showSharePopup, setShowSharePopup] = useState(false);
 
   const windowSize = {
     width: window.innerWidth - 300,
@@ -49,14 +47,16 @@ const DraftProcesMapLevel = () => {
 
   const { remainingHeight } = useDynamicHeight();
 
-
   useEffect(() => {
     const calculateHeight = () => {
-      const breadcrumbsElement = document.querySelector(".breadcrumbs-container");
+      const breadcrumbsElement = document.querySelector(
+        ".breadcrumbs-container"
+      );
       const appHeaderElement = document.querySelector(".app-header");
 
       if (breadcrumbsElement && appHeaderElement) {
-        const combinedHeight = breadcrumbsElement.offsetHeight + appHeaderElement.offsetHeight + 100;
+        const combinedHeight =
+          breadcrumbsElement.offsetHeight + appHeaderElement.offsetHeight + 100;
         setTotalHeight(combinedHeight);
       }
     };
@@ -73,25 +73,10 @@ const DraftProcesMapLevel = () => {
 
   const navigate = useNavigate();
   const { level, parentId, processId } = useParams();
-  const location = useLocation();
+  // const location = useLocation();
   const LoginUser = useSelector((state) => state.user.user);
-
-  // const { id, title, user ,ParentPageGroupId} = location.state || {};
-
-  const queryParams = new URLSearchParams(location.search);
-  const title = queryParams.get("title");
-  const ParentPageGroupId = queryParams.get("ParentPageGroupId");
-  const user = useMemo(() => {
-    try {
-      const queryParams = new URLSearchParams(location.search);
-      const userParam = queryParams.get("user");
-      return userParam ? JSON.parse(decodeURIComponent(userParam)) : null;
-    } catch (e) {
-      console.error("Failed to parse user from query", e);
-      return null;
-    }
-  }, [location.search]);
-
+  const [title, Settitle] = useState("");
+  const [user, setUser] = useState(null);
 
   const id = processId; // string
   const currentLevel = level ? parseInt(level, 10) : 0;
@@ -109,7 +94,7 @@ const DraftProcesMapLevel = () => {
     () => ({
       progressArrow: PublishArrowBoxNode,
       pentagon: PublishPentagonNode,
-      StickyNote: StickyNote
+      StickyNote: StickyNote,
     }),
     []
   );
@@ -135,22 +120,22 @@ const DraftProcesMapLevel = () => {
     [setNodes]
   );
 
-  const checkPublishData = useCallback(async (processId) => {
+  const checkPublishData = useCallback(
+    async (processId) => {
+      const levelParam =
+        currentParentId !== null
+          ? `Level${currentLevel}_${currentParentId}`
+          : `Level${currentLevel}`;
+      const Process_id = processId ? processId : null;
+      const data = await apiExports.checkPublishRecord(
+        levelParam,
+        Process_id
+      );
 
-    const levelParam =
-      currentParentId !== null
-        ? `Level${currentLevel}_${currentParentId}`
-        : `Level${currentLevel}`;
-    const user_id = user ? user.id : null;
-    const Process_id = processId ? processId : null;
-    const data = await apiExports.checkPublishRecord(
-      levelParam,
-      parseInt(user_id),
-      Process_id
-    );
-
-    return data;
-  }, [user, currentLevel, currentParentId]);
+      return data;
+    },
+    [user, currentLevel, currentParentId]
+  );
 
   useEffect(() => {
     const checkpublishfunction = async () => {
@@ -164,90 +149,98 @@ const DraftProcesMapLevel = () => {
     checkpublishfunction();
   }, [checkPublishData, id]);
 
-
-
-
-
   useEffect(() => {
-
     const fetchNodes = async () => {
       try {
         const levelParam =
           currentParentId !== null
             ? `Level${currentLevel}_${currentParentId}`
             : `Level${currentLevel}`;
-        const user_id = user ? user.id : null;
+             const user_id = LoginUser ? LoginUser.id : null;
+
         const Process_id = id ? id : null;
         const draftStatus = "Draft";
 
         const data = await api.getNodes(
           levelParam,
           parseInt(user_id),
-          Process_id
-        );
-        const getPublishedDate = await api.GetPublishedDate(
-          levelParam,
-          parseInt(user_id),
           Process_id,
-          draftStatus
+          currentParentId
+        );
+
+          if (data && data.user_id) {
+          // Construct user object based on backend logic
+          setUser({
+            id: data.actual_user_id,
+            type: data.type || "self",
+            role: data.role || "self",
+             OwnId: data.user_id,
+            actual_user_id: data.actual_user_id,
+          });
+        }
+         const PageGroupId = data.nodes?.[0]?.PageGroupId;
+
+        const getPublishedDate = await api.GetPublishedDate(
+        
+            Process_id,
+          draftStatus,
+          PageGroupId
         );
         if (getPublishedDate.status === true) {
-          setgetPublishedDate(getPublishedDate.created_at);
+          setgetPublishedDate(getPublishedDate.updated_at);
         } else {
           setgetPublishedDate("");
         }
 
-
-        setprocess_img(data.process_img)
-        setprocess_udid(data.process_uid)
-
+        setprocess_img(data.process_img);
+        setprocess_udid(data.process_uid);
+        Settitle(data.title);
         const parsedNodes = await Promise.all(
           data.nodes.map(async (node) => {
-            
-          const parsedData = JSON.parse(node.data);
-          const parsedPosition = JSON.parse(node.position);
-          const parsedMeasured = JSON.parse(node.measured);
-          const newLevel = currentLevel + 1;
-          const levelParam =
-            node.node_id !== null
-              ? `Level${newLevel}_${node.node_id}`
-              : `Level${currentLevel}`;
-          const user_id = user ? user.id : null;
-          const Process_id = id ? id : null;
-          let hasNextLevel = false;
-          try {
-            const check = await api.checkRecord(levelParam, parseInt(user_id), Process_id);
-           
-            hasNextLevel = check?.status === true;
-          } catch (e) {
-            console.error("checkRecord error", e);
-          }
-          return {
-            ...node,
-            data: {
-              ...parsedData,
-              onLabelChange: (newLabel) =>
-                handleLabelChange(node.node_id, newLabel),
+            const parsedData = JSON.parse(node.data);
+            const parsedPosition = JSON.parse(node.position);
+            const parsedMeasured = JSON.parse(node.measured);
+            const newLevel = currentLevel + 1;
+            const levelParam =
+              node.node_id !== null
+                ? `Level${newLevel}_${node.node_id}`
+                : `Level${currentLevel}`;
+            const Process_id = id ? id : null;
+            let hasNextLevel = false;
+            try {
+              const check = await api.checkRecord(
+                levelParam,
+                Process_id
+              );
 
-              width_height: parsedMeasured,
-              autoFocus: true,
-              node_id: node.node_id,
-              nodeResize: true,
-              LinkToStatus: node.LinkToStatus,
-              hasNextLevel,
+              hasNextLevel = check?.status === true;
+            } catch (e) {
+              console.error("checkRecord error", e);
+            }
+            return {
+              ...node,
+              data: {
+                ...parsedData,
+                onLabelChange: (newLabel) =>
+                  handleLabelChange(node.node_id, newLabel),
 
-            },
-            type: node.type,
-            id: node.node_id,
+                width_height: parsedMeasured,
+                autoFocus: true,
+                node_id: node.node_id,
+                nodeResize: true,
+                LinkToStatus: node.LinkToStatus,
+                hasNextLevel,
+              },
+              type: node.type,
+              id: node.node_id,
 
-            measured: parsedMeasured,
-            position: parsedPosition,
-            draggable: false,
-            animated: false,
-          };
-       
-        })
-      );
+              measured: parsedMeasured,
+              position: parsedPosition,
+              draggable: false,
+              animated: false,
+            };
+          })
+        );
         const parsedEdges = data.edges.map((edge) => ({
           ...edge,
           animated: Boolean(edge.animated),
@@ -272,7 +265,6 @@ const DraftProcesMapLevel = () => {
     setNodes,
     setEdges,
     currentParentId,
-    user,
     id,
   ]);
 
@@ -281,44 +273,46 @@ const DraftProcesMapLevel = () => {
     nodes,
     setIsFavorite,
   });
+useEffect(() => {
+  if (!title) return; // Wait until title is available
 
-  useEffect(() => {
-    const label = currentLevel === 0 ? title : title;
-    const path =
-      currentLevel === 0
-        ? `/Draft-Process-View/${id}?title=${encodeURIComponent(title)}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${ParentPageGroupId}`
-        : `/Draft-Process-View/${currentLevel}/${currentParentId}/${id}?title=${encodeURIComponent(title)}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${ParentPageGroupId}`;
+  const label = currentLevel === 0 ? title : title;
+  const path =
+    currentLevel === 0
+      ? `/Draft-Process-View/${id}`
+      : `/Draft-Process-View/${currentLevel}/${currentParentId}/${id}`;
 
+  const state = { id, title };
 
-    const state = {
-      id: id,
-      title: title,
-      user: user,
-    };
-
+  // ✅ Prevent duplicate breadcrumb (important)
+  const exists = breadcrumbs.some((b) => b.path === path);
+  if (!exists) {
     if (currentLevel >= 0 && isNavigating) {
-      // Ensure the 0th breadcrumb is not removed
       const safeIndex = Math.max(1, currentLevel - 1);
       removeBreadcrumbsAfter(safeIndex);
     }
 
     addBreadcrumb(label, path, state);
+  }
+  setIsNavigating(false);
+}, [
+  currentLevel,
+  isNavigating,
+  currentParentId,
+  addBreadcrumb,
+  removeBreadcrumbsAfter,
+  id,
+  title,
+  breadcrumbs, // ✅ include breadcrumbs here
+]);
 
-    setIsNavigating(false);
-  }, [
-    currentLevel,
-    isNavigating,
-    currentParentId,
-    ParentPageGroupId,
-    addBreadcrumb,
-    removeBreadcrumbsAfter,
-    id,
-    title,
-    user,
-  ]);
+  useEffect(() => {
+    const stateTitle = title;
+    setHeaderTitle(`${stateTitle}`);
+  }, [currentLevel, title]);
 
   const handlenodeClick = async (event, node) => {
-    console.log("node", node?.type)
+  
     if (node?.type === "StickyNote") {
       return;
     }
@@ -327,64 +321,60 @@ const DraftProcesMapLevel = () => {
     // const PageGroupId = node.PageGroupId;
     const newLevel = currentLevel + 1;
     const levelParam =
-      node.id !== null
-        ? `Level${newLevel}_${node.id}`
-        : `Level${currentLevel}`;
-    const user_id = user ? user.id : null;
+      node.id !== null ? `Level${newLevel}_${node.id}` : `Level${currentLevel}`;
     const Process_id = id ? id : null;
     const data = await api.checkRecord(
       levelParam,
-      parseInt(user_id),
       Process_id
     );
 
     if (data.status === true) {
       if (data.Page_Title === "ProcessMap") {
-      
         navigate(
-          `/Draft-Process-View/${newLevel}/${node.id}/${id}?title=${selectedLabel}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${nodes[0]?.PageGroupId}`
-        )
+          `/Draft-Process-View/${newLevel}/${node.id}/${id}`
+        );
       }
 
       if (data.Page_Title === "Swimlane") {
         addBreadcrumb(
           `${selectedLabel} `,
-          `/Draft-Swim-lanes-View/level/${newLevel}/${node.id}/${id}?title=${encodeURIComponent(selectedLabel)}&user=${encodeURIComponent(JSON.stringify(user))}&parentId=${node.id}&level=${newLevel}&ParentPageGroupId=${nodes[0]?.PageGroupId}`
+          `/Draft-Swim-lanes-View/level/${newLevel}/${
+            node.id
+          }/${id}`
         );
-        navigate(`/Draft-Swim-lanes-View/level/${newLevel}/${node.id}/${id}?title=${encodeURIComponent(selectedLabel)}&user=${encodeURIComponent(JSON.stringify(user))}&parentId=${node.id}&level=${newLevel}&ParentPageGroupId=${nodes[0]?.PageGroupId}`)
-
-
+        navigate(
+          `/Draft-Swim-lanes-View/level/${newLevel}/${
+            node.id
+          }/${id}`
+        );
       }
     } else {
-      alert("Next level not exist")
+      alert("Next level not exist");
     }
-
-  }
-
+  };
 
   const onConnect = useCallback((connection) => {
-    // Your callback logic here
+  
     console.log("Connected:", connection);
   }, []);
-
-  useEffect(() => {
-    const stateTitle = location.state?.title || title;
-    setHeaderTitle(`${stateTitle}`);
-  }, [location.state, currentLevel, title]);
 
 
   const iconNames = {};
 
   const navigateOnDraft = (page) => {
-
     const updatedBreadcrumbs = breadcrumbs.map((crumb, index) => {
       if (index === 0) return crumb; // First breadcrumb remains unchanged
 
       return {
         ...crumb,
-        path: page === "editdraft"
-          ? crumb.path.replace("published-map-level", "Draft-Process-View").replace("Map-level", "Draft-Process-View")
-          : crumb.path.replace("Draft-Process-View", "published-map-level").replace("Draft-Process-View", "Map-level")
+        path:
+          page === "editdraft"
+            ? crumb.path
+                .replace("published-map-level", "Draft-Process-View")
+                .replace("Map-level", "Draft-Process-View")
+            : crumb.path
+                .replace("Draft-Process-View", "published-map-level")
+                .replace("Draft-Process-View", "Map-level"),
       };
     });
 
@@ -392,33 +382,27 @@ const DraftProcesMapLevel = () => {
     if (id && user) {
       if (currentLevel === 0) {
         page === "editdraft"
-          ? navigate(`/map-level/${id}?title=${encodeURIComponent(title || "")}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${ParentPageGroupId}`)
-          :
-          // navigate('/published-map-level', { state: { id, title, user,ParentPageGroupId } });
-          navigate(`/published-map-level/${id}?title=${title}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${ParentPageGroupId}`)
-
+          ? navigate(
+              `/map-level/${id}`
+            )
+          : 
+            navigate(
+              `/published-map-level/${id}`
+            );
       } else {
         page === "editdraft"
-          ? navigate(`/level/${currentLevel}/${currentParentId}/${id}?title=${encodeURIComponent(title || "")}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${ParentPageGroupId}`)
-
+          ? navigate(
+              `/level/${currentLevel}/${currentParentId}/${id}`
+            )
           :
-
-          // navigate(`/published-map-level/${currentLevel}/${currentParentId}`, { state: { id, title, user,ParentPageGroupId } });
-          navigate(`/published-map-level/${currentLevel}/${currentParentId}/${id}?title=${encodeURIComponent(title)}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${ParentPageGroupId}`)
+            navigate(
+              `/published-map-level/${currentLevel}/${currentParentId}/${id}`
+            );
       }
     } else {
       alert("Currently not navigate on draft mode");
     }
   };
-
-
-
-  // ye common page h
-  const navigateToVersion = (process_id, level, version) => {
-    const encodedTitle = encodeURIComponent("ProcessMap");
-    navigate(`/Draft-Process-Version/${process_id}/${level}/${version}/${encodedTitle}`);
-  };
-
 
   const styles = {
     appContainer: {
@@ -445,14 +429,10 @@ const DraftProcesMapLevel = () => {
       height: "100%",
     },
   };
-  const handleShareClick = () => {
-    setShowSharePopup(true);
-    console.log("breadcrumbs", breadcrumbs)
-  };
+
   const handleVersionClick = () => {
     setShowVersionPopup(true);
   };
-
 
   const handleFav = async () => {
     const user_id = LoginUser ? LoginUser.id : null;
@@ -466,15 +446,23 @@ const DraftProcesMapLevel = () => {
 
     const PageGroupId = nodes[0]?.PageGroupId;
 
-
     try {
       if (isFavorite) {
-
-        const response = await removeFavProcess(user_id, process_id, PageGroupId);
+        const response = await removeFavProcess(
+          user_id,
+          process_id,
+          PageGroupId
+        );
         setIsFavorite(false);
         console.log("Removed from favorites:", response);
       } else {
-        const response = await addFavProcess(user_id, process_id, type, PageGroupId, currentParentId);
+        const response = await addFavProcess(
+          user_id,
+          process_id,
+          type,
+          PageGroupId,
+          currentParentId
+        );
         setIsFavorite(true);
         console.log("Added to favorites:", response);
       }
@@ -498,21 +486,19 @@ const DraftProcesMapLevel = () => {
         Page={"ViewDraftmodel"}
         isFavorite={isFavorite}
         Process_img={process_img}
-        Procesuser={user}
+      Procesuser={user || { id: null, role: "self", type: "self" }}
         checkpublish={checkpublish}
-        onShare={() => handleShareClick()}
         onShowVersion={handleVersionClick}
         savefav={handleFav}
-        showSharePopup={showSharePopup}
-
       />
       <ReactFlowProvider>
-        <div className="app-container" style={{ ...styles.appContainer, height: remainingHeight }}>
+        <div
+          className="app-container"
+          style={{ ...styles.appContainer, height: remainingHeight }}
+        >
           <div className="content-wrapper" style={styles.contentWrapper}>
-
             <div className="flow-container" style={styles.flowContainer}>
-
-            <div
+              <div
                 style={{
                   position: "absolute",
                   top: "50%",
@@ -557,8 +543,7 @@ const DraftProcesMapLevel = () => {
               ></ReactFlow>
             </div>
           </div>
-     {usePageGroupIdViewer(nodes)}
-
+          {usePageGroupIdViewer(nodes)}
         </div>
         {showVersionPopup && (
           <VersionPopupView
@@ -570,15 +555,11 @@ const DraftProcesMapLevel = () => {
             title={headerTitle}
             status={"draft"}
             type={"ProcessMaps"}
-
           />
         )}
-
       </ReactFlowProvider>
     </div>
   );
 };
-
-
 
 export default DraftProcesMapLevel;

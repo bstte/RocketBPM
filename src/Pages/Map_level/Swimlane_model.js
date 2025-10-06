@@ -61,25 +61,12 @@ const SwimlaneModel = () => {
   });
   const { level, parentId, processId } = useParams();
   const t = useTranslation();
-  const location = useLocation();
+  // const location = useLocation();
   const navigate = useNavigate();
-  // const { id, title, user, parentId, level, ParentPageGroupId } =
-  //   location.state || {};
+  const [title, Settitle] = useState("");
+  const [ParentPageGroupId, SetParentPageGroupId] = useState(null);
 
-  const queryParams = new URLSearchParams(location.search);
-  const title = queryParams.get("title");
-  const ParentPageGroupId = queryParams.get("ParentPageGroupId");
-  const user = useMemo(() => {
-    try {
-      const queryParams = new URLSearchParams(location.search);
-      const userParam = queryParams.get("user");
-      return userParam ? JSON.parse(decodeURIComponent(userParam)) : null;
-    } catch (e) {
-      console.error("Failed to parse user from query", e);
-      return null;
-    }
-  }, [location.search]);
-
+  const [user, setUser] = useState(null);
   const id = processId; // string
   const headerTitle = `${title} `;
   const currentParentId = parentId || null;
@@ -103,7 +90,6 @@ const SwimlaneModel = () => {
   const [KeepOldPosition, setKeepOldPosition] = useState(null);
   const [isFavorite, setIsFavorite] = useState(false);
   const [process_img, setprocess_img] = useState("");
-  const [StickyNoteModeltext, setStickyNoteModeltext] = useState("");
   const LoginUser = useSelector((state) => state.user.user);
   const { height, appHeaderHeight, remainingHeight } = useDynamicHeight();
 
@@ -275,31 +261,39 @@ const SwimlaneModel = () => {
           currentParentId !== null
             ? `Level${currentLevel}_${currentParentId}`
             : `Level${currentLevel}`;
-        const user_id = user ? user.id : null;
+       const user_id = LoginUser ? LoginUser.id : null;
         const Process_id = id ? id : null;
+          const publishedStatus = "Published";
+        const draftStatus = "Draft";
+          const data = await api.getNodes(levelParam, parseInt(user_id), Process_id, currentParentId);
 
-        const [publishedResponse, draftResponse, data] = await Promise.all([
-          api.GetPublishedDate(
-            levelParam,
-            parseInt(user_id),
-            Process_id,
-            "Published"
-          ),
-          api.GetPublishedDate(
-            levelParam,
-            parseInt(user_id),
-            Process_id,
-            "Draft"
-          ),
-          api.getNodes(levelParam, parseInt(user_id), Process_id),
-        ]);
+              const PageGroupId = data.nodes?.[0]?.PageGroupId;
+ 
+        const [publishedResponse, draftResponse] = await Promise.all([
+      api.GetPublishedDate(Process_id, publishedStatus, PageGroupId),
+      api.GetPublishedDate(Process_id, draftStatus, PageGroupId),
+    ]);
+
         setgetPublishedDate(
-          publishedResponse.status ? publishedResponse.created_at || "" : ""
+          publishedResponse.status ? publishedResponse.updated_at || "" : ""
         );
         setDraftedDate(
-          draftResponse.status ? draftResponse.created_at || "" : ""
+          draftResponse.status ? draftResponse.updated_at || "" : ""
         );
+
+         if (data && data.user_id) {
+          // Construct user object based on backend logic
+          setUser({
+            id: data.actual_user_id,
+            type: data.type || "self",
+            role: data.role || "self",
+             OwnId: data.user_id,
+            actual_user_id: data.actual_user_id,
+          });
+        }
         setprocess_img(data.process_img);
+           Settitle(data.title);
+        SetParentPageGroupId(data.PageGroupId);
         // setprocess_udid(data.process_uid)
         setprocessDefaultlanguage_id(data.processDefaultlanguage_id);
 
@@ -425,9 +419,6 @@ const SwimlaneModel = () => {
           };
         });
 
-        // isInitialLoad.current = false;
-        console.log("on load time data", data);
-                console.log("data", parsedNodes);
 
         setChiledNodes(parsedNodes);
         setEdges(parsedEdges);
@@ -444,7 +435,7 @@ const SwimlaneModel = () => {
     setNodes,
     setEdges,
     currentParentId,
-    user,
+
     id,
     windowSize,
   ]);
@@ -708,13 +699,11 @@ const SwimlaneModel = () => {
   const memoizedEdgeTypes = useMemo(() => edgeTypes, [edgeTypes]);
 
   const handleSaveNodes = async (savetype) => {
-    console.log("ChildNodes", ChildNodes);
-    // console.log("edges", edges);
-
+   
     if (savetype === "Published" && currentLevel !== 0) {
       try {
         const response = await filter_draft(ParentPageGroupId);
-        // console.log("inside first", response)
+      
         if (response.data === true) {
           alert("Publish all parent models first");
           return false;
@@ -823,35 +812,6 @@ const SwimlaneModel = () => {
     setIsPopupOpen(false);
     setSelectedNodeId(null);
   };
-
-  // const updateNodeDetails = (nodeId, newDetails) => {
-
-  //   setChiledNodes((nodes) =>
-  //     nodes.map((node) =>
-  //       node.node_id === nodeId
-  //         ? {
-  //           ...node,
-  //           data: {
-  //             ...node.data,
-  //             details: {
-  //               title: newDetails.title,
-  //               content: newDetails.content,
-  //             },
-  //           },
-  //         }
-  //         : node
-  //     )
-  //   );
-  // };
-
-  // const saveDetails = (details) => {
-  //   if (selectedNodeId) {
-  //     updateNodeDetails(selectedNodeId, details);
-  //     setSelectedNodeId(null);
-  //     setHasUnsavedChanges(true);
-  //   }
-  //   closePopup();
-  // };
 
   const saveDetails = (details) => {
     const langKey = langMap[processDefaultlanguage_id] || "en";
@@ -1364,35 +1324,20 @@ const SwimlaneModel = () => {
                   const user = { id: node.user_id };
 
                   // ✅ URL banao
-                  const url = `/Draft-Process-View/${newLevel}/${node_id}/${process_id}?title=${encodeURIComponent(
-                    label
-                  )}&user=${encodeURIComponent(
-                    JSON.stringify(user)
-                  )}&ParentPageGroupId=${node.PageGroupId}`;
-                  console.log("addbreadcrums time", node);
-                  // ✅ Breadcrumb add karo
+                  const url = `/Draft-Process-View/${newLevel}/${node_id}/${process_id}`;
+                 
                   addBreadcrumb(label, url);
                 });
               }
 
               if (nodeData.Page_Title === "ProcessMap") {
                 navigate(
-                  `/Draft-Process-View/${newLevel}/${nodelink}/${id}?title=${encodeURIComponent(
-                    nodeDataParsed.label || ""
-                  )}&user=${encodeURIComponent(
-                    JSON.stringify(user)
-                  )}&ParentPageGroupId=${response.data[0]?.PageGroupId}`
+                  `/Draft-Process-View/${newLevel}/${nodelink}/${id}`
                 );
               }
               if (nodeData.Page_Title === "Swimlane") {
                 navigate(
-                  `/Draft-Swim-lanes-View/level/${newLevel}/${nodelink}/${id}?title=${encodeURIComponent(
-                    nodeDataParsed.label || ""
-                  )}&user=${encodeURIComponent(
-                    JSON.stringify(user)
-                  )}&parentId=${nodelink}&level=${newLevel}&ParentPageGroupId=${
-                    response.data[0]?.PageGroupId
-                  }`
+                  `/Draft-Swim-lanes-View/level/${newLevel}/${nodelink}/${id}`
                 );
               }
             } else {
@@ -1645,11 +1590,7 @@ const SwimlaneModel = () => {
     if (confirmcondition) {
       if (id && user) {
         navigate(
-          `/Draft-Swim-lanes-View/level/${currentLevel}/${currentParentId}/${id}?title=${encodeURIComponent(
-            title
-          )}&user=${encodeURIComponent(
-            JSON.stringify(user)
-          )}&parentId=${currentParentId}&level=${currentLevel}&ParentPageGroupId=${ParentPageGroupId}`
+          `/Draft-Swim-lanes-View/level/${currentLevel}/${currentParentId}/${id}`
         );
       } else {
         alert("Currently not navigate on draft mode");

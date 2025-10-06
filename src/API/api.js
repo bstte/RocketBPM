@@ -43,13 +43,14 @@ export const getNextPageGroupId = async () => {
   }
 };
 
-export const getNodes = async (level = null, user_id = null, Process_id = null) => {
+export const getNodes = async (level = null, user_id = null, Process_id = null,currentParentId=null) => {
   try {
     const response = await api.get('/nodes', {
       params: {
         level,
         user_id,
-        Process_id
+        Process_id,
+        currentParentId
       }
     });
     return response.data;
@@ -93,12 +94,11 @@ export const getexistingrole = async (level = null, user_id = null, Process_id =
 };
 
 
-export const checkRecord = async (level = null, user_id = null, Process_id = null) => {
+export const checkRecord = async (level = null,  Process_id = null) => {
   try {
     const response = await api.get('/check-record', {
       params: {
         level,
-        user_id,
         Process_id
       }
     });
@@ -144,12 +144,11 @@ export const checkRecordWithGetLinkPublishData = async (level = null, user_id = 
   }
 };
 
-export const checkPublishRecord = async (level = null, user_id = null, Process_id = null) => {
+export const checkPublishRecord = async (level = null, Process_id = null) => {
   try {
     const response = await api.get('/checkPublishRecord', {
       params: {
         level,
-        user_id,
         Process_id
       }
     });
@@ -161,12 +160,10 @@ export const checkPublishRecord = async (level = null, user_id = null, Process_i
 };
 
 
-export const GetPublishedDate = async (level = null, user_id = null, Process_id = null, status = null,PageGroupId=null) => {
+export const GetPublishedDate = async ( Process_id = null, status = null,PageGroupId=null) => {
   try {
     const response = await api.get('/GetPublishedDate', {
       params: {
-        level,
-        user_id,
         Process_id,
         status,
         PageGroupId
@@ -196,13 +193,14 @@ export const getUserNodes = async (user_id = null) => {
 
 
 
-export const getPublishedNodes = async (level = null, user_id = null, Process_id = null) => {
+export const getPublishedNodes = async (level = null, user_id = null, Process_id = null,currentParentId=null) => {
   try {
     const response = await api.get('/Publishnodes', {
       params: {
         level,
         user_id,
-        Process_id
+        Process_id,
+        currentParentId
       }
     });
     return response.data;
