@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
+import { useLangMap } from "./useLangMap"; // same hook as TranslationPopup
 
 const overlayStyle = {
   position: "fixed",
@@ -30,34 +31,41 @@ const rowStyle = {
   marginBottom: 20,
 };
 
-// ✅ Normalizer (always return title + content)
-const normalize = (vals) => ({
-  en: { title: vals?.en?.title || "", content: vals?.en?.content || "" },
-  de: { title: vals?.de?.title || "", content: vals?.de?.content || "" },
-  es: { title: vals?.es?.title || "", content: vals?.es?.content || "" },
-});
-
 export default function TranslationTextAreaPopup({
   isOpen,
   onClose,
   onSubmit,
   defaultValues = {},
   title = "Translate Content",
+  supportedLanguages = [], // array of language IDs e.g. [1, 2, 3]
 }) {
-  const [values, setValues] = useState(() => normalize(defaultValues));
+  const langMap = useLangMap(); // same hook used in first component
+  const [values, setValues] = useState({});
   const firstInputRef = useRef(null);
 
+  // create default structure dynamically
   useEffect(() => {
     if (isOpen) {
-      setValues(normalize(defaultValues));
+      const dynamicDefaults = supportedLanguages.reduce((acc, langId) => {
+        const langKey = langMap[langId] || `lang_${langId}`;
+        acc[langKey] = {
+          title: defaultValues?.[langKey]?.title || "",
+          content: defaultValues?.[langKey]?.content || "",
+        };
+        return acc;
+      }, {});
+      setValues(dynamicDefaults);
       setTimeout(() => firstInputRef.current?.focus(), 0);
     }
-  }, [isOpen, defaultValues]);
+  }, [isOpen, defaultValues, supportedLanguages, langMap]);
 
   if (!isOpen) return null;
 
-  const handleChange = (lang, field, value) =>
-    setValues((s) => ({ ...s, [lang]: { ...s[lang], [field]: value } }));
+  const handleChange = (langKey, field, value) =>
+    setValues((s) => ({
+      ...s,
+      [langKey]: { ...s[langKey], [field]: value },
+    }));
 
   const handleSubmit = () => {
     onSubmit?.(values);
@@ -76,21 +84,6 @@ export default function TranslationTextAreaPopup({
       ["clean"],
     ],
   };
-
-  const renderLanguageSection = (langCode, label, ref = null) => (
-    <div style={rowStyle} key={langCode}>
-      <label style={{ fontSize: 12, fontWeight: 600 }}>{label}</label>
-
-     
-      {/* Content editor */}
-      <ReactQuill
-        value={values[langCode].content}
-        onChange={(val) => handleChange(langCode, "content", val)}
-        modules={quillModules}
-        placeholder={`Enter ${label} content`}
-      />
-    </div>
-  );
 
   return (
     <div style={overlayStyle} onMouseDown={handleOverlayClick}>
@@ -120,10 +113,24 @@ export default function TranslationTextAreaPopup({
           </button>
         </div>
 
-        {/* Language Sections */}
-        {renderLanguageSection("en", "English (en)", firstInputRef)}
-        {renderLanguageSection("de", "German (de)")}
-        {renderLanguageSection("es", "Spanish (es)")}
+        {/* Dynamic Language Sections */}
+        {supportedLanguages.map((langId, idx) => {
+          const langKey = langMap[langId] || `lang_${langId}`;
+          const label = langKey.toUpperCase();
+
+          return (
+            <div key={langKey} style={rowStyle}>
+              <label style={{ fontSize: 12, fontWeight: 600 }}>{label}</label>
+
+              <ReactQuill
+                value={values[langKey]?.content || ""}
+                onChange={(val) => handleChange(langKey, "content", val)}
+                modules={quillModules}
+                placeholder={`Enter ${label} content`}
+              />
+            </div>
+          );
+        })}
 
         {/* Buttons */}
         <div

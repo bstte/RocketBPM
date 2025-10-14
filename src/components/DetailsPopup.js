@@ -5,8 +5,9 @@ import "react-quill/dist/quill.snow.css";
 import "../Css/DetailsPopup.css";
 import { ResizableBox } from "react-resizable";
 import TranslationTextAreaPopup from "../hooks/TranslationTextAreaPopup";
+import { useLangMap } from "../hooks/useLangMap";
 
-const DetailsPopup = ({ isOpen, onClose, onSave, Details }) => {
+const DetailsPopup = ({ isOpen, onClose, onSave, Details,supportedLanguages,selectedLanguage }) => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [popupSize, setPopupSize] = useState({ width: 600, height: 450 });
@@ -14,6 +15,7 @@ const DetailsPopup = ({ isOpen, onClose, onSave, Details }) => {
   const [editorHeight, setEditorHeight] = useState(450);
   const [showTranslationPopup, setShowTranslationPopup] = useState(false);
   const [translations, setTranslations] = useState({});
+  const langMap = useLangMap(); // same hook used in first component
 
   useEffect(() => {
     const updateMaxConstraints = () => {
@@ -27,22 +29,27 @@ const DetailsPopup = ({ isOpen, onClose, onSave, Details }) => {
   }, []);
 
 useEffect(() => {
-  if (isOpen && Details) {
-    setTitle(
+
+      if (isOpen && Details) {
+          setTitle(
       Details.data.details.title?.replace(/<br\s*\/?>/gi, " ").replace(/&nbsp;/g, " ") || ""
     );
-    setContent(Details.data.details.content || ""); 
+      const allTranslations =
+        Details.data.details.translations || {
+          en: { title: "", content: "" },
+          de: { title: "", content: "" },
+          es: { title: "", content: "" },
+        };
 
-    // ✅ details.translations ko load karo (agar hai)
-    setTranslations(
-      Details.data.details.translations || { 
-        en: { title: "", content: "" }, 
-        de: { title: "", content: "" }, 
-        es: { title: "", content: "" } 
-      }
-    );
-  }
-}, [Details, isOpen]);
+      setTranslations(allTranslations);
+
+  
+      const langKey = langMap[selectedLanguage] || "en";
+      setContent(allTranslations[langKey]?.content || "");
+    }
+
+
+  }, [isOpen, Details, selectedLanguage]);
 
 
   if (!isOpen) return null;
@@ -51,13 +58,25 @@ useEffect(() => {
     setTitle(e.target.value);
   };
 
+  // const handleContentChange = (value) => {
+  //   setContent(value);
+  // };
+
   const handleContentChange = (value) => {
-    setContent(value);
-  };
+  setContent(value);
+
+  setTranslations((prev) => {
+    const langKey = langMap[selectedLanguage] || "en";
+    return {
+      ...prev,
+      [langKey]: { ...prev[langKey], content: value },
+    };
+  });
+};
 
   const handleSave = () => {
     if (onSave) {
-      onSave({ title, content, translations }); // ⬅️ translations bhi bhejo
+      onSave({ title, content, translations }); 
     }
     setContent("");
     setTitle("");
@@ -167,10 +186,19 @@ useEffect(() => {
           isOpen={showTranslationPopup}
           onClose={() => setShowTranslationPopup(false)}
           defaultValues={translations}
-          onSubmit={(values) => {
-            setTranslations(values); // state update
-            setShowTranslationPopup(false);
-          }}
+      onSubmit={(values) => {
+  setTranslations(values);
+
+  // get the current language key
+  const langKey = langMap[selectedLanguage] || "en";
+
+  // update the visible content immediately
+  setContent(values[langKey]?.content || "");
+
+  setShowTranslationPopup(false);
+}}
+
+          supportedLanguages={supportedLanguages}
         />
             )}
     </>

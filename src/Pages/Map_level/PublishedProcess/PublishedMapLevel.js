@@ -26,6 +26,7 @@ import { useSelector } from "react-redux";
 import VersionPopupView from "../../../components/VersionPopupView";
 import useCheckFavorite from "../../../hooks/useCheckFavorite";
 import { usePageGroupIdViewer } from "../../../hooks/usePageGroupIdViewer";
+import { useLangMap } from "../../../hooks/useLangMap";
 
 const PublishedMapLevel = () => {
   const [totalHeight, setTotalHeight] = useState(0);
@@ -34,7 +35,7 @@ const PublishedMapLevel = () => {
     width: window.innerWidth - 300,
     height: window.innerHeight - 300,
   };
-
+ const langMap = useLangMap();
   const [remainingHeight, setRemainingHeight] = useState(0);
 
   const LoginUser = useSelector((state) => state.user.user);
@@ -84,9 +85,11 @@ const PublishedMapLevel = () => {
   const [title, Settitle] = useState("");
   // const [ParentPageGroupId, SetParentPageGroupId] = useState(null);
   const [user, setUser] = useState(null);
-
+  const [supportedLanguages, setSupportedLanguages] = useState([]);
   const id = processId;
-
+ const [processDefaultlanguage_id, setprocessDefaultlanguage_id] =
+    useState(null);
+    
   const currentLevel = level ? parseInt(level, 10) : 0;
   const currentParentId = parentId || null;
   const { addBreadcrumb, removeBreadcrumbsAfter, breadcrumbs, setBreadcrumbs } =
@@ -128,7 +131,19 @@ const PublishedMapLevel = () => {
   );
 
   useEffect(() => {
-    const fetchNodes = async () => {
+    
+
+    fetchNodes();
+  }, [
+    currentLevel,
+    handleLabelChange,
+    setNodes,
+    setEdges,
+    currentParentId,
+    id,
+  ]);
+
+  const fetchNodes = async (language_id =null) => {
       try {
         const levelParam =
           currentParentId !== null
@@ -142,7 +157,8 @@ const PublishedMapLevel = () => {
           levelParam,
           parseInt(user_id),
           Process_id,
-          currentParentId
+          currentParentId,
+          language_id
         );
         // ✅ Set user from backend response
         if (data && data.user_id) {
@@ -167,8 +183,8 @@ const PublishedMapLevel = () => {
           setgetPublishedDate("");
         }
         Settitle(data.title);
-
-        // SetParentPageGroupId(data.PageGroupId);
+  setprocessDefaultlanguage_id(data.processDefaultlanguage_id);
+          setSupportedLanguages(data.ProcessSupportLanguage);
         setprocess_img(data.process_img);
         const parsedNodes = await Promise.all(
           data.nodes
@@ -238,16 +254,10 @@ const PublishedMapLevel = () => {
       }
     };
 
-    fetchNodes();
-  }, [
-    currentLevel,
-    handleLabelChange,
-    setNodes,
-    setEdges,
-    currentParentId,
-    id,
-  ]);
-
+    
+  const handleSupportViewlangugeId=(langId)=>{
+     fetchNodes(langId);
+  }
   useCheckFavorite({
     id,
     nodes,
@@ -435,6 +445,7 @@ const PublishedMapLevel = () => {
     }
   };
 
+
   return (
     <div>
       <Header
@@ -453,7 +464,11 @@ const PublishedMapLevel = () => {
         Procesuser={user}
         onShowVersion={handleVersionClick}
         savefav={handleFav}
+        handleSupportViewlangugeId={handleSupportViewlangugeId}
+        supportedLanguages={supportedLanguages}
+        selectedLanguage={processDefaultlanguage_id}
       />
+     
       <ReactFlowProvider>
         <div
           className="app-container"

@@ -4,6 +4,7 @@ import React, {
   useMemo,
   useEffect,
   useContext,
+  useRef,
 } from "react";
 import {
   ReactFlow,
@@ -23,7 +24,13 @@ import Header from "../../components/Header";
 import Popup from "../../components/Popup";
 import ArrowBoxNode from "../../AllNode/ArrowBoxNode";
 import PentagonNode from "../../AllNode/PentagonNode";
-import api, { addFavProcess, filter_draft, getNextPageGroupId, removeFavProcess, saveProcessInfo } from "../../API/api";
+import api, {
+  addFavProcess,
+  filter_draft,
+  getNextPageGroupId,
+  removeFavProcess,
+  saveProcessInfo,
+} from "../../API/api";
 import { BreadcrumbsContext } from "../../context/BreadcrumbsContext";
 import CustomContextMenu from "../../components/CustomContextMenu";
 import CustomAlert from "../../components/CustomAlert";
@@ -42,13 +49,17 @@ const MapLevel = () => {
   const [selectedNodeId, setSelectedNodeId] = useState(null);
   const [checkpublish, Setcheckpublish] = useState(true);
   const { remainingHeight } = useDynamicHeight();
+  const [supportedLanguages, setSupportedLanguages] = useState([]);
 
   useEffect(() => {
     const calculateHeight = () => {
-      const breadcrumbsElement = document.querySelector(".breadcrumbs-container");
+      const breadcrumbsElement = document.querySelector(
+        ".breadcrumbs-container"
+      );
       const appHeaderElement = document.querySelector(".app-header");
       if (breadcrumbsElement && appHeaderElement) {
-        const combinedHeight = breadcrumbsElement.offsetHeight + appHeaderElement.offsetHeight + 100;
+        const combinedHeight =
+          breadcrumbsElement.offsetHeight + appHeaderElement.offsetHeight + 100;
         setTotalHeight(combinedHeight);
       }
     };
@@ -67,20 +78,24 @@ const MapLevel = () => {
   const location = useLocation();
   const LoginUser = useSelector((state) => state.user.user);
   const [showTranslationPopup, setShowTranslationPopup] = useState(false);
-  const [translationDefaults, setTranslationDefaults] = useState({ en: "", de: "", es: "" });
+  const [translationDefaults, setTranslationDefaults] = useState({
+    en: "",
+    de: "",
+    es: "",
+  });
 
   const langMap = useLangMap();
   const [title, Settitle] = useState("");
   const [ParentPageGroupId, SetParentPageGroupId] = useState(null);
-    const [user, setUser] = useState(null);
-
+  const [user, setUser] = useState(null);
 
   const id = processId; // string
   const currentLevel = level ? parseInt(level, 10) : 0;
   const [showVersionPopup, setShowVersionPopup] = useState(false);
 
   const currentParentId = parentId || null;
-  const { addBreadcrumb, removeBreadcrumbsAfter,breadcrumbs } = useContext(BreadcrumbsContext);
+  const { addBreadcrumb, removeBreadcrumbsAfter, breadcrumbs } =
+    useContext(BreadcrumbsContext);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -91,7 +106,8 @@ const MapLevel = () => {
   const [getPublishedDate, setgetPublishedDate] = useState("");
   const [getDraftedDate, setDraftedDate] = useState("");
   const [process_img, setprocess_img] = useState("");
-  const [processDefaultlanguage_id, setprocessDefaultlanguage_id] = useState(null);
+  const [processDefaultlanguage_id, setprocessDefaultlanguage_id] =
+    useState(null);
   const [versionPopupPayload, setversionPopupPayload] = useState("");
 
   const [contextMenuPosition, setContextMenuPosition] = useState({
@@ -109,9 +125,19 @@ const MapLevel = () => {
   const [isFavorite, setIsFavorite] = useState(false);
   const memoizedNodeTypes = useMemo(
     () => ({
-      progressArrow: (props) => <ArrowBoxNode {...props} selectedNodeId={selectedNodeId} />,
-      pentagon: (props) => <PentagonNode {...props} selectedNodeId={selectedNodeId} />,
-      StickyNote: (props) => <StickyNote {...props} selectedNodeId={selectedNodeId} editable={true} />,
+      progressArrow: (props) => (
+        <ArrowBoxNode {...props} selectedNodeId={selectedNodeId} />
+      ),
+      pentagon: (props) => (
+        <PentagonNode {...props} selectedNodeId={selectedNodeId} />
+      ),
+      StickyNote: (props) => (
+        <StickyNote
+          {...props}
+          selectedNodeId={selectedNodeId}
+          editable={true}
+        />
+      ),
     }),
     [selectedNodeId]
   );
@@ -123,33 +149,27 @@ const MapLevel = () => {
     }),
     []
   );
+ 
+  const processLangRef = useRef(processDefaultlanguage_id);
+const langMapRef = useRef(langMap);
+
   useEffect(() => {
-    const checkpublishfunction = async () => {
-      if (currentLevel !== 0) {
-        try {
-          const response = await filter_draft(ParentPageGroupId);
-          if (response?.data === true) {
-            Setcheckpublish(false);
+    processLangRef.current = processDefaultlanguage_id;
+      langMapRef.current = langMap;
 
-          } else {
-            Setcheckpublish(true);
+  }, [processDefaultlanguage_id,langMap]);
 
-          }
-        } catch (error) {
-          console.error("filter draft error", error)
-        }
-      }
-    };
-    checkpublishfunction();
-  }, [ParentPageGroupId, currentLevel]);
   const handleLabelChange = useCallback(
     (nodeId, newLabel) => {
       setNodes((prevNodes) => {
         const updatedNodes = prevNodes.map((node) => {
           if (node.id !== nodeId) return node;
+          const currentLangId = processLangRef.current; // ✅ always latest
 
-          // language id → key map
-          const langKey = langMap[processDefaultlanguage_id] || "en";
+const langKey = langMapRef.current[Number(currentLangId)] || "en";
+// console.log("langMap",langMapRef)
+
+          //  console.log("handleLabelChange → currentLangId:", currentLangId, "langKey:", langKey);
 
           return {
             ...node,
@@ -176,175 +196,195 @@ const MapLevel = () => {
     [setNodes, processDefaultlanguage_id]
   );
 
-
-
   useEffect(() => {
-
-    const fetchNodes = async () => {
-      try {
-        const levelParam =
-          currentParentId !== null
-            ? `Level${currentLevel}_${currentParentId}`
-            : `Level${currentLevel}`;
-         const user_id = LoginUser ? LoginUser.id : null;
-        const Process_id = id ? id : null;
-        const publishedStatus = "Published";
-        const draftStatus = "Draft";
-          const data = await api.getNodes(levelParam, parseInt(user_id), Process_id, currentParentId);
-
-       const PageGroupId = data.nodes?.[0]?.PageGroupId;
- 
-        const [publishedResponse, draftResponse] = await Promise.all([
-      api.GetPublishedDate(Process_id, publishedStatus, PageGroupId),
-      api.GetPublishedDate(Process_id, draftStatus, PageGroupId),
-    ]);
-        if (publishedResponse.status === true) {
-          setgetPublishedDate(publishedResponse.updated_at || "");
-        } else {
-          setgetPublishedDate("");
-        }
-        if (draftResponse.status === true) {
-          setDraftedDate(draftResponse.updated_at || "");
-        } else {
-          setDraftedDate("");
-        }
-
-           if (data && data.user_id) {
-          // Construct user object based on backend logic
-          setUser({
-            id: data.actual_user_id,
-            type: data.type || "self",
-            role: data.role || "self",
-             OwnId: data.user_id,
-            actual_user_id: data.actual_user_id,
-          });
-        }
-           Settitle(data.title);
-        SetParentPageGroupId(data.PageGroupId);
-        setprocess_img(data.process_img)
-        setprocessDefaultlanguage_id(data.processDefaultlanguage_id)
-
-        const parsedNodes = await Promise.all(
-          data.nodes.map(async (node) => {
-            const parsedData = JSON.parse(node.data);
-            const parsedPosition = JSON.parse(node.position);
-            const parsedMeasured = JSON.parse(node.measured);
-
-            const newLevel = currentLevel + 1;
-            const levelParam =
-              node.node_id !== null
-                ? `Level${newLevel}_${node.node_id}`
-                : `Level${currentLevel}`;
-            const Process_id = id ? id : null;
-            let hasNextLevel = false;
-            try {
-              const check = await api.checkRecord(levelParam, Process_id);
-              hasNextLevel = check?.status === true;
-            } catch (e) {
-              console.error("checkRecord error", e);
-            }
-            return {
-              ...node,
-              data: {
-                ...parsedData,
-                onLabelChange: (newLabel) => handleLabelChange(node.node_id, newLabel),
-
-                width_height: parsedMeasured,
-                node_id: node.node_id,
-                LinkToStatus: node.LinkToStatus,
-                hasNextLevel, // 👈 naya flag add kiya
-              },
-              type: node.type,
-              id: node.node_id,
-              measured: parsedMeasured,
-              position: parsedPosition,
-              draggable: Boolean(node.draggable),
-            };
-          })
-        );
-        const parsedEdges = data.edges.map((edge) => ({
-          ...edge,
-          animated: Boolean(edge.animated),
-          markerEnd: {
-            type: MarkerType.ArrowClosed,
-          },
-          style: { stroke: "#002060", strokeWidth: 2 },
-          type: "step",
-        }));
-
-        setNodes(parsedNodes);
-        setEdges(parsedEdges);
-      } catch (error) {
-        console.error("Error fetching nodes:", error);
-        alert("Failed to fetch object. Please refresh this page.");
-      }
-    };
-
     fetchNodes();
-  }, [
-    currentLevel,
-    handleLabelChange,
-    setNodes,
-    setEdges,
-    currentParentId,
-    id,
-  ]);
+  }, []);
 
+  const fetchNodes = async (language_id = null) => {
+    console.log("langMap",langMap)
 
+    try {
+      const levelParam =
+        currentParentId !== null
+          ? `Level${currentLevel}_${currentParentId}`
+          : `Level${currentLevel}`;
+      const user_id = LoginUser ? LoginUser.id : null;
+      const Process_id = id ? id : null;
+      const publishedStatus = "Published";
+      const draftStatus = "Draft";
+      const data = await api.getNodes(
+        levelParam,
+        parseInt(user_id),
+        Process_id,
+        currentParentId,
+        language_id
+      );
+      // console.log("respoe", data);
+      const PageGroupId = data.nodes?.[0]?.PageGroupId;
+
+      const [publishedResponse, draftResponse] = await Promise.all([
+        api.GetPublishedDate(Process_id, publishedStatus, PageGroupId),
+        api.GetPublishedDate(Process_id, draftStatus, PageGroupId),
+      ]);
+      if (publishedResponse.status === true) {
+        setgetPublishedDate(publishedResponse.updated_at || "");
+      } else {
+        setgetPublishedDate("");
+      }
+      if (draftResponse.status === true) {
+        setDraftedDate(draftResponse.updated_at || "");
+      } else {
+        setDraftedDate("");
+      }
+
+      if (data && data.user_id) {
+        // Construct user object based on backend logic
+        setUser({
+          id: data.actual_user_id,
+          type: data.type || "self",
+          role: data.role || "self",
+          OwnId: data.user_id,
+          actual_user_id: data.actual_user_id,
+        });
+      }
+
+      Settitle(data.title);
+      SetParentPageGroupId(data.PageGroupId);
+      setprocess_img(data.process_img);
+      setprocessDefaultlanguage_id(data.processDefaultlanguage_id);
+      setSupportedLanguages(data.ProcessSupportLanguage);
+      const parsedNodes = await Promise.all(
+        data.nodes.map(async (node) => {
+          const parsedData = JSON.parse(node.data);
+          const parsedPosition = JSON.parse(node.position);
+          const parsedMeasured = JSON.parse(node.measured);
+
+          const newLevel = currentLevel + 1;
+          const levelParam =
+            node.node_id !== null
+              ? `Level${newLevel}_${node.node_id}`
+              : `Level${currentLevel}`;
+          const Process_id = id ? id : null;
+          let hasNextLevel = false;
+          try {
+            const check = await api.checkRecord(levelParam, Process_id);
+            hasNextLevel = check?.status === true;
+          } catch (e) {
+            console.error("checkRecord error", e);
+          }
+          return {
+            ...node,
+            data: {
+              ...parsedData,
+              onLabelChange: (newLabel) =>
+                handleLabelChange(node.node_id, newLabel),
+
+              width_height: parsedMeasured,
+              node_id: node.node_id,
+              LinkToStatus: node.LinkToStatus,
+              hasNextLevel, // 👈 naya flag add kiya
+            },
+            type: node.type,
+            id: node.node_id,
+            measured: parsedMeasured,
+            position: parsedPosition,
+            draggable: Boolean(node.draggable),
+          };
+        })
+      );
+      const parsedEdges = data.edges.map((edge) => ({
+        ...edge,
+        animated: Boolean(edge.animated),
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+        },
+        style: { stroke: "#002060", strokeWidth: 2 },
+        type: "step",
+      }));
+
+      setNodes(parsedNodes);
+      setEdges(parsedEdges);
+    } catch (error) {
+      console.error("Error fetching nodes:", error);
+      alert("Failed to fetch object. Please refresh this page.");
+    }
+  };
+
+  const handleSupportViewlangugeId = (langId) => {
+    fetchNodes(langId);
+  };
   useCheckFavorite({
     id,
     nodes,
     setIsFavorite,
   });
 
+  useEffect(() => {
+    if (!title) return; // Wait until title is available
 
+    const label = currentLevel === 0 ? title : title;
+    const path =
+      currentLevel === 0
+        ? "/Map-level"
+        : `/level/${currentLevel}/${currentParentId}`;
 
-useEffect(() => {
-  if (!title) return; // Wait until title is available
+    const state = {};
 
-  const label = currentLevel === 0 ? title : title;
-  const path =
-    currentLevel === 0
-      ? "/Map-level"
-      : `/level/${currentLevel}/${currentParentId}`;
-
-  const state = {};
-
-  // ✅ Check if breadcrumb already exists
-  const exists = breadcrumbs.some((b) => b.path === path);
-  if (!exists) {
-    if (currentLevel >= 0 && isNavigating) {
-      const safeIndex = Math.max(1, currentLevel - 1);
-      removeBreadcrumbsAfter(safeIndex);
+    // ✅ Check if breadcrumb already exists
+    const exists = breadcrumbs.some((b) => b.path === path);
+    if (!exists) {
+      if (currentLevel >= 0 && isNavigating) {
+        const safeIndex = Math.max(1, currentLevel - 1);
+        removeBreadcrumbsAfter(safeIndex);
+      }
+      addBreadcrumb(label, path, state);
     }
-    addBreadcrumb(label, path, state);
-  }
 
-  setIsNavigating(false);
-}, [
-  currentLevel,
-  isNavigating,
-  currentParentId,
-  addBreadcrumb,
-  removeBreadcrumbsAfter,
-  id,
-  title,
-  breadcrumbs, // ✅ include breadcrumbs dependency
-]);
+    setIsNavigating(false);
+  }, [
+    currentLevel,
+    isNavigating,
+    currentParentId,
+    addBreadcrumb,
+    removeBreadcrumbsAfter,
+    id,
+    title,
+    breadcrumbs, // ✅ include breadcrumbs dependency
+  ]);
+ useEffect(() => {
+    const checkpublishfunction = async () => {
+      if (currentLevel !== 0) {
+        try {
+        
+          const response = await filter_draft(ParentPageGroupId);
+    
+          if (response?.data === true) {
+            Setcheckpublish(false);
+          } else {
+            Setcheckpublish(true);
+          }
+        } catch (error) {
+          console.error("filter draft error", error);
+        }
+      }
+    };
+    checkpublishfunction();
+  }, [ParentPageGroupId, currentLevel]);
 
   const onConnect = useCallback((connection) => {
-    console.log('Connected:', connection);
+    console.log("Connected:", connection);
   }, []);
   const addNode = async (type, position, label = "") => {
     const newNodeId = uuidv4();
+
     let PageGroupId;
-    if (!nodes.PageGroupId) {
+    if (!nodes[0]?.PageGroupId) {
       const response = await getNextPageGroupId();
       PageGroupId = response.next_PageGroupId;
-
     } else {
       PageGroupId = nodes[0]?.PageGroupId;
     }
+
     const newNode = {
       id:
         currentParentId !== null
@@ -362,9 +402,10 @@ useEffect(() => {
           ),
         defaultwidt: 326,
         defaultheight: 90,
-        width_height: type === "StickyNote"
-          ? { width: 240, height: 180 }
-          : { width: 326, height: 90 },
+        width_height:
+          type === "StickyNote"
+            ? { width: 240, height: 180 }
+            : { width: 326, height: 90 },
         nodeResize: true,
         autoFocus: true,
         isClickable: true,
@@ -373,12 +414,12 @@ useEffect(() => {
             prevNodes.map((node) =>
               node.id === id
                 ? {
-                  ...node,
-                  data: {
-                    ...node.data,
-                    width_height: size,
-                  },
-                }
+                    ...node,
+                    data: {
+                      ...node.data,
+                      width_height: size,
+                    },
+                  }
                 : node
             )
           );
@@ -391,7 +432,7 @@ useEffect(() => {
       isNew: true,
       animated: true,
       Page_Title: "ProcessMap",
-      PageGroupId: PageGroupId
+      PageGroupId: PageGroupId,
     };
     setNodes((nds) => nds.concat(newNode));
     setHasUnsavedChanges(true);
@@ -404,7 +445,6 @@ useEffect(() => {
       );
     }, 1000);
   };
-
 
   const deleteNode = useCallback(() => {
     if (selectedNode) {
@@ -433,7 +473,8 @@ useEffect(() => {
           setNodes((nds) => nds.filter((node) => node.id !== selectedNode));
           setEdges((eds) =>
             eds.filter(
-              (edge) => edge.source !== selectedNode && edge.target !== selectedNode
+              (edge) =>
+                edge.source !== selectedNode && edge.target !== selectedNode
             )
           );
           setSelectedNode(null);
@@ -450,16 +491,11 @@ useEffect(() => {
     event.preventDefault();
     const newLevel = currentLevel + 1;
     const levelParam =
-      node.id !== null
-        ? `Level${newLevel}_${node.id}`
-        : `Level${currentLevel}`;
+      node.id !== null ? `Level${newLevel}_${node.id}` : `Level${currentLevel}`;
     const user_id = user ? user.id : null;
     const Process_id = id ? id : null;
-    const data = await api.checkRecord(
-      levelParam,
-      Process_id
-    );
-    setcheckRecord(data)
+    const data = await api.checkRecord(levelParam, Process_id);
+    setcheckRecord(data);
     setSelectedNode(node.id);
     setPopupTitle(node.data.label || "Node Actions");
     const { clientX, clientY } = event;
@@ -485,49 +521,41 @@ useEffect(() => {
       if (confirmcondition) {
         if (type === "ProcessMap") {
           if (checkRecord.status === true) {
-
-            navigate(
-              `/Draft-Process-View/${newLevel}/${selectedNode}/${id}`
-            )
+            navigate(`/Draft-Process-View/${newLevel}/${selectedNode}/${id}`);
           } else {
-
-            navigate(`/level/${newLevel}/${selectedNode}/${id}`)
-
+            navigate(`/level/${newLevel}/${selectedNode}/${id}`);
           }
         }
         if (type === "Swimlane") {
           if (checkRecord.status === true) {
-            navigate(`/Draft-Swim-lanes-View/level/${newLevel}/${selectedNode}/${id}`)
-
+            navigate(
+              `/Draft-Swim-lanes-View/level/${newLevel}/${selectedNode}/${id}`
+            );
           } else {
-
             addBreadcrumb(
               `${selectedLabel || ""} `,
 
               `/swimlane/level/${newLevel}/${selectedNode}/${id}`
-
             );
-            navigate(`/swimlane/level/${newLevel}/${selectedNode}/${id}`)
-
+            navigate(`/swimlane/level/${newLevel}/${selectedNode}/${id}`);
           }
         }
       }
     }
   };
   const handleSaveNodes = async (savetype) => {
-    console.log("nodes",nodes)
+  
     if (savetype === "Published" && currentLevel !== 0) {
-
       try {
         const response = await filter_draft(ParentPageGroupId);
-        console.log("inside first", response)
+    
 
         if (response.data === true) {
           alert("Publish all parent models first");
-          return false
+          return false;
         }
       } catch (error) {
-        console.error("filter draft error", error)
+        console.error("filter draft error", error);
       }
     }
 
@@ -535,8 +563,6 @@ useEffect(() => {
       savetype,
       ...versionPopupPayload,
     };
-
-
 
     const Level =
       currentParentId !== null
@@ -569,7 +595,7 @@ useEffect(() => {
             measured,
             Page_Title,
             status,
-            PageGroupId
+            PageGroupId,
           }) => ({
             id,
             data,
@@ -580,7 +606,7 @@ useEffect(() => {
             measured,
             Page_Title,
             status,
-            PageGroupId
+            PageGroupId,
           })
         ),
         edges: edges.map(
@@ -635,13 +661,13 @@ useEffect(() => {
         nds.map((node) =>
           node.id === selectedNode
             ? {
-              ...node,
-              type: type,
-              data: {
-                ...node.data,
-                shape: type,
-              },
-            }
+                ...node,
+                type: type,
+                data: {
+                  ...node.data,
+                  shape: type,
+                },
+              }
             : node
         )
       );
@@ -652,14 +678,9 @@ useEffect(() => {
   const handleContextMenuOptionClick = (type) => {
     setShowContextMenu(false);
     if (type === "StickyNote") {
-
-
       addNode("StickyNote", { x: OriginalPosition.x, y: OriginalPosition.y });
-
-
     } else {
       addNode(type, { x: OriginalPosition.x, y: OriginalPosition.y });
-
     }
   };
   const handlePageClick = useCallback(() => {
@@ -686,7 +707,7 @@ useEffect(() => {
       x: event.clientX - containerRect.left,
       y: event.clientY - containerRect.top,
     });
-    setShowPopup(false)
+    setShowPopup(false);
   };
   useEffect(() => {
     document.addEventListener("click", handlePageClick);
@@ -703,27 +724,27 @@ useEffect(() => {
     [setEdges]
   );
 
-const handleBack = async () => {
-  if (!hasUnsavedChanges) return true; // No unsaved changes, just exit
+  const handleBack = async () => {
+    if (!hasUnsavedChanges) return true; // No unsaved changes, just exit
 
-  return new Promise((resolve) => {
-    CustomAlert.confirmExit(
-      async () => {
-        // Save & Exit
-        await handleSaveNodes("draft");
-        resolve(true);
-      },
-      () => {
-        // Exit without saving
-        resolve(true);
-      },
-      () => {
-        // Cancel
-        resolve(false);
-      }
-    );
-  });
-};
+    return new Promise((resolve) => {
+      CustomAlert.confirmExit(
+        async () => {
+          // Save & Exit
+          await handleSaveNodes("draft");
+          resolve(true);
+        },
+        () => {
+          // Exit without saving
+          resolve(true);
+        },
+        () => {
+          // Cancel
+          resolve(false);
+        }
+      );
+    });
+  };
 
   const styles = {
     appContainer: {
@@ -751,24 +772,20 @@ const handleBack = async () => {
     },
   };
 
-
   const translation = () => {
     const node = nodes.find((n) => n.id === selectedNode);
-    console.log("get node", node)
+
     if (node) {
-      // हर बार पूरा structure बनाओ (fallback खाली string)
-      const defaults = {
-        en: node.data?.translations?.en || "",
-        de: node.data?.translations?.de || "",
-        es: node.data?.translations?.es || "",
-      };
-
-
+      const defaults = supportedLanguages.reduce((acc, langId) => {
+        const langKey = langMap[langId] || `lang_${langId}`;
+        acc[langKey] = node.data?.translations?.[langKey] || "";
+        return acc;
+      }, {});
 
       setTranslationDefaults(defaults);
       setShowTranslationPopup(true);
     }
-  }
+  };
   const handleFav = async () => {
     const user_id = LoginUser ? LoginUser.id : null;
     const process_id = id ? id : null;
@@ -781,15 +798,23 @@ const handleBack = async () => {
 
     const PageGroupId = nodes[0]?.PageGroupId;
 
-
     try {
       if (isFavorite) {
-
-        const response = await removeFavProcess(user_id, process_id, PageGroupId);
+        const response = await removeFavProcess(
+          user_id,
+          process_id,
+          PageGroupId
+        );
         setIsFavorite(false);
         console.log("Removed from favorites:", response);
       } else {
-        const response = await addFavProcess(user_id, process_id, type, PageGroupId, currentParentId);
+        const response = await addFavProcess(
+          user_id,
+          process_id,
+          type,
+          PageGroupId,
+          currentParentId
+        );
         setIsFavorite(true);
         console.log("Added to favorites:", response);
       }
@@ -808,25 +833,27 @@ const handleBack = async () => {
     if (confirmcondition) {
       if (id && user) {
         if (currentLevel === 0) {
-          navigate(`/Draft-Process-View/${id}`
-          )
+          navigate(`/Draft-Process-View/${id}`);
         } else {
-          navigate(`/Draft-Process-View/${currentLevel}/${currentParentId}/${id}`)
+          navigate(
+            `/Draft-Process-View/${currentLevel}/${currentParentId}/${id}`
+          );
           // navigate(`/Draft-Process-View/${currentLevel}/${currentParentId}`, { state: { id: id, title: title, user: user } })
         }
-
       } else {
-        alert("Currently not navigate on draft mode")
+        alert("Currently not navigate on draft mode");
       }
     }
-  }
+  };
   const handleNodeDragStart = (event, node) => {
     setNodes((nodes) =>
-      nodes.map((n) => (n.id === node.id ? { ...n, originalPosition: { ...n.position } } : n))
+      nodes.map((n) =>
+        n.id === node.id ? { ...n, originalPosition: { ...n.position } } : n
+      )
     );
   };
   const handleNodeDragStop = (event, node) => {
-    setHasUnsavedChanges(true)
+    setHasUnsavedChanges(true);
     const flowContainer = document.querySelector(".flow-container");
     if (!flowContainer) return;
     const { left, top, right, bottom } = flowContainer.getBoundingClientRect();
@@ -849,12 +876,13 @@ const handleBack = async () => {
 
   const handleNodeClick = (event, node) => {
     setSelectedNodeId(node.id);
-
   };
 
   const navigateToVersion = (process_id, level, version) => {
     const encodedTitle = encodeURIComponent("ProcessMap");
-    navigate(`/Draft-Process-Version/${process_id}/${level}/${version}/${encodedTitle}`);
+    navigate(
+      `/Draft-Process-Version/${process_id}/${level}/${version}/${encodedTitle}`
+    );
   };
 
   const handleVersionClick = () => {
@@ -865,30 +893,28 @@ const handleBack = async () => {
     setNodes((nds) =>
       nds.map((n) => {
         if (n.id !== nodeId) return n;
-
+        // console.log("defualt langue id", processDefaultlanguage_id);
         // current default language ka key nikaalo
         const langKey = langMap[processDefaultlanguage_id] || "en";
         const newLabel = translations[langKey] || n.data.label;
+        // console.log("after langue key", langKey);
 
         return {
           ...n,
           data: {
             ...n.data,
-            translations,   // ✅ update all translations
-            label: newLabel // ✅ sync label with current language
+            translations, // ✅ update all translations
+            label: newLabel, // ✅ sync label with current language
           },
         };
       })
     );
   };
 
-
-
-
   const handleSaveVersionDetails = (payload) => {
-    setversionPopupPayload(payload)
-    setShowVersionPopup(false)
-  }
+    setversionPopupPayload(payload);
+    setShowVersionPopup(false);
+  };
   return (
     <div>
       <Header
@@ -909,10 +935,15 @@ const handleBack = async () => {
         Process_img={process_img}
         checkpublish={checkpublish}
         onShowVersion={handleVersionClick}
-
+        handleSupportViewlangugeId={handleSupportViewlangugeId}
+        supportedLanguages={supportedLanguages}
+        selectedLanguage={processDefaultlanguage_id}
       />
       <ReactFlowProvider>
-        <div className="app-container" style={{ ...styles.appContainer, height: remainingHeight }}>
+        <div
+          className="app-container"
+          style={{ ...styles.appContainer, height: remainingHeight }}
+        >
           <div className="content-wrapper" style={styles.contentWrapper}>
             <div
               className="flow-container"
@@ -920,7 +951,6 @@ const handleBack = async () => {
               onContextMenu={handleGlobalContextMenu}
             >
               <ReactFlow
-          
                 nodes={nodes}
                 edges={edges}
                 onNodesChange={onNodesChange}
@@ -968,8 +998,6 @@ const handleBack = async () => {
           </div>
 
           {usePageGroupIdViewer(nodes)}
-
-
         </div>
         <TranslationPopup
           isOpen={showTranslationPopup}
@@ -978,13 +1006,12 @@ const handleBack = async () => {
           onSubmit={(values) => {
             console.log("Translations:", values);
 
-
             updateNodeTranslations(selectedNode, values);
 
             setShowTranslationPopup(false);
           }}
+          supportedLanguages={supportedLanguages}
         />
-
 
         {showVersionPopup && (
           <VersionPopup

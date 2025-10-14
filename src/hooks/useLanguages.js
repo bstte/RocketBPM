@@ -10,6 +10,7 @@ export function useLanguages() {
     async function fetchLanguages() {
       try {
         const response = await getLanguages();
+        // console.log("total translation get ",response.data)
         setLanguages(response.data);
       } catch (err) {
         setError(err);

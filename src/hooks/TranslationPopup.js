@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useLangMap } from "./useLangMap";
 
 const overlayStyle = {
   position: "fixed",
@@ -23,26 +24,43 @@ const cardStyle = (anchor) => ({
   padding: 16,
 });
 
-const rowStyle = { display: "flex", flexDirection: "column", gap: 6, marginBottom: 12 };
+const rowStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 6,
+  marginBottom: 12,
+};
 
+// 🧩 Dynamic Translation Popup
 export default function TranslationPopup({
   isOpen,
   onClose,
   onSubmit,
-  defaultValues = { en: "", de: "", es: "" },
-  anchorPosition = null, // {x, y} relative to viewport OR container if you portal it
+  defaultValues = {},
+  anchorPosition = null,
   title = "Translate",
+  supportedLanguages = [], // array of language IDs e.g. [1, 2, 3]
+
 }) {
   const [values, setValues] = useState(defaultValues);
   const firstInputRef = useRef(null);
-
+ const langMap = useLangMap();
+  // Set initial values when popup opens
   useEffect(() => {
     if (isOpen) {
-      setValues(defaultValues || { en: "", de: "", es: "" });
-      // focus on first field
+      // Build dynamic default values
+       
+      const dynamicDefaults = supportedLanguages.reduce((acc, langId) => {
+        const langKey = langMap[langId] || `lang_${langId}`;
+        acc[langKey] = defaultValues?.[langKey] || "";
+        return acc;
+      }, {});
+      setValues(dynamicDefaults);
+
+      // focus first input
       setTimeout(() => firstInputRef.current?.focus(), 0);
     }
-  }, [isOpen, defaultValues]);
+  }, [isOpen, defaultValues, supportedLanguages, langMap]);
 
   if (!isOpen) return null;
 
@@ -53,21 +71,45 @@ export default function TranslationPopup({
   };
 
   const handleSubmit = () => {
-    // ensure at least one value present (optional)
-    // if (!values.en && !values.de && !values.es) return;
     onSubmit?.(values);
   };
 
-  // close when clicking outside card
   const handleOverlayClick = (e) => {
     if (e.target === e.currentTarget) onClose?.();
   };
 
   return (
-    <div style={overlayStyle} onMouseDown={handleOverlayClick} onKeyDown={handleKeyDown}>
-      <div style={cardStyle(anchorPosition)} role="dialog" aria-modal="true" aria-label={title}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-          <h3 style={{ margin: 0, fontSize: 18, fontWeight: 600,display:"flex",alignSelf:"center" }}>{title}</h3>
+    <div
+      style={overlayStyle}
+      onMouseDown={handleOverlayClick}
+      onKeyDown={handleKeyDown}
+    >
+      <div
+        style={cardStyle(anchorPosition)}
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+      >
+        {/* Header */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 8,
+          }}
+        >
+          <h3
+            style={{
+              margin: 0,
+              fontSize: 18,
+              fontWeight: 600,
+              display: "flex",
+              alignSelf: "center",
+            }}
+          >
+            {title}
+          </h3>
           <button
             onClick={onClose}
             aria-label="Close"
@@ -83,50 +125,49 @@ export default function TranslationPopup({
           </button>
         </div>
 
-        <div style={rowStyle}>
-          <label style={{ fontSize: 12, fontWeight: 600 }}>English (en)</label>
-          <input
-            ref={firstInputRef}
-            type="text"
-            value={values.en}
-            onChange={(e) => handleChange("en", e.target.value)}
-            placeholder="Start Process"
-            style={inputStyle}
-          />
-        </div>
+        {/* 🔤 Dynamic Language Fields */}
+        {supportedLanguages.map((langId, index) => {
+          const langKey = langMap[langId] || `lang_${langId}`;
+          const labelName = langKey.toUpperCase();
+          return (
+            <div key={langKey} style={rowStyle}>
+              <label style={{ fontSize: 12, fontWeight: 600 }}>
+                {labelName}
+              </label>
+              <input
+                ref={index === 0 ? firstInputRef : null}
+                type="text"
+                value={values[langKey] || ""}
+                onChange={(e) => handleChange(langKey, e.target.value)}
+                placeholder={`Enter ${labelName} translation`}
+                style={inputStyle}
+              />
+            </div>
+          );
+        })}
 
-        <div style={rowStyle}>
-          <label style={{ fontSize: 12, fontWeight: 600 }}>German (de)</label>
-          <input
-            type="text"
-            value={values.de}
-            onChange={(e) => handleChange("de", e.target.value)}
-            placeholder="Prozess starten"
-            style={inputStyle}
-          />
-        </div>
-
-        <div style={rowStyle}>
-          <label style={{ fontSize: 12, fontWeight: 600 }}>Spanish (es)</label>
-          <input
-            type="text"
-            value={values.es}
-            onChange={(e) => handleChange("es", e.target.value)}
-            placeholder="Iniciar proceso"
-            style={inputStyle}
-          />
-        </div>
-
-        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 8 }}>
-          <button onClick={onClose} style={btnSecondary}>Cancel</button>
-          <button onClick={handleSubmit} style={btnPrimary}>Save</button>
+        {/* Footer Buttons */}
+        <div
+          style={{
+            display: "flex",
+            gap: 8,
+            justifyContent: "flex-end",
+            marginTop: 8,
+          }}
+        >
+          <button onClick={onClose} style={btnSecondary}>
+            Cancel
+          </button>
+          <button onClick={handleSubmit} style={btnPrimary}>
+            Save
+          </button>
         </div>
       </div>
     </div>
   );
 }
 
-// simple inline styles
+// 🎨 Simple Inline Styles
 const inputStyle = {
   width: "90%",
   padding: "10px 12px",

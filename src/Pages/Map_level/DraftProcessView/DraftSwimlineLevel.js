@@ -62,6 +62,10 @@ const DraftSwimlineLevel = () => {
   const [ChildNodes, setChiledNodes] = useState([]);
   const [nodes, setNodes] = useState(initialNodes);
   const [edges, setEdges] = useState([]);
+    const [processDefaultlanguage_id, setprocessDefaultlanguage_id] =
+      useState(null);
+    const [supportedLanguages, setSupportedLanguages] = useState([]);
+  
   const nodeTypes = PublishNodeType;
   const edgeTypes = useMemo(
     () => ({
@@ -103,7 +107,20 @@ const DraftSwimlineLevel = () => {
 
   useEffect(() => {
 
-    const fetchNodes = async () => {
+
+    // checkfav()
+    fetchNodes();
+  }, [
+    currentLevel,
+    setNodes,
+    setEdges,
+    LoginUser,
+    currentParentId,
+    id,
+    windowSize,
+  ]);
+
+      const fetchNodes = async (language_id = null) => {
       try {
         const levelParam =
           currentParentId !== null
@@ -117,7 +134,8 @@ const DraftSwimlineLevel = () => {
           levelParam,
           parseInt(user_id),
           Process_id,
-          currentParentId
+          currentParentId,
+          language_id
         );
 
         
@@ -140,6 +158,8 @@ const DraftSwimlineLevel = () => {
         );
 
         setgetPublishedDate(getPublishedDate.status ? getPublishedDate.updated_at : "");
+           setprocessDefaultlanguage_id(data.processDefaultlanguage_id);
+      setSupportedLanguages(data.ProcessSupportLanguage);
         setprocess_img(data.process_img);
    Settitle(data.title);
         const nodebgwidth = document.querySelector(".react-flow__node");
@@ -241,17 +261,7 @@ const DraftSwimlineLevel = () => {
         alert("Failed to fetch nodes. Please try again.");
       }
     };
-    // checkfav()
-    fetchNodes();
-  }, [
-    currentLevel,
-    setNodes,
-    setEdges,
-    LoginUser,
-    currentParentId,
-    id,
-    windowSize,
-  ]);
+
   useCheckFavorite({
     id,
     childNodes: ChildNodes,
@@ -335,6 +345,10 @@ const DraftSwimlineLevel = () => {
     const encodedTitle = encodeURIComponent("swimlane");
     navigate(`/Swimlane-Version/${process_id}/${level}/${version}/${encodedTitle}`);
   };
+   const handleSupportViewlangugeId = (langId) => {
+    fetchNodes(langId);
+  };
+  
   return (
     <div>
       <Header
@@ -353,6 +367,9 @@ const DraftSwimlineLevel = () => {
         checkpublish={checkpublish}
         onShowVersion={handleVersionClick}
         savefav={handleFav}
+            handleSupportViewlangugeId={handleSupportViewlangugeId}
+        supportedLanguages={supportedLanguages}
+        selectedLanguage={processDefaultlanguage_id}
 
       />
       <div class="maincontainer" style={{ ...styles.appContainer, height: remainingHeight }}>

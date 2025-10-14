@@ -21,7 +21,7 @@ const useCheckFavorite = ({ id, nodes = [], childNodes = [], setIsFavorite }) =>
 
       try {
         const response = await checkFavProcess(user_id, process_id, PageGroupId);
-        console.log("✅ checkFav response:", response);
+      
         setIsFavorite(response.exists);
       } catch (error) {
         console.error("❌ checkFav error:", error);

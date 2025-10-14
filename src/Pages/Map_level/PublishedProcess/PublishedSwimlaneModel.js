@@ -38,18 +38,9 @@ const PublishedSwimlaneModel = () => {
   const [title, Settitle] = useState("");
   // const [ParentPageGroupId, SetParentPageGroupId] = useState(null);
   const [user, setUser] = useState(null);
-  // const user = useMemo(() => {
-  //   try {
-  //     const queryParams = new URLSearchParams(location.search);
-  //     const userParam = queryParams.get("user");
-  //     return userParam ? JSON.parse(decodeURIComponent(userParam)) : null;
-  //   } catch (e) {
-  //     console.error("Failed to parse user from query", e);
-  //     return null;
-  //   }
-  // }, [location.search]);
-
-
+   const [processDefaultlanguage_id, setprocessDefaultlanguage_id] =
+       useState(null);
+     const [supportedLanguages, setSupportedLanguages] = useState([]);
   const id = processId; // string
 
   const headerTitle = `${title} `;
@@ -91,8 +82,13 @@ const PublishedSwimlaneModel = () => {
     setIsFavorite,
   });
   useEffect(() => {
+    fetchNodes();
+  }, [
 
-    const fetchNodes = async () => {
+  ]);
+
+
+    const fetchNodes = async (language_id = null) => {
       try {
         const levelParam =
           currentParentId !== null
@@ -106,8 +102,12 @@ const PublishedSwimlaneModel = () => {
           levelParam,
           parseInt(user_id),
           Process_id,
-          currentParentId
+          currentParentId,
+          language_id
         );
+       console.log("data",data)
+
+        console.log("language_id",language_id)
           if (data && data.user_id) {
           // Construct user object based on backend logic
           setUser({
@@ -127,6 +127,8 @@ const PublishedSwimlaneModel = () => {
 
         setgetPublishedDate(getPublishedDate.status ? getPublishedDate.updated_at : "");
         setprocess_img(data.process_img);
+         setprocessDefaultlanguage_id(data.processDefaultlanguage_id);
+      setSupportedLanguages(data.ProcessSupportLanguage);
         // setprocess_udid(data.process_uid)
       Settitle(data.title)
 // SetParentPageGroupId(data.PageGroupId)
@@ -215,15 +217,6 @@ const PublishedSwimlaneModel = () => {
     };
 
 
-    fetchNodes();
-  }, [
-    currentLevel,
-    setNodes,
-    setEdges,
-    currentParentId,
-    id,
-    windowSize,
-  ]);
 
   const memoizedNodeTypes = useMemo(() => nodeTypes, [nodeTypes]);
   const memoizedEdgeTypes = useMemo(() => edgeTypes, [edgeTypes]);
@@ -293,6 +286,9 @@ const PublishedSwimlaneModel = () => {
     }
   };
 
+     const handleSupportViewlangugeId = (langId) => {
+    fetchNodes(langId);
+  };
 
   return (
     <div>
@@ -313,6 +309,9 @@ const PublishedSwimlaneModel = () => {
         onShowVersion={handleVersionClick}
 
         savefav={handleFav}
+          handleSupportViewlangugeId={handleSupportViewlangugeId}
+        supportedLanguages={supportedLanguages}
+        selectedLanguage={processDefaultlanguage_id}
 
       />
       <div style={{ ...styles.appContainer, height: remainingHeight }}>

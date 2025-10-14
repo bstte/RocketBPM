@@ -129,6 +129,7 @@ const SwimlaneModel = () => {
   const [versionPopupPayload, setversionPopupPayload] = useState("");
   const [processDefaultlanguage_id, setprocessDefaultlanguage_id] =
     useState(null);
+  const [supportedLanguages, setSupportedLanguages] = useState([]);
 
   const [selectedEdge, setSelectedEdge] = useState(null);
   const [getPublishedDate, setgetPublishedDate] = useState("");
@@ -160,13 +161,25 @@ const SwimlaneModel = () => {
   const [modalText, setModalText] = useState("");
 
   const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
+  const processLangRef = useRef(processDefaultlanguage_id);
+const langMapRef = useRef(langMap);
+
+  useEffect(() => {
+    processLangRef.current = processDefaultlanguage_id;
+      langMapRef.current = langMap;
+
+  }, [processDefaultlanguage_id,langMap]);
 
   const handleLabelChange = useCallback(
     (nodeId, newLabel) => {
       setChiledNodes((nds) =>
         nds.map((node) => {
           if (node.id === nodeId) {
-            const langKey = langMap[processDefaultlanguage_id] || "en";
+            const currentLangId = processLangRef.current; // ✅ always latest
+            const langKey = langMapRef.current[Number(currentLangId)] || "en";
+
+// console.log("langMap",langMap)
+             console.log("handleLabelChange → currentLangId:", currentLangId, "langKey:", langKey);
 
             return {
               ...node,
@@ -255,190 +268,186 @@ const SwimlaneModel = () => {
   });
 
   useEffect(() => {
-    const fetchNodes = async () => {
-      try {
-        const levelParam =
-          currentParentId !== null
-            ? `Level${currentLevel}_${currentParentId}`
-            : `Level${currentLevel}`;
-       const user_id = LoginUser ? LoginUser.id : null;
-        const Process_id = id ? id : null;
-          const publishedStatus = "Published";
-        const draftStatus = "Draft";
-          const data = await api.getNodes(levelParam, parseInt(user_id), Process_id, currentParentId);
-
-              const PageGroupId = data.nodes?.[0]?.PageGroupId;
- 
-        const [publishedResponse, draftResponse] = await Promise.all([
-      api.GetPublishedDate(Process_id, publishedStatus, PageGroupId),
-      api.GetPublishedDate(Process_id, draftStatus, PageGroupId),
-    ]);
-
-        setgetPublishedDate(
-          publishedResponse.status ? publishedResponse.updated_at || "" : ""
-        );
-        setDraftedDate(
-          draftResponse.status ? draftResponse.updated_at || "" : ""
-        );
-
-         if (data && data.user_id) {
-          // Construct user object based on backend logic
-          setUser({
-            id: data.actual_user_id,
-            type: data.type || "self",
-            role: data.role || "self",
-             OwnId: data.user_id,
-            actual_user_id: data.actual_user_id,
-          });
-        }
-        setprocess_img(data.process_img);
-           Settitle(data.title);
-        SetParentPageGroupId(data.PageGroupId);
-        // setprocess_udid(data.process_uid)
-        setprocessDefaultlanguage_id(data.processDefaultlanguage_id);
-
-        const nodebgwidth = document.querySelector(".react-flow__node");
-        const nodebgwidths = nodebgwidth
-          ? nodebgwidth.getBoundingClientRect().width
-          : 0;
-
-        const nodebgheight = document.querySelector(".react-flow__node");
-        const nodebgheights = nodebgheight
-          ? nodebgheight.getBoundingClientRect().height
-          : 0;
-
-        // Centralized size calculation
-        const totalRows = 7;
-        const totalColumns = 11;
-        const groupWidth = nodebgwidths;
-        const groupHeight = nodebgheights;
-        const childWidth = groupWidth * 0.9;
-        const childHeight = groupHeight * 0.9;
-
-        const parsedNodes = data.nodes.map((node) => {
-          const { parentId, ...remainingNodeProps } = node;
-          const parsedData = JSON.parse(node.data);
-          const parsedPosition = JSON.parse(node.position);
-          const parsedMeasured = JSON.parse(node.measured);
-          // console.log('parsedMeasured: ' + parsedMeasured);
-          let centeredPosition = parsedPosition || { x: 0, y: 0 };
-
-          // Parent node positioning
-          if (parentId) {
-            const parentNode = data.nodes.find((n) => n.node_id === parentId);
-            if (parentNode && parentNode.position) {
-              const parentPos = JSON.parse(parentNode.position);
-              const parentWidth = windowSize.width / totalColumns - 14;
-              const parentHeight = windowSize.height / totalRows - 14;
-              const childWidth = parentWidth * 0.9;
-              const childHeight = parentHeight * 0.9;
-
-              // Proper center calculation
-              centeredPosition = {
-                x: parentPos.x + parentWidth / 2 - childWidth / 2,
-                y: parentPos.y + parentHeight / 2 - childHeight / 2,
-              };
-            }
-          }
-
-          const nodeStyle =
-            node.type === "Yes" ||
-            node.type === "No" ||
-            node.type === "FreeText" ||
-            node.type === "StickyNote"
-              ? {} // No styles applied for these node types
-              : {
-                  width: groupWidth,
-                  height: groupHeight,
-                  childWidth: childWidth,
-                  childHeight: childHeight,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                };
-
-          return {
-            ...remainingNodeProps,
-            id: node.node_id,
-            parentNode: parentId,
-            parentId: parentId,
-            data: {
-              ...parsedData,
-              onLabelChange: (newLabel) =>
-                handleLabelChange(node.node_id, newLabel),
-              width_height: parsedMeasured,
-              defaultwidt: "40px",
-              defaultheight: "40px",
-              nodeResize: false,
-            },
-            type: node.type,
-            extent: "parent",
-            measured: parsedMeasured,
-            position: centeredPosition,
-            draggable: true,
-            isNew: true,
-
-            animated: Boolean(node.animated),
-            style: nodeStyle,
-          };
-        });
-
-        const parsedEdges = data.edges.map((edge) => {
-          const sourceNode = data.nodes.find(
-            (node) => node.node_id === edge.source
-          );
-          const targetNode = data.nodes.find(
-            (node) => node.node_id === edge.target
-          );
-
-          const sourcePosition = sourceNode
-            ? JSON.parse(sourceNode.position || '{"x":0,"y":0}')
-            : { x: 0, y: 0 };
-          const targetPosition = targetNode
-            ? JSON.parse(targetNode.position || '{"x":0,"y":0}')
-            : { x: 0, y: 0 };
-
-          // Check if in same row or same column
-          const isSameRow = Math.abs(sourcePosition.y - targetPosition.y) < 10; // 10px tolerance
-          const isSameColumn =
-            Math.abs(sourcePosition.x - targetPosition.x) < 10;
-
-          const edgeType = isSameRow || isSameColumn ? "default" : "step";
-
-          return {
-            ...edge,
-            animated: Boolean(edge.animated),
-            markerEnd: {
-              type: MarkerType.ArrowClosed,
-              color: "#002060",
-              width: 12,
-              height: 12,
-            },
-            style: { stroke: "#002060", strokeWidth: 2 },
-            type: edgeType,
-          };
-        });
-
-
-        setChiledNodes(parsedNodes);
-        setEdges(parsedEdges);
-      } catch (error) {
-        console.error("Error fetching nodes:", error);
-        alert("Failed to fetch nodes. Please try again.");
-      }
-    };
-
     fetchNodes();
-  }, [
-    currentLevel,
-    handleLabelChange,
-    setNodes,
-    setEdges,
-    currentParentId,
+  }, []);
 
-    id,
-    windowSize,
-  ]);
+  const fetchNodes = async (language_id = null) => {
+    try {
+      const levelParam =
+        currentParentId !== null
+          ? `Level${currentLevel}_${currentParentId}`
+          : `Level${currentLevel}`;
+      const user_id = LoginUser ? LoginUser.id : null;
+      const Process_id = id ? id : null;
+      const publishedStatus = "Published";
+      const draftStatus = "Draft";
+      const data = await api.getNodes(
+        levelParam,
+        parseInt(user_id),
+        Process_id,
+        currentParentId,
+        language_id
+      );
+
+      const PageGroupId = data.nodes?.[0]?.PageGroupId;
+
+      const [publishedResponse, draftResponse] = await Promise.all([
+        api.GetPublishedDate(Process_id, publishedStatus, PageGroupId),
+        api.GetPublishedDate(Process_id, draftStatus, PageGroupId),
+      ]);
+
+      setgetPublishedDate(
+        publishedResponse.status ? publishedResponse.updated_at || "" : ""
+      );
+      setDraftedDate(
+        draftResponse.status ? draftResponse.updated_at || "" : ""
+      );
+
+      if (data && data.user_id) {
+        // Construct user object based on backend logic
+        setUser({
+          id: data.actual_user_id,
+          type: data.type || "self",
+          role: data.role || "self",
+          OwnId: data.user_id,
+          actual_user_id: data.actual_user_id,
+        });
+      }
+
+      // console.log("data checiking",data.ProcessSupportLanguage)
+      setprocess_img(data.process_img);
+      Settitle(data.title);
+      SetParentPageGroupId(data.PageGroupId);
+      setprocessDefaultlanguage_id(data.processDefaultlanguage_id);
+      setSupportedLanguages(data.ProcessSupportLanguage);
+      const nodebgwidth = document.querySelector(".react-flow__node");
+      const nodebgwidths = nodebgwidth
+        ? nodebgwidth.getBoundingClientRect().width
+        : 0;
+
+      const nodebgheight = document.querySelector(".react-flow__node");
+      const nodebgheights = nodebgheight
+        ? nodebgheight.getBoundingClientRect().height
+        : 0;
+
+      // Centralized size calculation
+      const totalRows = 7;
+      const totalColumns = 11;
+      const groupWidth = nodebgwidths;
+      const groupHeight = nodebgheights;
+      const childWidth = groupWidth * 0.9;
+      const childHeight = groupHeight * 0.9;
+
+      const parsedNodes = data.nodes.map((node) => {
+        const { parentId, ...remainingNodeProps } = node;
+        const parsedData = JSON.parse(node.data);
+        const parsedPosition = JSON.parse(node.position);
+        const parsedMeasured = JSON.parse(node.measured);
+        // console.log('parsedMeasured: ' + parsedMeasured);
+        let centeredPosition = parsedPosition || { x: 0, y: 0 };
+
+        // Parent node positioning
+        if (parentId) {
+          const parentNode = data.nodes.find((n) => n.node_id === parentId);
+          if (parentNode && parentNode.position) {
+            const parentPos = JSON.parse(parentNode.position);
+            const parentWidth = windowSize.width / totalColumns - 14;
+            const parentHeight = windowSize.height / totalRows - 14;
+            const childWidth = parentWidth * 0.9;
+            const childHeight = parentHeight * 0.9;
+
+            // Proper center calculation
+            centeredPosition = {
+              x: parentPos.x + parentWidth / 2 - childWidth / 2,
+              y: parentPos.y + parentHeight / 2 - childHeight / 2,
+            };
+          }
+        }
+
+        const nodeStyle =
+          node.type === "Yes" ||
+          node.type === "No" ||
+          node.type === "FreeText" ||
+          node.type === "StickyNote"
+            ? {} // No styles applied for these node types
+            : {
+                width: groupWidth,
+                height: groupHeight,
+                childWidth: childWidth,
+                childHeight: childHeight,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              };
+
+        return {
+          ...remainingNodeProps,
+          id: node.node_id,
+          parentNode: parentId,
+          parentId: parentId,
+          data: {
+            ...parsedData,
+            onLabelChange: (newLabel) =>
+              handleLabelChange(node.node_id, newLabel),
+            width_height: parsedMeasured,
+            defaultwidt: "40px",
+            defaultheight: "40px",
+            nodeResize: false,
+          },
+          type: node.type,
+          extent: "parent",
+          measured: parsedMeasured,
+          position: centeredPosition,
+          draggable: true,
+          isNew: true,
+
+          animated: Boolean(node.animated),
+          style: nodeStyle,
+        };
+      });
+
+      const parsedEdges = data.edges.map((edge) => {
+        const sourceNode = data.nodes.find(
+          (node) => node.node_id === edge.source
+        );
+        const targetNode = data.nodes.find(
+          (node) => node.node_id === edge.target
+        );
+
+        const sourcePosition = sourceNode
+          ? JSON.parse(sourceNode.position || '{"x":0,"y":0}')
+          : { x: 0, y: 0 };
+        const targetPosition = targetNode
+          ? JSON.parse(targetNode.position || '{"x":0,"y":0}')
+          : { x: 0, y: 0 };
+
+        // Check if in same row or same column
+        const isSameRow = Math.abs(sourcePosition.y - targetPosition.y) < 10; // 10px tolerance
+        const isSameColumn = Math.abs(sourcePosition.x - targetPosition.x) < 10;
+
+        const edgeType = isSameRow || isSameColumn ? "default" : "step";
+
+        return {
+          ...edge,
+          animated: Boolean(edge.animated),
+          markerEnd: {
+            type: MarkerType.ArrowClosed,
+            color: "#002060",
+            width: 12,
+            height: 12,
+          },
+          style: { stroke: "#002060", strokeWidth: 2 },
+          type: edgeType,
+        };
+      });
+
+      setChiledNodes(parsedNodes);
+      setEdges(parsedEdges);
+    } catch (error) {
+      console.error("Error fetching nodes:", error);
+      alert("Failed to fetch nodes. Please try again.");
+    }
+  };
 
   const onNodesChange = useCallback(
     (changes) => setChiledNodes((nds) => applyNodeChanges(changes, nds)),
@@ -452,27 +461,23 @@ const SwimlaneModel = () => {
 
   const onConnect = useCallback(
     (params) => {
-      const sourceNode = ChildNodesRef.current.find(
-        (node) => node.node_id === params.source
-      );
-      const targetNode = ChildNodesRef.current.find(
-        (node) => node.node_id === params.target
-      );
+      // const sourceNode = ChildNodesRef.current.find(
+      //   (node) => node.node_id === params.source
+      // );
+      // const targetNode = ChildNodesRef.current.find(
+      //   (node) => node.node_id === params.target
+      // );
+      // const sourcePosition = sourceNode
+      //   ? sourceNode.position || { x: 0, y: 0 }
+      //   : { x: 0, y: 0 };
+      // const targetPosition = targetNode
+      //   ? targetNode.position || { x: 0, y: 0 }
+      //   : { x: 0, y: 0 };
 
-      // console.log('Current ChildNodes:', ChildNodesRef.current);
+      // const isSameRow = Math.abs(sourcePosition.y - targetPosition.y) < 10; // 10px tolerance
+      // const isSameColumn = Math.abs(sourcePosition.x - targetPosition.x) < 10;
 
-      const sourcePosition = sourceNode
-        ? sourceNode.position || { x: 0, y: 0 }
-        : { x: 0, y: 0 };
-      const targetPosition = targetNode
-        ? targetNode.position || { x: 0, y: 0 }
-        : { x: 0, y: 0 };
-
-      // Check if in same row or same column
-      const isSameRow = Math.abs(sourcePosition.y - targetPosition.y) < 10; // 10px tolerance
-      const isSameColumn = Math.abs(sourcePosition.x - targetPosition.x) < 10;
-
-      const edgeType = isSameRow || isSameColumn ? "default" : "step";
+      // const edgeType = isSameRow || isSameColumn ? "default" : "step";
 
       setEdges((eds) =>
         addEdge(
@@ -491,7 +496,7 @@ const SwimlaneModel = () => {
                 : `Level${currentLevel}`,
             user_id: user && user.id,
             Process_id: id && id,
-            type: edgeType, // ✅ dynamic edge type
+            type: "step", // ✅ dynamic edge type
             Page_Title: "Swimlane",
             status: "draft",
           },
@@ -539,7 +544,7 @@ const SwimlaneModel = () => {
   const addNode = async (type, position, label = "") => {
     let PageGroupId;
 
-    if (!ChildNodes.PageGroupId) {
+    if (!ChildNodes[0]?.PageGroupId) {
       const response = await getNextPageGroupId();
       PageGroupId = response.next_PageGroupId;
     } else {
@@ -699,11 +704,10 @@ const SwimlaneModel = () => {
   const memoizedEdgeTypes = useMemo(() => edgeTypes, [edgeTypes]);
 
   const handleSaveNodes = async (savetype) => {
-   
     if (savetype === "Published" && currentLevel !== 0) {
       try {
         const response = await filter_draft(ParentPageGroupId);
-      
+
         if (response.data === true) {
           alert("Publish all parent models first");
           return false;
@@ -850,16 +854,16 @@ const SwimlaneModel = () => {
     setSelectedNode(null);
     setdetailschecking(null);
   };
+
   const translation = () => {
     const node = ChildNodes.find((n) => n.id === selectedNodeId);
-    console.log("get node tranlslation", node);
+
     if (node) {
-      // हर बार पूरा structure बनाओ (fallback खाली string)
-      const defaults = {
-        en: node.data?.translations?.en || "",
-        de: node.data?.translations?.de || "",
-        es: node.data?.translations?.es || "",
-      };
+      const defaults = supportedLanguages.reduce((acc, langId) => {
+        const langKey = langMap[langId] || `lang_${langId}`;
+        acc[langKey] = node.data?.translations?.[langKey] || "";
+        return acc;
+      }, {});
 
       setTranslationDefaults(defaults);
       setShowTranslationPopup(true);
@@ -1325,15 +1329,13 @@ const SwimlaneModel = () => {
 
                   // ✅ URL banao
                   const url = `/Draft-Process-View/${newLevel}/${node_id}/${process_id}`;
-                 
+
                   addBreadcrumb(label, url);
                 });
               }
 
               if (nodeData.Page_Title === "ProcessMap") {
-                navigate(
-                  `/Draft-Process-View/${newLevel}/${nodelink}/${id}`
-                );
+                navigate(`/Draft-Process-View/${newLevel}/${nodelink}/${id}`);
               }
               if (nodeData.Page_Title === "Swimlane") {
                 navigate(
@@ -1710,6 +1712,11 @@ const SwimlaneModel = () => {
     setversionPopupPayload(payload);
     setShowVersionPopup(false);
   };
+
+  const handleSupportViewlangugeId = (langId) => {
+    fetchNodes(langId);
+  };
+
   return (
     <div>
       <Header
@@ -1729,6 +1736,9 @@ const SwimlaneModel = () => {
         Process_img={process_img}
         checkpublish={checkpublish}
         onShowVersion={handleVersionClick}
+        handleSupportViewlangugeId={handleSupportViewlangugeId}
+        supportedLanguages={supportedLanguages}
+        selectedLanguage={processDefaultlanguage_id}
       />
 
       <div
@@ -1792,7 +1802,7 @@ const SwimlaneModel = () => {
 
                 {[
                   { label: `${t("add_yes_label")}`, action: "Yes" },
-                  { label: `{${t("add_no_label")}}`, action: "No" },
+                  { label: `${t("add_no_label")}`, action: "No" },
                   { label: `${t("add_free_text")}`, action: "addFreeText" },
                 ].map((item, index) => (
                   <div
@@ -1835,6 +1845,9 @@ const SwimlaneModel = () => {
                 ChildNodes.find((node) => node.node_id === selectedNodeId) ||
                 null
               }
+               supportedLanguages={supportedLanguages}
+                selectedLanguage={processDefaultlanguage_id}
+
             />
           </div>
 
@@ -1973,6 +1986,7 @@ const SwimlaneModel = () => {
 
               setShowTranslationPopup(false);
             }}
+            supportedLanguages={supportedLanguages}
           />
 
           {showVersionPopup && (

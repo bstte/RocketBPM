@@ -43,14 +43,15 @@ export const getNextPageGroupId = async () => {
   }
 };
 
-export const getNodes = async (level = null, user_id = null, Process_id = null,currentParentId=null) => {
+export const getNodes = async (level = null, user_id = null, Process_id = null,currentParentId=null,language_id=null) => {
   try {
     const response = await api.get('/nodes', {
       params: {
         level,
         user_id,
         Process_id,
-        currentParentId
+        currentParentId,
+        language_id
       }
     });
     return response.data;
@@ -193,14 +194,15 @@ export const getUserNodes = async (user_id = null) => {
 
 
 
-export const getPublishedNodes = async (level = null, user_id = null, Process_id = null,currentParentId=null) => {
+export const getPublishedNodes = async (level = null, user_id = null, Process_id = null,currentParentId=null,language_id=null) => {
   try {
     const response = await api.get('/Publishnodes', {
       params: {
         level,
         user_id,
         Process_id,
-        currentParentId
+        currentParentId,
+        language_id
       }
     });
     return response.data;
@@ -319,9 +321,9 @@ export const removeProfileImgage = async (token) => {
   }
 };
 
-export const saveProcessTitle = async (title, user_id,selectedLanguageId) => {
+export const saveProcessTitle = async (title, user_id,defaultLanguage,supportedLanguages) => {
   try {
-    const response = await api.post('/process-titles', { process_title: title, user_id: user_id,selectedLanguageId });
+    const response = await api.post('/process-titles', { process_title: title, user_id: user_id,defaultLanguage,supportedLanguages });
     return response.data;
   } catch (error) {
     console.error('Error saving process title:', error);

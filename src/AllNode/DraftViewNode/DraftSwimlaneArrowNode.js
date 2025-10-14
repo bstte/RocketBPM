@@ -1,24 +1,23 @@
 import { memo, useContext } from "react";
 import { Handle, Position } from "@xyflow/react";
-import api, { checkRecordWithGetLinkDraftData, getdataByNodeId } from "../../API/api";
+import api, {
+  checkRecordWithGetLinkDraftData,
+  getdataByNodeId,
+} from "../../API/api";
 import { useNavigate } from "react-router-dom";
 import { BreadcrumbsContext } from "../../context/BreadcrumbsContext";
 
 const ArrowBoxNode = ({ data }) => {
-  const title=data.details.title
+  const title = data.details.title;
 
- const { addBreadcrumb, removeBreadcrumbsAfter } =
+  const { addBreadcrumb, removeBreadcrumbsAfter } =
     useContext(BreadcrumbsContext);
   const navigate = useNavigate();
 
-  
-
-
   const handleLinkClick = async () => {
-    console.log(data.link)
+    console.log(data.link);
     if (data.link) {
       try {
-
         const response = await getdataByNodeId(data.link, "draft");
         if (response.data && response.data.length > 0) {
           const user_id = response.data[0].user_id;
@@ -42,7 +41,7 @@ const ArrowBoxNode = ({ data }) => {
             data.link !== null
               ? `Level${newLevel}_${data.link}`
               : `Level${newLevel}`;
-          console.log("newLevel", levelParam)
+          console.log("newLevel", levelParam);
 
           const nodeData = await checkRecordWithGetLinkDraftData(
             levelParam,
@@ -58,11 +57,11 @@ const ArrowBoxNode = ({ data }) => {
             if (Array.isArray(allNodes) && allNodes.length > 0) {
               // sabse highest level se start
               allNodes.forEach((node) => {
-                const parsedData = JSON.parse(node.data || '{}');
-                const label = parsedData.label || '';
+                const parsedData = JSON.parse(node.data || "{}");
+                const label = parsedData.label || "";
                 const node_id = node.node_id;
                 const process_id = node.Process_id;
-            
+
                 // ✅ Level number get karo
                 let currentLevel = 0;
                 const match = node_id.match(/^Level(\d+)/);
@@ -70,30 +69,27 @@ const ArrowBoxNode = ({ data }) => {
                   currentLevel = parseInt(match[1], 10);
                 }
                 const newLevel = currentLevel + 1;
-            
+
                 const user = { id: node.user_id };
-            
+
                 // ✅ URL banao
                 const url = `/Draft-Process-View/${newLevel}/${node_id}/${process_id}`;
-            
+
                 // ✅ Breadcrumb add karo
                 addBreadcrumb(label, url);
               });
             }
-            
-            
-            if (nodeData.Page_Title === "ProcessMap") {
-           
-              navigate(`/Draft-Process-View/${newLevel}/${data.link}/${id}`)
 
+            if (nodeData.Page_Title === "ProcessMap") {
+              navigate(`/Draft-Process-View/${newLevel}/${data.link}/${id}`);
             }
             if (nodeData.Page_Title === "Swimlane") {
-         
-              navigate(`/Draft-Swim-lanes-View/level/${newLevel}/${data.link}/${id}`)
-
+              navigate(
+                `/Draft-Swim-lanes-View/level/${newLevel}/${data.link}/${id}`
+              );
             }
           } else {
-            alert("First create next model of this existing model")
+            alert("First create next model of this existing model");
           }
         } else {
           console.error("No data found in response.data");
@@ -105,34 +101,37 @@ const ArrowBoxNode = ({ data }) => {
   };
 
   return (
-    <div
-      style={styles.wrapper}
-    >
+    <div style={styles.wrapper}>
       {/* Arrow Box */}
-      <div className="borderBox" style={{
-    ...styles.arrowBox,
-    filter: data.link ? 'drop-shadow(0px 0px 10px #0000004f)' : 'none',
-  }} onClick={handleLinkClick}>
-    
-          <div style={styles.textView}>
-            {data.link ? (
+      <div
+        className="borderBox"
+        style={{
+          ...styles.arrowBox,
+          filter: data.link ? "drop-shadow(0px 0px 10px #0000004f)" : "none",
+        }}
+        onClick={handleLinkClick}
+      >
+        <div style={styles.textView}>
+          {data.link ? (
+            <div>
+              <button
+                style={styles.linkButton}
+                onClick={handleLinkClick}
+                dangerouslySetInnerHTML={{ __html: title }}
+              >
+              </button>
+            </div>
+          ) : (
+            <>
               <div>
-                <button style={styles.linkButton} onClick={handleLinkClick}>
-                  {title}
-                </button>
+                <button
+                  style={styles.withoutlinkButton}
+                  dangerouslySetInnerHTML={{ __html: title }}
+                />
               </div>
-            ):(
-              <>
-               <div>
-                <button style={styles.withoutlinkButton} >
-                  {title}
-                </button>
-              </div>
-              </>
-            )}
-
-          </div>
-    
+            </>
+          )}
+        </div>
       </div>
 
       {/* Border overlay as a separate div */}
@@ -210,8 +209,9 @@ const styles = {
     color: "#002060",
     width: "100%",
     height: "100%",
-     backgroundColor: "red",
-     clipPath: 'polygon(10px 50%, 0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%)',
+    backgroundColor: "red",
+    clipPath:
+      "polygon(10px 50%, 0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%)",
     padding: "10px",
     boxSizing: "border-box",
     overflow: "hidden",
@@ -245,7 +245,8 @@ const styles = {
     right: 0,
     bottom: 0,
     zIndex: 0,
-    clipPath: 'polygon(10px 50%, 0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%)',
+    clipPath:
+      "polygon(10px 50%, 0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%)",
     // border: "1px solid black",
     pointerEvents: "none",
     boxSizing: "border-box",
@@ -257,7 +258,7 @@ const styles = {
     border: "none",
     width: "0px",
     height: "0px",
-    pointerEvents: "none" ,
+    pointerEvents: "none",
   },
   linkButton: {
     fontSize: "12px",
@@ -267,7 +268,7 @@ const styles = {
     // textDecoration: "underline",
     cursor: "pointer",
   },
- withoutlinkButton: {
+  withoutlinkButton: {
     fontSize: "12px",
     color: "white",
     background: "none",

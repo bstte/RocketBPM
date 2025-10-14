@@ -116,16 +116,19 @@ const ArrowBoxNode = ({ data }) => {
           <div style={styles.textView}>
             {data.link ? (
               <div>
-                <button style={styles.linkButton} onClick={handleLinkClick}>
-                  {title}
+                <button style={styles.linkButton}
+                  dangerouslySetInnerHTML={{ __html: title }}
+                onClick={handleLinkClick}>
+                  {/* {title} */}
                 </button>
               </div>
             ):(
               <>
                <div>
-                <button style={styles.withoutlinkButton} >
-                  {title}
-                </button>
+                 <button
+                  style={styles.withoutlinkButton}
+                  dangerouslySetInnerHTML={{ __html: title }}
+                />
               </div>
               </>
             )}
