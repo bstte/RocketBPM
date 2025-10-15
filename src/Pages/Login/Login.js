@@ -7,10 +7,13 @@ import { CurrentUser, googleOAuth, microsoftOAuth } from '../../API/api';
 import { GoogleLogin } from '@react-oauth/google';
 import { useMsal } from '@azure/msal-react';
 import { loginRequest } from '../../hooks/msalConfig';
+import { FaEye, FaEyeSlash } from 'react-icons/fa'; // 👁️ Import eye icons
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false); // 👁️ password toggle state
+
   const [error, setError] = useState('');
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -28,6 +31,7 @@ const Login = () => {
     if (emailParam) {
       setEmail(emailParam);
     }
+    
 
   }, []);
   const handleMicrosoftLogin = async () => {
@@ -123,13 +127,22 @@ const Login = () => {
           placeholder="Email"
           className="login-input"
         />
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Password"
-          className="login-input"
-        />
+      <div className="password-container">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password"
+              className="login-input password-input"
+            />
+            <button
+              type="button"
+              className="toggle-password-btn"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <FaEyeSlash /> : <FaEye />}
+            </button>
+          </div>
         {error && <p className="error-message">{error}</p>}
         <button type="submit" className="login-button">SIGN IN</button>
         <p>Not a member?<button className="btn_form" type='button' onClick={()=> navigate('/SignupForm')}>Sign up</button></p>

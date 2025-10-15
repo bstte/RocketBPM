@@ -5,9 +5,12 @@ import './Signup.css';
 
 import CustomAlert from '../../components/CustomAlert';
 import { submitSignupForm } from '../../API/api';
+import { FaEye, FaEyeSlash } from 'react-icons/fa'; // 👁️ Import eye icons
 
 const SignupForm = () => {
   const navigate = useNavigate();
+const [showPassword, setShowPassword] = useState(false); // 👁️ toggle for password
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false); // 👁️ toggle for confirm password
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -99,22 +102,44 @@ const SignupForm = () => {
             placeholder="Email"
             className="login-input"
           />
-          <input
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            placeholder="Password"
-            className="login-input"
-          />
-          <input
-            type="password"
-            name="confirmPassword"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            placeholder="Confirm Password"
-            className="login-input"
-          />
+         {/* 👁️ Password input with eye toggle */}
+          <div className="password-container">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="Password"
+              className="login-input password-input"
+            />
+            <button
+              type="button"
+              className="toggle-password-btn"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <FaEyeSlash /> : <FaEye />}
+            </button>
+          </div>
+
+          {/* 👁️ Confirm Password input with eye toggle */}
+          <div className="password-container">
+            <input
+              type={showConfirmPassword ? 'text' : 'password'}
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              placeholder="Confirm Password"
+              className="login-input password-input"
+            />
+            <button
+              type="button"
+              className="toggle-password-btn"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            >
+              {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+            </button>
+          </div>
+
           <button type="submit" className="login-button">SIGN UP</button>
           <p>Already a member?
             <button className="btn_form" type='button' onClick={() => navigate('/login')}>Sign in</button>

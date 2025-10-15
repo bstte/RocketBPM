@@ -60,7 +60,7 @@ const PublishedMapLevel = () => {
         : 0;
 
       const newHeight = window.innerHeight - (elementHeight + appHeaderHeight);
-      setRemainingHeight(newHeight - 40);
+      setRemainingHeight(newHeight - 33);
 
       if (breadcrumbsElement && appHeaderElement) {
         const combinedHeight =

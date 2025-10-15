@@ -15,7 +15,7 @@ export const loginUser = createAsyncThunk(
       return { user, translations };
     } catch (error) {
       console.error("login error", error);
-      CustomAlert.error("Error", error.response.data.message);
+      CustomAlert.warning("Error", error.response.data.message);
 
       return rejectWithValue(error.response?.data || "An error occurred"); // Improved error handling
     }

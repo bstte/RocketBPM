@@ -66,7 +66,7 @@ const ProcessMenu = ({ item, ProcessTitle,checkpublish, t }) => {
         position: "absolute",
         top: 35,
         right: 10,
-        width: "150px",
+        width: "260px",
         bgcolor: "white",
         boxShadow: 3,
         borderRadius: 1,

@@ -73,7 +73,6 @@ button.ss_add_user_btn {
     width: 25%;
     margin: auto;
     border: 1px solid #e5e5e5;
-    text-align: center;
     max-width: 350px;
     background: white;
     box-shadow: 0 0px 13px #6a758b63;
@@ -161,11 +160,11 @@ button.ss_add_use_btn {
     font-size: 15px;
 }
 .ss_body_div {
-    border: 2px solid #002060;
+    border: 1px solid #002060;
     border-top: 0;
     padding: 15px;
     position: relative;
-    height: calc(100vh - 180px); /* Keeps height within viewport */
+    height: calc(100vh - 110px); /* Keeps height within viewport */
     display: flex;
     overflow-y: auto; /* Add vertical scroll */
     overflow-x: hidden;
@@ -176,11 +175,10 @@ button.ss_add_use_btn {
     width: 30%; /* Increased from 25% */
     margin: auto;
     border: 1px solid #e5e5e5;
-    text-align: center;
     max-width: 500px; /* Increased max width */
     background: white;
     box-shadow: 0 0px 13px #6a758b63;
-    padding: 40px 20px;
+    padding: 20px;
     border-color: #002060;
     border: 1px solid;
 }

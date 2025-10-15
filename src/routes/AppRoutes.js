@@ -28,6 +28,7 @@ import SignupForm from "../Pages/Signup/SignupForm";
 import Setting from "../Pages/Setting/Setting";
 import DraftProcessMapVersion from "../Pages/Map_level/DraftProcessMapVersion";
 import SwimlaneMapVersion from "../Pages/Map_level/SwimlaneMapVersion";
+import ResetPassword from "../Pages/Forgotpassword/ResetPassword";
 
 const AppRoutes = () => {
   return (
@@ -40,7 +41,7 @@ const AppRoutes = () => {
       <Route path="/forgotpassword" element={<Forgotpassword />} />
       <Route path="/account" element={<Account />} />
       <Route path="/setting" element={<Setting />} />
-
+  <Route path="/reset-password" element={<ResetPassword />} />
       {/* Private Routes */}
       <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
       <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />

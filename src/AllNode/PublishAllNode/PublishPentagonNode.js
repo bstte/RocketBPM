@@ -1,6 +1,19 @@
-import { memo } from "react";
+import { memo, useState, useEffect } from "react";
 
 const PublishPentagonNode = ({ data }) => {
+  const width = data.width_height?.width || 150;
+  const height = data.width_height?.height || 150;
+  const [clipPath, setClipPath] = useState("");
+
+  const calculateClipPath = (w, h) => {
+    // Pentagon top: 50% width, 0% height; etc
+    return `polygon(50% 0%, ${w}px 30%, ${w}px ${h}px, 0% ${h}px, 0% 30%)`;
+  };
+
+  useEffect(() => {
+    setClipPath(calculateClipPath(width, height));
+  }, [width, height]);
+
   return (
     <div
       style={{
@@ -14,8 +27,9 @@ const PublishPentagonNode = ({ data }) => {
       <div
         style={{
           ...styles.pentagonBox,
-          minWidth: data.width_height ? data.width_height.width : "150px",
-          minHeight: data.width_height ? data.width_height.height : "150px",
+          width: `${width}px`,
+          height: `${height}px`,
+          clipPath: clipPath,
         }}
       >
         <div
@@ -48,10 +62,6 @@ const styles = {
     textAlign: "center",
     backgroundColor: "red",
     color: "#002060",
-    width: "100%",
-    height: "100%",
-    clipPath: "polygon(50% 0%, 100% 30%, 100% 100%, 0% 100%, 0% 30%)",
-    boxShadow: "0 2px 5px rgba(0, 0, 0, 0.3)",
     padding: "10px",
     boxSizing: "border-box",
     overflow: "hidden",

@@ -176,3 +176,38 @@ textarea {
     font-size: 13px;
   }
 }
+
+.publishcontainer .react-flow__viewport,
+.ss_publish_border .react-flow__viewport {
+  transform: none !important;
+}
+.input_field {
+  border: 1px solid #ccc;
+}
+.input_field,
+.select_field {
+    border: 1px solid #002060;
+    padding: 10px 15px;
+    width: 100%;
+    color: #002060;
+        max-width: 400px;
+        height: auto !important;
+}
+.ss_add_user_bx ::placeholder {
+  color: #002060;
+}
+.section_style_1 {
+  display: block;
+  margin-top: 25px;
+}
+.ss_body_div.ss_add_title .ss_add_user_bx h1 {
+  margin-bottom: 10px;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+.mt-1 {
+  margin-top: 10px;
+}
+.headericons {
+  display: flex;
+}

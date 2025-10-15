@@ -314,7 +314,7 @@ const langMapRef = useRef(langMap);
         });
       }
 
-      // console.log("data checiking",data.ProcessSupportLanguage)
+      console.log("data checiking",data)
       setprocess_img(data.process_img);
       Settitle(data.title);
       SetParentPageGroupId(data.PageGroupId);
@@ -704,6 +704,8 @@ const langMapRef = useRef(langMap);
   const memoizedEdgeTypes = useMemo(() => edgeTypes, [edgeTypes]);
 
   const handleSaveNodes = async (savetype) => {
+
+    console.log("chiils node",ChildNodes)
     if (savetype === "Published" && currentLevel !== 0) {
       try {
         const response = await filter_draft(ParentPageGroupId);
@@ -1052,14 +1054,35 @@ const langMapRef = useRef(langMap);
         }
       }
 
-      if (
-        node.type === "Yes" ||
+      if (node.type === "StickyNote" || node.type === "Yes" ||
         node.type === "No" ||
-        node.type === "FreeText" ||
-        node.type === "StickyNote"
-      ) {
-        return;
+        node.type === "FreeText") {
+        const flowContainer = document.querySelector(".publishcontainer");
+        if (!flowContainer) return;
+
+        const { left, top, right, bottom } = flowContainer.getBoundingClientRect();
+        const nodeElement = document.querySelector(`[data-id="${node.id}"]`);
+        if (!nodeElement) return;
+
+        const nodeRect = nodeElement.getBoundingClientRect();
+        const isOutOfBounds =
+          nodeRect.left < left ||
+          nodeRect.top < top ||
+          nodeRect.right > right ||
+          nodeRect.bottom > bottom;
+
+        if (isOutOfBounds) {
+            setChiledNodes((prev) =>
+              prev.map((child) =>
+                child.id === node.id
+                  ? { ...child, position: KeepOldPosition } // revert if out of bounds
+                  : child
+              )
+            );
+        }
+        return
       }
+
 
       if (nearestParentNode) {
         const updatedPosition = centerChildInParent(nearestParentNode, node);

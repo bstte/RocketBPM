@@ -7,3 +7,30 @@ button.btn_form {
     color: #FF364A;
     text-decoration: underline;
 }
+
+.password-container {
+  position: relative;
+  width: 100%;
+}
+
+.password-input {
+  width: 100%;
+  padding-right: 40px; /* space for the eye icon */
+}
+
+.toggle-password-btn {
+  position: absolute;
+  right: 10px;
+  top: 45%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  color: #555;
+  font-size: 18px;
+}
+
+.toggle-password-btn:hover {
+  color: #000;
+}

@@ -87,8 +87,8 @@ const Setting = () => {
   const updateProcessdata = async () => {
     const formData = new FormData();
     formData.append("process_title", processData.process_title);
-  formData.append("language_id", defaultLanguage);
-  formData.append("supportedLanguages", JSON.stringify(supportedLanguages));
+    formData.append("language_id", defaultLanguage);
+    formData.append("supportedLanguages", JSON.stringify(supportedLanguages));
     if (selectedImage) {
       const response = await fetch(selectedImage);
       const blob = await response.blob();
@@ -207,7 +207,7 @@ const Setting = () => {
           {/* Supported Languages */}
           <div style={styles.sectionBox}>
             <h4>{t("Supported_Languages")}</h4>
-            <div style={styles.languageList}>
+            <div style={styles.languageList} className="mt-1">
               {languages &&
                 languages.map((lang) => (
                   <label key={lang.id} style={styles.languageItem}>
@@ -234,7 +234,7 @@ const Setting = () => {
             <select
               value={defaultLanguage}
               onChange={(e) => setDefaultLanguage(e.target.value)}
-              style={styles.selectBox}
+             className="select_field"
               disabled={supportedLanguages.length === 0}
             >
               <option value="">Select Default Language</option>

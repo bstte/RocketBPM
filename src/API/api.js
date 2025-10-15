@@ -250,6 +250,32 @@ export const Login = async (email, password) => {
   }
 };
 
+
+export const forgotPassword = async (email) => {
+  try {
+    const response = await api.post('/forgot-password', { email });
+    return response.data;
+  } catch (error) {
+    console.error('Error sending forgot password link:', error);
+    throw error.response?.data || error;
+  }
+};
+
+export const resetPassword = async (token, password, password_confirmation) => {
+  try {
+    const response = await api.post('/reset-password', {
+      token,
+      password,
+      password_confirmation,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error resetting password:', error);
+    throw error.response?.data || error;
+  }
+};
+
+
 export const CurrentUser = async (token) => {
   try {
     const response = await api.get('/user', {
