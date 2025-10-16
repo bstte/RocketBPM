@@ -84,6 +84,7 @@ const Header = ({
     }
   };
 
+
   const formattedDate = getPublishedDate
     ? new Date(getPublishedDate).toLocaleDateString("en-US", {
         year: "numeric",
@@ -128,6 +129,7 @@ const Header = ({
       document.removeEventListener("click", handleClickOutside);
     };
   }, []);
+
 
   return (
     <>

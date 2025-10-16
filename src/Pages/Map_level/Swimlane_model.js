@@ -541,7 +541,7 @@ const langMapRef = useRef(langMap);
     };
     checkpublishfunction();
   }, [ParentPageGroupId, currentLevel]);
-  const addNode = async (type, position, label = "") => {
+  const addNode = async (type, position, label = "", existingNodeData = null) => {
     let PageGroupId;
 
     if (!ChildNodes[0]?.PageGroupId) {
@@ -580,9 +580,30 @@ const langMapRef = useRef(langMap);
             ),
           defaultwidt: "40px",
           defaultheight: "40px",
+           width_height:
+          type === "StickyNote"
+            ? { width: 240, height: 180 }
+            : { width: 326, height: 90 },
           autoFocus: true,
 
           nodeResize: false,
+
+            updateWidthHeight: (id, size) => {
+          setChiledNodes((prevNodes) =>
+            prevNodes.map((node) =>
+              node.id === id
+                ? {
+                    ...node,
+                    data: {
+                      ...node.data,
+                      width_height: size,
+                    },
+                  }
+                : node
+            )
+          );
+        },
+
         },
         type: type,
         position: position,
@@ -631,7 +652,8 @@ const langMapRef = useRef(langMap);
 
         parentNode: selectedGroupId,
         extent: "parent",
-        data: {
+         data: existingNodeData
+        ? existingNodeData: {
           label: label,
           details: { title: label, content: "" },
           link: selectedexistigrolenodeId ? selectedexistigrolenodeId : "",
@@ -1148,25 +1170,29 @@ const langMapRef = useRef(langMap);
     const existinglink = ChildNodes.find(
       (node) => node.node_id === selectedNodeId
     );
-    if (existinglink?.data?.link) {
-      setSelectedLinknodeIds(existinglink?.data?.link);
+    if (existinglink?.data?.processlink) {
+      setSelectedLinknodeIds(existinglink?.data?.processlink);
     } else {
       setSelectedLinknodeIds([]);
     }
 
-    const levelParam = "Level0";
     const user_id = user ? user.id : null;
     const Process_id = id ? id : null;
     const data = await api.getallpublishObject_Tolinkexistingmodel(
-      levelParam,
       parseInt(user_id),
       Process_id
     );
 
-    const filteredNodes = data.nodes.filter(
-      (node) => node.type !== "StickyNote",
-      (node) => node.node_id !== currentParentId
-    );
+// console.log("Before filtering:", data.nodes.length);
+// console.log("currentParentId 1:", currentParentId);
+
+const filteredNodes = data.nodes.filter(
+  (node) => node.type !== "StickyNote" && node.node_id !== currentParentId
+);
+
+// console.log("After filtering:", filteredNodes.length);
+// console.log("Filtered nodes:", filteredNodes);
+
     setLinknodeList(filteredNodes);
     // console.log("check data filteredNodes", filteredNodes)
     setIsCheckboxPopupOpen(true);
@@ -1182,13 +1208,10 @@ const langMapRef = useRef(langMap);
       Process_id
     );
 
-    // console.log("check data getexistingrole data", data)
-
     const filteredNodes = data.AllexistingRole.filter(
       (node) => node.node_id !== currentParentId
     );
     setLinkexistingRole(filteredNodes);
-    // console.log("check data getexistingrole", filteredNodes)
     setIsexistingroleCheckboxPopupOpen(true);
   };
 
@@ -1206,29 +1229,38 @@ const langMapRef = useRef(langMap);
       const selectedNode = parsedDataExistingrole.find(
         (item) => item.node_id === selectedexistigrolenodeId
       );
-      console.log("selectedexistigrolenodeId", selectedexistigrolenodeId);
 
-      console.log("selectedNode", selectedNode);
+      // const title = selectedNode?.data?.details?.title || "Untitled";
 
-      const title = selectedNode?.data?.details?.title || "Untitled";
+      // setIsexistingroleCheckboxPopupOpen(false);
+      // addNode("SwimlineRightsideBox", "", title);
+      // setSelectedexistingrolenodeId("");
 
-      setIsexistingroleCheckboxPopupOpen(false);
-      addNode("SwimlineRightsideBox", "", title);
-      setSelectedexistingrolenodeId("");
+        if (!selectedNode) return;
+
+    // Clone existing node data
+    const newNodeData = { ...selectedNode.data, link: selectedexistigrolenodeId };
+
+    setIsexistingroleCheckboxPopupOpen(false);
+
+    // Add new node using cloned data
+    addNode("SwimlineRightsideBox", "", "", newNodeData);
+
+    setSelectedexistingrolenodeId("");
     }
   };
 
   const saveSelectedNodes = () => {
-    if (selectedLinknodeIds) {
+    
+    if (selectedLinknodeIds && selectedTitle) {
       setChiledNodes((nds) =>
         nds.map((node) => {
           if (node.id === selectedNodeId) {
-            // console.log("link existin gmodel", node)
             return {
               ...node,
               data: {
                 ...node.data,
-                link: selectedLinknodeIds,
+                processlink: selectedLinknodeIds,
                 details: {
                   ...node.data.details,
                   title:
@@ -1266,7 +1298,7 @@ const langMapRef = useRef(langMap);
                 ...node,
                 data: {
                   ...node.data,
-                  link: null, // remove link
+                  processlink: null, // remove link
                   details: {
                     ...(node.data.details || {}),
                     title: "", // clear title too
@@ -1302,10 +1334,6 @@ const langMapRef = useRef(langMap);
             const Process_id = response.data[0].Process_id;
             const id = response.data[0].Process_id;
 
-            const user = {
-              id: response.data[0].user_id,
-            };
-
             let newLevel = 1;
             if (nodelink !== null) {
               const match = nodelink.match(/^Level(\d+)/);
@@ -1319,7 +1347,6 @@ const langMapRef = useRef(langMap);
               nodelink !== null
                 ? `Level${newLevel}_${nodelink}`
                 : `Level${newLevel}`;
-            console.log("newLevel", levelParam);
 
             const nodeData = await checkRecordWithGetLinkDraftData(
               levelParam,
@@ -1327,36 +1354,9 @@ const langMapRef = useRef(langMap);
               Process_id,
               nodelink
             );
-            const nodeDataParsed = JSON.parse(response.data[0].data);
+    
             if (nodeData.status === true) {
               removeBreadcrumbsAfter(1);
-
-              const allNodes = nodeData.allNodes; // 👈 API se mila array
-              if (Array.isArray(allNodes) && allNodes.length > 0) {
-                // sabse highest level se start
-                allNodes.forEach((node) => {
-                  const parsedData = JSON.parse(node.data || "{}");
-                  const label = parsedData.label || "";
-                  const node_id = node.node_id;
-                  const process_id = node.Process_id;
-
-                  // ✅ Level number get karo
-                  let currentLevel = 0;
-                  const match = node_id.match(/^Level(\d+)/);
-                  if (match && match[1]) {
-                    currentLevel = parseInt(match[1], 10);
-                  }
-                  const newLevel = currentLevel + 1;
-
-                  const user = { id: node.user_id };
-
-                  // ✅ URL banao
-                  const url = `/Draft-Process-View/${newLevel}/${node_id}/${process_id}`;
-
-                  addBreadcrumb(label, url);
-                });
-              }
-
               if (nodeData.Page_Title === "ProcessMap") {
                 navigate(`/Draft-Process-View/${newLevel}/${nodelink}/${id}`);
               }
@@ -1475,11 +1475,11 @@ const langMapRef = useRef(langMap);
       : []),
     ...(detailschecking?.type === "progressArrow"
       ? [
-          ...(detailschecking?.data?.link
+          ...(detailschecking?.data?.processlink
             ? [
                 {
                   label: `${t("open_existing_model")}`,
-                  action: () => openExistingModel(detailschecking?.data?.link),
+                  action: () => openExistingModel(detailschecking?.data?.processlink),
                   borderBottom: true,
                 },
                 {
@@ -1734,6 +1734,7 @@ const langMapRef = useRef(langMap);
   const handleSaveVersionDetails = (payload) => {
     setversionPopupPayload(payload);
     setShowVersionPopup(false);
+       setHasUnsavedChanges(true);
   };
 
   const handleSupportViewlangugeId = (langId) => {

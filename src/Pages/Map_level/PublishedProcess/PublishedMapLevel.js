@@ -160,6 +160,8 @@ const PublishedMapLevel = () => {
           currentParentId,
           language_id
         );
+
+        console.log("data",data)
         // ✅ Set user from backend response
         if (data && data.user_id) {
           // Construct user object based on backend logic

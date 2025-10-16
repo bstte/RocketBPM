@@ -196,6 +196,9 @@ const DraftProcesMapLevel = () => {
         draftStatus,
         PageGroupId
       );
+
+      
+  
       if (getPublishedDate.status === true) {
         setgetPublishedDate(getPublishedDate.updated_at);
       } else {

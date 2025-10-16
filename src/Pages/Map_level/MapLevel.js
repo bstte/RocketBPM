@@ -198,7 +198,7 @@ const langKey = langMapRef.current[Number(currentLangId)] || "en";
 
   useEffect(() => {
     fetchNodes();
-  }, []);
+  }, [currentLevel]);
 
   const fetchNodes = async (language_id = null) => {
     console.log("langMap",langMap)
@@ -226,6 +226,7 @@ const langKey = langMapRef.current[Number(currentLangId)] || "en";
         api.GetPublishedDate(Process_id, publishedStatus, PageGroupId),
         api.GetPublishedDate(Process_id, draftStatus, PageGroupId),
       ]);
+
       if (publishedResponse.status === true) {
         setgetPublishedDate(publishedResponse.updated_at || "");
       } else {
@@ -325,8 +326,8 @@ const langKey = langMapRef.current[Number(currentLangId)] || "en";
     const label = currentLevel === 0 ? title : title;
     const path =
       currentLevel === 0
-        ? "/Map-level"
-        : `/level/${currentLevel}/${currentParentId}`;
+        ? `/Draft-Process-View/${id}`
+        : `/Draft-Process-View/${currentLevel}/${currentParentId}/${id}`;
 
     const state = {};
 

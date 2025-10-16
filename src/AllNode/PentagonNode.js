@@ -11,12 +11,10 @@ const PentagonNode = ({ data, id, selectedNodeId }) => {
 
   const isClickable = selectedNodeId === id;
 
-  // Sync label from parent
   useEffect(() => {
     setLabel(data.label || "");
   }, [data.label]);
 
-  // Sync width/height from parent (publish -> edit)
   useEffect(() => {
     if (data.width_height?.width && data.width_height?.height) {
       setWidth(data.width_height.width);
@@ -79,7 +77,6 @@ const PentagonNode = ({ data, id, selectedNodeId }) => {
           : "none",
       }}
     >
-      {/* Pentagon Shape */}
       <div
         style={{
           ...styles.pentagonBox,

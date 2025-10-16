@@ -61,11 +61,10 @@ export const getNodes = async (level = null, user_id = null, Process_id = null,c
   }
 };
 
-export const getallpublishObject_Tolinkexistingmodel = async (level = null, user_id = null, Process_id = null) => {
+export const getallpublishObject_Tolinkexistingmodel = async ( user_id = null, Process_id = null) => {
   try {
     const response = await api.get('/getallpublishObject_Tolinkexistingmodel', {
       params: {
-        level,
         user_id,
         Process_id
       }
