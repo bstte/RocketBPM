@@ -1324,7 +1324,7 @@ const filteredNodes = data.nodes.filter(
   };
 
   const openExistingModel = async (nodelink) => {
-    const confirmcondition = await handleBack(); // Wait for confirmation
+    const confirmcondition = await handleExitBack(); // Wait for confirmation
     if (confirmcondition) {
       if (nodelink) {
         try {
@@ -1570,18 +1570,18 @@ const filteredNodes = data.nodes.filter(
     event.preventDefault();
   };
 
-  const handleBack = async () => {
-    if (hasUnsavedChanges) {
-      const userConfirmed = window.confirm(
-        "You have unsaved changes. Do you want to save them before leaving?"
-      );
-      if (!userConfirmed) {
-        return false;
-      }
-      await handleSaveNodes("draft"); // Wait for saving to complete
-    }
-    return true;
-  };
+  // const handleBack = async () => {
+  //   if (hasUnsavedChanges) {
+  //     const userConfirmed = window.confirm(
+  //       "You have unsaved changes. Do you want to save them before leaving?"
+  //     );
+  //     if (!userConfirmed) {
+  //       return false;
+  //     }
+  //     await handleSaveNodes("draft"); // Wait for saving to complete
+  //   }
+  //   return true;
+  // };
 
   const handleExitBack = async () => {
     if (!hasUnsavedChanges) return true; // No unsaved changes, just exit
@@ -1749,7 +1749,7 @@ const filteredNodes = data.nodes.filter(
         onSave={handleSaveNodes}
         onPublish={handleSaveNodes}
         addNode={addNode}
-        handleBackdata={handleBack}
+        handleBackdata={handleExitBack}
         iconNames={iconNames}
         getPublishedDate={getPublishedDate}
         getDraftedDate={getDraftedDate}

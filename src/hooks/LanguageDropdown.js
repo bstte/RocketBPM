@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useLangMap } from "../hooks/useLangMap"; // adjust path
+import { getFlagUrl } from "./useFlagMap";
 
 const LanguageDropdown = ({
   supportedLanguages = [],
@@ -53,20 +54,38 @@ const LanguageDropdown = ({
         >
           {supportedLanguages.map((langId) => {
             const langName = langMap[langId] || `Lang ${langId}`;
-          const isSelected = Number(selectedLanguage) === Number(langId);
+            const isSelected = Number(selectedLanguage) === Number(langId);
 
             return (
               <div
                 key={langId}
                 onClick={() => handleSelect(langId)}
                 style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
                   padding: "8px 12px",
-                  background: isSelected ? "#f0f0f0" : "#fff",
+                  background: isSelected ? "#f5f5f5" : "#fff",
                   cursor: "pointer",
-                  fontWeight: isSelected ? 600 : 400,
+                  transition: "background 0.2s",
                 }}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.background = "#f9f9f9")
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.background = isSelected
+                    ? "#f5f5f5"
+                    : "#fff")
+                }
               >
-                {langName}
+                <img
+                  src={getFlagUrl(langName)}
+                  alt={langId}
+                  style={{ width: 20, height: 14, borderRadius: 2 }}
+                />
+                <span style={{ fontSize: 14, fontWeight: 500 }}>
+                  {langName}
+                </span>
               </div>
             );
           })}
