@@ -327,6 +327,21 @@ export const updateprofile = async (token, profileData) => {
   }
 };
 
+export const deleteExistingRole = async (Process_id = null, PageGroupId = null, parentId = null,link=null) => {
+  try {
+    const response = await api.post('/delete-role-link', {
+      Process_id,
+      PageGroupId,
+      parentId,
+      link
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting existing role:', error);
+    throw error;
+  }
+};
+
 
 export const removeProfileImgage = async (token) => {
   try {

@@ -28,6 +28,7 @@ import api, {
   addFavProcess,
   checkFavProcess,
   checkRecordWithGetLinkDraftData,
+  deleteExistingRole,
   filter_draft,
   getdataByNodeId,
   getNextPageGroupId,
@@ -162,13 +163,12 @@ const SwimlaneModel = () => {
 
   const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
   const processLangRef = useRef(processDefaultlanguage_id);
-const langMapRef = useRef(langMap);
+  const langMapRef = useRef(langMap);
 
   useEffect(() => {
     processLangRef.current = processDefaultlanguage_id;
-      langMapRef.current = langMap;
-
-  }, [processDefaultlanguage_id,langMap]);
+    langMapRef.current = langMap;
+  }, [processDefaultlanguage_id, langMap]);
 
   const handleLabelChange = useCallback(
     (nodeId, newLabel) => {
@@ -177,10 +177,6 @@ const langMapRef = useRef(langMap);
           if (node.id === nodeId) {
             const currentLangId = processLangRef.current; // ✅ always latest
             const langKey = langMapRef.current[Number(currentLangId)] || "en";
-
-// console.log("langMap",langMap)
-             console.log("handleLabelChange → currentLangId:", currentLangId, "langKey:", langKey);
-
             return {
               ...node,
               data: {
@@ -313,8 +309,6 @@ const langMapRef = useRef(langMap);
           actual_user_id: data.actual_user_id,
         });
       }
-
-      console.log("data checiking",data)
       setprocess_img(data.process_img);
       Settitle(data.title);
       SetParentPageGroupId(data.PageGroupId);
@@ -407,25 +401,25 @@ const langMapRef = useRef(langMap);
       });
 
       const parsedEdges = data.edges.map((edge) => {
-        const sourceNode = data.nodes.find(
-          (node) => node.node_id === edge.source
-        );
-        const targetNode = data.nodes.find(
-          (node) => node.node_id === edge.target
-        );
+        // const sourceNode = data.nodes.find(
+        //   (node) => node.node_id === edge.source
+        // );
+        // const targetNode = data.nodes.find(
+        //   (node) => node.node_id === edge.target
+        // );
 
-        const sourcePosition = sourceNode
-          ? JSON.parse(sourceNode.position || '{"x":0,"y":0}')
-          : { x: 0, y: 0 };
-        const targetPosition = targetNode
-          ? JSON.parse(targetNode.position || '{"x":0,"y":0}')
-          : { x: 0, y: 0 };
+        // const sourcePosition = sourceNode
+        //   ? JSON.parse(sourceNode.position || '{"x":0,"y":0}')
+        //   : { x: 0, y: 0 };
+        // const targetPosition = targetNode
+        //   ? JSON.parse(targetNode.position || '{"x":0,"y":0}')
+        //   : { x: 0, y: 0 };
 
         // Check if in same row or same column
-        const isSameRow = Math.abs(sourcePosition.y - targetPosition.y) < 10; // 10px tolerance
-        const isSameColumn = Math.abs(sourcePosition.x - targetPosition.x) < 10;
+        // const isSameRow = Math.abs(sourcePosition.y - targetPosition.y) < 10; // 10px tolerance
+        // const isSameColumn = Math.abs(sourcePosition.x - targetPosition.x) < 10;
 
-        const edgeType = isSameRow || isSameColumn ? "default" : "step";
+        // const edgeType = isSameRow || isSameColumn ? "default" : "step";
 
         return {
           ...edge,
@@ -437,7 +431,7 @@ const langMapRef = useRef(langMap);
             height: 12,
           },
           style: { stroke: "#002060", strokeWidth: 2 },
-          type: edgeType,
+          type: "step",
         };
       });
 
@@ -515,7 +509,7 @@ const langMapRef = useRef(langMap);
       setSelectedNodeId(node.id);
       handleClosePopup();
       setOptions([]);
-
+      setIsModalOpen(false);
       setIsCheckboxPopupOpen(false);
     },
 
@@ -541,7 +535,12 @@ const langMapRef = useRef(langMap);
     };
     checkpublishfunction();
   }, [ParentPageGroupId, currentLevel]);
-  const addNode = async (type, position, label = "", existingNodeData = null) => {
+  const addNode = async (
+    type,
+    position,
+    label = "",
+    existingNodeData = null
+  ) => {
     let PageGroupId;
 
     if (!ChildNodes[0]?.PageGroupId) {
@@ -580,30 +579,36 @@ const langMapRef = useRef(langMap);
             ),
           defaultwidt: "40px",
           defaultheight: "40px",
-           width_height:
-          type === "StickyNote"
-            ? { width: 240, height: 180 }
-            : { width: 326, height: 90 },
+          translations:
+            type === "FreeText"
+              ? existingNodeData?.translations || {
+                  [langMapRef.current[Number(processLangRef.current)] || "en"]:
+                    label,
+                }
+              : {},
+          width_height:
+            type === "StickyNote"
+              ? { width: 240, height: 180 }
+              : { width: 326, height: 90 },
           autoFocus: true,
 
           nodeResize: false,
 
-            updateWidthHeight: (id, size) => {
-          setChiledNodes((prevNodes) =>
-            prevNodes.map((node) =>
-              node.id === id
-                ? {
-                    ...node,
-                    data: {
-                      ...node.data,
-                      width_height: size,
-                    },
-                  }
-                : node
-            )
-          );
-        },
-
+          updateWidthHeight: (id, size) => {
+            setChiledNodes((prevNodes) =>
+              prevNodes.map((node) =>
+                node.id === id
+                  ? {
+                      ...node,
+                      data: {
+                        ...node.data,
+                        width_height: size,
+                      },
+                    }
+                  : node
+              )
+            );
+          },
         },
         type: type,
         position: position,
@@ -652,25 +657,35 @@ const langMapRef = useRef(langMap);
 
         parentNode: selectedGroupId,
         extent: "parent",
-         data: existingNodeData
-        ? existingNodeData: {
-          label: label,
-          details: { title: label, content: "" },
-          link: selectedexistigrolenodeId ? selectedexistigrolenodeId : "",
-          autoFocus: true,
-          shape: type,
-          onLabelChange: (newLabel) =>
-            handleLabelChange(
-              currentParentId !== null
-                ? `Level${currentLevel}_${newNodeId}_${currentParentId}`
-                : `Level${currentLevel}_${newNodeId}`,
-              newLabel
-            ),
+        data: existingNodeData
+          ? {
+              ...existingNodeData,
+              onLabelChange: (newLabel) =>
+                handleLabelChange(
+                  currentParentId !== null
+                    ? `Level${currentLevel}_${newNodeId}_${currentParentId}`
+                    : `Level${currentLevel}_${newNodeId}`,
+                  newLabel
+                ),
+            }
+          : {
+              label: label,
+              details: { title: label, content: "" },
+              link: selectedexistigrolenodeId ? selectedexistigrolenodeId : "",
+              autoFocus: true,
+              shape: type,
+              onLabelChange: (newLabel) =>
+                handleLabelChange(
+                  currentParentId !== null
+                    ? `Level${currentLevel}_${newNodeId}_${currentParentId}`
+                    : `Level${currentLevel}_${newNodeId}`,
+                  newLabel
+                ),
 
-          defaultwidt: "40px",
-          defaultheight: "40px",
-          nodeResize: false,
-        },
+              defaultwidt: "40px",
+              defaultheight: "40px",
+              nodeResize: false,
+            },
         type: type,
         position: centeredPosition,
         draggable: true,
@@ -726,8 +741,7 @@ const langMapRef = useRef(langMap);
   const memoizedEdgeTypes = useMemo(() => edgeTypes, [edgeTypes]);
 
   const handleSaveNodes = async (savetype) => {
-
-    console.log("chiils node",ChildNodes)
+    // console.log("chiils node", ChildNodes);
     if (savetype === "Published" && currentLevel !== 0) {
       try {
         const response = await filter_draft(ParentPageGroupId);
@@ -819,7 +833,8 @@ const langMapRef = useRef(langMap);
           })
         ),
       });
-      alert(response.message);
+      CustomAlert.success("Success", response.message);
+
       setHasUnsavedChanges(false);
     } catch (error) {
       console.error("Error saving nodes:", error);
@@ -894,13 +909,35 @@ const langMapRef = useRef(langMap);
     }
   };
 
-  const handleDeleteNode = () => {
+  const handleDeleteNode = async () => {
     if (selectedNode) {
       const confirmDeletion = window.confirm(
         "Are you sure you want to delete this nodes?"
       );
       if (!confirmDeletion) return;
+      if (
+        selectedNode.type === "SwimlineRightsideBox" &&
+        selectedNode.data?.link
+      ) {
+        try {
+          const Process_id = selectedNode?.Process_id;
+          const PageGroupId = selectedNode?.PageGroupId;
+          const parentId = selectedNode?.parentId;
+          const link = selectedNode.data?.link;
 
+          const deleteresponse = await deleteExistingRole(
+            Process_id,
+            PageGroupId,
+            parentId,
+            link
+          );
+          if (deleteresponse.status) {
+            CustomAlert.success("Success", deleteresponse.message);
+          }
+        } catch (error) {
+          console.error("delete existiong role time error:", error);
+        }
+      }
       setChiledNodes((nodes) =>
         nodes.filter((node) => node.id !== selectedNode.id)
       );
@@ -915,7 +952,7 @@ const langMapRef = useRef(langMap);
   };
 
   const handleNodeRightClick = (event, node) => {
-    console.log("node id", node);
+    // console.log("node id", node);
     setSelectedEdge(null);
     if (node.Page_Title === "Swimlane") {
       setOptions([]);
@@ -1076,13 +1113,17 @@ const langMapRef = useRef(langMap);
         }
       }
 
-      if (node.type === "StickyNote" || node.type === "Yes" ||
+      if (
+        node.type === "StickyNote" ||
+        node.type === "Yes" ||
         node.type === "No" ||
-        node.type === "FreeText") {
+        node.type === "FreeText"
+      ) {
         const flowContainer = document.querySelector(".publishcontainer");
         if (!flowContainer) return;
 
-        const { left, top, right, bottom } = flowContainer.getBoundingClientRect();
+        const { left, top, right, bottom } =
+          flowContainer.getBoundingClientRect();
         const nodeElement = document.querySelector(`[data-id="${node.id}"]`);
         if (!nodeElement) return;
 
@@ -1094,17 +1135,16 @@ const langMapRef = useRef(langMap);
           nodeRect.bottom > bottom;
 
         if (isOutOfBounds) {
-            setChiledNodes((prev) =>
-              prev.map((child) =>
-                child.id === node.id
-                  ? { ...child, position: KeepOldPosition } // revert if out of bounds
-                  : child
-              )
-            );
+          setChiledNodes((prev) =>
+            prev.map((child) =>
+              child.id === node.id
+                ? { ...child, position: KeepOldPosition } // revert if out of bounds
+                : child
+            )
+          );
         }
-        return
+        return;
       }
-
 
       if (nearestParentNode) {
         const updatedPosition = centerChildInParent(nearestParentNode, node);
@@ -1183,15 +1223,15 @@ const langMapRef = useRef(langMap);
       Process_id
     );
 
-// console.log("Before filtering:", data.nodes.length);
-// console.log("currentParentId 1:", currentParentId);
+    // console.log("Before filtering:", data.nodes.length);
+    // console.log("currentParentId 1:", currentParentId);
 
-const filteredNodes = data.nodes.filter(
-  (node) => node.type !== "StickyNote" && node.node_id !== currentParentId
-);
+    const filteredNodes = data.nodes.filter(
+      (node) => node.type !== "StickyNote" && node.node_id !== currentParentId
+    );
 
-// console.log("After filtering:", filteredNodes.length);
-// console.log("Filtered nodes:", filteredNodes);
+    // console.log("After filtering:", filteredNodes.length);
+    // console.log("Filtered nodes:", filteredNodes);
 
     setLinknodeList(filteredNodes);
     // console.log("check data filteredNodes", filteredNodes)
@@ -1236,22 +1276,23 @@ const filteredNodes = data.nodes.filter(
       // addNode("SwimlineRightsideBox", "", title);
       // setSelectedexistingrolenodeId("");
 
-        if (!selectedNode) return;
+      if (!selectedNode) return;
 
-    // Clone existing node data
-    const newNodeData = { ...selectedNode.data, link: selectedexistigrolenodeId };
+      // Clone existing node data
+      const newNodeData = {
+        ...selectedNode.data,
+        link: selectedexistigrolenodeId,
+      };
+      setIsexistingroleCheckboxPopupOpen(false);
 
-    setIsexistingroleCheckboxPopupOpen(false);
+      // Add new node using cloned data
+      addNode("SwimlineRightsideBox", "", "", newNodeData);
 
-    // Add new node using cloned data
-    addNode("SwimlineRightsideBox", "", "", newNodeData);
-
-    setSelectedexistingrolenodeId("");
+      setSelectedexistingrolenodeId("");
     }
   };
 
   const saveSelectedNodes = () => {
-    
     if (selectedLinknodeIds && selectedTitle) {
       setChiledNodes((nds) =>
         nds.map((node) => {
@@ -1354,7 +1395,7 @@ const filteredNodes = data.nodes.filter(
               Process_id,
               nodelink
             );
-    
+
             if (nodeData.status === true) {
               removeBreadcrumbsAfter(1);
               if (nodeData.Page_Title === "ProcessMap") {
@@ -1377,6 +1418,32 @@ const filteredNodes = data.nodes.filter(
       }
     }
   };
+  // const handleTextSubmit = (enteredText) => {
+  //   setIsModalOpen(false);
+
+  //   if (!enteredText) return;
+
+  //   setHasUnsavedChanges(true);
+
+  //   // If selectedNodeId is null, create a new node
+  //   if (selectedNodefreetextId) {
+  //     setChiledNodes((prevNodes) => {
+  //       return prevNodes.map((node) =>
+  //         node.id === selectedNodefreetextId
+  //           ? { ...node, data: { ...node.data, label: enteredText } }
+  //           : node
+  //       );
+  //     });
+  //     setSelectedNodefreetextId(null);
+  //   } else {
+  //     addNode(
+  //       "FreeText",
+  //       { x: modalPosition.x - 70, y: modalPosition.y - 125 },
+  //       enteredText
+  //     );
+  //   }
+  // };
+
   const handleTextSubmit = (enteredText) => {
     setIsModalOpen(false);
 
@@ -1384,21 +1451,41 @@ const filteredNodes = data.nodes.filter(
 
     setHasUnsavedChanges(true);
 
-    // If selectedNodeId is null, create a new node
+    const currentLangId = processLangRef.current;
+    const langKey = langMapRef.current[Number(currentLangId)] || "en";
+
     if (selectedNodefreetextId) {
+      // Update existing node
       setChiledNodes((prevNodes) => {
-        return prevNodes.map((node) =>
-          node.id === selectedNodefreetextId
-            ? { ...node, data: { ...node.data, label: enteredText } }
-            : node
-        );
+        return prevNodes.map((node) => {
+          if (node.id === selectedNodefreetextId) {
+            const updatedTranslations = {
+              ...(node.data.translations || {}),
+              [langKey]: enteredText,
+            };
+
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                label: enteredText,
+                translations: updatedTranslations,
+              },
+            };
+          }
+          return node;
+        });
       });
+
       setSelectedNodefreetextId(null);
     } else {
+      // Create new FreeText node with translations
+      const translations = { [langKey]: enteredText };
       addNode(
         "FreeText",
         { x: modalPosition.x - 70, y: modalPosition.y - 125 },
-        enteredText
+        enteredText,
+        { translations }
       );
     }
   };
@@ -1409,8 +1496,6 @@ const filteredNodes = data.nodes.filter(
     setSelectedNodefreetextId(data.id);
     setModalText(data.data.label || "");
     setIsModalOpen(true);
-
-    // console.log("this is free text udpate ",selectedNodeId)
   };
 
   const handlePopupAction = (action) => {
@@ -1425,7 +1510,7 @@ const filteredNodes = data.nodes.filter(
     } else if (action === "addFreeText") {
       setIsModalOpen(true);
       setModalText("");
-      setModalPosition({ x, y }); // Store x, y in state
+      setModalPosition({ x, y });
     } else if (action === "addDetails") {
       openPopup();
     }
@@ -1479,7 +1564,8 @@ const filteredNodes = data.nodes.filter(
             ? [
                 {
                   label: `${t("open_existing_model")}`,
-                  action: () => openExistingModel(detailschecking?.data?.processlink),
+                  action: () =>
+                    openExistingModel(detailschecking?.data?.processlink),
                   borderBottom: true,
                 },
                 {
@@ -1508,11 +1594,15 @@ const filteredNodes = data.nodes.filter(
         ]
       : []),
 
-    {
-      label: `${t("translation")}`,
-      action: translation,
-      borderBottom: false,
-    },
+    ...(detailschecking?.type !== "Yes" && detailschecking?.type !== "No"
+      ? [
+          {
+            label: `${t("translation")}`,
+            action: translation,
+            borderBottom: false,
+          },
+        ]
+      : []),
 
     {
       label: `${t("Delete")}`,
@@ -1537,7 +1627,7 @@ const filteredNodes = data.nodes.filter(
   const onEdgeClick = useCallback((event, edge) => {
     const { clientX, clientY } = event;
     setPosition({ x: clientX, y: clientY });
-    console.log("asdf", event);
+    // console.log("asdf", event);
     setMenuVisible(false);
     setOptions([]);
     setSelectedEdge(edge);
@@ -1704,7 +1794,7 @@ const filteredNodes = data.nodes.filter(
         const newLabel =
           translations[langKey] || node.data.label || node.data?.details?.title;
 
-        if (node.type === "StickyNote") {
+        if (node.type === "StickyNote" || node.type === "FreeText") {
           return {
             ...node,
             data: {
@@ -1734,7 +1824,7 @@ const filteredNodes = data.nodes.filter(
   const handleSaveVersionDetails = (payload) => {
     setversionPopupPayload(payload);
     setShowVersionPopup(false);
-       setHasUnsavedChanges(true);
+    setHasUnsavedChanges(true);
   };
 
   const handleSupportViewlangugeId = (langId) => {
@@ -1869,9 +1959,8 @@ const filteredNodes = data.nodes.filter(
                 ChildNodes.find((node) => node.node_id === selectedNodeId) ||
                 null
               }
-               supportedLanguages={supportedLanguages}
-                selectedLanguage={processDefaultlanguage_id}
-
+              supportedLanguages={supportedLanguages}
+              selectedLanguage={processDefaultlanguage_id}
             />
           </div>
 

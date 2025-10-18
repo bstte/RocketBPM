@@ -60,7 +60,7 @@ const [showPassword, setShowPassword] = useState(false); // 👁️ toggle for p
         email: formData.email,
         password: formData.password,
       });
-
+console.log("reposdf",response)
       CustomAlert.success("Success", response.message);
       navigate('/login', { replace: true });
 

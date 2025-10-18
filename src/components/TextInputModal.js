@@ -9,8 +9,11 @@ const TextInputModal = ({ isOpen, onSubmit,initialValue }) => {
   if (!isOpen) return null;
 
   const onOk=(textdata)=>{
-    // setText("")
+   
     onSubmit(textdata)
+    setTimeout(() => {
+       setText("")
+    }, 1000);
   }
 
 

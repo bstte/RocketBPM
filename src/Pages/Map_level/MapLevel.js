@@ -149,15 +149,14 @@ const MapLevel = () => {
     }),
     []
   );
- 
+
   const processLangRef = useRef(processDefaultlanguage_id);
-const langMapRef = useRef(langMap);
+  const langMapRef = useRef(langMap);
 
   useEffect(() => {
     processLangRef.current = processDefaultlanguage_id;
-      langMapRef.current = langMap;
-
-  }, [processDefaultlanguage_id,langMap]);
+    langMapRef.current = langMap;
+  }, [processDefaultlanguage_id, langMap]);
 
   const handleLabelChange = useCallback(
     (nodeId, newLabel) => {
@@ -166,8 +165,8 @@ const langMapRef = useRef(langMap);
           if (node.id !== nodeId) return node;
           const currentLangId = processLangRef.current; // ✅ always latest
 
-const langKey = langMapRef.current[Number(currentLangId)] || "en";
-// console.log("langMap",langMapRef)
+          const langKey = langMapRef.current[Number(currentLangId)] || "en";
+          // console.log("langMap",langMapRef)
 
           //  console.log("handleLabelChange → currentLangId:", currentLangId, "langKey:", langKey);
 
@@ -201,7 +200,7 @@ const langKey = langMapRef.current[Number(currentLangId)] || "en";
   }, [currentLevel]);
 
   const fetchNodes = async (language_id = null) => {
-    console.log("langMap",langMap)
+    console.log("langMap", langMap);
 
     try {
       const levelParam =
@@ -352,13 +351,12 @@ const langKey = langMapRef.current[Number(currentLangId)] || "en";
     title,
     breadcrumbs, // ✅ include breadcrumbs dependency
   ]);
- useEffect(() => {
+  useEffect(() => {
     const checkpublishfunction = async () => {
       if (currentLevel !== 0) {
         try {
-        
           const response = await filter_draft(ParentPageGroupId);
-    
+
           if (response?.data === true) {
             Setcheckpublish(false);
           } else {
@@ -545,11 +543,9 @@ const langKey = langMapRef.current[Number(currentLangId)] || "en";
     }
   };
   const handleSaveNodes = async (savetype) => {
-  
     if (savetype === "Published" && currentLevel !== 0) {
       try {
         const response = await filter_draft(ParentPageGroupId);
-    
 
         if (response.data === true) {
           alert("Publish all parent models first");
@@ -632,7 +628,7 @@ const langKey = langMapRef.current[Number(currentLangId)] || "en";
           })
         ),
       });
-      alert(response.message);
+      CustomAlert.success("Success", response.message);
       setHasUnsavedChanges(false);
     } catch (error) {
       console.error("Error saving nodes:", error);
