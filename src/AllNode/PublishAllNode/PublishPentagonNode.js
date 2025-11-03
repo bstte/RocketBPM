@@ -16,6 +16,8 @@ const PublishPentagonNode = ({ data }) => {
 
   return (
     <div
+    className="pentagon_box"
+
       style={{
         ...styles.wrapper,
         filter: data.hasNextLevel
@@ -25,6 +27,7 @@ const PublishPentagonNode = ({ data }) => {
     >
       {/* Pentagon Box */}
       <div
+      className="pentagon_box_inner"
         style={{
           ...styles.pentagonBox,
           width: `${width}px`,
@@ -33,6 +36,8 @@ const PublishPentagonNode = ({ data }) => {
         }}
       >
         <div
+className="pentagon_textbox"
+
           style={{
             cursor: "pointer",
             fontSize: "1rem",

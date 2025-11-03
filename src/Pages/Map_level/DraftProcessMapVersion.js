@@ -23,7 +23,7 @@ import { getVersionViewData } from "../../API/api";
 import { useDynamicHeight } from "../../hooks/useDynamicHeight";
 
 const DraftProcessMapVersion = () => {
-  const { processId, level, version, pageTitle } = useParams();
+  const { processId, level, version, pageTitle,user_id } = useParams();
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
   const [Title, SetTitle] = useState("")
@@ -60,7 +60,7 @@ const DraftProcessMapVersion = () => {
   useEffect(() => {
     const fetchVersionData = async () => {
       try {
-        const response = await getVersionViewData(processId, level, version, pageTitle);
+        const response = await getVersionViewData(processId, level, version, pageTitle,user_id);
         const { nodes, edges } = response;
         SetTitle(nodes[0]?.version)
         const parsedNodes = nodes.map((node) => ({

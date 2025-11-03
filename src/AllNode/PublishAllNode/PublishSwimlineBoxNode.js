@@ -99,7 +99,7 @@ const BoxNode = ({ data }) => {
       <div className="swimboxnode_2" style={styles.wrapper} onClick={handleBoxClick} ref={boxRef}>
         <div className="borderBox" style={styles.box}>
           <div>
-            <button style={styles.withoutlinkButton}>{title}</button>
+            <button className="published_box_text" style={styles.withoutlinkButton}>{title}</button>
           </div>
         </div>
 
@@ -200,7 +200,10 @@ const styles = {
     border: "1px solid #002060",
     width: "100%",
     height: "100%",
-    padding: "10px",
+  paddingTop: "2px",
+    paddingBottom: "2px",
+    paddingLeft: "5px",
+    paddingRight: "5px",
     boxSizing: "border-box",
     overflow: "hidden",
   },

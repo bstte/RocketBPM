@@ -4,7 +4,7 @@ import ContentEditable from "react-contenteditable";
 
 const PentagonNode = ({ data, id, selectedNodeId }) => {
   const [label, setLabel] = useState(data.label || "");
-  const [autoFocus, setAutoFocus] = useState(data.autoFocus || false);
+  // const [autoFocus, setAutoFocus] = useState(data.autoFocus || false);
   const [width, setWidth] = useState(data.width_height?.width || 150);
   const [height, setHeight] = useState(data.width_height?.height || 150);
   const contentRef = useRef(null);
@@ -24,14 +24,23 @@ const PentagonNode = ({ data, id, selectedNodeId }) => {
 
   // Auto focus once
 
-  useEffect(() => {
-    if (autoFocus && contentRef.current) {
-      setTimeout(() => {
-        contentRef.current.focus();
-        setAutoFocus(false);
-      }, 0);
-    }
-  }, [autoFocus]);
+  // useEffect(() => {
+  //   if (autoFocus && contentRef.current) {
+  //     setTimeout(() => {
+  //       contentRef.current.focus();
+  //       setAutoFocus(false);
+  //     }, 0);
+  //   }
+  // }, [autoFocus]);
+
+    useEffect(() => {
+      if (isClickable && contentRef.current) {
+        // When node is selected, focus on its textarea
+        setTimeout(() => {
+          contentRef.current.focus();
+        }, 0);
+      }
+    }, [isClickable]);
 
   // Handle input changes
   const handleChange = (e) => {

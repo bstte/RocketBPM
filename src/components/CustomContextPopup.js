@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 // import { FaTimes } from 'react-icons/fa';
 
 const CustomContextPopup = ({
@@ -8,17 +8,28 @@ const CustomContextPopup = ({
   onClose,
 }) => {
   if (!isVisible) return null;
+  // Menu dimensions (adjust to your style)
+  const menuWidth = 300;
+  const menuHeight = 100;
+
+  // Prevent menu overflow
+  let x = position.x;
+  let y = position.y;
+  const { innerWidth, innerHeight } = window;
+
+  if (x + menuWidth > innerWidth) x = innerWidth - menuWidth - 20;
+  if (y + menuHeight > innerHeight) y = innerHeight - menuHeight - 40;
 
   return (
     <div
       style={{
-        position: 'absolute',
-        top: position.y,
-        left: position.x,
-        backgroundColor: '#fff',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+        position: "fixed",
+        top: `${y}px`,
+        left: `${x}px`,
+        backgroundColor: "#fff",
+        boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
         zIndex: 10,
-        minWidth: '150px', 
+        minWidth: "150px",
       }}
     >
       {/* <div className='swimlanemenuclose' style={{
@@ -51,20 +62,19 @@ const CustomContextPopup = ({
 
       {menuItems.map((item, index) => (
         <div
-          className='menuitems'
+          className="menuitems"
           key={index}
           onClick={() => {
             item.action();
             onClose();
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = '#ff364a';
-            e.currentTarget.style.color = '#fff'
+            e.currentTarget.style.backgroundColor = "#ff364a";
+            e.currentTarget.style.color = "#fff";
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = '#e7e7e7';
-            e.currentTarget.style.color = '#011f60'
-
+            e.currentTarget.style.backgroundColor = "#e7e7e7";
+            e.currentTarget.style.color = "#011f60";
           }}
         >
           {item.label}

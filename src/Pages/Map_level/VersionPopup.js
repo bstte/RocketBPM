@@ -4,7 +4,11 @@ import { versionlist, ReplaceVersion, ImageBaseUrl } from "../../API/api";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import CustomAlert from "../../components/CustomAlert";
-import { DefaultemailIcon, DefaultUserIcon, PlusIcon } from "../../components/Icon";
+import {
+  DefaultemailIcon,
+  DefaultUserIcon,
+  PlusIcon,
+} from "../../components/Icon";
 import { useTranslation } from "../../hooks/useTranslation";
 
 const VersionPopup = ({
@@ -18,7 +22,7 @@ const VersionPopup = ({
   handleSaveVersionDetails,
   status,
   type,
-  versionPopupPayload
+  versionPopupPayload,
 }) => {
   const [activeTab, setActiveTab] = useState("contact");
   const [versions, setVersions] = useState([]);
@@ -40,55 +44,67 @@ const VersionPopup = ({
 
   const t = useTranslation();
 
-
   useEffect(() => {
     if (versionPopupPayload) {
       // agar parent me Save dabaya tha to wahi data dikhao
-      setSelectedEmails(versionPopupPayload.contact_info || {
-        domain_owner: [],
-        owner: [],
-        architecture: [],
-        manager: [],
-      });
+      setSelectedEmails(
+        versionPopupPayload.contact_info || {
+          domain_owner: [],
+          owner: [],
+          architecture: [],
+          manager: [],
+        }
+      );
       setRevisionText(versionPopupPayload.revision_info || "");
     }
   }, [versionPopupPayload]);
 
-useEffect(() => {
-  const fetchVersions = async () => {
-    try {
-      const LoginUserId = LoginUser ? LoginUser.id : null;
-      const levelParam =
-        currentParentId !== null
-          ? `Level${currentLevel}_${currentParentId}`
-          : `Level${currentLevel}`;
-      const response = await versionlist(processId, levelParam, LoginUserId, status);
-
-      setVersions(response.versions || []);
-      setAssignedUsers(response.assigned_users || []);
-      setEmailList((response.assigned_users || []).map((u) => u.user.email));
-
-      // 🔑 Only update from API if local payload is not present
-      if (!versionPopupPayload) {
-        setSelectedEmails(
-          response.contact_info || {
-            domain_owner: [],
-            owner: [],
-            architecture: [],
-            manager: [],
-          }
+  useEffect(() => {
+    const fetchVersions = async () => {
+      try {
+        const LoginUserId = LoginUser ? LoginUser.id : null;
+        const levelParam =
+          currentParentId !== null
+            ? `Level${currentLevel}_${currentParentId}`
+            : `Level${currentLevel}`;
+        const response = await versionlist(
+          processId,
+          levelParam,
+          LoginUserId,
+          status
         );
-        setRevisionText(response.revision_info || "");
-      }
-    } catch (error) {
-      console.error("Error fetching versions:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  fetchVersions();
-}, [processId, currentLevel, currentParentId, LoginUser, versionPopupPayload]);
+        setVersions(response.versions || []);
+        setAssignedUsers(response.assigned_users || []);
+        setEmailList((response.assigned_users || []).map((u) => u.user.email));
+
+        // 🔑 Only update from API if local payload is not present
+        if (!versionPopupPayload) {
+          setSelectedEmails(
+            response.contact_info || {
+              domain_owner: [],
+              owner: [],
+              architecture: [],
+              manager: [],
+            }
+          );
+          setRevisionText(response.revision_info || "");
+        }
+      } catch (error) {
+        console.error("Error fetching versions:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchVersions();
+  }, [
+    processId,
+    currentLevel,
+    currentParentId,
+    LoginUser,
+    versionPopupPayload,
+  ]);
 
   // ➕ Popup open
   const openEmailPopup = (role) => {
@@ -174,7 +190,7 @@ useEffect(() => {
       "Are you sure?",
       "This will replace the version. This action cannot be undone!",
       () => ReplaceVersionpage(level, processId, version),
-      () => { }
+      () => {}
     );
   };
 
@@ -184,10 +200,10 @@ useEffect(() => {
     searchQuery.trim() === ""
       ? [] // ✅ agar search empty hai, koi user mat dikhao
       : assignedUsers.filter((u) =>
-        `${u.user.first_name} ${u.user.last_name} ${u.user.email}`
-          .toLowerCase()
-          .includes(searchQuery.toLowerCase())
-      );
+          `${u.user.first_name} ${u.user.last_name} ${u.user.email}`
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase())
+        );
 
   // Roles config (different for map vs swimlane)
   const roleBlocks =
@@ -243,8 +259,12 @@ useEffect(() => {
             <div className="contact-tab">
               {roleBlocks.map((role) => {
                 const roleUsers = assignedUsers
-                  .filter((user) => (selectedEmails[role] || []).includes(user.user.email))
-                  .sort((a, b) => a.user.last_name.localeCompare(b.user.last_name));
+                  .filter((user) =>
+                    (selectedEmails[role] || []).includes(user.user.email)
+                  )
+                  .sort((a, b) =>
+                    a.user.last_name.localeCompare(b.user.last_name)
+                  );
 
                 return (
                   <div key={role} className="contact-item">
@@ -253,10 +273,10 @@ useEffect(() => {
                         {role === "domain_owner"
                           ? "Process Domain Owner:"
                           : role === "owner"
-                            ? "Process Owner:"
-                            : role === "architecture"
-                              ? "Process Architects:"
-                              : "Process Managers:"}
+                          ? "Process Owner:"
+                          : role === "architecture"
+                          ? "Process Architects:"
+                          : "Process Managers:"}
                       </label>
                     </div>
 
@@ -267,7 +287,11 @@ useEffect(() => {
                             <div className="owner-pic">
                               {roleUser.user?.image ? (
                                 <img
-                                  src={`${ImageBaseUrl}uploads/profile_images/${roleUser.user.image}`}
+                                  src={
+                                    roleUser?.user.image.startsWith("http")
+                                      ? roleUser?.user.image // ✅ Google ka full URL
+                                      : `${ImageBaseUrl}uploads/profile_images/${roleUser.user.image}` // ✅ Local image
+                                  }
                                   alt="Profile"
                                   style={{
                                     width: "40px",
@@ -282,22 +306,29 @@ useEffect(() => {
                             </div>
                             <div className="owner-desc">
                               <span className="owner-name">
-                                {roleUser.user.first_name} {roleUser.user.last_name}
+                                {roleUser.user.first_name}{" "}
+                                {roleUser.user.last_name}
                               </span>
                               <div className="owner-actions owner-flex">
-                                <a href={`mailto:${roleUser.user.email}`} className="email-icon">
+                                <a
+                                  href={`https://mail.google.com/mail/?view=cm&fs=1&to=${roleUser.user.email}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
                                   <DefaultemailIcon />
                                 </a>
+
                                 <button
-                                style={{marginLeft:20}}
-                                className="popup-button remove"
-                                  onClick={() => removeUser(role, roleUser.user.email)}
+                                  style={{ marginLeft: 20 }}
+                                  className="popup-button remove"
+                                  onClick={() =>
+                                    removeUser(role, roleUser.user.email)
+                                  }
                                 >
                                   Remove
                                 </button>
                               </div>
                             </div>
-
                           </div>
                         </div>
                       ))
@@ -305,9 +336,8 @@ useEffect(() => {
                       <div className="owner_details_list">
                         <div className="owner_details">
                           <div className="owner-pic">
-                            <DefaultUserIcon />
+                            {/* <DefaultUserIcon /> */}
                           </div>
-                    
                         </div>
                       </div>
                     )}
@@ -345,7 +375,10 @@ useEffect(() => {
 
           {/* VERSION TAB */}
           {activeTab === "version" && (
-            <div className="version-tab" style={{ maxHeight: "300px", overflowY: "auto" }}>
+            <div
+              className="version-tab"
+              style={{ maxHeight: "300px", overflowY: "auto" }}
+            >
               {loading ? (
                 <p>Loading...</p>
               ) : versions.length === 0 ? (
@@ -365,18 +398,28 @@ useEffect(() => {
                       <tr key={index}>
                         <td>{version.version}</td>
                         <td>{new Date(version.created_at).toLocaleString()}</td>
-                        <td>{version.first_name} {version.last_name}</td>
+                        <td>
+                          {version.first_name} {version.last_name}
+                        </td>
                         <td className="actions">
                           <button
                             onClick={() =>
-                              viewVersion(version.process_id, version.level, version.version)
+                              viewVersion(
+                                version.process_id,
+                                version.level,
+                                version.version
+                              )
                             }
                           >
                             👁
                           </button>
                           <button
                             onClick={() =>
-                              handleReplaceClick(version.level, version.process_id, version.version)
+                              handleReplaceClick(
+                                version.level,
+                                version.process_id,
+                                version.version
+                              )
                             }
                           >
                             {t("replace")}
@@ -397,7 +440,8 @@ useEffect(() => {
             <div className="email-popup">
               <div className="email-popup-header">
                 <h4>
-                  {t("select_users_for")} <span className="popup-role">{currentRole}</span>
+                  {t("select_users_for")}{" "}
+                  <span className="popup-role">{currentRole}</span>
                 </h4>
                 <button
                   className="popup-close-btn"
@@ -421,7 +465,9 @@ useEffect(() => {
                     <input
                       type="checkbox"
                       id={`email-${index}`}
-                      checked={(selectedEmails[currentRole] || []).includes(u.user.email)}
+                      checked={(selectedEmails[currentRole] || []).includes(
+                        u.user.email
+                      )}
                       onChange={() => selectEmail(u.user.email)}
                     />
                     <label htmlFor={`email-${index}`}>

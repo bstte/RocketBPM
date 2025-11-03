@@ -18,23 +18,59 @@ const SwimlineRightsideBox = ({ data}) => {
     }
   };
 
-  useEffect(() => {
+  // useEffect(() => {
+  //   if (autoFocus && contentEditableRef.current) {
+  //     setTimeout(() => {
+  //       contentEditableRef.current.focus();
+  //       setAutoFocus(false); 
+  //     }, 0);
+  //   }
+  // }, [autoFocus]);
+
+
+    useEffect(() => {
     if (autoFocus && contentEditableRef.current) {
       setTimeout(() => {
-        contentEditableRef.current.focus();
-        setAutoFocus(false); 
+        const el = contentEditableRef.current;
+        el.focus();
+
+        // Move caret to the end of the content
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        range.collapse(false);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        setAutoFocus(false);
       }, 0);
     }
   }, [autoFocus]);
 
 
-  const handleBoxClick = () => {
+  // const handleBoxClick = () => {
   
-    setTimeout(() => {
-      contentEditableRef.current?.focus();
-    }, 0);
-  };
+  //   setTimeout(() => {
+  //     contentEditableRef.current?.focus();
+  //   }, 0);
+  // };
 
+
+    const handleBoxClick = () => {
+    if (contentEditableRef.current) {
+      setTimeout(() => {
+        const el = contentEditableRef.current;
+        el.focus();
+
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        range.collapse(false); // Move caret to end
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }, 0);
+    }
+  };
 
   const handleBlur = () => {
     // if (data.onLabelChange) {

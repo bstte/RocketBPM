@@ -5,12 +5,11 @@ const ArrowBoxNode = ({ data, id, selectedNodeId }) => {
   const [label, setLabel] = useState(data.label || "");
   const isClickable = selectedNodeId === id;
   const arrowRef = useRef(null);
-  const [autoFocus, setAutoFocus] = useState(data.autoFocus);
+  // const [autoFocus, setAutoFocus] = useState(data.autoFocus);
 
   const [width, setWidth] = useState(data.width_height?.width || 326);
   const [height, setHeight] = useState(data.width_height?.height || 90);
 
-  // NEW IMPORTANT: Sync width/height when data.width_height changes
   useEffect(() => {
     if (data.width_height?.width && data.width_height?.height) {
       setWidth(data.width_height.width);
@@ -18,19 +17,33 @@ const ArrowBoxNode = ({ data, id, selectedNodeId }) => {
     }
   }, [data.width_height]);
 
-
   useEffect(() => {
     setLabel(data.label || "");
   }, [data]);
 
-  useEffect(() => {
-    if (autoFocus && arrowRef.current) {
-      setTimeout(() => {
-        arrowRef.current.focus();
-        setAutoFocus(false);
-      }, 0);
-    }
-  }, [autoFocus]);
+  // useEffect(() => {
+  //   if (autoFocus && arrowRef.current) {
+  //     setTimeout(() => {
+  //       arrowRef.current.focus();
+  //       setAutoFocus(false);
+  //     }, 0);
+  //   }
+  // }, [autoFocus]);
+
+  // 👇 add this below your existing useEffect(autoFocus...)
+useEffect(() => {
+  if (isClickable && arrowRef.current) {
+    setTimeout(() => {
+      const textarea = arrowRef.current;
+      textarea.focus();
+
+      // Move cursor to the end of text if user didn’t click inside manually
+      const len = textarea.value.length;
+      textarea.setSelectionRange(len, len);
+    }, 0);
+  }
+}, [isClickable]);
+
 
   const handleChange = (e) => {
     setLabel(e.target.value);
@@ -52,7 +65,11 @@ const ArrowBoxNode = ({ data, id, selectedNodeId }) => {
   }, [width, height]);
 
   const handleResize = (event, size) => {
-    if (!size || typeof size.width === "undefined" || typeof size.height === "undefined") {
+    if (
+      !size ||
+      typeof size.width === "undefined" ||
+      typeof size.height === "undefined"
+    ) {
       console.warn("Size is undefined", size);
       return;
     }
@@ -89,13 +106,11 @@ const ArrowBoxNode = ({ data, id, selectedNodeId }) => {
     <div
       style={{
         ...styles.wrapper,
-        filter:
-           data.hasNextLevel
-            ? 'drop-shadow(0px 0px 10px #0000004f)'
-            : 'none',
+        filter: data.hasNextLevel
+          ? "drop-shadow(0px 0px 10px #0000004f)"
+          : "none",
       }}
     >
-
       <div
         className="borderBox"
         style={{

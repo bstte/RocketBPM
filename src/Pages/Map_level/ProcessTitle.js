@@ -5,6 +5,7 @@ import CustomHeader from "../../components/CustomHeader";
 import { useSelector } from "react-redux";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useLanguages } from "../../hooks/useLanguages";
+import { useLangMap } from "../../hooks/useLangMap";
 
 const ProcessTitle = () => {
   const [title, setTitle] = useState("");
@@ -12,7 +13,7 @@ const ProcessTitle = () => {
   const user = useSelector((state) => state.user.user);
   const t = useTranslation();
   const { languages } = useLanguages();
-
+ const langMap = useLangMap();
   // New states
   const [supportedLanguages, setSupportedLanguages] = useState([]); // multiple
   const [defaultLanguage, setDefaultLanguage] = useState("");
@@ -40,6 +41,12 @@ const ProcessTitle = () => {
       alert("Please select a default language");
       return;
     }
+const translations = supportedLanguages.reduce((acc, langId) => {
+  const langKey = langMap[langId] || `lang_${langId}`; // 🔑 convert id → code
+  acc[langKey] = langId === parseInt(defaultLanguage) ? title : "";
+  return acc;
+}, {});
+
 
     try {
       const user_id = user && user.id;
@@ -47,7 +54,8 @@ const ProcessTitle = () => {
         title,
         user_id,
         defaultLanguage,
-        supportedLanguages
+        supportedLanguages,
+         translations
       );
 
       navigate(`/map-level/${response.data.id}`, { replace: true });
@@ -64,14 +72,6 @@ const ProcessTitle = () => {
 
       <div className="ss_body_div ss_add_title">
         <div className="ss_add_user_bx">
-          {/* <div className="ss_add_user_img_dv1">
-            <img
-              src="/img/RocketBPM_rocket_logo.png"
-              alt=""
-              style={{ width: '15vw' }}
-            />
-          </div> */}
-
           <h1>{t("name_of_new_process_world")}</h1>
 
           {/* Process Title */}
@@ -84,7 +84,7 @@ const ProcessTitle = () => {
           />
 
           {/* Supported Languages */}
-       <div className='section_style_1'>
+          <div className="section_style_1">
             <h1>{t("Supported_Languages")}</h1>
             <div style={styles.languageList}>
               {languages &&
@@ -102,14 +102,13 @@ const ProcessTitle = () => {
           </div>
 
           {/* Default Language */}
-         <div className='section_style_1'>
-
+          <div className="section_style_1">
             <h1>{t("Default_Language")}</h1>
 
             <select
               value={defaultLanguage}
               onChange={(e) => setDefaultLanguage(e.target.value)}
-               className="select_field"
+              className="select_field"
               disabled={supportedLanguages.length === 0}
             >
               <option value="">Select Default Language</option>

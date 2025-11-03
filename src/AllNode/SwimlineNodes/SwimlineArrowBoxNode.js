@@ -1,7 +1,10 @@
 import { memo, useRef, useState, useEffect, useContext } from "react";
 import { Handle, Position } from "@xyflow/react";
 import ContentEditable from "react-contenteditable";
-import api, { checkRecordWithGetLinkDraftData, getdataByNodeId } from "../../API/api";
+import api, {
+  checkRecordWithGetLinkDraftData,
+  getdataByNodeId,
+} from "../../API/api";
 import { useNavigate } from "react-router-dom";
 import { BreadcrumbsContext } from "../../context/BreadcrumbsContext";
 
@@ -21,6 +24,20 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
     setTimeout(() => {
       contentEditableRef.current?.focus();
     }, 0);
+
+    if (contentEditableRef.current) {
+      setTimeout(() => {
+        const el = contentEditableRef.current;
+        el.focus();
+
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        range.collapse(false); // Move caret to end
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }, 0);
+    }
   };
 
   const handleChange = (e) => {
@@ -42,17 +59,27 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
     }
   };
 
-
   const handleBlur = () => {
     setIsEditing(false);
     if (onTitleChange) {
       onTitleChange(title);
     }
   };
+
   useEffect(() => {
     if (autoFocus && contentEditableRef.current) {
       setTimeout(() => {
-        contentEditableRef.current.focus();
+        const el = contentEditableRef.current;
+        el.focus();
+
+        // Move caret to the end of the content
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        range.collapse(false);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+
         setAutoFocus(false);
       }, 0);
     }
@@ -61,7 +88,7 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
   useEffect(() => {
     setTitle(data.details.title || "");
   }, [data.details.title]);
-  
+
   // const handleLinkClick = async () => {
   //   if (data.link) {
   //     try {
@@ -109,7 +136,7 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
   //               const label = parsedData.label || '';
   //               const node_id = node.node_id;
   //               const process_id = node.Process_id;
-            
+
   //               // ✅ Level number get karo
   //               let currentLevel = 0;
   //               const match = node_id.match(/^Level(\d+)/);
@@ -117,9 +144,9 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
   //                 currentLevel = parseInt(match[1], 10);
   //               }
   //               const newLevel = currentLevel + 1;
-            
+
   //               const user = { id: node.user_id };
-            
+
   //               // ✅ URL banao
   //               const url = `/Draft-Process-View/${newLevel}/${node_id}/${process_id}?title=${encodeURIComponent(label)}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${node.PageGroupId}`;
   //           console.log("addbreadcrums time",node)
@@ -127,15 +154,14 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
   //               addBreadcrumb(label, url);
   //             });
   //           }
-            
-            
+
   //           if (nodeData.Page_Title === "ProcessMap") {
-           
+
   //             navigate(`/Draft-Process-View/${newLevel}/${data.link}/${id}?title=${encodeURIComponent(nodeDataParsed.label || "")}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${response.data[0]?.PageGroupId}`)
 
   //           }
   //           if (nodeData.Page_Title === "Swimlane") {
-         
+
   //             navigate(`/Draft-Swim-lanes-View/level/${newLevel}/${data.link}/${id}?title=${encodeURIComponent(nodeDataParsed.label || "")}&user=${encodeURIComponent(JSON.stringify(user))}&parentId=${data.link}&level=${newLevel}&ParentPageGroupId=${response.data[0]?.PageGroupId}`)
 
   //           }
@@ -153,16 +179,23 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
 
   return (
     <div
-      style={styles.wrapper}
+      style={{...styles.wrapper,
+          filter: data.processlink
+            ? "drop-shadow(rgba(0, 0, 0, 0.31) 0px 0px 10px)"
+            : "none",
+      }}
       onClick={!isEditing ? handleBoxClick : undefined}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Arrow Box */}
-      <div className="borderBox"  style={{
-    ...styles.arrowBox,
-    filter: data.link ? 'drop-shadow(0px 0px 10px #0000004f)' : 'none',
-  }}>
+      <div
+        className="borderBox"
+        style={{
+          ...styles.arrowBox,
+        
+        }}
+      >
         {/* {!isEditing && data.link ? (
           <div style={styles.textView}>
             {data.link && (
@@ -187,10 +220,9 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
           />
         )} */}
 
-
-        {data.link ? (
+        {/* {data.processlink ? (
           <div style={styles.textView}>
-            {data.link && (
+            {data.processlink && (
               <div>
                 <button style={styles.linkButton} >
                   {data.details?.title}
@@ -198,24 +230,21 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
               </div>
             )}
           </div>
-        ) : (
-          <ContentEditable
-            innerRef={contentEditableRef}
-            html={title}
-            onFocus={handleFocus}
-            onChange={(e) =>
-              handleChange({ target: { value: e.target.value } })
-            }
-            onBlur={handleBlur}
-            placeholder="Type title here..."
-            style={styles.label}
-          />
-        )}
+        ) : ( */}
+        <ContentEditable
+          innerRef={contentEditableRef}
+          html={title}
+          onFocus={handleFocus}
+          onChange={(e) => handleChange({ target: { value: e.target.value } })}
+          onBlur={handleBlur}
+          placeholder="Type title here..."
+          style={styles.label}
+        />
+        {/* )} */}
       </div>
 
       {/* Border overlay as a separate div */}
       <div style={styles.borderOverlay}></div>
-
 
       <Handle
         type="target"
@@ -229,7 +258,6 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
         id="top-source"
         style={isHovered ? styles.hoverhandle : styles.handle}
       />
-
     </div>
   );
 };
@@ -255,7 +283,8 @@ const styles = {
     height: "100%",
     // clipPath:
     //   "polygon(0 0, calc(100% - 20px) 0, 100% 50%, calc(100% - 20px) 100%, 0 100%)",
-    clipPath: 'polygon(10px 50%, 0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%)',
+    clipPath:
+      "polygon(10px 50%, 0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%)",
 
     padding: "10px",
     boxSizing: "border-box",

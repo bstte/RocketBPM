@@ -200,8 +200,6 @@ const MapLevel = () => {
   }, [currentLevel]);
 
   const fetchNodes = async (language_id = null) => {
-    console.log("langMap", langMap);
-
     try {
       const levelParam =
         currentParentId !== null
@@ -310,9 +308,34 @@ const MapLevel = () => {
     }
   };
 
-  const handleSupportViewlangugeId = (langId) => {
-    fetchNodes(langId);
+  const handleLanguageSwitch = async (langId) => {
+    if (!hasUnsavedChanges) {
+      // No unsaved changes — directly switch language
+      fetchNodes(langId);
+      return;
+    }
+
+    const shouldProceed = await new Promise((resolve) => {
+      CustomAlert.confirmLanguageSwitch(
+        async () => {
+          // ✅ Save & switch
+          await handleSaveNodes("draft");
+          resolve(true);
+        },
+        () => {
+          // ⚠️ Discard and switch
+          resolve(true);
+        }
+      );
+    });
+
+    if (shouldProceed) {
+     fetchNodes(langId);
+    }
   };
+
+  // const handleSupportViewlangugeId = async (langId) => {};
+
   useCheckFavorite({
     id,
     nodes,
@@ -370,15 +393,13 @@ const MapLevel = () => {
     checkpublishfunction();
   }, [ParentPageGroupId, currentLevel]);
 
-  const onConnect = useCallback((connection) => {
-    console.log("Connected:", connection);
-  }, []);
+  const onConnect = useCallback((connection) => {}, []);
   const addNode = async (type, position, label = "") => {
     const newNodeId = uuidv4();
-
+    const Page_Title = "ProcessMap";
     let PageGroupId;
     if (!nodes[0]?.PageGroupId) {
-      const response = await getNextPageGroupId();
+      const response = await getNextPageGroupId(Page_Title);
       PageGroupId = response.next_PageGroupId;
     } else {
       PageGroupId = nodes[0]?.PageGroupId;
@@ -686,24 +707,44 @@ const MapLevel = () => {
       setShowContextMenu(false);
     }
   }, [showContextMenu]);
+  // const handleGlobalContextMenu = (event) => {
+  //   event.preventDefault();
+  //   const flowContainer = document.querySelector(".flow-container");
+  //   if (!flowContainer) return;
+
+  //   if (event.target.closest(".react-flow__node")) {
+  //     return;
+  //   }
+  //   const containerRect = flowContainer.getBoundingClientRect();
+  //   setShowContextMenu(true);
+  //   setContextMenuPosition({
+  //     x: event.clientX - containerRect.left,
+  //     y: event.clientY - containerRect.top,
+  //   });
+  //   setOriginalPosition({
+  //     x: event.clientX - containerRect.left,
+  //     y: event.clientY - containerRect.top,
+  //   });
+  //   setShowPopup(false);
+  // };
+
   const handleGlobalContextMenu = (event) => {
     event.preventDefault();
-    const flowContainer = document.querySelector(".flow-container");
-    if (!flowContainer) return;
 
-    if (event.target.closest(".react-flow__node")) {
-      return;
-    }
-    const containerRect = flowContainer.getBoundingClientRect();
+    // Don't show menu on nodes
+    if (event.target.closest(".react-flow__node")) return;
+
     setShowContextMenu(true);
     setContextMenuPosition({
-      x: event.clientX - containerRect.left,
-      y: event.clientY - containerRect.top,
+      x: event.clientX,
+      y: event.clientY,
     });
+
     setOriginalPosition({
-      x: event.clientX - containerRect.left,
-      y: event.clientY - containerRect.top,
+      x: event.clientX - 90,
+      y: event.clientY - 90,
     });
+
     setShowPopup(false);
   };
   useEffect(() => {
@@ -876,9 +917,11 @@ const MapLevel = () => {
   };
 
   const navigateToVersion = (process_id, level, version) => {
+    const user_id = LoginUser ? LoginUser.id : null;
+
     const encodedTitle = encodeURIComponent("ProcessMap");
     navigate(
-      `/Draft-Process-Version/${process_id}/${level}/${version}/${encodedTitle}`
+      `/Draft-Process-Version/${process_id}/${level}/${version}/${encodedTitle}/${user_id}`
     );
   };
 
@@ -890,12 +933,8 @@ const MapLevel = () => {
     setNodes((nds) =>
       nds.map((n) => {
         if (n.id !== nodeId) return n;
-        // console.log("defualt langue id", processDefaultlanguage_id);
-        // current default language ka key nikaalo
         const langKey = langMap[processDefaultlanguage_id] || "en";
         const newLabel = translations[langKey] || n.data.label;
-        // console.log("after langue key", langKey);
-
         return {
           ...n,
           data: {
@@ -932,7 +971,7 @@ const MapLevel = () => {
         Process_img={process_img}
         checkpublish={checkpublish}
         onShowVersion={handleVersionClick}
-        handleSupportViewlangugeId={handleSupportViewlangugeId}
+        handleSupportViewlangugeId={handleLanguageSwitch}
         supportedLanguages={supportedLanguages}
         selectedLanguage={processDefaultlanguage_id}
       />

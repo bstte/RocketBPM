@@ -211,3 +211,104 @@ textarea {
 .headericons {
   display: flex;
 }
+
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    background: none;
+    color: rgb(0, 32, 96);
+    border-top: none;
+    border-right: none;
+    border-bottom: 1px solid rgb(255, 255, 255);
+    border-left: none;
+    border-image: initial;
+    padding: 15px 25px !important;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-weight: 300;
+    font-size: 1rem !important;
+    height: auto !important;
+    min-width: 100px;
+    line-height: normal !important;
+    gap: 8px !important;
+}
+.dropdown-item:hover {
+    background: #ff364a !important;
+    color: #fff !important;
+}
+.dropdown-item:hover span {
+  color: #fff !important;
+}
+.dropdown_menu {
+    background-color: #e7e7e7;
+    overflow: hidden;
+}
+.pentagon_box {
+  position: relative;
+}
+
+/* Tooltip styling */
+.pentagon_box:hover .pentagon_textbox::after {
+  content: attr(data-text);
+  position: absolute;
+  bottom: 110%; /* Position above the box */
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 8px;
+  width: max-content;
+  max-width: 260px;
+  text-align: center;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  white-space: normal;
+  z-index: 999;
+  opacity: 1;
+  pointer-events: none;
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* Smooth fade effect */
+.pentagon_textbox::after {
+  opacity: 0;
+}
+
+.react-flow__node-StickyNote {
+  z-index: 1 !important;
+}
+
+
+/* Optional tooltip arrow */
+.pentagon_box:hover .pentagon_textbox::before {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 6px;
+  border-style: solid;
+  border-color: transparent transparent rgba(0, 0, 0, 0.85) transparent;
+}
+.borderBox>div {
+  display: flex;
+  align-items: center;
+    justify-content: center;
+
+}
+@media(min-width:980px) and (max-width:1280px) {
+  .borderBox button {
+    font-size: 0.8vw!important;
+    line-height: 1.2;
+  }
+}
+@media(min-width:1281px){
+  .borderBox button {
+    font-size: 12px !important;
+    line-height: 1.2;
+  }
+}

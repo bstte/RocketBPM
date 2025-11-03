@@ -77,6 +77,26 @@ const CustomAlert = {
       }
     });
   },
+
+
+  confirmLanguageSwitch: (saveCallback, dontSaveCallback) => {
+  Swal.fire({
+    icon: "question",
+    title: "Save changes before switching language?",
+    showCancelButton: true,
+    confirmButtonText: "Yes, save & switch",
+    cancelButtonText: "No, discard changes",
+    confirmButtonColor: "#3085d6",
+    cancelButtonColor: "#d33",
+  }).then((result) => {
+    if (result.isConfirmed && saveCallback) {
+      saveCallback(); // User chose to save first
+    } else if (result.dismiss === Swal.DismissReason.cancel && dontSaveCallback) {
+      dontSaveCallback(); // User chose not to save
+    }
+  });
+},
+
 };
 
 export default CustomAlert;

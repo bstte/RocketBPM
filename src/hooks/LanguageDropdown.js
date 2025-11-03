@@ -32,6 +32,7 @@ const LanguageDropdown = ({
       ref={dropdownRef}
       style={{ position: "relative", cursor: "pointer" }}
       onClick={() => setIsOpen(!isOpen)}
+      className="headericons"
     >
       <img
         src={`${process.env.PUBLIC_URL}/img/globe-solid.svg`}
@@ -44,13 +45,10 @@ const LanguageDropdown = ({
             position: "absolute",
             top: 28,
             right: 0,
-            background: "#fff",
-            border: "1px solid #ccc",
-            borderRadius: 6,
             zIndex: 999,
             minWidth: 120,
-            boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
           }}
+          className="dropdown_menu"
         >
           {supportedLanguages.map((langId) => {
             const langName = langMap[langId] || `Lang ${langId}`;
@@ -60,28 +58,21 @@ const LanguageDropdown = ({
               <div
                 key={langId}
                 onClick={() => handleSelect(langId)}
+                className="dropdown-item"
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                  padding: "8px 12px",
-                  background: isSelected ? "#f5f5f5" : "#fff",
-                  cursor: "pointer",
-                  transition: "background 0.2s",
+                  background: isSelected ? "#ff364a" : "", 
+                  color: isSelected ? "#fff" : "", 
                 }}
-                onMouseEnter={(e) =>
-                  (e.currentTarget.style.background = "#f9f9f9")
-                }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.background = isSelected
-                    ? "#f5f5f5"
-                    : "#fff")
-                }
               >
                 <img
                   src={getFlagUrl(langName)}
                   alt={langId}
-                  style={{ width: 20, height: 14, borderRadius: 2 }}
+                  style={{
+                    width: 20,
+                    height: 10,
+                    minHeight: 10,
+                    borderRadius: 2,
+                  }}
                 />
                 <span style={{ fontSize: 14, fontWeight: 500 }}>
                   {langName}

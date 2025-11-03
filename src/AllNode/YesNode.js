@@ -1,6 +1,9 @@
 import React, { memo } from "react";
+import { useTranslation } from "../hooks/useTranslation";
 
 const YesNode = ({ data }) => {
+
+  const t = useTranslation();
   return (
     <div
       style={{
@@ -12,7 +15,7 @@ const YesNode = ({ data }) => {
           ...styles.labelBox,
         }}
       >
-        <span className="yeslabel" style={styles.text}>yes</span>
+        <span className="yeslabel" style={styles.text}>{t("yes")}</span>
       </div>
     </div>
   );

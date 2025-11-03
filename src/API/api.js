@@ -33,9 +33,13 @@ export const saveNodes = async (data) => {
     throw error;
   }
 };
-export const getNextPageGroupId = async () => {
+export const getNextPageGroupId = async (Page_Title=null) => {
   try {
-    const response = await api.get('/getNext-PageGroupId');
+    const response = await api.get('/getNext-PageGroupId',{
+      params:{
+        Page_Title
+      }
+    });
     return response.data;
   } catch (error) {
     console.error('Error fetching nodes:', error);
@@ -61,12 +65,13 @@ export const getNodes = async (level = null, user_id = null, Process_id = null,c
   }
 };
 
-export const getallpublishObject_Tolinkexistingmodel = async ( user_id = null, Process_id = null) => {
+export const getallpublishObject_Tolinkexistingmodel = async ( user_id = null, Process_id = null,processDefaultlanguage_id=null) => {
   try {
     const response = await api.get('/getallpublishObject_Tolinkexistingmodel', {
       params: {
         user_id,
-        Process_id
+        Process_id,
+        processDefaultlanguage_id
       }
     });
     return response.data;
@@ -361,9 +366,9 @@ export const removeProfileImgage = async (token) => {
   }
 };
 
-export const saveProcessTitle = async (title, user_id,defaultLanguage,supportedLanguages) => {
+export const saveProcessTitle = async (title, user_id,defaultLanguage,supportedLanguages, translations) => {
   try {
-    const response = await api.post('/process-titles', { process_title: title, user_id: user_id,defaultLanguage,supportedLanguages });
+    const response = await api.post('/process-titles', { process_title: title, user_id: user_id,defaultLanguage,supportedLanguages, translations });
     return response.data;
   } catch (error) {
     console.error('Error saving process title:', error);
@@ -624,9 +629,9 @@ export const ReplaceVersion = async (level, processId, version) => {
 };
 
 
-export const getVersionViewData = async (processId, level, version, pageTitle) => {
+export const getVersionViewData = async (processId, level, version, pageTitle,user_id) => {
   try {
-    const response = await api.get(`/process/view/${processId}/${level}/${version}/${pageTitle}`);
+    const response = await api.get(`/process/view/${processId}/${level}/${version}/${pageTitle}/${user_id}`);
     return response.data;
   } catch (error) {
     console.error('Error fetching version view data:', error);

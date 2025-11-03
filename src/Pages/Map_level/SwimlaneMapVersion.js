@@ -26,7 +26,7 @@ const SwimlaneMapVersion = () => {
     width: window.innerWidth,
     height: window.innerHeight,
   });
-  const { processId, level, version, pageTitle } = useParams();
+  const { processId, level, version, pageTitle,user_id } = useParams();
   const [Title, SetTitle] = useState("");
 
   const { nodes: initialNodes } = useMemo(
@@ -67,8 +67,11 @@ const SwimlaneMapVersion = () => {
           processId,
           level,
           version,
-          pageTitle
+          pageTitle,
+          user_id
         );
+                console.log("response version", response);
+
         const { nodes, edges } = response;
         SetTitle(nodes[0]?.version);
         const nodebgwidth = document.querySelector(".react-flow__node");
@@ -177,7 +180,6 @@ const SwimlaneMapVersion = () => {
           };
         });
 
-        console.log("parsedEdges version", parsedEdges);
         setChiledNodes(parsedNodes);
         setEdges(parsedEdges);
       } catch (error) {

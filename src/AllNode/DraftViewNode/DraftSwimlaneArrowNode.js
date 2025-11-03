@@ -6,6 +6,7 @@ import api, {
 } from "../../API/api";
 import { useNavigate } from "react-router-dom";
 import { BreadcrumbsContext } from "../../context/BreadcrumbsContext";
+import { buildBreadcrumbs } from "../../utils/buildBreadcrumbs";
 
 const ArrowBoxNode = ({ data }) => {
   const title = data.details.title;
@@ -15,7 +16,7 @@ const ArrowBoxNode = ({ data }) => {
   const navigate = useNavigate();
 
   const handleLinkClick = async () => {
-    console.log(data.processlink);
+    // console.log(data.processlink);
     if (data.processlink) {
       try {
         const response = await getdataByNodeId(data.processlink, "draft");
@@ -24,7 +25,6 @@ const ArrowBoxNode = ({ data }) => {
           const Process_id = response.data[0].Process_id;
           const id = response.data[0].Process_id;
 
-        
           let newLevel = 1;
           if (data.processlink !== null) {
             const match = data.processlink.match(/^Level(\d+)/);
@@ -38,7 +38,7 @@ const ArrowBoxNode = ({ data }) => {
             data.processlink !== null
               ? `Level${newLevel}_${data.processlink}`
               : `Level${newLevel}`;
-          console.log("newLevel", levelParam);
+          // console.log("newLevel", levelParam);
 
           const nodeData = await checkRecordWithGetLinkDraftData(
             levelParam,
@@ -48,9 +48,19 @@ const ArrowBoxNode = ({ data }) => {
           );
           if (nodeData.status === true) {
             removeBreadcrumbsAfter(1);
+            const breadcrumbs = buildBreadcrumbs(
+              nodeData.allNodes,
+              nodeData.ids,
+              Process_id
+            );
 
+            breadcrumbs.forEach(({ label, path }) => {
+              addBreadcrumb(label, path, {}); // blank state as you said
+            });
             if (nodeData.Page_Title === "ProcessMap") {
-              navigate(`/Draft-Process-View/${newLevel}/${data.processlink}/${id}`);
+              navigate(
+                `/Draft-Process-View/${newLevel}/${data.processlink}/${id}`
+              );
             }
             if (nodeData.Page_Title === "Swimlane") {
               navigate(
@@ -70,13 +80,21 @@ const ArrowBoxNode = ({ data }) => {
   };
 
   return (
-    <div style={styles.wrapper}>
+    <div
+      style={{
+        ...styles.wrapper,
+        filter: data.processlink
+          ? "drop-shadow(rgba(0, 0, 0, 0.31) 0px 0px 10px)"
+          : "none",
+      }}
+      onClick={handleLinkClick}
+    >
       {/* Arrow Box */}
       <div
         className="borderBox"
         style={{
           ...styles.arrowBox,
-          filter: data.processlink ? "drop-shadow(0px 0px 10px #0000004f)" : "none",
+          // filter: data.processlink ? "drop-shadow(0px 0px 10px #0000004f)" : "none",
         }}
         // onClick={handleLinkClick}
       >
@@ -85,10 +103,9 @@ const ArrowBoxNode = ({ data }) => {
             <div>
               <button
                 style={styles.linkButton}
-                onClick={handleLinkClick}
+                // onClick={handleLinkClick}
                 dangerouslySetInnerHTML={{ __html: title }}
-              >
-              </button>
+              ></button>
             </div>
           ) : (
             <>
@@ -181,7 +198,10 @@ const styles = {
     backgroundColor: "red",
     clipPath:
       "polygon(10px 50%, 0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%)",
-    padding: "10px",
+    paddingTop: "2px",
+    paddingBottom: "2px",
+    paddingLeft: "2px",
+    paddingRight: "2px",
     boxSizing: "border-box",
     overflow: "hidden",
   },

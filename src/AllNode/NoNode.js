@@ -1,8 +1,10 @@
 
 
 import React, { memo } from "react";
+import { useTranslation } from "../hooks/useTranslation";
 
 const NoNode = ({ data }) => {
+   const t = useTranslation();
   return (
     <div
       style={{
@@ -14,7 +16,7 @@ const NoNode = ({ data }) => {
           ...styles.labelBox,
         }}
       >
-        <span className="nolabel" style={styles.text}>no</span>
+        <span className="nolabel" style={styles.text}>{t("no")}</span>
       </div>
     </div>
   );

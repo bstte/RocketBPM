@@ -54,6 +54,7 @@ import { useTranslation } from "../../hooks/useTranslation";
 import { usePageGroupIdViewer } from "../../hooks/usePageGroupIdViewer";
 import TranslationPopup from "../../hooks/TranslationPopup";
 import { useLangMap } from "../../hooks/useLangMap";
+import { buildBreadcrumbs } from "../../utils/buildBreadcrumbs";
 
 const SwimlaneModel = () => {
   const [windowSize, setWindowSize] = useState({
@@ -284,7 +285,7 @@ const SwimlaneModel = () => {
         currentParentId,
         language_id
       );
-
+      // console.log("data",data)
       const PageGroupId = data.nodes?.[0]?.PageGroupId;
 
       const [publishedResponse, draftResponse] = await Promise.all([
@@ -542,9 +543,9 @@ const SwimlaneModel = () => {
     existingNodeData = null
   ) => {
     let PageGroupId;
-
+    const Page_Title = "Swimlane";
     if (!ChildNodes[0]?.PageGroupId) {
-      const response = await getNextPageGroupId();
+      const response = await getNextPageGroupId(Page_Title);
       PageGroupId = response.next_PageGroupId;
     } else {
       PageGroupId = ChildNodes[0]?.PageGroupId;
@@ -1389,15 +1390,29 @@ const SwimlaneModel = () => {
                 ? `Level${newLevel}_${nodelink}`
                 : `Level${newLevel}`;
 
+            // console.log("nodelink", nodelink);
+            // console.log("newLevel", newLevel);
+            // console.log("levelParam", levelParam);
+
             const nodeData = await checkRecordWithGetLinkDraftData(
               levelParam,
               parseInt(user_id),
               Process_id,
               nodelink
             );
+            // console.log("nodeData", nodeData);
 
             if (nodeData.status === true) {
               removeBreadcrumbsAfter(1);
+              const breadcrumbs = buildBreadcrumbs(
+                nodeData.allNodes,
+                nodeData.ids,
+                Process_id
+              );
+              // console.log("breadcrums", breadcrumbs);
+              breadcrumbs.forEach(({ label, path }) => {
+                addBreadcrumb(label, path, {}); // blank state as you said
+              });
               if (nodeData.Page_Title === "ProcessMap") {
                 navigate(`/Draft-Process-View/${newLevel}/${nodelink}/${id}`);
               }
@@ -1717,10 +1732,23 @@ const SwimlaneModel = () => {
     data: JSON.parse(item.data), // Parse the data field
   }));
 
-  const filteredData = parsedData.filter(
-    (item) =>
-      item.data.label &&
-      item.data.label.toLowerCase().includes(searchQuery.toLowerCase())
+  const langKey = langMap[processDefaultlanguage_id] || "en";
+
+  const translatedData = parsedData.map((item) => {
+    const { translations = {}, label = "" } = item.data || {};
+    const newLabel = translations[langKey] || label;
+
+    return {
+      ...item,
+      data: {
+        ...item.data,
+        label: newLabel, // ✅ override label with translation
+      },
+    };
+  });
+
+  const filteredData = translatedData.filter((item) =>
+    item.data.label.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const parsedDataExistingrole = LinkexistingRole.map((item) => ({
@@ -1775,9 +1803,10 @@ const SwimlaneModel = () => {
 
   // ye common page h
   const navigateToVersion = (process_id, level, version) => {
+    const user_id = LoginUser ? LoginUser.id : null;
     const encodedTitle = encodeURIComponent("swimlane");
     navigate(
-      `/Swimlane-Version/${process_id}/${level}/${version}/${encodedTitle}`
+      `/Swimlane-Version/${process_id}/${level}/${version}/${encodedTitle}/${user_id}`
     );
   };
 
@@ -1827,10 +1856,35 @@ const SwimlaneModel = () => {
     setHasUnsavedChanges(true);
   };
 
-  const handleSupportViewlangugeId = (langId) => {
-    fetchNodes(langId);
-  };
+  // const handleSupportViewlangugeId = (langId) => {
+  //   fetchNodes(langId);
+  // };
 
+  const handleLanguageSwitch = async (langId) => {
+    if (!hasUnsavedChanges) {
+      // No unsaved changes — directly switch language
+      fetchNodes(langId);
+      return;
+    }
+
+    const shouldProceed = await new Promise((resolve) => {
+      CustomAlert.confirmLanguageSwitch(
+        async () => {
+          // ✅ Save & switch
+          await handleSaveNodes("draft");
+          resolve(true);
+        },
+        () => {
+          // ⚠️ Discard and switch
+          resolve(true);
+        }
+      );
+    });
+
+    if (shouldProceed) {
+      fetchNodes(langId);
+    }
+  };
   return (
     <div>
       <Header
@@ -1850,7 +1904,7 @@ const SwimlaneModel = () => {
         Process_img={process_img}
         checkpublish={checkpublish}
         onShowVersion={handleVersionClick}
-        handleSupportViewlangugeId={handleSupportViewlangugeId}
+        handleSupportViewlangugeId={handleLanguageSwitch}
         supportedLanguages={supportedLanguages}
         selectedLanguage={processDefaultlanguage_id}
       />

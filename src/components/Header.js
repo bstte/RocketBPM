@@ -31,8 +31,7 @@ const Header = ({
   processId,
   handleSupportViewlangugeId,
   supportedLanguages,
-  selectedLanguage
-
+  selectedLanguage,
 }) => {
   const user = useSelector((state) => state.user.user);
   const [imageSrc, setImageSrc] = useState(null);
@@ -84,7 +83,6 @@ const Header = ({
     }
   };
 
-
   const formattedDate = getPublishedDate
     ? new Date(getPublishedDate).toLocaleDateString("en-US", {
         year: "numeric",
@@ -130,7 +128,7 @@ const Header = ({
     };
   }, []);
 
-
+  // console.log("breadcrumsn",breadcrumbs)
   return (
     <>
       <div style={styles.mainheader} className="ss_new_hed">
@@ -184,12 +182,13 @@ const Header = ({
                 onClick={handleSupportViewlanguge}
               />
             </div> */}
-
-            <LanguageDropdown
-              supportedLanguages={supportedLanguages}
-              selectedLanguage={selectedLanguage}
-              onSelect={(langId) => handleSupportViewlangugeId(langId)}
-            />
+            {Page !== "ViewProcessmapVersion" && (
+              <LanguageDropdown
+                supportedLanguages={supportedLanguages}
+                selectedLanguage={selectedLanguage}
+                onSelect={(langId) => handleSupportViewlangugeId(langId)}
+              />
+            )}
 
             {(Page === "Published" || Page === "ViewPublishswimlane") && (
               <>

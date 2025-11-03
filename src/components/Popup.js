@@ -13,15 +13,26 @@ const Popup = ({
   condition,
 }) => {
   const t = useTranslation();
+// Menu dimensions (adjust to your style)
+  const menuWidth = 300;
+  const menuHeight = 250;
 
+  // Prevent menu overflow
+  let x = popupPosition.x;
+  let y = popupPosition.y;
+  const { innerWidth, innerHeight } = window;
+
+  if (x + menuWidth > innerWidth) x = innerWidth - menuWidth - 80;
+  if (y + menuHeight > innerHeight) y = innerHeight - menuHeight;
+  
   return (
     showPopup && (
       <div
         className="popup"
         style={{
           ...styles.popup,
-          left: `${popupPosition.x}px`,
-          top: `${popupPosition.y}px`,
+         top: `${y}px`,
+          left: `${x}px`,
         }}
       >
         <div className="newpopmenuitems" style={styles.popupTitle}>
@@ -90,7 +101,7 @@ const Popup = ({
 };
 const styles = {
   popup: {
-    position: "absolute",
+    position: "fixed",
     background: "#e7e7e7",
     borderRadius: "0px",
     padding: 0,

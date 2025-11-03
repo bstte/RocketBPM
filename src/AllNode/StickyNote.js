@@ -6,7 +6,7 @@ const StickyNote = ({ data, id, selectedNodeId ,editable}) => {
   const [width, setWidth] = useState(data.width_height?.width || 240);
   const [height, setHeight] = useState(data.width_height?.height || 180);
   const stickyFocus = useRef(null);
-  const [autoFocus, setAutoFocus] = useState(data.autoFocus);
+  // const [autoFocus, setAutoFocus] = useState(data.autoFocus);
   const isClickable = selectedNodeId === id;
 
   // Sync width/height from parent data
@@ -18,15 +18,29 @@ const StickyNote = ({ data, id, selectedNodeId ,editable}) => {
   }, [data.width_height]);
 
  
+  // useEffect(() => {
+  //   if (autoFocus && stickyFocus.current) {
+  //     setTimeout(() => {
+  //       stickyFocus.current.focus();
+  //       setAutoFocus(false);
+  //     }, 0);
+  //   }
+  // }, [autoFocus]);
+
+
+
   useEffect(() => {
-    if (autoFocus && stickyFocus.current) {
+    if (isClickable && stickyFocus.current) {
       setTimeout(() => {
-        stickyFocus.current.focus();
-        setAutoFocus(false);
+        const textarea = stickyFocus.current;
+        textarea.focus();
+  
+        // Move cursor to the end of text if user didn’t click inside manually
+        const len = textarea.value.length;
+        textarea.setSelectionRange(len, len);
       }, 0);
     }
-  }, [autoFocus]);
-
+  }, [isClickable]);
   // Update label when prop changes
   useEffect(() => {
     setLabel(data.label || "");
@@ -68,6 +82,7 @@ const StickyNote = ({ data, id, selectedNodeId ,editable}) => {
   return (
     <div style={styles.wrapper}>
       <div
+      className="abcdefd"
         style={{
           ...styles.note,
           width: `${width}px`,
@@ -82,7 +97,7 @@ const StickyNote = ({ data, id, selectedNodeId ,editable}) => {
           placeholder="Write something..."
           style={styles.textarea}
           rows={1}
-          readOnly={!editable} // 👈 disables editing if not editable
+          readOnly={!editable} 
         />
       </div>
       {isClickable && (

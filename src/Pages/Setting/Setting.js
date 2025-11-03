@@ -12,6 +12,8 @@ import {
 import CustomAlert from "../../components/CustomAlert";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useLanguages } from "../../hooks/useLanguages";
+import TranslationPopup from "../../hooks/TranslationPopup";
+import { useLangMap } from "../../hooks/useLangMap";
 
 const Setting = () => {
   const location = useLocation();
@@ -20,7 +22,9 @@ const Setting = () => {
   const [loading, setLoading] = useState(true);
   const t = useTranslation();
   const { languages } = useLanguages();
-
+  const [showTranslationPopup, setShowTranslationPopup] = useState(false);
+  const [translationDefaults, setTranslationDefaults] = useState();
+  const langMap = useLangMap();
   const [supportedLanguages, setSupportedLanguages] = useState([]);
   const [defaultLanguage, setDefaultLanguage] = useState("");
 
@@ -42,6 +46,8 @@ const Setting = () => {
         if (response.data) {
           setSupportedLanguages(response.data.supportedLanguages);
           setDefaultLanguage(response.data.language_id || "");
+          setTranslationDefaults(response.data.translations || "");
+
           setProcessData(response.data);
         }
       } catch (error) {
@@ -52,7 +58,7 @@ const Setting = () => {
     };
     fetchProcessData();
   }, [ProcessId]);
-
+ 
   // Handle image selection
   const handleImageChange = (event) => {
     const file = event.target.files[0];
@@ -89,6 +95,11 @@ const Setting = () => {
     formData.append("process_title", processData.process_title);
     formData.append("language_id", defaultLanguage);
     formData.append("supportedLanguages", JSON.stringify(supportedLanguages));
+    formData.append(
+      "translations",
+      JSON.stringify(processData.translations || {})
+    );
+
     if (selectedImage) {
       const response = await fetch(selectedImage);
       const blob = await response.blob();
@@ -97,6 +108,7 @@ const Setting = () => {
         new File([blob], "profile.jpg", { type: "image/jpeg" })
       );
     }
+
 
     try {
       await updateProcess(ProcessId, formData); // Pass ProcessId as a parameter
@@ -140,6 +152,19 @@ const Setting = () => {
         }
       }
     );
+  };
+  const handleOpenTranslation = () => {
+    // Generate translation defaults for all supported languages
+    const defaults = supportedLanguages.reduce((acc, langId) => {
+      const langKey = langMap[langId] || `lang_${langId}`;
+      acc[langKey] =
+        processData.translations?.[langKey] ||
+        (langId === parseInt(defaultLanguage) ? processData.process_title : "");
+      return acc;
+    }, {});
+
+    setTranslationDefaults(defaults);
+    setShowTranslationPopup(true);
   };
 
   return (
@@ -193,13 +218,40 @@ const Setting = () => {
                   name="process_title"
                   placeholder="Name of Process World"
                   value={processData.process_title}
-                  onChange={(e) =>
-                    setProcessData({
-                      ...processData,
-                      process_title: e.target.value,
-                    })
-                  }
+                  onChange={(e) => {
+                    const newTitle = e.target.value;
+
+                    setProcessData((prev) => {
+                      // Determine default language key
+                      const langKey =
+                        langMap[prev.language_id || defaultLanguage] || "en";
+
+                      // Copy existing translations or empty object
+                      const updatedTranslations = {
+                        ...(prev.translations || {}),
+                      };
+
+                      // Update the default language translation
+                      updatedTranslations[langKey] = newTitle;
+
+                      return {
+                        ...prev,
+                        process_title: newTitle,
+                        translations: updatedTranslations,
+                      };
+                    });
+                  }}
                 />
+              </li>
+              <li>
+                <button
+                  type="button"
+                  className="ss_add_user_btn"
+                  style={{ backgroundColor: "#4CAF50", padding: "6px 12px" }}
+                  onClick={() => handleOpenTranslation()}
+                >
+                  {t("translation")}
+                </button>
               </li>
               <li>{t("Max_35_characters")}</li>
             </ul>
@@ -234,7 +286,7 @@ const Setting = () => {
             <select
               value={defaultLanguage}
               onChange={(e) => setDefaultLanguage(e.target.value)}
-             className="select_field"
+              className="select_field"
               disabled={supportedLanguages.length === 0}
             >
               <option value="">Select Default Language</option>
@@ -279,6 +331,25 @@ const Setting = () => {
         style={{ display: "none" }}
         onChange={handleImageChange}
         accept="image/*"
+      />
+
+      <TranslationPopup
+        isOpen={showTranslationPopup}
+        onClose={() => setShowTranslationPopup(false)}
+        defaultValues={translationDefaults}
+        onSubmit={(values) => {
+          // console.log("Updated Translations:", values);
+
+          // Update local state with translated values
+          setProcessData((prev) => ({
+            ...prev,
+            translations: values,
+          }));
+
+          setShowTranslationPopup(false);
+        }}
+        supportedLanguages={supportedLanguages}
+        defaultLanguage={defaultLanguage}
       />
     </div>
   );

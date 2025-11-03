@@ -72,7 +72,6 @@ const VersionPopupView = ({
   }, [processId, currentLevel, currentParentId, LoginUser]);
   // ✅ Roles config
 
-
   return (
     <div className="version-popup-overlay">
       <div className="version-popup">
@@ -109,80 +108,94 @@ const VersionPopupView = ({
         {/* Tab Content */}
         <div className="tab-content">
           {activeTab === "contact" && (
-          <div className="contact-tab">
-          {(() => {
-            if (!assignedUsers || assignedUsers.length === 0) {
-              // Agar assignedUsers empty ya undefined
-              return <p>{t("No_Process_Management_Roles_assigned")}</p>;
-            }
-        
-            // Prepare role blocks
-            const roleBlocks =
-              type === "ProcessMaps"
-                ? ["domain_owner", "owner"]
-                : ["owner", "architecture", "manager"];
-        
-            // Filter roles jisme at least ek user assigned ho
-            const roleBlocksWithUsers = roleBlocks
-              .map((role) => {
-                const roleUsers = assignedUsers.filter((user) =>
-                  (selectedEmails[role] || []).includes(user.user?.email)
-                );
-                return { role, roleUsers };
-              })
-              .filter((block) => block.roleUsers.length > 0);
-        
-            if (roleBlocksWithUsers.length === 0) {
-              // Agar koi bhi role me user assigned nahi
-              return <p>{t("no_process_management_roles_assigned")}</p>;
-            }
-        
-            // Display blocks jisme user assigned ho
-            return roleBlocksWithUsers.map((block) => (
-              <div key={block.role} className="contact-item">
-                <div className="flex_full">
-                  <label style={{ textTransform: "capitalize" }}>
-                    {block.role === "domain_owner"
-                      ? `${t("process_domain_owner")}`
-                      : block.role === "owner"
-                      ? `${t("process_owner")}`
-                      : block.role === "architecture"
-                      ? `${t("process_architecture")}`
-                      : `${t("process_manager")}`}
-                  </label>
-                </div>
-        
-                {block.roleUsers.map((roleUser, index) => (
-                  <div key={index} className="owner_details_list">
-                    <div className="owner_details">
-                      <div className="owner-pic">
-                        {roleUser.user?.image ? (
-                          <img
-                            src={`${ImageBaseUrl}uploads/profile_images/${roleUser.user.image}`}
-                            alt="Profile"
-                           
-                          />
-                        ) : (
-                          <DefaultUserIcon />
-                        )}
-                      </div>
-                      <div className="owner-desc">
-                        <span className="owner-name">
-                          {roleUser.user.first_name} {roleUser.user.last_name || ""}
-                        </span>
-                        <div className="owner-email">
-                          <DefaultemailIcon />
-                          <span style={{ marginLeft: "8px" }}>{roleUser.user.email}</span>
+            <div className="contact-tab">
+              {(() => {
+                if (!assignedUsers || assignedUsers.length === 0) {
+                  // Agar assignedUsers empty ya undefined
+                  return <p>{t("No_Process_Management_Roles_assigned")}</p>;
+                }
+
+                // Prepare role blocks
+                const roleBlocks =
+                  type === "ProcessMaps"
+                    ? ["domain_owner", "owner"]
+                    : ["owner", "architecture", "manager"];
+
+                // Filter roles jisme at least ek user assigned ho
+                const roleBlocksWithUsers = roleBlocks
+                  .map((role) => {
+                    const roleUsers = assignedUsers.filter((user) =>
+                      (selectedEmails[role] || []).includes(user.user?.email)
+                    );
+                    return { role, roleUsers };
+                  })
+                  .filter((block) => block.roleUsers.length > 0);
+
+                if (roleBlocksWithUsers.length === 0) {
+                  // Agar koi bhi role me user assigned nahi
+                  return <p>{t("no_process_management_roles_assigned")}</p>;
+                }
+
+                // Display blocks jisme user assigned ho
+                return roleBlocksWithUsers.map((block) => (
+                  <div key={block.role} className="contact-item">
+                    <div className="flex_full">
+                      <label style={{ textTransform: "capitalize" }}>
+                        {block.role === "domain_owner"
+                          ? `${t("process_domain_owner")}`
+                          : block.role === "owner"
+                          ? `${t("process_owner")}`
+                          : block.role === "architecture"
+                          ? `${t("process_architecture")}`
+                          : `${t("process_manager")}`}
+                      </label>
+                    </div>
+
+                    {block.roleUsers.map((roleUser, index) => (
+                      <div key={index} className="owner_details_list">
+                        <div className="owner_details">
+                          <div className="owner-pic">
+                            {roleUser.user?.image ? (
+                              <img
+                                src={
+                                  roleUser?.user.image.startsWith("http")
+                                    ? roleUser?.user.image // ✅ Google ka full URL
+                                    : `${ImageBaseUrl}uploads/profile_images/${roleUser.user.image}` // ✅ Local image
+                                }
+                                alt="Profile"
+                              />
+                            ) : (
+                              <DefaultUserIcon />
+                            )}
+                          </div>
+                          <div className="owner-desc">
+                            <span className="owner-name">
+                              {roleUser.user.first_name}{" "}
+                              {roleUser.user.last_name || ""}
+                            </span>
+                          
+                            <div className="owner-email">
+                              {/* <DefaultemailIcon />
+                              <span style={{ marginLeft: "8px" }}>
+                                {roleUser.user.email}
+                              </span> */}
+
+                                <a
+                              href={`https://mail.google.com/mail/?view=cm&fs=1&to=${roleUser.user.email}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <DefaultemailIcon />
+                            </a>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            ));
-          })()}
-        </div>
-        
+                ));
+              })()}
+            </div>
           )}
 
           {activeTab === "revision" && (
@@ -217,9 +230,7 @@ const VersionPopupView = ({
                     {versions.map((version, index) => (
                       <tr key={index}>
                         <td>{version.version}</td>
-                        <td>
-                          {new Date(version.created_at).toLocaleString()}
-                        </td>
+                        <td>{new Date(version.created_at).toLocaleString()}</td>
                         <td>
                           {version.first_name} {version.last_name}
                         </td>

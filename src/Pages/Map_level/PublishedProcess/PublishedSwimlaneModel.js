@@ -84,7 +84,13 @@ const PublishedSwimlaneModel = () => {
   useEffect(() => {
     fetchNodes();
   }, [
-
+ currentLevel,
+    setNodes,
+    setEdges,
+    LoginUser,
+    currentParentId,
+    id,
+    windowSize,
   ]);
 
 
@@ -188,24 +194,24 @@ const PublishedSwimlaneModel = () => {
         });
 
         const parsedEdges = data.edges.map((edge) => {
-          const sourceNode = data.nodes.find((node) => node.node_id === edge.source);
-          const targetNode = data.nodes.find((node) => node.node_id === edge.target);
+          // const sourceNode = data.nodes.find((node) => node.node_id === edge.source);
+          // const targetNode = data.nodes.find((node) => node.node_id === edge.target);
 
-          const sourcePosition = sourceNode ? JSON.parse(sourceNode.position || '{"x":0,"y":0}') : { x: 0, y: 0 };
-          const targetPosition = targetNode ? JSON.parse(targetNode.position || '{"x":0,"y":0}') : { x: 0, y: 0 };
+          // const sourcePosition = sourceNode ? JSON.parse(sourceNode.position || '{"x":0,"y":0}') : { x: 0, y: 0 };
+          // const targetPosition = targetNode ? JSON.parse(targetNode.position || '{"x":0,"y":0}') : { x: 0, y: 0 };
 
-          // Check if in same row or same column
-          const isSameRow = Math.abs(sourcePosition.y - targetPosition.y) < 10; // 10px tolerance
-          const isSameColumn = Math.abs(sourcePosition.x - targetPosition.x) < 10;
+          // // Check if in same row or same column
+          // const isSameRow = Math.abs(sourcePosition.y - targetPosition.y) < 10; // 10px tolerance
+          // const isSameColumn = Math.abs(sourcePosition.x - targetPosition.x) < 10;
 
-          const edgeType = (isSameRow || isSameColumn) ? "default" : "step";
+          // const edgeType = (isSameRow || isSameColumn) ? "default" : "step";
 
           return {
             ...edge,
             animated: Boolean(edge.animated),
             markerEnd: { type: MarkerType.ArrowClosed, color: "#002060", width: 12, height: 12 },
             style: { stroke: "#002060", strokeWidth: 2 },
-            type: edgeType,
+            type: 'step',
           };
         });
         setChiledNodes(parsedNodes);
@@ -248,8 +254,9 @@ const PublishedSwimlaneModel = () => {
   }
 
   const navigateToVersion = (process_id, level, version) => {
+     const user_id = LoginUser ? LoginUser.id : null;
     const encodedTitle = encodeURIComponent("swimlane");
-    navigate(`/Swimlane-Version/${process_id}/${level}/${version}/${encodedTitle}`);
+    navigate(`/Swimlane-Version/${process_id}/${level}/${version}/${encodedTitle}/${user_id}`);
   };
 
 

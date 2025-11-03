@@ -178,7 +178,7 @@ const DraftProcesMapLevel = () => {
         currentParentId,
         language_id
       );
-
+console.log("data",data)
       if (data && data.user_id) {
         // Construct user object based on backend logic
         setUser({
@@ -452,7 +452,13 @@ const DraftProcesMapLevel = () => {
       console.error("Favorite toggle error:", error);
     }
   };
-
+  const navigateToVersion = (process_id, level, version) => {
+     const user_id = LoginUser ? LoginUser.id : null;
+    const encodedTitle = encodeURIComponent("ProcessMap");
+    navigate(
+      `/Draft-Process-Version/${process_id}/${level}/${version}/${encodedTitle}/${user_id}`
+    );
+  };
   return (
     <div>
       <Header
@@ -536,12 +542,14 @@ const DraftProcesMapLevel = () => {
             currentLevel={currentLevel}
             onClose={() => setShowVersionPopup(false)}
             currentParentId={currentParentId}
+            viewVersion={navigateToVersion}
             LoginUser={LoginUser}
             title={headerTitle}
             status={"draft"}
             type={"ProcessMaps"}
           />
         )}
+
       </ReactFlowProvider>
     </div>
   );

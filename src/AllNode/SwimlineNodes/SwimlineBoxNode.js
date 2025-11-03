@@ -7,42 +7,58 @@ const BoxNode = ({ data }) => {
   const [title, setTitle] = useState(data.details.title);
   const boxRef = useRef(null);
   const [autoFocus, setAutoFocus] = useState(data.autoFocus);
-  const [isHovered, setIsHovered] = useState(false); 
+  const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
     setTitle(data.details.title);
   }, [data.details.title]);
 
-  
   useEffect(() => {
     if (autoFocus && boxRef.current) {
       setTimeout(() => {
-        boxRef.current.focus();
+        const el = boxRef.current;
+        el.focus();
+
+        // Move caret to the end of the content
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        range.collapse(false);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+
         setAutoFocus(false);
       }, 0);
     }
   }, [autoFocus]);
 
   const handleBoxClick = () => {
-    setTimeout(() => {
-      boxRef.current?.focus();
-    }, 0);
+    if (boxRef.current) {
+      setTimeout(() => {
+        const el = boxRef.current;
+        el.focus();
+
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        range.collapse(false); // Move caret to end
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }, 0);
+    }
   };
 
+  const handleFocus = (e) => {
+    const selection = window.getSelection();
+    const range = document.createRange();
 
- const handleFocus = (e) => {
-  const selection = window.getSelection();
-  const range = document.createRange();
-
-  if (e.target.firstChild) {
-    range.setStart(e.target.firstChild, e.target.selectionStart || 0);
-    range.collapse(true);
-    selection.removeAllRanges();
-    selection.addRange(range);
-  }
-};
-
-  
+    if (e.target.firstChild) {
+      range.setStart(e.target.firstChild, e.target.selectionStart || 0);
+      range.collapse(true);
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+  };
 
   const handleBlur = () => {};
 
@@ -54,9 +70,12 @@ const BoxNode = ({ data }) => {
   };
 
   return (
-    <div className="swimboxnode_1" style={styles.wrapper} onClick={handleBoxClick}
-        onMouseEnter={() => setIsHovered(true)} 
-    onMouseLeave={() => setIsHovered(false)} 
+    <div
+      className="swimboxnode_1"
+      style={styles.wrapper}
+      onClick={handleBoxClick}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       <div className="borderBox" style={styles.box}>
         <ContentEditable
@@ -70,7 +89,6 @@ const BoxNode = ({ data }) => {
         />
       </div>
 
-
       {[20, 50, 80].map((leftOffset, index) => (
         <>
           <Handle
@@ -78,68 +96,87 @@ const BoxNode = ({ data }) => {
             type="target"
             position={Position.Top}
             id={`top-target-${index}`}
-            style={isHovered ? { ...styles.hoverhandle, top: "0px", left: `${leftOffset}%` } : { ...styles.handle, top: "0px", left: `${leftOffset}%` }}
+            style={
+              isHovered
+                ? { ...styles.hoverhandle, top: "0px", left: `${leftOffset}%` }
+                : { ...styles.handle, top: "0px", left: `${leftOffset}%` }
+            }
           />
-
 
           <Handle
             key={`top-source-${index}`}
             type="source"
             position={Position.Top}
             id={`top-source-${index}`}
-            style={isHovered ? { ...styles.hoverhandle, top: "0px", left: `${leftOffset}%` } : { ...styles.handle, top: "0px", left: `${leftOffset}%` }}
-
+            style={
+              isHovered
+                ? { ...styles.hoverhandle, top: "0px", left: `${leftOffset}%` }
+                : { ...styles.handle, top: "0px", left: `${leftOffset}%` }
+            }
           />
         </>
       ))}
 
-    
-        {/* Bottom Handles */}
-        {[20, 50, 80].map((leftOffset, index) => (
-          <>
-        <Handle
-          key={`bottom-target-${index}`}
-          type="target"
-          position={Position.Bottom}
-          id={`bottom-target-${index}`}
-          style={isHovered ? { ...styles.hoverhandle, bottom: "0px", left: `${leftOffset}%` } : { ...styles.handle, bottom: "0px", left: `${leftOffset}%` }}
-        />
+      {/* Bottom Handles */}
+      {[20, 50, 80].map((leftOffset, index) => (
+        <>
+          <Handle
+            key={`bottom-target-${index}`}
+            type="target"
+            position={Position.Bottom}
+            id={`bottom-target-${index}`}
+            style={
+              isHovered
+                ? {
+                    ...styles.hoverhandle,
+                    bottom: "0px",
+                    left: `${leftOffset}%`,
+                  }
+                : { ...styles.handle, bottom: "0px", left: `${leftOffset}%` }
+            }
+          />
 
-        <Handle
-        key={`bottom-source-${index}`}
-        type="source"
-        position={Position.Bottom}
-        id={`bottom-source-${index}`}
-        style={isHovered ? { ...styles.hoverhandle, bottom: "0px", left: `${leftOffset}%` } : { ...styles.handle, bottom: "0px", left: `${leftOffset}%` }}
-      />
-      </>
+          <Handle
+            key={`bottom-source-${index}`}
+            type="source"
+            position={Position.Bottom}
+            id={`bottom-source-${index}`}
+            style={
+              isHovered
+                ? {
+                    ...styles.hoverhandle,
+                    bottom: "0px",
+                    left: `${leftOffset}%`,
+                  }
+                : { ...styles.handle, bottom: "0px", left: `${leftOffset}%` }
+            }
+          />
+        </>
       ))}
-
 
       <Handle
         type="target"
         position={Position.Left}
         id="left-target"
-        style={isHovered ? styles.hoverhandle:styles.handle}
-     
+        style={isHovered ? styles.hoverhandle : styles.handle}
       />
       <Handle
         type="source"
         position={Position.Left}
         id="left-source"
-        style={isHovered ? styles.hoverhandle:styles.handle}
+        style={isHovered ? styles.hoverhandle : styles.handle}
       />
       <Handle
         type="target"
         position={Position.Right}
         id="right-target"
-          style={isHovered ? styles.hoverhandle:styles.handle}
+        style={isHovered ? styles.hoverhandle : styles.handle}
       />
       <Handle
         type="source"
         position={Position.Right}
         id="right-source"
-          style={isHovered ? styles.hoverhandle:styles.handle}
+        style={isHovered ? styles.hoverhandle : styles.handle}
       />
       <div style={styles.borderOverlay}></div>
     </div>
@@ -199,7 +236,7 @@ const styles = {
     border: "none",
     width: "0px",
     height: "0px",
-    pointerEvents: "none" ,
+    pointerEvents: "none",
   },
   popup: {
     position: "fixed",
@@ -229,5 +266,3 @@ const styles = {
 };
 
 export default memo(BoxNode);
-
-

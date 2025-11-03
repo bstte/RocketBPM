@@ -11,15 +11,35 @@ const SwimlineDiamondNode = ({ data }) => {
     setTitle(data.details.title);
   }, [data.details.title]);
 
-  useEffect(() => {
+  // useEffect(() => {
 
-    if (autoFocus && titleRef.current) {
-      setTimeout(() => {
-        titleRef.current.focus();
-        setAutoFocus(false);
-      }, 0);
-    }
-  }, [autoFocus]);
+  //   if (autoFocus && titleRef.current) {
+  //     setTimeout(() => {
+  //       titleRef.current.focus();
+  //       setAutoFocus(false);
+  //     }, 0);
+  //   }
+  // }, [autoFocus]);
+
+   useEffect(() => {
+      if (autoFocus && titleRef.current) {
+        setTimeout(() => {
+          const el = titleRef.current;
+          el.focus();
+  
+          // Move caret to the end of the content
+          const range = document.createRange();
+          range.selectNodeContents(el);
+          range.collapse(false);
+          const selection = window.getSelection();
+          selection.removeAllRanges();
+          selection.addRange(range);
+  
+          setAutoFocus(false);
+        }, 0);
+      }
+    }, [autoFocus]);
+  
 
   const handleChange = (e) => {
     setTitle(e.target.value);
@@ -28,21 +48,23 @@ const SwimlineDiamondNode = ({ data }) => {
     }
   };
 
-  useEffect(() => {
-    if (autoFocus && titleRef.current) {
+
+
+   const handleBoxClick = () => {
+    if (titleRef.current) {
       setTimeout(() => {
-        titleRef.current.focus();
-        setAutoFocus(false);
+        const el = titleRef.current;
+        el.focus();
+
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        range.collapse(false); // Move caret to end
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
       }, 0);
     }
-  }, [autoFocus]);
-
-  const handleBoxClick = () => {
-    setTimeout(() => {
-      titleRef.current?.focus();
-    }, 0);
   };
-
 
   const handleFocus = (e) => {
     const selection = window.getSelection();

@@ -161,7 +161,6 @@ const PublishedMapLevel = () => {
           language_id
         );
 
-        console.log("data",data)
         // ✅ Set user from backend response
         if (data && data.user_id) {
           // Construct user object based on backend logic
@@ -265,11 +264,13 @@ const PublishedMapLevel = () => {
     nodes,
     setIsFavorite,
   });
-
+  const currentPath = window.location.pathname
   useEffect(() => {
   if (!title) return;
 
   const label = currentLevel === 0 ? title : title;
+    const state = { id, title, currentPath };
+
   const path =
     currentLevel === 0
       ? `/published-map-level/${id}`
@@ -277,11 +278,12 @@ const PublishedMapLevel = () => {
 
   const exists = breadcrumbs.some((b) => b.path === path);
   if (!exists) {
+    
     if (currentLevel >= 0 && isNavigating) {
       const safeIndex = Math.max(1, currentLevel - 1);
       removeBreadcrumbsAfter(safeIndex);
     }
-    addBreadcrumb(label, path, {});
+    addBreadcrumb(label, path,state);
   }
 
   setIsNavigating(false);
@@ -298,6 +300,7 @@ const PublishedMapLevel = () => {
 
 
   const handlenodeClick = async (event, node) => {
+    console.log("data",node)
     event.preventDefault();
     const selectedLabel = node.data.label || "";
     const newLevel = currentLevel + 1;
@@ -309,6 +312,7 @@ const PublishedMapLevel = () => {
       Process_id
     );
 
+    
     if (data.status === true) {
       if (data.Page_Title === "ProcessMap") {
         navigate(
@@ -317,13 +321,13 @@ const PublishedMapLevel = () => {
           }/${id}`
         );
       }
-
+      const state = { id, selectedLabel, currentPath };
       if (data.Page_Title === "Swimlane") {
         addBreadcrumb(
           `${selectedLabel} `,
           `/published-swimlane/level/${newLevel}/${
             node.id
-          }/${id}`
+          }/${id}`,state
         );
 
         navigate(
@@ -400,9 +404,10 @@ const PublishedMapLevel = () => {
 
   // ye commom page h
   const navigateToVersion = (process_id, level, version) => {
+     const user_id = LoginUser ? LoginUser.id : null;
     const encodedTitle = encodeURIComponent("ProcessMap");
     navigate(
-      `/Draft-Process-Version/${process_id}/${level}/${version}/${encodedTitle}`
+      `/Draft-Process-Version/${process_id}/${level}/${version}/${encodedTitle}/${user_id}`
     );
   };
 
