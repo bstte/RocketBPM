@@ -15,8 +15,8 @@ const DraftNodeType = {
   box: PublishSwimlineBoxNode,
   SwimlineRightsideBox: PublishSwimlineRightsideBox,
   label: LabelNode,
-  Yes: YesNode,
-  No: NoNode,
+  // Yes: YesNode,
+  // No: NoNode,
    FreeText: FreeTextNode,
      StickyNote: StickyNote,
    

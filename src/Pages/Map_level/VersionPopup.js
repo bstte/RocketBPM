@@ -280,70 +280,64 @@ const VersionPopup = ({
                       </label>
                     </div>
 
-                    {roleUsers.length > 0 ? (
-                      roleUsers.map((roleUser, index) => (
-                        <div key={index} className="owner_details_list">
-                          <div className="owner_details">
-                            <div className="owner-pic">
-                              {roleUser.user?.image ? (
-                                <img
-                                  src={
-                                    roleUser?.user.image.startsWith("http")
-                                      ? roleUser?.user.image // ✅ Google ka full URL
-                                      : `${ImageBaseUrl}uploads/profile_images/${roleUser.user.image}` // ✅ Local image
-                                  }
-                                  alt="Profile"
-                                  style={{
-                                    width: "40px",
-                                    height: "40px",
-                                    borderRadius: "50%",
-                                    objectFit: "cover",
-                                  }}
-                                />
-                              ) : (
-                                <DefaultUserIcon />
-                              )}
-                            </div>
-                            <div className="owner-desc">
-                              <span className="owner-name">
-                                {roleUser.user.first_name}{" "}
-                                {roleUser.user.last_name}
-                              </span>
-                              <div className="owner-actions owner-flex">
-                                <a
-                                  href={`https://mail.google.com/mail/?view=cm&fs=1&to=${roleUser.user.email}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                >
-                                  <DefaultemailIcon />
-                                </a>
+                    {roleUsers.length > 0
+                      ? roleUsers.map((roleUser, index) => (
+                          <div key={index} className="owner_details_list">
+                            <div className="owner_details">
+                              <div className="owner-pic">
+                                {roleUser.user?.image ? (
+                                  <img
+                                    src={
+                                      roleUser?.user.image.startsWith("http")
+                                        ? roleUser?.user.image // ✅ Google ka full URL
+                                        : `${ImageBaseUrl}uploads/profile_images/${roleUser.user.image}` // ✅ Local image
+                                    }
+                                    alt="Profile"
+                                    style={{
+                                      width: "40px",
+                                      height: "40px",
+                                      borderRadius: "50%",
+                                      objectFit: "cover",
+                                    }}
+                                  />
+                                ) : (
+                                  <DefaultUserIcon />
+                                )}
+                              </div>
+                              <div className="owner-desc">
+                                <span className="owner-name">
+                                  {roleUser.user.first_name}{" "}
+                                  {roleUser.user.last_name}
+                                </span>
+                                <div className="owner-actions owner-flex">
+                                  <a
+                                    href={`mailto:${roleUser.user.email}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    <DefaultemailIcon />
+                                  </a>
 
-                                <button
-                                  style={{ marginLeft: 20 }}
-                                  className="popup-button remove"
-                                  onClick={() =>
-                                    removeUser(role, roleUser.user.email)
-                                  }
-                                >
-                                  Remove
-                                </button>
+                                  <button
+                                    style={{ marginLeft: 20 }}
+                                    className="popup-button remove"
+                                    onClick={() =>
+                                      removeUser(role, roleUser.user.email)
+                                    }
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="owner_details_list">
-                        <div className="owner_details">
-                          <div className="owner-pic">
-                            {/* <DefaultUserIcon /> */}
-                          </div>
-                        </div>
-                      </div>
-                    )}
+                        ))
+                      : null}
 
                     {/* ➕ Add button (hide if owner/domain_owner already assigned) */}
-                    {!(role === "owner" && roleUsers.length === 1) &&
+
+                    {!loading && // ⏳ Wait until API data loaded
+                      !(role === "owner" && roleUsers.length === 1) &&
                       !(role === "domain_owner" && roleUsers.length === 1) && (
                         <div className="owner_details_list">
                           <div className="owner_details">
@@ -441,7 +435,7 @@ const VersionPopup = ({
               <div className="email-popup-header">
                 <h4>
                   {t("select_users_for")}{" "}
-                  <span className="popup-role">{currentRole}</span>
+                  <span className="popup-role">{t(`${currentRole}`)}</span>
                 </h4>
                 <button
                   className="popup-close-btn"

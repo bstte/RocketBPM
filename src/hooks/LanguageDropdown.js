@@ -26,7 +26,8 @@ const LanguageDropdown = ({
     onSelect?.(langId);
     setIsOpen(false);
   };
-
+  const currentLangName = langMap[selectedLanguage] || "loading...";
+  const currentFlag = getFlagUrl(currentLangName);
   return (
     <div
       ref={dropdownRef}
@@ -34,11 +35,30 @@ const LanguageDropdown = ({
       onClick={() => setIsOpen(!isOpen)}
       className="headericons"
     >
-      <img
-        src={`${process.env.PUBLIC_URL}/img/globe-solid.svg`}
-        alt="Select Language"
-        style={{ width: 24, height: 24 }}
-      />
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 6,
+          padding: "4px 6px",
+          borderRadius: 4,
+          background: "#fff",
+        }}
+      >
+        <img
+          src={currentFlag}
+          alt={currentLangName}
+          style={{
+            width: 20,
+            height: 15,
+            minHeight: 10,
+            borderRadius: 2,
+          }}
+        />
+        <span style={{ fontSize: 14, fontWeight: 500 }}>{currentLangName}</span>
+        <span style={{ fontSize: 10, opacity: 0.6 }}>▼</span>
+      </div>
+
       {isOpen && (
         <div
           style={{
@@ -60,8 +80,8 @@ const LanguageDropdown = ({
                 onClick={() => handleSelect(langId)}
                 className="dropdown-item"
                 style={{
-                  background: isSelected ? "#ff364a" : "", 
-                  color: isSelected ? "#fff" : "", 
+                  background: isSelected ? "#ff364a" : "",
+                  color: isSelected ? "#fff" : "",
                 }}
               >
                 <img

@@ -181,7 +181,7 @@ const VersionPopupView = ({
                               </span> */}
 
                                 <a
-                              href={`https://mail.google.com/mail/?view=cm&fs=1&to=${roleUser.user.email}`}
+                             href={`mailto:${roleUser.user.email}`}
                               target="_blank"
                               rel="noopener noreferrer"
                             >

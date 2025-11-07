@@ -1,9 +1,16 @@
 import React, { memo } from "react";
-import { useTranslation } from "../hooks/useTranslation";
 
-const YesNode = ({ data }) => {
+const YesNode = ({ data,processDefaultlanguage_id }) => {
+  const langId = Number(processDefaultlanguage_id);
 
-  const t = useTranslation();
+  let label = "yes";
+  if (langId === 2) {
+    label = "ja"; // German
+  } else if (langId === 3) {
+    label = "sí"; // Spanish
+  } else {
+    label = "yes"; // English (default)
+  }
   return (
     <div
       style={{
@@ -15,7 +22,7 @@ const YesNode = ({ data }) => {
           ...styles.labelBox,
         }}
       >
-        <span className="yeslabel" style={styles.text}>{t("yes")}</span>
+        <span className="yeslabel" style={styles.text}>  {label}</span>
       </div>
     </div>
   );

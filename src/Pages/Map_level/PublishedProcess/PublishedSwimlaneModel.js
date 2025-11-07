@@ -18,13 +18,14 @@ import generateNodesAndEdges from "../../../AllNode/SwimlineNodes/generateNodesA
 import styles from "../SwimlaneStyles";
 import PublishNodeType from "./PublishNodeType";
 import { BreadcrumbsContext } from "../../../context/BreadcrumbsContext";
-import '../../../Css/Swimlane.css'
+import "../../../Css/Swimlane.css";
 import { useSelector } from "react-redux";
 import VersionPopupView from "../../../components/VersionPopupView";
 import { useDynamicHeight } from "../../../hooks/useDynamicHeight";
 import useCheckFavorite from "../../../hooks/useCheckFavorite";
 import { usePageGroupIdViewer } from "../../../hooks/usePageGroupIdViewer";
-
+import YesNode from "../../../AllNode/YesNode";
+import NoNode from "../../../AllNode/NoNode";
 
 const PublishedSwimlaneModel = () => {
   const { height, appHeaderHeight, remainingHeight } = useDynamicHeight();
@@ -38,16 +39,24 @@ const PublishedSwimlaneModel = () => {
   const [title, Settitle] = useState("");
   // const [ParentPageGroupId, SetParentPageGroupId] = useState(null);
   const [user, setUser] = useState(null);
-   const [processDefaultlanguage_id, setprocessDefaultlanguage_id] =
-       useState(null);
-     const [supportedLanguages, setSupportedLanguages] = useState([]);
+  const [processDefaultlanguage_id, setprocessDefaultlanguage_id] =
+    useState(null);
+  const [supportedLanguages, setSupportedLanguages] = useState([]);
   const id = processId; // string
 
   const headerTitle = `${title} `;
   const currentParentId = parentId || null;
   const currentLevel = level ? parseInt(level, 10) : 0;
   const { nodes: initialNodes } = useMemo(
-    () => generateNodesAndEdges(windowSize.width, windowSize.height, 'viewmode', height + 10, appHeaderHeight, remainingHeight),
+    () =>
+      generateNodesAndEdges(
+        windowSize.width,
+        windowSize.height,
+        "viewmode",
+        height + 10,
+        appHeaderHeight,
+        remainingHeight
+      ),
     [windowSize, height, appHeaderHeight, remainingHeight]
   );
   useEffect(() => {
@@ -74,7 +83,8 @@ const PublishedSwimlaneModel = () => {
     []
   );
 
-  const { removeBreadcrumbsAfter, breadcrumbs, setBreadcrumbs } = useContext(BreadcrumbsContext);
+  const { removeBreadcrumbsAfter, breadcrumbs, setBreadcrumbs } =
+    useContext(BreadcrumbsContext);
 
   useCheckFavorite({
     id,
@@ -84,7 +94,7 @@ const PublishedSwimlaneModel = () => {
   useEffect(() => {
     fetchNodes();
   }, [
- currentLevel,
+    currentLevel,
     setNodes,
     setEdges,
     LoginUser,
@@ -93,143 +103,193 @@ const PublishedSwimlaneModel = () => {
     windowSize,
   ]);
 
+  const fetchNodes = async (language_id = null) => {
+    try {
+      const levelParam =
+        currentParentId !== null
+          ? `Level${currentLevel}_${currentParentId}`
+          : `Level${currentLevel}`;
+      const user_id = LoginUser ? LoginUser.id : null;
+      const Process_id = id ? id : null;
+      const publishedStatus = "Published";
 
-    const fetchNodes = async (language_id = null) => {
-      try {
-        const levelParam =
-          currentParentId !== null
-            ? `Level${currentLevel}_${currentParentId}`
-            : `Level${currentLevel}`;
-        const user_id = LoginUser ? LoginUser.id : null;
-        const Process_id = id ? id : null;
-        const publishedStatus = "Published";
+      const data = await api.getPublishedNodes(
+        levelParam,
+        parseInt(user_id),
+        Process_id,
+        currentParentId,
+        language_id
+      );
 
-        const data = await api.getPublishedNodes(
-          levelParam,
-          parseInt(user_id),
-          Process_id,
-          currentParentId,
-          language_id
-        );
-       console.log("data",data)
-
-        console.log("language_id",language_id)
-          if (data && data.user_id) {
-          // Construct user object based on backend logic
-          setUser({
-            id: data.actual_user_id,
-            type: data.type || "self",
-            role: data.role || "self",
-             OwnId: data.user_id,
-            actual_user_id: data.actual_user_id,
-          });
-        }
-          const PageGroupId = data.nodes?.[0]?.PageGroupId;
-        const getPublishedDate = await api.GetPublishedDate(
-          Process_id,
-          publishedStatus,
-          PageGroupId
-        );
-
-        setgetPublishedDate(getPublishedDate.status ? getPublishedDate.updated_at : "");
-        setprocess_img(data.process_img);
-         setprocessDefaultlanguage_id(data.processDefaultlanguage_id);
-      setSupportedLanguages(data.ProcessSupportLanguage);
-        // setprocess_udid(data.process_uid)
-      Settitle(data.title)
-// SetParentPageGroupId(data.PageGroupId)
-        const nodebgwidth = document.querySelector(".react-flow__node");
-        const nodebgwidths = nodebgwidth ? nodebgwidth.getBoundingClientRect().width : 0;
-
-        const nodebgheight = document.querySelector(".react-flow__node");
-        const nodebgheights = nodebgheight ? nodebgheight.getBoundingClientRect().height : 0;
-
-        const groupWidth = nodebgwidths;
-        const groupHeight = nodebgheights;
-        const childWidth = groupWidth * 0.9;
-        const childHeight = groupHeight * 0.9;
-
-        const parsedNodes = data.nodes.filter((node) => node.type !== "StickyNote").map((node) => {
-          const parsedData = JSON.parse(node.data || "{}");
-          const parsedPosition = JSON.parse(node.position || "{\"x\":0,\"y\":0}");
-          const parsedMeasured = JSON.parse(node.measured || "{\"width\":40,\"height\":40}");
-
-          let centeredPosition = parsedPosition;
-
-          // Parent node positioning
-          const nodeStyle =
-            node.type === "Yes" || node.type === "No" || node.type === "FreeText"
-              ? {} // No styles applied for these node types
-              : {
-                width: groupWidth,
-                height: groupHeight,
-                childWidth: childWidth,
-                childHeight: childHeight,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center"
-              };
-
-          return {
-            ...node,
-            data: {
-              ...parsedData,
-              width_height: parsedMeasured,
-              defaultwidt: "40px",
-              defaultheight: "40px",
-              nodeResize: false,
-            },
-            type: node.type,
-            id: node.node_id,
-            parentId: node.parentId,
-            extent: "parent",
-            measured: parsedMeasured,
-            position: centeredPosition,
-            draggable: Boolean(node.draggable),
-            animated: Boolean(node.animated),
-            style: nodeStyle,
-
-          };
-
+      if (data && data.user_id) {
+        // Construct user object based on backend logic
+        setUser({
+          id: data.actual_user_id,
+          type: data.type || "self",
+          role: data.role || "self",
+          OwnId: data.user_id,
+          actual_user_id: data.actual_user_id,
         });
-
-        const parsedEdges = data.edges.map((edge) => {
-          // const sourceNode = data.nodes.find((node) => node.node_id === edge.source);
-          // const targetNode = data.nodes.find((node) => node.node_id === edge.target);
-
-          // const sourcePosition = sourceNode ? JSON.parse(sourceNode.position || '{"x":0,"y":0}') : { x: 0, y: 0 };
-          // const targetPosition = targetNode ? JSON.parse(targetNode.position || '{"x":0,"y":0}') : { x: 0, y: 0 };
-
-          // // Check if in same row or same column
-          // const isSameRow = Math.abs(sourcePosition.y - targetPosition.y) < 10; // 10px tolerance
-          // const isSameColumn = Math.abs(sourcePosition.x - targetPosition.x) < 10;
-
-          // const edgeType = (isSameRow || isSameColumn) ? "default" : "step";
-
-          return {
-            ...edge,
-            animated: Boolean(edge.animated),
-            markerEnd: { type: MarkerType.ArrowClosed, color: "#002060", width: 12, height: 12 },
-            style: { stroke: "#002060", strokeWidth: 2 },
-            type: 'step',
-          };
-        });
-        setChiledNodes(parsedNodes);
-        setEdges(parsedEdges);
-      } catch (error) {
-        console.error("Error fetching nodes:", error);
-        alert("Failed to fetch nodes. Please try again.");
       }
-    };
+      const PageGroupId = data.nodes?.[0]?.PageGroupId;
+      const getPublishedDate = await api.GetPublishedDate(
+        Process_id,
+        publishedStatus,
+        PageGroupId
+      );
 
+      setgetPublishedDate(
+        getPublishedDate.status ? getPublishedDate.updated_at : ""
+      );
+      setprocess_img(data.process_img);
+      setprocessDefaultlanguage_id(data.processDefaultlanguage_id);
+      setSupportedLanguages(data.ProcessSupportLanguage);
+      // setprocess_udid(data.process_uid)
+      Settitle(data.title);
+      // SetParentPageGroupId(data.PageGroupId)
+      const nodebgwidth = document.querySelector(".react-flow__node");
+      const nodebgwidths = nodebgwidth
+        ? nodebgwidth.getBoundingClientRect().width
+        : 0;
 
+      const nodebgheight = document.querySelector(".react-flow__node");
+      const nodebgheights = nodebgheight
+        ? nodebgheight.getBoundingClientRect().height
+        : 0;
 
-  const memoizedNodeTypes = useMemo(() => nodeTypes, [nodeTypes]);
+      const groupWidth = nodebgwidths;
+      const groupHeight = nodebgheights;
+      const childWidth = groupWidth * 0.9;
+      const childHeight = groupHeight * 0.9;
+
+      const parsedNodes = await Promise.all(
+        data.nodes
+          .filter((node) => node.type !== "StickyNote")
+          .map(async (node) => {
+            const parsedData = JSON.parse(node.data || "{}");
+            const parsedPosition = JSON.parse(node.position || '{"x":0,"y":0}');
+            const parsedMeasured = JSON.parse(
+              node.measured || '{"width":40,"height":40}'
+            );
+
+            let centeredPosition = parsedPosition;
+      let hasNextLevel = false;
+
+          if (
+            node.type === "progressArrow" &&
+            parsedData?.processlink &&
+            parsedData.processlink !== null &&
+            parsedData.processlink !== ""
+          ) {
+            const match = parsedData.processlink.match(/Level(\d+)/i);
+            const extractedLevel = match ? parseInt(match[1]) : currentLevel;
+
+            // 🔹 Increment level
+            const newLevel = extractedLevel + 1;
+            const levelParam = `Level${newLevel}_${parsedData.processlink}`;
+            try {
+              const check = await api.checkPublishRecord(levelParam, Process_id);
+
+              hasNextLevel = check?.status === true;
+            } catch (e) {
+              console.error("checkPublishRecord error", e);
+            }
+          }
+            // Parent node positioning
+            const nodeStyle =
+              node.type === "Yes" ||
+              node.type === "No" ||
+              node.type === "FreeText"
+                ? {} // No styles applied for these node types
+                : {
+                    width: groupWidth,
+                    height: groupHeight,
+                    childWidth: childWidth,
+                    childHeight: childHeight,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  };
+
+            return {
+              ...node,
+              data: {
+                ...parsedData,
+                width_height: parsedMeasured,
+                defaultwidt: "40px",
+                defaultheight: "40px",
+                nodeResize: false,
+                hasNextLevel
+              },
+              type: node.type,
+              id: node.node_id,
+              parentId: node.parentId,
+              extent: "parent",
+              measured: parsedMeasured,
+              position: centeredPosition,
+              draggable: Boolean(node.draggable),
+              animated: Boolean(node.animated),
+              style: nodeStyle,
+            };
+          })
+      );
+
+      const parsedEdges = data.edges.map((edge) => {
+        // const sourceNode = data.nodes.find((node) => node.node_id === edge.source);
+        // const targetNode = data.nodes.find((node) => node.node_id === edge.target);
+
+        // const sourcePosition = sourceNode ? JSON.parse(sourceNode.position || '{"x":0,"y":0}') : { x: 0, y: 0 };
+        // const targetPosition = targetNode ? JSON.parse(targetNode.position || '{"x":0,"y":0}') : { x: 0, y: 0 };
+
+        // // Check if in same row or same column
+        // const isSameRow = Math.abs(sourcePosition.y - targetPosition.y) < 10; // 10px tolerance
+        // const isSameColumn = Math.abs(sourcePosition.x - targetPosition.x) < 10;
+
+        // const edgeType = (isSameRow || isSameColumn) ? "default" : "step";
+
+        return {
+          ...edge,
+          animated: Boolean(edge.animated),
+          markerEnd: {
+            type: MarkerType.ArrowClosed,
+            color: "#002060",
+            width: 12,
+            height: 12,
+          },
+          style: { stroke: "#002060", strokeWidth: 2 },
+          type: "step",
+        };
+      });
+      setChiledNodes(parsedNodes);
+      setEdges(parsedEdges);
+    } catch (error) {
+      console.error("Error fetching nodes:", error);
+      alert("Failed to fetch nodes. Please try again.");
+    }
+  };
+
+  // const memoizedNodeTypes = useMemo(() => nodeTypes, [nodeTypes]);
+  const memoizedNodeTypes = useMemo(
+    () => ({
+      ...nodeTypes,
+      Yes: (props) => (
+        <YesNode
+          {...props}
+          processDefaultlanguage_id={processDefaultlanguage_id}
+        />
+      ),
+      No: (props) => (
+        <NoNode
+          {...props}
+          processDefaultlanguage_id={processDefaultlanguage_id}
+        />
+      ),
+    }),
+    [processDefaultlanguage_id]
+  );
   const memoizedEdgeTypes = useMemo(() => edgeTypes, [edgeTypes]);
 
-  const iconNames = {
-
-  };
+  const iconNames = {};
 
   const navigateOnDraft = () => {
     const updatedBreadcrumbs = breadcrumbs.map((crumb, index) => {
@@ -237,28 +297,30 @@ const PublishedSwimlaneModel = () => {
 
       return {
         ...crumb,
-        path: crumb.path.replace("published-map-level", "Draft-Process-View")
+        path: crumb.path.replace("published-map-level", "Draft-Process-View"),
       };
     });
     setBreadcrumbs(updatedBreadcrumbs);
 
     if (id && user) {
       // navigate(`/Draft-Swim-lanes-View/level/${currentLevel}/${currentParentId}`, { state: { id: id, title: title, user: user, parentId: currentParentId, level: currentLevel,ParentPageGroupId } })
-      navigate(`/Draft-Swim-lanes-View/level/${currentLevel}/${currentParentId}/${id}`)
+      navigate(
+        `/Draft-Swim-lanes-View/level/${currentLevel}/${currentParentId}/${id}`
+      );
 
       // removeBreadcrumbsAfter(0);
     } else {
-      alert("Currently not navigate on draft mode")
+      alert("Currently not navigate on draft mode");
     }
-
-  }
-
-  const navigateToVersion = (process_id, level, version) => {
-     const user_id = LoginUser ? LoginUser.id : null;
-    const encodedTitle = encodeURIComponent("swimlane");
-    navigate(`/Swimlane-Version/${process_id}/${level}/${version}/${encodedTitle}/${user_id}`);
   };
 
+  const navigateToVersion = (process_id, level, version) => {
+    const user_id = LoginUser ? LoginUser.id : null;
+    const encodedTitle = encodeURIComponent("swimlane");
+    navigate(
+      `/Swimlane-Version/${process_id}/${level}/${version}/${encodedTitle}/${user_id}`
+    );
+  };
 
   const handleVersionClick = () => {
     setShowVersionPopup(true);
@@ -276,15 +338,23 @@ const PublishedSwimlaneModel = () => {
 
     const PageGroupId = ChildNodes[0]?.PageGroupId;
 
-
     try {
       if (isFavorite) {
-
-        const response = await removeFavProcess(user_id, process_id, PageGroupId);
+        const response = await removeFavProcess(
+          user_id,
+          process_id,
+          PageGroupId
+        );
         setIsFavorite(false);
         console.log("Removed from favorites:", response);
       } else {
-        const response = await addFavProcess(user_id, process_id, type, PageGroupId, currentParentId);
+        const response = await addFavProcess(
+          user_id,
+          process_id,
+          type,
+          PageGroupId,
+          currentParentId
+        );
         setIsFavorite(true);
         console.log("Added to favorites:", response);
       }
@@ -293,7 +363,7 @@ const PublishedSwimlaneModel = () => {
     }
   };
 
-     const handleSupportViewlangugeId = (langId) => {
+  const handleSupportViewlangugeId = (langId) => {
     fetchNodes(langId);
   };
 
@@ -314,12 +384,10 @@ const PublishedSwimlaneModel = () => {
         Process_img={process_img}
         Procesuser={user}
         onShowVersion={handleVersionClick}
-
         savefav={handleFav}
-          handleSupportViewlangugeId={handleSupportViewlangugeId}
+        handleSupportViewlangugeId={handleSupportViewlangugeId}
         supportedLanguages={supportedLanguages}
         selectedLanguage={processDefaultlanguage_id}
-
       />
       <div style={{ ...styles.appContainer, height: remainingHeight }}>
         <ReactFlowProvider>
@@ -351,7 +419,6 @@ const PublishedSwimlaneModel = () => {
               <Background color="#fff" gap={16} />
             </ReactFlow>
             {usePageGroupIdViewer(ChildNodes)}
-
           </div>
 
           {/* {showSharePopup && (
@@ -361,7 +428,6 @@ const PublishedSwimlaneModel = () => {
               onClose={() => setShowSharePopup(false)}
             />
           )} */}
-
 
           {showVersionPopup && (
             <VersionPopupView
@@ -373,7 +439,6 @@ const PublishedSwimlaneModel = () => {
               LoginUser={LoginUser}
               title={headerTitle}
               status={"Published"}
-
             />
           )}
         </ReactFlowProvider>

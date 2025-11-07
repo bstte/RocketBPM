@@ -128,7 +128,6 @@ const Header = ({
     };
   }, []);
 
-  // console.log("breadcrumsn",breadcrumbs)
   return (
     <>
       <div style={styles.mainheader} className="ss_new_hed">
@@ -141,7 +140,7 @@ const Header = ({
             />
           ) : (
             breadcrumbs
-              .filter((crumb) => crumb.label.trim() !== title.trim())
+          .slice(0, -1)
               .map((crumb, index, array) => (
                 <span key={index} className="ss_hm_dash_home_icon">
                   {index === 0 ? (
@@ -175,13 +174,7 @@ const Header = ({
 
         <div style={styles.mhcolright} className="ss_header_new_right">
           <div style={styles.loginuserbox} className="ss_hed_rit_user_secnew">
-            {/* <div className="headericons active">
-              <img
-                src={`${process.env.PUBLIC_URL}/img/globe-solid.svg`}
-                alt="Star"
-                onClick={handleSupportViewlanguge}
-              />
-            </div> */}
+          
             {Page !== "ViewProcessmapVersion" && (
               <LanguageDropdown
                 supportedLanguages={supportedLanguages}

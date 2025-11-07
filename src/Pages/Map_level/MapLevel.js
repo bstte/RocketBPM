@@ -16,6 +16,7 @@ import {
   StraightEdge,
   MarkerType,
   reconnectEdge,
+  Background, BackgroundVariant
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
@@ -266,6 +267,11 @@ const MapLevel = () => {
           let hasNextLevel = false;
           try {
             const check = await api.checkRecord(levelParam, Process_id);
+                console.log("check swimlane",check)
+                            console.log("Process_id",Process_id)
+
+                            console.log("parsedData.processlink swimlane",levelParam)
+
             hasNextLevel = check?.status === true;
           } catch (e) {
             console.error("checkRecord error", e);
@@ -299,6 +305,7 @@ const MapLevel = () => {
         style: { stroke: "#002060", strokeWidth: 2 },
         type: "step",
       }));
+                console.log("parsedNodes",parsedNodes)
 
       setNodes(parsedNodes);
       setEdges(parsedEdges);
@@ -551,6 +558,11 @@ const MapLevel = () => {
             navigate(
               `/Draft-Swim-lanes-View/level/${newLevel}/${selectedNode}/${id}`
             );
+               addBreadcrumb(
+              `${selectedLabel || ""} `,
+
+              `/Draft-Swim-lanes-View/level/${newLevel}/${selectedNode}/${id}`
+            );
           } else {
             addBreadcrumb(
               `${selectedLabel || ""} `,
@@ -707,26 +719,7 @@ const MapLevel = () => {
       setShowContextMenu(false);
     }
   }, [showContextMenu]);
-  // const handleGlobalContextMenu = (event) => {
-  //   event.preventDefault();
-  //   const flowContainer = document.querySelector(".flow-container");
-  //   if (!flowContainer) return;
 
-  //   if (event.target.closest(".react-flow__node")) {
-  //     return;
-  //   }
-  //   const containerRect = flowContainer.getBoundingClientRect();
-  //   setShowContextMenu(true);
-  //   setContextMenuPosition({
-  //     x: event.clientX - containerRect.left,
-  //     y: event.clientY - containerRect.top,
-  //   });
-  //   setOriginalPosition({
-  //     x: event.clientX - containerRect.left,
-  //     y: event.clientY - containerRect.top,
-  //   });
-  //   setShowPopup(false);
-  // };
 
   const handleGlobalContextMenu = (event) => {
     event.preventDefault();
@@ -804,6 +797,17 @@ const MapLevel = () => {
       backgroundColor: "#ffffff",
       position: "relative",
     },
+     gridOverlay: {
+    position: "absolute",
+    inset: 0,
+    backgroundImage: `
+      linear-gradient(to right, rgba(0,0,0,0.1) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(0,0,0,0.1) 1px, transparent 1px)
+    `,
+    backgroundSize: `calc(100% / 11) calc(100% / 7)`, // 👈 11 columns × 7 rows
+    pointerEvents: "none", // grid click-block na kare
+    zIndex: 1,
+  },
     reactFlowStyle: {
       width: "100%",
       height: "100%",
@@ -1011,7 +1015,11 @@ const MapLevel = () => {
                 preventScrolling={false}
                 nodesDraggable={true}
                 style={styles.reactFlowStyle}
-              ></ReactFlow>
+                
+              >
+          <div className="grid-overlay" style={styles.gridOverlay}></div>
+
+              </ReactFlow>
               <CustomContextMenu
                 showContextMenu={showContextMenu}
                 contextMenuPosition={contextMenuPosition}

@@ -3,8 +3,17 @@
 import React, { memo } from "react";
 import { useTranslation } from "../hooks/useTranslation";
 
-const NoNode = ({ data }) => {
-   const t = useTranslation();
+const NoNode = ({ data,processDefaultlanguage_id }) => {
+   const langId = Number(processDefaultlanguage_id);
+
+  let label = "no";
+  if (langId === 2) {
+    label = "nein"; // German
+  } else if (langId === 3) {
+    label = "no"; // Spanish
+  } else {
+    label = "no"; // English (default)
+  }
   return (
     <div
       style={{
@@ -16,7 +25,7 @@ const NoNode = ({ data }) => {
           ...styles.labelBox,
         }}
       >
-        <span className="nolabel" style={styles.text}>{t("no")}</span>
+        <span className="nolabel" style={styles.text}> {label}</span>
       </div>
     </div>
   );

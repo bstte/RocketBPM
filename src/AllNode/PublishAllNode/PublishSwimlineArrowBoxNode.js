@@ -86,9 +86,10 @@ const ArrowBoxNode = ({ data }) => {
     <div
       style={{
         ...styles.wrapper,
-        filter: data.processlink
-          ? "drop-shadow(rgba(0, 0, 0, 0.31) 0px 0px 10px)"
-          : "none",
+        filter:
+          data?.processlink && data?.hasNextLevel
+            ? "drop-shadow(rgba(0, 0, 0, 0.31) 0px 0px 10px)"
+            : "none",
       }}
       onClick={handleLinkClick}
     >

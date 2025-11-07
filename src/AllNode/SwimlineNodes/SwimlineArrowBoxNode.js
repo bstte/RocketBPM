@@ -89,98 +89,12 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
     setTitle(data.details.title || "");
   }, [data.details.title]);
 
-  // const handleLinkClick = async () => {
-  //   if (data.link) {
-  //     try {
-
-  //       const response = await getdataByNodeId(data.link, "draft");
-  //       if (response.data && response.data.length > 0) {
-  //         const user_id = response.data[0].user_id;
-  //         const Process_id = response.data[0].Process_id;
-  //         const id = response.data[0].Process_id;
-
-  //         const user = {
-  //           id: response.data[0].user_id,
-  //         };
-
-  //         let newLevel = 1;
-  //         if (data.link !== null) {
-  //           const match = data.link.match(/^Level(\d+)/);
-  //           if (match && match[1]) {
-  //             const currentLevel = parseInt(match[1], 10);
-  //             newLevel = currentLevel + 1;
-  //           }
-  //         }
-
-  //         const levelParam =
-  //           data.link !== null
-  //             ? `Level${newLevel}_${data.link}`
-  //             : `Level${newLevel}`;
-  //         console.log("newLevel", levelParam)
-
-  //         const nodeData = await checkRecordWithGetLinkDraftData(
-  //           levelParam,
-  //           parseInt(user_id),
-  //           Process_id,
-  //           data.link
-  //         );
-  //         const nodeDataParsed = JSON.parse(response.data[0].data);
-  //         if (nodeData.status === true) {
-  //           removeBreadcrumbsAfter(1);
-
-  //           const allNodes = nodeData.allNodes; // 👈 API se mila array
-  //           if (Array.isArray(allNodes) && allNodes.length > 0) {
-  //             // sabse highest level se start
-  //             allNodes.forEach((node) => {
-  //               const parsedData = JSON.parse(node.data || '{}');
-  //               const label = parsedData.label || '';
-  //               const node_id = node.node_id;
-  //               const process_id = node.Process_id;
-
-  //               // ✅ Level number get karo
-  //               let currentLevel = 0;
-  //               const match = node_id.match(/^Level(\d+)/);
-  //               if (match && match[1]) {
-  //                 currentLevel = parseInt(match[1], 10);
-  //               }
-  //               const newLevel = currentLevel + 1;
-
-  //               const user = { id: node.user_id };
-
-  //               // ✅ URL banao
-  //               const url = `/Draft-Process-View/${newLevel}/${node_id}/${process_id}?title=${encodeURIComponent(label)}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${node.PageGroupId}`;
-  //           console.log("addbreadcrums time",node)
-  //               // ✅ Breadcrumb add karo
-  //               addBreadcrumb(label, url);
-  //             });
-  //           }
-
-  //           if (nodeData.Page_Title === "ProcessMap") {
-
-  //             navigate(`/Draft-Process-View/${newLevel}/${data.link}/${id}?title=${encodeURIComponent(nodeDataParsed.label || "")}&user=${encodeURIComponent(JSON.stringify(user))}&ParentPageGroupId=${response.data[0]?.PageGroupId}`)
-
-  //           }
-  //           if (nodeData.Page_Title === "Swimlane") {
-
-  //             navigate(`/Draft-Swim-lanes-View/level/${newLevel}/${data.link}/${id}?title=${encodeURIComponent(nodeDataParsed.label || "")}&user=${encodeURIComponent(JSON.stringify(user))}&parentId=${data.link}&level=${newLevel}&ParentPageGroupId=${response.data[0]?.PageGroupId}`)
-
-  //           }
-  //         } else {
-  //           alert("First create next model of this existing model")
-  //         }
-  //       } else {
-  //         console.error("No data found in response.data");
-  //       }
-  //     } catch (error) {
-  //       console.error("Error fetching link data:", error);
-  //     }
-  //   }
-  // };
-
   return (
     <div
-      style={{...styles.wrapper,
-          filter: data.processlink
+      style={{
+        ...styles.wrapper,
+        filter:
+          data?.processlink && data?.hasNextLevel
             ? "drop-shadow(rgba(0, 0, 0, 0.31) 0px 0px 10px)"
             : "none",
       }}
@@ -193,7 +107,6 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
         className="borderBox"
         style={{
           ...styles.arrowBox,
-        
         }}
       >
         {/* {!isEditing && data.link ? (

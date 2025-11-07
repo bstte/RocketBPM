@@ -14,8 +14,8 @@ const NodeTypes = {
   box: SwimlineBoxNode,
   SwimlineRightsideBox: SwimlineRightsideBox,
   label: LabelNode,
-  Yes: YesNode,
-  No: NoNode,
+  // Yes: YesNode,
+  // No: NoNode,
   FreeText: FreeTextNode,
   // StickyNote: StickyNote,
 
