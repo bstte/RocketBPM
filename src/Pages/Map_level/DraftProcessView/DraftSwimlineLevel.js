@@ -124,7 +124,12 @@ const DraftSwimlineLevel = () => {
 
   useEffect(() => {
     // checkfav()
-    fetchNodes();
+   const savedLang = localStorage.getItem("selectedLanguageId");
+    if (savedLang) {
+      fetchNodes(parseInt(savedLang)); // language apply karo
+    } else {
+      fetchNodes(processDefaultlanguage_id); // default
+    }
   }, [
     currentLevel,
     setNodes,
@@ -266,7 +271,7 @@ const DraftSwimlineLevel = () => {
               defaultwidt: "40px",
               defaultheight: "40px",
               nodeResize: false,
-              hasNextLevel
+              hasNextLevel,
             },
             type: node.type,
             id: node.node_id,
@@ -425,10 +430,12 @@ const DraftSwimlineLevel = () => {
     const user_id = LoginUser ? LoginUser.id : null;
     const encodedTitle = encodeURIComponent("swimlane");
     navigate(
-      `/Swimlane-Version/${process_id}/${level}/${version}/${encodedTitle}/${user_id}`
+      `/Swimlane-Version/${process_id}/${level}/${version}/${encodedTitle}/${user_id}/${currentParentId}`
     );
   };
   const handleSupportViewlangugeId = (langId) => {
+    localStorage.setItem("selectedLanguageId", langId);
+
     fetchNodes(langId);
   };
 
@@ -523,6 +530,7 @@ const DraftSwimlineLevel = () => {
               LoginUser={LoginUser}
               title={headerTitle}
               status={"draft"}
+              selectedLanguage={processDefaultlanguage_id}
             />
           )}
         </ReactFlowProvider>

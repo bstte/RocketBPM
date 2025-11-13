@@ -16,7 +16,8 @@ import {
   StraightEdge,
   MarkerType,
   reconnectEdge,
-  Background, BackgroundVariant
+  Background,
+  BackgroundVariant,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
@@ -87,6 +88,8 @@ const MapLevel = () => {
 
   const langMap = useLangMap();
   const [title, Settitle] = useState("");
+  const [TitleTranslation, SetTitleTranslation] = useState("");
+
   const [ParentPageGroupId, SetParentPageGroupId] = useState(null);
   const [user, setUser] = useState(null);
 
@@ -197,7 +200,12 @@ const MapLevel = () => {
   );
 
   useEffect(() => {
-    fetchNodes();
+    const savedLang = localStorage.getItem("selectedLanguageId");
+    if (savedLang) {
+      fetchNodes(parseInt(savedLang)); // language apply karo
+    } else {
+      fetchNodes(processDefaultlanguage_id); // default
+    }
   }, [currentLevel]);
 
   const fetchNodes = async (language_id = null) => {
@@ -210,12 +218,15 @@ const MapLevel = () => {
       const Process_id = id ? id : null;
       const publishedStatus = "Published";
       const draftStatus = "Draft";
+
+      const NodesStatus = "Editmode";
       const data = await api.getNodes(
         levelParam,
         parseInt(user_id),
         Process_id,
         currentParentId,
-        language_id
+        language_id,
+        NodesStatus
       );
       // console.log("respoe", data);
       const PageGroupId = data.nodes?.[0]?.PageGroupId;
@@ -248,6 +259,7 @@ const MapLevel = () => {
       }
 
       Settitle(data.title);
+      SetTitleTranslation(data.TitleTranslation);
       SetParentPageGroupId(data.PageGroupId);
       setprocess_img(data.process_img);
       setprocessDefaultlanguage_id(data.processDefaultlanguage_id);
@@ -267,10 +279,10 @@ const MapLevel = () => {
           let hasNextLevel = false;
           try {
             const check = await api.checkRecord(levelParam, Process_id);
-                console.log("check swimlane",check)
-                            console.log("Process_id",Process_id)
+            // console.log("check swimlane", check);
+            // console.log("Process_id", Process_id);
 
-                            console.log("parsedData.processlink swimlane",levelParam)
+            // console.log("parsedData.processlink swimlane", levelParam);
 
             hasNextLevel = check?.status === true;
           } catch (e) {
@@ -305,7 +317,7 @@ const MapLevel = () => {
         style: { stroke: "#002060", strokeWidth: 2 },
         type: "step",
       }));
-                console.log("parsedNodes",parsedNodes)
+      // console.log("parsedNodes", parsedNodes);
 
       setNodes(parsedNodes);
       setEdges(parsedEdges);
@@ -318,6 +330,8 @@ const MapLevel = () => {
   const handleLanguageSwitch = async (langId) => {
     if (!hasUnsavedChanges) {
       // No unsaved changes — directly switch language
+      localStorage.setItem("selectedLanguageId", langId);
+
       fetchNodes(langId);
       return;
     }
@@ -337,7 +351,7 @@ const MapLevel = () => {
     });
 
     if (shouldProceed) {
-     fetchNodes(langId);
+      fetchNodes(langId);
     }
   };
 
@@ -357,8 +371,7 @@ const MapLevel = () => {
       currentLevel === 0
         ? `/Draft-Process-View/${id}`
         : `/Draft-Process-View/${currentLevel}/${currentParentId}/${id}`;
-
-    const state = {};
+    const state = { id, title, TitleTranslation };
 
     // ✅ Check if breadcrumb already exists
     const exists = breadcrumbs.some((b) => b.path === path);
@@ -379,6 +392,7 @@ const MapLevel = () => {
     removeBreadcrumbsAfter,
     id,
     title,
+    TitleTranslation,
     breadcrumbs, // ✅ include breadcrumbs dependency
   ]);
   useEffect(() => {
@@ -542,10 +556,13 @@ const MapLevel = () => {
     if (selectedNode) {
       const selectedNodeData = nodes.find((node) => node.id === selectedNode);
       const selectedLabel = selectedNodeData?.data?.label || "";
+      const TitleTranslation = selectedNodeData.data.translations || "";
       const newLevel = currentLevel + 1;
       setShowPopup(false);
       const confirmcondition = await handleBack();
       if (confirmcondition) {
+        const state = { id, selectedLabel, TitleTranslation };
+
         if (type === "ProcessMap") {
           if (checkRecord.status === true) {
             navigate(`/Draft-Process-View/${newLevel}/${selectedNode}/${id}`);
@@ -558,16 +575,18 @@ const MapLevel = () => {
             navigate(
               `/Draft-Swim-lanes-View/level/${newLevel}/${selectedNode}/${id}`
             );
-               addBreadcrumb(
+            addBreadcrumb(
               `${selectedLabel || ""} `,
 
-              `/Draft-Swim-lanes-View/level/${newLevel}/${selectedNode}/${id}`
+              `/Draft-Swim-lanes-View/level/${newLevel}/${selectedNode}/${id}`,
+              state
             );
           } else {
             addBreadcrumb(
               `${selectedLabel || ""} `,
 
-              `/swimlane/level/${newLevel}/${selectedNode}/${id}`
+              `/swimlane/level/${newLevel}/${selectedNode}/${id}`,
+              state
             );
             navigate(`/swimlane/level/${newLevel}/${selectedNode}/${id}`);
           }
@@ -720,7 +739,6 @@ const MapLevel = () => {
     }
   }, [showContextMenu]);
 
-
   const handleGlobalContextMenu = (event) => {
     event.preventDefault();
 
@@ -797,17 +815,17 @@ const MapLevel = () => {
       backgroundColor: "#ffffff",
       position: "relative",
     },
-     gridOverlay: {
-    position: "absolute",
-    inset: 0,
-    backgroundImage: `
+    gridOverlay: {
+      position: "absolute",
+      inset: 0,
+      backgroundImage: `
       linear-gradient(to right, rgba(0,0,0,0.1) 1px, transparent 1px),
       linear-gradient(to bottom, rgba(0,0,0,0.1) 1px, transparent 1px)
     `,
-    backgroundSize: `calc(100% / 11) calc(100% / 7)`, // 👈 11 columns × 7 rows
-    pointerEvents: "none", // grid click-block na kare
-    zIndex: 1,
-  },
+      backgroundSize: `calc(100% / 11) calc(100% / 7)`, // 👈 11 columns × 7 rows
+      pointerEvents: "none", // grid click-block na kare
+      zIndex: 1,
+    },
     reactFlowStyle: {
       width: "100%",
       height: "100%",
@@ -925,7 +943,7 @@ const MapLevel = () => {
 
     const encodedTitle = encodeURIComponent("ProcessMap");
     navigate(
-      `/Draft-Process-Version/${process_id}/${level}/${version}/${encodedTitle}/${user_id}`
+      `/Draft-Process-Version/${process_id}/${level}/${version}/${encodedTitle}/${user_id}/${currentParentId}`
     );
   };
 
@@ -1015,10 +1033,8 @@ const MapLevel = () => {
                 preventScrolling={false}
                 nodesDraggable={true}
                 style={styles.reactFlowStyle}
-                
               >
-          <div className="grid-overlay" style={styles.gridOverlay}></div>
-
+                <div className="grid-overlay" style={styles.gridOverlay}></div>
               </ReactFlow>
               <CustomContextMenu
                 showContextMenu={showContextMenu}
@@ -1048,7 +1064,7 @@ const MapLevel = () => {
           onClose={() => setShowTranslationPopup(false)}
           defaultValues={translationDefaults}
           onSubmit={(values) => {
-            console.log("Translations:", values);
+            
 
             updateNodeTranslations(selectedNode, values);
 
@@ -1070,6 +1086,8 @@ const MapLevel = () => {
             status={"draft"}
             type={"ProcessMaps"}
             versionPopupPayload={versionPopupPayload}
+            supportedLanguages={supportedLanguages}
+              selectedLanguage={processDefaultlanguage_id}
           />
         )}
       </ReactFlowProvider>

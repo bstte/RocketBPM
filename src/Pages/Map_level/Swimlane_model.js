@@ -267,7 +267,12 @@ const SwimlaneModel = () => {
   });
 
   useEffect(() => {
-    fetchNodes();
+   const savedLang = localStorage.getItem("selectedLanguageId");
+    if (savedLang) {
+      fetchNodes(parseInt(savedLang)); // language apply karo
+    } else {
+      fetchNodes(processDefaultlanguage_id); // default
+    }
   }, []);
 
   const fetchNodes = async (language_id = null) => {
@@ -280,12 +285,14 @@ const SwimlaneModel = () => {
       const Process_id = id ? id : null;
       const publishedStatus = "Published";
       const draftStatus = "Draft";
+      const NodesStatus = "Editmode";
       const data = await api.getNodes(
         levelParam,
         parseInt(user_id),
         Process_id,
         currentParentId,
-        language_id
+        language_id,
+        NodesStatus
       );
       const PageGroupId = data.nodes?.[0]?.PageGroupId;
 
@@ -781,7 +788,7 @@ const SwimlaneModel = () => {
       savetype,
       ...versionPopupPayload,
     };
-
+console.log("payload",payload)
     const Level =
       currentParentId !== null
         ? `Level${currentLevel}_${currentParentId}`
@@ -1819,7 +1826,7 @@ const SwimlaneModel = () => {
     const user_id = LoginUser ? LoginUser.id : null;
     const encodedTitle = encodeURIComponent("swimlane");
     navigate(
-      `/Swimlane-Version/${process_id}/${level}/${version}/${encodedTitle}/${user_id}`
+      `/Swimlane-Version/${process_id}/${level}/${version}/${encodedTitle}/${user_id}/${currentParentId}`
     );
   };
 
@@ -1877,6 +1884,8 @@ const SwimlaneModel = () => {
     if (!hasUnsavedChanges) {
       // No unsaved changes — directly switch language
       fetchNodes(langId);
+      localStorage.setItem("selectedLanguageId", langId);
+
       return;
     }
 
@@ -2181,6 +2190,8 @@ const SwimlaneModel = () => {
               handleSaveVersionDetails={handleSaveVersionDetails}
               status={"draft"}
               versionPopupPayload={versionPopupPayload} // <-- ADD THIS
+                  supportedLanguages={supportedLanguages}
+              selectedLanguage={processDefaultlanguage_id}
             />
           )}
         </ReactFlowProvider>

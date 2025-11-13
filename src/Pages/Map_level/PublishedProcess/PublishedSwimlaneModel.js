@@ -37,6 +37,7 @@ const PublishedSwimlaneModel = () => {
   // const location = useLocation();
   const [showVersionPopup, setShowVersionPopup] = useState(false);
   const [title, Settitle] = useState("");
+
   // const [ParentPageGroupId, SetParentPageGroupId] = useState(null);
   const [user, setUser] = useState(null);
   const [processDefaultlanguage_id, setprocessDefaultlanguage_id] =
@@ -92,7 +93,12 @@ const PublishedSwimlaneModel = () => {
     setIsFavorite,
   });
   useEffect(() => {
-    fetchNodes();
+    const savedLang = localStorage.getItem("selectedLanguageId");
+    if (savedLang) {
+      fetchNodes(parseInt(savedLang)); // language apply karo
+    } else {
+      fetchNodes(processDefaultlanguage_id); // default
+    }
   }, [
     currentLevel,
     setNodes,
@@ -173,28 +179,31 @@ const PublishedSwimlaneModel = () => {
             );
 
             let centeredPosition = parsedPosition;
-      let hasNextLevel = false;
+            let hasNextLevel = false;
 
-          if (
-            node.type === "progressArrow" &&
-            parsedData?.processlink &&
-            parsedData.processlink !== null &&
-            parsedData.processlink !== ""
-          ) {
-            const match = parsedData.processlink.match(/Level(\d+)/i);
-            const extractedLevel = match ? parseInt(match[1]) : currentLevel;
+            if (
+              node.type === "progressArrow" &&
+              parsedData?.processlink &&
+              parsedData.processlink !== null &&
+              parsedData.processlink !== ""
+            ) {
+              const match = parsedData.processlink.match(/Level(\d+)/i);
+              const extractedLevel = match ? parseInt(match[1]) : currentLevel;
 
-            // 🔹 Increment level
-            const newLevel = extractedLevel + 1;
-            const levelParam = `Level${newLevel}_${parsedData.processlink}`;
-            try {
-              const check = await api.checkPublishRecord(levelParam, Process_id);
+              // 🔹 Increment level
+              const newLevel = extractedLevel + 1;
+              const levelParam = `Level${newLevel}_${parsedData.processlink}`;
+              try {
+                const check = await api.checkPublishRecord(
+                  levelParam,
+                  Process_id
+                );
 
-              hasNextLevel = check?.status === true;
-            } catch (e) {
-              console.error("checkPublishRecord error", e);
+                hasNextLevel = check?.status === true;
+              } catch (e) {
+                console.error("checkPublishRecord error", e);
+              }
             }
-          }
             // Parent node positioning
             const nodeStyle =
               node.type === "Yes" ||
@@ -219,7 +228,7 @@ const PublishedSwimlaneModel = () => {
                 defaultwidt: "40px",
                 defaultheight: "40px",
                 nodeResize: false,
-                hasNextLevel
+                hasNextLevel,
               },
               type: node.type,
               id: node.node_id,
@@ -318,7 +327,7 @@ const PublishedSwimlaneModel = () => {
     const user_id = LoginUser ? LoginUser.id : null;
     const encodedTitle = encodeURIComponent("swimlane");
     navigate(
-      `/Swimlane-Version/${process_id}/${level}/${version}/${encodedTitle}/${user_id}`
+      `/Swimlane-Version/${process_id}/${level}/${version}/${encodedTitle}/${user_id}/${currentParentId}`
     );
   };
 
@@ -364,6 +373,7 @@ const PublishedSwimlaneModel = () => {
   };
 
   const handleSupportViewlangugeId = (langId) => {
+    localStorage.setItem("selectedLanguageId", langId);
     fetchNodes(langId);
   };
 
@@ -439,6 +449,7 @@ const PublishedSwimlaneModel = () => {
               LoginUser={LoginUser}
               title={headerTitle}
               status={"Published"}
+              selectedLanguage={processDefaultlanguage_id}
             />
           )}
         </ReactFlowProvider>

@@ -35,7 +35,7 @@ const PublishedMapLevel = () => {
     width: window.innerWidth - 300,
     height: window.innerHeight - 300,
   };
- const langMap = useLangMap();
+  const langMap = useLangMap();
   const [remainingHeight, setRemainingHeight] = useState(0);
 
   const LoginUser = useSelector((state) => state.user.user);
@@ -83,13 +83,14 @@ const PublishedMapLevel = () => {
   const { level, parentId, processId } = useParams();
   const [showVersionPopup, setShowVersionPopup] = useState(false);
   const [title, Settitle] = useState("");
+    const [TitleTranslation, SetTitleTranslation] = useState("");
   // const [ParentPageGroupId, SetParentPageGroupId] = useState(null);
   const [user, setUser] = useState(null);
   const [supportedLanguages, setSupportedLanguages] = useState([]);
   const id = processId;
- const [processDefaultlanguage_id, setprocessDefaultlanguage_id] =
+  const [processDefaultlanguage_id, setprocessDefaultlanguage_id] =
     useState(null);
-    
+
   const currentLevel = level ? parseInt(level, 10) : 0;
   const currentParentId = parentId || null;
   const { addBreadcrumb, removeBreadcrumbsAfter, breadcrumbs, setBreadcrumbs } =
@@ -131,9 +132,12 @@ const PublishedMapLevel = () => {
   );
 
   useEffect(() => {
-    
-
-    fetchNodes();
+    const savedLang = localStorage.getItem("selectedLanguageId");
+    if (savedLang) {
+      fetchNodes(parseInt(savedLang)); // language apply karo
+    } else {
+      fetchNodes(processDefaultlanguage_id); // default
+    }
   }, [
     currentLevel,
     handleLabelChange,
@@ -143,198 +147,187 @@ const PublishedMapLevel = () => {
     id,
   ]);
 
-  const fetchNodes = async (language_id =null) => {
-      try {
-        const levelParam =
-          currentParentId !== null
-            ? `Level${currentLevel}_${currentParentId}`
-            : `Level${currentLevel}`;
-        const user_id = LoginUser ? LoginUser.id : null;
+  const fetchNodes = async (language_id = null) => {
+    try {
+      const levelParam =
+        currentParentId !== null
+          ? `Level${currentLevel}_${currentParentId}`
+          : `Level${currentLevel}`;
+      const user_id = LoginUser ? LoginUser.id : null;
 
-        const Process_id = id ? id : null;
-        const publishedStatus = "Published";
-        const data = await api.getPublishedNodes(
-          levelParam,
-          parseInt(user_id),
-          Process_id,
-          currentParentId,
-          language_id
-        );
+      const Process_id = id ? id : null;
+      const publishedStatus = "Published";
+      const data = await api.getPublishedNodes(
+        levelParam,
+        parseInt(user_id),
+        Process_id,
+        currentParentId,
+        language_id
+      );
 
-        // ✅ Set user from backend response
-        if (data && data.user_id) {
-          // Construct user object based on backend logic
-          setUser({
-            id: data.actual_user_id,
-            type: data.type || "self",
-            role: data.role || "self",
-             OwnId: data.user_id,
-            actual_user_id: data.actual_user_id,
-          });
-        }
-          const PageGroupId = data.nodes?.[0]?.PageGroupId;
-        const getPublishedDate = await api.GetPublishedDate(
-          Process_id,
-          publishedStatus,
-          PageGroupId
-        );
-        if (getPublishedDate.status === true) {
-          setgetPublishedDate(getPublishedDate.updated_at);
-        } else {
-          setgetPublishedDate("");
-        }
-        Settitle(data.title);
-  setprocessDefaultlanguage_id(data.processDefaultlanguage_id);
-          setSupportedLanguages(data.ProcessSupportLanguage);
-        setprocess_img(data.process_img);
-        const parsedNodes = await Promise.all(
-          data.nodes
-            .filter((node) => node.type !== "StickyNote")
-            .map(async (node) => {
-              const parsedData = JSON.parse(node.data);
-              const parsedPosition = JSON.parse(node.position);
-              const parsedMeasured = JSON.parse(node.measured);
-
-              // 👇 Next Level check
-              const newLevel = currentLevel + 1;
-              const levelParam =
-                node.node_id !== null
-                  ? `Level${newLevel}_${node.node_id}`
-                  : `Level${currentLevel}`;
-              const Process_id = id ? id : null;
-            
-              let hasNextLevel = false;
-              try {
-                const check = await api.checkPublishRecord(
-                  levelParam,
-                  Process_id
-                );
-                hasNextLevel = check?.status === true;
-              } catch (err) {
-                console.error("checkPublishRecord error:", err);
-              }
-              return {
-                ...node,
-                data: {
-                  ...parsedData,
-                  onLabelChange: (newLabel) =>
-                    handleLabelChange(node.node_id, newLabel),
-
-                  width_height: parsedMeasured,
-                  autoFocus: true,
-                  node_id: node.node_id,
-                  nodeResize: true,
-                  LinkToStatus: node.LinkToStatus,
-                  hasNextLevel,
-                },
-                type: node.type,
-                id: node.node_id,
-
-                measured: parsedMeasured,
-                position: parsedPosition,
-                draggable: false,
-                animated: false,
-              };
-            })
-        );
-        const parsedEdges = data.edges.map((edge) => ({
-          ...edge,
-          animated: Boolean(edge.animated),
-          markerEnd: {
-            type: MarkerType.ArrowClosed,
-          },
-          style: { stroke: "#002060", strokeWidth: 2 },
-          type: "step",
-        }));
-
-        setNodes(parsedNodes);
-        setEdges(parsedEdges);
-      } catch (error) {
-        console.error("Error fetching nodes:", error);
-        alert("Failed to fetch nodes. Please try again.");
+      // ✅ Set user from backend response
+      if (data && data.user_id) {
+        // Construct user object based on backend logic
+        setUser({
+          id: data.actual_user_id,
+          type: data.type || "self",
+          role: data.role || "self",
+          OwnId: data.user_id,
+          actual_user_id: data.actual_user_id,
+        });
       }
-    };
+      const PageGroupId = data.nodes?.[0]?.PageGroupId;
+      const getPublishedDate = await api.GetPublishedDate(
+        Process_id,
+        publishedStatus,
+        PageGroupId
+      );
+      if (getPublishedDate.status === true) {
+        setgetPublishedDate(getPublishedDate.updated_at);
+      } else {
+        setgetPublishedDate("");
+      }
+      Settitle(data.title);
+            SetTitleTranslation(data.TitleTranslation);
+      setprocessDefaultlanguage_id(data.processDefaultlanguage_id);
+      setSupportedLanguages(data.ProcessSupportLanguage);
+      setprocess_img(data.process_img);
+      const parsedNodes = await Promise.all(
+        data.nodes
+          .filter((node) => node.type !== "StickyNote")
+          .map(async (node) => {
+            const parsedData = JSON.parse(node.data);
+            const parsedPosition = JSON.parse(node.position);
+            const parsedMeasured = JSON.parse(node.measured);
 
-    
-  const handleSupportViewlangugeId=(langId)=>{
-     fetchNodes(langId);
-  }
+            // 👇 Next Level check
+            const newLevel = currentLevel + 1;
+            const levelParam =
+              node.node_id !== null
+                ? `Level${newLevel}_${node.node_id}`
+                : `Level${currentLevel}`;
+            const Process_id = id ? id : null;
+
+            let hasNextLevel = false;
+            try {
+              const check = await api.checkPublishRecord(
+                levelParam,
+                Process_id
+              );
+              hasNextLevel = check?.status === true;
+            } catch (err) {
+              console.error("checkPublishRecord error:", err);
+            }
+            return {
+              ...node,
+              data: {
+                ...parsedData,
+                onLabelChange: (newLabel) =>
+                  handleLabelChange(node.node_id, newLabel),
+
+                width_height: parsedMeasured,
+                autoFocus: true,
+                node_id: node.node_id,
+                nodeResize: true,
+                LinkToStatus: node.LinkToStatus,
+                hasNextLevel,
+              },
+              type: node.type,
+              id: node.node_id,
+
+              measured: parsedMeasured,
+              position: parsedPosition,
+              draggable: false,
+              animated: false,
+            };
+          })
+      );
+      const parsedEdges = data.edges.map((edge) => ({
+        ...edge,
+        animated: Boolean(edge.animated),
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+        },
+        style: { stroke: "#002060", strokeWidth: 2 },
+        type: "step",
+      }));
+// console.log("parsedNodes",parsedNodes)
+      setNodes(parsedNodes);
+      setEdges(parsedEdges);
+    } catch (error) {
+      console.error("Error fetching nodes:", error);
+      alert("Failed to fetch nodes. Please try again.");
+    }
+  };
+
+  const handleSupportViewlangugeId = (langId) => {
+    localStorage.setItem("selectedLanguageId", langId);
+
+    fetchNodes(langId);
+  };
   useCheckFavorite({
     id,
     nodes,
     setIsFavorite,
   });
-  const currentPath = window.location.pathname
+  const currentPath = window.location.pathname;
   useEffect(() => {
-  if (!title) return;
+    if (!title) return;
 
-  const label = currentLevel === 0 ? title : title;
-    const state = { id, title, currentPath };
+    const label = currentLevel === 0 ? title : title;
+    const state = { id, title, currentPath,TitleTranslation };
 
-  const path =
-    currentLevel === 0
-      ? `/published-map-level/${id}`
-      : `/published-map-level/${currentLevel}/${currentParentId}/${id}`;
+    const path =
+      currentLevel === 0
+        ? `/published-map-level/${id}`
+        : `/published-map-level/${currentLevel}/${currentParentId}/${id}`;
 
-  const exists = breadcrumbs.some((b) => b.path === path);
-  if (!exists) {
-    
-    if (currentLevel >= 0 && isNavigating) {
-      const safeIndex = Math.max(1, currentLevel - 1);
-      removeBreadcrumbsAfter(safeIndex);
+    const exists = breadcrumbs.some((b) => b.path === path);
+    if (!exists) {
+      if (currentLevel >= 0 && isNavigating) {
+        const safeIndex = Math.max(1, currentLevel - 1);
+        removeBreadcrumbsAfter(safeIndex);
+      }
+      addBreadcrumb(label, path, state);
     }
-    addBreadcrumb(label, path,state);
-  }
 
-  setIsNavigating(false);
-}, [
-  currentLevel,
-  isNavigating,
-  currentParentId,
-  addBreadcrumb,
-  removeBreadcrumbsAfter,
-  id,
-  title,
-  breadcrumbs, // ✅ include this
-]);
-
+    setIsNavigating(false);
+  }, [
+    currentLevel,
+    isNavigating,
+    currentParentId,
+    addBreadcrumb,
+    removeBreadcrumbsAfter,
+    id,
+    title,
+    breadcrumbs, // ✅ include this
+  ]);
 
   const handlenodeClick = async (event, node) => {
-    console.log("data",node)
+    // console.log("data", node);
     event.preventDefault();
     const selectedLabel = node.data.label || "";
+      const TitleTranslation = node.data.translations || "";
     const newLevel = currentLevel + 1;
     const levelParam =
       node.id !== null ? `Level${newLevel}_${node.id}` : `Level${currentLevel}`;
     const Process_id = id ? id : null;
-    const data = await api.checkPublishRecord(
-      levelParam,
-      Process_id
-    );
+    const data = await api.checkPublishRecord(levelParam, Process_id);
 
-    
     if (data.status === true) {
+        const state = { id, selectedLabel, currentPath,TitleTranslation };
       if (data.Page_Title === "ProcessMap") {
-        navigate(
-          `/published-map-level/${newLevel}/${
-            node.id
-          }/${id}`
-        );
+        navigate(`/published-map-level/${newLevel}/${node.id}/${id}`);
       }
-      const state = { id, selectedLabel, currentPath };
+    
       if (data.Page_Title === "Swimlane") {
         addBreadcrumb(
           `${selectedLabel} `,
-          `/published-swimlane/level/${newLevel}/${
-            node.id
-          }/${id}`,state
+          `/published-swimlane/level/${newLevel}/${node.id}/${id}`,
+          state
         );
 
-        navigate(
-          `/published-swimlane/level/${newLevel}/${
-            node.id
-          }/${id}`
-        );
+        navigate(`/published-swimlane/level/${newLevel}/${node.id}/${id}`);
       }
     } else {
       alert("Next level not Published");
@@ -363,9 +356,7 @@ const PublishedMapLevel = () => {
     setBreadcrumbs(updatedBreadcrumbs);
     if (id && user) {
       if (currentLevel === 0) {
-        navigate(
-          `/Draft-Process-View/${id}`
-        );
+        navigate(`/Draft-Process-View/${id}`);
       } else {
         navigate(
           `/Draft-Process-View/${currentLevel}/${currentParentId}/${id}`
@@ -404,10 +395,10 @@ const PublishedMapLevel = () => {
 
   // ye commom page h
   const navigateToVersion = (process_id, level, version) => {
-     const user_id = LoginUser ? LoginUser.id : null;
+    const user_id = LoginUser ? LoginUser.id : null;
     const encodedTitle = encodeURIComponent("ProcessMap");
     navigate(
-      `/Draft-Process-Version/${process_id}/${level}/${version}/${encodedTitle}/${user_id}`
+      `/Draft-Process-Version/${process_id}/${level}/${version}/${encodedTitle}/${user_id}/${currentParentId}`
     );
   };
 
@@ -452,7 +443,6 @@ const PublishedMapLevel = () => {
     }
   };
 
-
   return (
     <div>
       <Header
@@ -475,7 +465,7 @@ const PublishedMapLevel = () => {
         supportedLanguages={supportedLanguages}
         selectedLanguage={processDefaultlanguage_id}
       />
-     
+
       <ReactFlowProvider>
         <div
           className="app-container"
@@ -523,6 +513,7 @@ const PublishedMapLevel = () => {
             title={headerTitle}
             status={"Published"}
             type={"ProcessMaps"}
+             selectedLanguage={processDefaultlanguage_id}
           />
         )}
       </ReactFlowProvider>

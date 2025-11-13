@@ -153,7 +153,6 @@ const Dashboard = () => {
 
       try {
         const response = await apiExports.GetPublishedDate(
-         
           processId,
           publishedStatus,
           PageGroupId
@@ -189,6 +188,8 @@ const Dashboard = () => {
   }, [getFavProcessesUser, getPublishedDatedata]);
 
   useEffect(() => {
+    localStorage.removeItem("selectedLanguageId");
+
     const getvideodata = async () => {
       try {
         const response = await getvideo();

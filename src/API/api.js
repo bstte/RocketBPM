@@ -47,7 +47,7 @@ export const getNextPageGroupId = async (Page_Title=null) => {
   }
 };
 
-export const getNodes = async (level = null, user_id = null, Process_id = null,currentParentId=null,language_id=null) => {
+export const getNodes = async (level = null, user_id = null, Process_id = null,currentParentId=null,language_id=null,NodesStatus=null) => {
   try {
     const response = await api.get('/nodes', {
       params: {
@@ -55,7 +55,8 @@ export const getNodes = async (level = null, user_id = null, Process_id = null,c
         user_id,
         Process_id,
         currentParentId,
-        language_id
+        language_id,
+        NodesStatus
       }
     });
     return response.data;
@@ -629,9 +630,13 @@ export const ReplaceVersion = async (level, processId, version) => {
 };
 
 
-export const getVersionViewData = async (processId, level, version, pageTitle,user_id) => {
+export const getVersionViewData = async (processId, level, version, pageTitle,user_id,currentParentId) => {
   try {
-    const response = await api.get(`/process/view/${processId}/${level}/${version}/${pageTitle}/${user_id}`);
+    const response = await api.get(`/process/view/${processId}/${level}/${version}/${pageTitle}/${user_id}`,{
+      params:{
+        currentParentId:currentParentId
+      }
+    });
     return response.data;
   } catch (error) {
     console.error('Error fetching version view data:', error);

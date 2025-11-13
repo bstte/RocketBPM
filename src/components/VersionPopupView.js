@@ -5,6 +5,7 @@ import "react-quill/dist/quill.snow.css";
 import { ImageBaseUrl, versionlist } from "../API/api";
 import { DefaultemailIcon, DefaultUserIcon } from "./Icon";
 import { useTranslation } from "../hooks/useTranslation";
+import { useLangMap } from "../hooks/useLangMap";
 
 const VersionPopupView = ({
   processId,
@@ -16,6 +17,7 @@ const VersionPopupView = ({
   title,
   status,
   type,
+  selectedLanguage,
 }) => {
   const [activeTab, setActiveTab] = useState("contact");
   const [versions, setVersions] = useState([]);
@@ -29,10 +31,13 @@ const VersionPopupView = ({
     manager: [],
     domain_owner: [],
   });
+  const langMap = useLangMap(); // inside component
 
   const t = useTranslation();
 
   useEffect(() => {
+          if (!langMap || Object.keys(langMap).length === 0) return; // 🛑 Wait until langMap is ready
+
     const fetchVersions = async () => {
       try {
         const LoginUserId = LoginUser ? LoginUser.id : null;
@@ -60,7 +65,19 @@ const VersionPopupView = ({
           }
         );
 
-        setRevisionText(response.revision_info || "");
+        let revisionData = {};
+        try {
+          revisionData =
+            typeof response.revision_info === "string"
+              ? JSON.parse(response.revision_info)
+              : response.revision_info || {};
+        } catch (e) {
+          console.error("Failed to parse revision_info", e);
+        }
+
+        const langKey = langMap[selectedLanguage] || "en";
+        
+        setRevisionText(revisionData[langKey]?.content || "");
       } catch (error) {
         console.error("Error fetching version data:", error);
       } finally {
@@ -69,7 +86,7 @@ const VersionPopupView = ({
     };
 
     fetchVersions();
-  }, [processId, currentLevel, currentParentId, LoginUser]);
+  }, [processId, currentLevel, currentParentId, LoginUser, langMap,  selectedLanguage]);
   // ✅ Roles config
 
   return (
@@ -89,7 +106,7 @@ const VersionPopupView = ({
             onClick={() => setActiveTab("contact")}
             className={activeTab === "contact" ? "active" : ""}
           >
-            {t("Contacts")}
+            {t("contact")}
           </button>
           <button
             onClick={() => setActiveTab("revision")}
@@ -173,20 +190,15 @@ const VersionPopupView = ({
                               {roleUser.user.first_name}{" "}
                               {roleUser.user.last_name || ""}
                             </span>
-                          
-                            <div className="owner-email">
-                              {/* <DefaultemailIcon />
-                              <span style={{ marginLeft: "8px" }}>
-                                {roleUser.user.email}
-                              </span> */}
 
-                                <a
-                             href={`mailto:${roleUser.user.email}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              <DefaultemailIcon />
-                            </a>
+                            <div className="owner-email">
+                              <a
+                                href={`mailto:${roleUser.user.email}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <DefaultemailIcon />
+                              </a>
                             </div>
                           </div>
                         </div>
@@ -232,20 +244,38 @@ const VersionPopupView = ({
                         <td>{version.version}</td>
                         <td>{new Date(version.created_at).toLocaleString()}</td>
                         <td>
-                          {version.first_name} {version.last_name}
+                          <div className="owner-actions owner-flex">
+                            {version.email && (
+                              <>
+                                <a
+                                  href={`mailto:${version.email}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  <DefaultemailIcon />
+                                </a>
+                              </>
+                            )}
+
+                            <div style={{ marginLeft: 10 }}>
+                              {version.first_name} {version.last_name}
+                            </div>
+                          </div>
                         </td>
                         <td className="actions">
-                          <button
-                            onClick={() =>
-                              viewVersion(
-                                version.process_id,
-                                version.level,
-                                version.version
-                              )
-                            }
-                          >
-                            👁
-                          </button>
+                          {index !== 0 && (
+                            <button
+                              onClick={() =>
+                                viewVersion(
+                                  version.process_id,
+                                  version.level,
+                                  version.version
+                                )
+                              }
+                            >
+                              {t("view")}
+                            </button>
+                          )}
                         </td>
                       </tr>
                     ))}

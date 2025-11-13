@@ -18,6 +18,8 @@ import "../../Css/Swimlane.css";
 import { useDynamicHeight } from "../../hooks/useDynamicHeight";
 import PublishNodeType from "./PublishedProcess/PublishNodeType";
 import { getVersionViewData } from "../../API/api";
+import YesNode from "../../AllNode/YesNode";
+import NoNode from "../../AllNode/NoNode";
 
 const SwimlaneMapVersion = () => {
   const { height, appHeaderHeight, remainingHeight } = useDynamicHeight();
@@ -26,8 +28,10 @@ const SwimlaneMapVersion = () => {
     width: window.innerWidth,
     height: window.innerHeight,
   });
-  const { processId, level, version, pageTitle,user_id } = useParams();
+  const { processId, level, version, pageTitle, user_id, currentParentId } =
+    useParams();
   const [Title, SetTitle] = useState("");
+  const [currentModeltitle, SetcurrentModeltitle] = useState("");
 
   const { nodes: initialNodes } = useMemo(
     () =>
@@ -49,7 +53,8 @@ const SwimlaneMapVersion = () => {
   const [ChildNodes, setChiledNodes] = useState([]);
   const [nodes, setNodes] = useState(initialNodes);
   const [edges, setEdges] = useState([]);
-
+  const [processDefaultlanguage_id, setprocessDefaultlanguage_id] =
+    useState(null);
   const nodeTypes = PublishNodeType;
   const edgeTypes = useMemo(
     () => ({
@@ -68,11 +73,13 @@ const SwimlaneMapVersion = () => {
           level,
           version,
           pageTitle,
-          user_id
+          user_id,
+          currentParentId
         );
-                console.log("response version", response);
 
-        const { nodes, edges } = response;
+        const { nodes, edges, title,processDefaultlanguage_id } = response;
+        SetcurrentModeltitle(title);
+        setprocessDefaultlanguage_id(processDefaultlanguage_id)
         SetTitle(nodes[0]?.version);
         const nodebgwidth = document.querySelector(".react-flow__node");
         const nodebgwidths = nodebgwidth
@@ -191,13 +198,31 @@ const SwimlaneMapVersion = () => {
     fetchVersionData();
   }, [processId, level, version, pageTitle]);
 
-  const memoizedNodeTypes = useMemo(() => nodeTypes, [nodeTypes]);
+  
+   const memoizedNodeTypes = useMemo(
+     () => ({
+       ...nodeTypes,
+       Yes: (props) => (
+         <YesNode
+           {...props}
+           processDefaultlanguage_id={processDefaultlanguage_id}
+         />
+       ),
+       No: (props) => (
+         <NoNode
+           {...props}
+           processDefaultlanguage_id={processDefaultlanguage_id}
+         />
+       ),
+     }),
+     [processDefaultlanguage_id]
+   );
   const memoizedEdgeTypes = useMemo(() => edgeTypes, [edgeTypes]);
 
   return (
     <div>
       <Header
-        title={`Version: ${Title}`}
+  title={`${currentModeltitle} (Version: ${Title})`}
         Page={"ViewProcessmapVersion"}
         iconNames={{}}
         onSave={() => {}}

@@ -74,9 +74,9 @@ const AppRoutes = () => {
       <Route path="/draft-process-view/:level/:parentId/:processId/*" element={<PrivateRoute><DraftProcesMapLevel /></PrivateRoute>} />
       <Route path="/draft-swim-lanes-view/level/:level/:parentId/:processId" element={<PrivateRoute><DraftSwimlineLevel /></PrivateRoute>} />
 
-      <Route path="/Swimlane-Version/:processId/:level/:version/:pageTitle/:user_id" element={<SwimlaneMapVersion />} />
+      <Route path="/Swimlane-Version/:processId/:level/:version/:pageTitle/:user_id/:currentParentId" element={<SwimlaneMapVersion />} />
 
-      <Route path="/Draft-Process-Version/:processId/:level/:version/:pageTitle/:user_id" element={<DraftProcessMapVersion />} />
+      <Route path="/Draft-Process-Version/:processId/:level/:version/:pageTitle/:user_id/:currentParentId" element={<DraftProcessMapVersion />} />
 
       {/* Redirect for unknown routes */}
       <Route path="*" element={<Navigate to="/login" />} />

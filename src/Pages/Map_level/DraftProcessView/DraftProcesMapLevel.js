@@ -76,6 +76,8 @@ const DraftProcesMapLevel = () => {
   // const location = useLocation();
   const LoginUser = useSelector((state) => state.user.user);
   const [title, Settitle] = useState("");
+      const [TitleTranslation, SetTitleTranslation] = useState("");
+  
   const [user, setUser] = useState(null);
 
   const id = processId; // string
@@ -150,7 +152,12 @@ const DraftProcesMapLevel = () => {
   }, [checkPublishData, id]);
 
   useEffect(() => {
-    fetchNodes();
+    const savedLang = localStorage.getItem("selectedLanguageId");
+    if (savedLang) {
+      fetchNodes(parseInt(savedLang)); // language apply karo
+    } else {
+      fetchNodes(processDefaultlanguage_id); // default
+    }
   }, [
     currentLevel,
     handleLabelChange,
@@ -178,7 +185,7 @@ const DraftProcesMapLevel = () => {
         currentParentId,
         language_id
       );
-console.log("data",data)
+
       if (data && data.user_id) {
         // Construct user object based on backend logic
         setUser({
@@ -197,8 +204,6 @@ console.log("data",data)
         PageGroupId
       );
 
-      
-  
       if (getPublishedDate.status === true) {
         setgetPublishedDate(getPublishedDate.updated_at);
       } else {
@@ -209,6 +214,7 @@ console.log("data",data)
       setprocess_img(data.process_img);
       setprocess_udid(data.process_uid);
       Settitle(data.title);
+       SetTitleTranslation(data.TitleTranslation);
       const parsedNodes = await Promise.all(
         data.nodes.map(async (node) => {
           const parsedData = JSON.parse(node.data);
@@ -270,6 +276,7 @@ console.log("data",data)
   };
 
   const handleSupportViewlangugeId = (langId) => {
+    localStorage.setItem("selectedLanguageId", langId);
     fetchNodes(langId);
   };
   useCheckFavorite({
@@ -286,7 +293,7 @@ console.log("data",data)
         ? `/Draft-Process-View/${id}`
         : `/Draft-Process-View/${currentLevel}/${currentParentId}/${id}`;
 
-    const state = { id, title };
+    const state = { id, title,TitleTranslation };
 
     // ✅ Prevent duplicate breadcrumb (important)
     const exists = breadcrumbs.some((b) => b.path === path);
@@ -329,6 +336,8 @@ console.log("data",data)
     const data = await api.checkRecord(levelParam, Process_id);
 
     if (data.status === true) {
+        const TitleTranslation = node.data.translations || "";
+        const state = { id, selectedLabel,TitleTranslation };
       if (data.Page_Title === "ProcessMap") {
         navigate(`/Draft-Process-View/${newLevel}/${node.id}/${id}`);
       }
@@ -336,7 +345,7 @@ console.log("data",data)
       if (data.Page_Title === "Swimlane") {
         addBreadcrumb(
           `${selectedLabel} `,
-          `/Draft-Swim-lanes-View/level/${newLevel}/${node.id}/${id}`
+          `/Draft-Swim-lanes-View/level/${newLevel}/${node.id}/${id}`,state
         );
         navigate(`/Draft-Swim-lanes-View/level/${newLevel}/${node.id}/${id}`);
       }
@@ -453,10 +462,10 @@ console.log("data",data)
     }
   };
   const navigateToVersion = (process_id, level, version) => {
-     const user_id = LoginUser ? LoginUser.id : null;
+    const user_id = LoginUser ? LoginUser.id : null;
     const encodedTitle = encodeURIComponent("ProcessMap");
     navigate(
-      `/Draft-Process-Version/${process_id}/${level}/${version}/${encodedTitle}/${user_id}`
+      `/Draft-Process-Version/${process_id}/${level}/${version}/${encodedTitle}/${user_id}/${currentParentId}`
     );
   };
   return (
@@ -547,9 +556,9 @@ console.log("data",data)
             title={headerTitle}
             status={"draft"}
             type={"ProcessMaps"}
+             selectedLanguage={processDefaultlanguage_id}
           />
         )}
-
       </ReactFlowProvider>
     </div>
   );

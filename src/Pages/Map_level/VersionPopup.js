@@ -10,6 +10,8 @@ import {
   PlusIcon,
 } from "../../components/Icon";
 import { useTranslation } from "../../hooks/useTranslation";
+import { useLangMap } from "../../hooks/useLangMap";
+import TranslationTextAreaPopup from "../../hooks/TranslationTextAreaPopup";
 
 const VersionPopup = ({
   processId,
@@ -23,6 +25,8 @@ const VersionPopup = ({
   status,
   type,
   versionPopupPayload,
+  supportedLanguages,
+  selectedLanguage,
 }) => {
   const [activeTab, setActiveTab] = useState("contact");
   const [versions, setVersions] = useState([]);
@@ -41,12 +45,29 @@ const VersionPopup = ({
     architecture: [],
     manager: [],
   });
+  const [showTranslationPopup, setShowTranslationPopup] = useState(false);
+  const [translations, setTranslations] = useState({});
+  const langMap = useLangMap(); // same hook used in first component
 
   const t = useTranslation();
 
+  // useEffect(() => {
+  //   if (versionPopupPayload) {
+  //     // agar parent me Save dabaya tha to wahi data dikhao
+  //     setSelectedEmails(
+  //       versionPopupPayload.contact_info || {
+  //         domain_owner: [],
+  //         owner: [],
+  //         architecture: [],
+  //         manager: [],
+  //       }
+  //     );
+  //     setRevisionText(versionPopupPayload.revision_info || "");
+  //   }
+  // }, [versionPopupPayload]);
+
   useEffect(() => {
     if (versionPopupPayload) {
-      // agar parent me Save dabaya tha to wahi data dikhao
       setSelectedEmails(
         versionPopupPayload.contact_info || {
           domain_owner: [],
@@ -55,11 +76,21 @@ const VersionPopup = ({
           manager: [],
         }
       );
-      setRevisionText(versionPopupPayload.revision_info || "");
+      // 🧠 Load revision translations
+      const revisionData = versionPopupPayload.revision_info;
+      if (typeof revisionData === "object") {
+        setTranslations(revisionData);
+        const langKey = langMap[selectedLanguage] || "en";
+        setRevisionText(revisionData[langKey]?.content || "");
+      } else {
+        setRevisionText(revisionData || "");
+      }
     }
-  }, [versionPopupPayload]);
+  }, [versionPopupPayload, selectedLanguage]);
 
   useEffect(() => {
+      if (!langMap || Object.keys(langMap).length === 0) return; // 🛑 Wait until langMap is ready
+
     const fetchVersions = async () => {
       try {
         const LoginUserId = LoginUser ? LoginUser.id : null;
@@ -73,7 +104,6 @@ const VersionPopup = ({
           LoginUserId,
           status
         );
-
         setVersions(response.versions || []);
         setAssignedUsers(response.assigned_users || []);
         setEmailList((response.assigned_users || []).map((u) => u.user.email));
@@ -88,7 +118,24 @@ const VersionPopup = ({
               manager: [],
             }
           );
-          setRevisionText(response.revision_info || "");
+
+          // ✅ Decode revision_info if it's a JSON string
+          let revisionData = {};
+          try {
+            revisionData =
+              typeof response.revision_info === "string"
+                ? JSON.parse(response.revision_info)
+                : response.revision_info || {};
+          } catch (e) {
+            console.error("Failed to parse revision_info", e);
+          }
+          const langKey = langMap[selectedLanguage] || "en";
+          setTranslations(revisionData);
+          // console.log("langMap", langMap);
+          // console.log("langKey", langKey);
+          // console.log("selectedLanguage", selectedLanguage);
+          setRevisionText(revisionData[langKey]?.content || "");
+          // console.log("revisionData", revisionData);
         }
       } catch (error) {
         console.error("Error fetching versions:", error);
@@ -104,6 +151,8 @@ const VersionPopup = ({
     currentParentId,
     LoginUser,
     versionPopupPayload,
+    langMap, // ✅ Added dependency
+    selectedLanguage, // ✅ Added dependency
   ]);
 
   // ➕ Popup open
@@ -145,6 +194,7 @@ const VersionPopup = ({
 
   // 💾 Save
   const handleSave = async (tab) => {
+    console.log("revision_info", translations);
     try {
       const levelParam =
         currentParentId !== null
@@ -155,7 +205,7 @@ const VersionPopup = ({
         process_id: processId,
         level: levelParam,
         contact_info: selectedEmails,
-        revision_info: revisionText,
+        revision_info: translations,
       };
 
       if (payload.contact_info || payload.revision_info) {
@@ -236,7 +286,7 @@ const VersionPopup = ({
             onClick={() => setActiveTab("contact")}
             className={activeTab === "contact" ? "active" : ""}
           >
-            {t("Contacts")}
+            {t("contact")}
           </button>
           <button
             onClick={() => setActiveTab("revision")}
@@ -271,12 +321,12 @@ const VersionPopup = ({
                     <div className="flex_full">
                       <label>
                         {role === "domain_owner"
-                          ? "Process Domain Owner:"
+                          ? `${t("process_domain_owner")}`
                           : role === "owner"
-                          ? "Process Owner:"
+                          ?`${t("process_owner")}`
                           : role === "architecture"
-                          ? "Process Architects:"
-                          : "Process Managers:"}
+                          ? `${t("process_architects")}`
+                          :`${t("process_manager")}` }
                       </label>
                     </div>
 
@@ -325,7 +375,8 @@ const VersionPopup = ({
                                       removeUser(role, roleUser.user.email)
                                     }
                                   >
-                                    Remove
+                                    
+                                    {t("remove")}
                                   </button>
                                 </div>
                               </div>
@@ -359,9 +410,40 @@ const VersionPopup = ({
           {/* REVISION TAB */}
           {activeTab === "revision" && (
             <div className="revision-tab">
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: "10px",
+                }}
+              >
+                <h4 style={{ margin: 0 }}>{t("revision_info")}</h4>
+                <button
+                  className="popup-button"
+                  style={{ backgroundColor: "#d9d9d9", color: "#000" }}
+                  onClick={() => setShowTranslationPopup(true)}
+                >
+                  {t("Translations")}
+                </button>
+              </div>
+
               <ReactQuill
                 value={revisionText}
-                onChange={setRevisionText}
+                onChange={(value) => {
+                  setRevisionText(value);
+                  const langKey = langMap[selectedLanguage] || "en";
+                  setTranslations((prev) => ({
+                    ...prev,
+                    [langKey]: {
+                      ...(typeof prev[langKey] === "object" &&
+                      prev[langKey] !== null
+                        ? prev[langKey]
+                        : {}),
+                      content: value,
+                    },
+                  }));
+                }}
                 placeholder="Write revision information..."
               />
             </div>
@@ -393,31 +475,51 @@ const VersionPopup = ({
                         <td>{version.version}</td>
                         <td>{new Date(version.created_at).toLocaleString()}</td>
                         <td>
-                          {version.first_name} {version.last_name}
+                          <div className="owner-actions owner-flex">
+                            {version.email && (
+                              <>
+                                <a
+                                  href={`mailto:${version.email}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  <DefaultemailIcon />
+                                </a>
+                              </>
+                            )}
+
+                            <div style={{ marginLeft: 10 }}>
+                              {version.first_name} {version.last_name}
+                            </div>
+                          </div>
                         </td>
                         <td className="actions">
-                          <button
-                            onClick={() =>
-                              viewVersion(
-                                version.process_id,
-                                version.level,
-                                version.version
-                              )
-                            }
-                          >
-                            👁
-                          </button>
-                          <button
-                            onClick={() =>
-                              handleReplaceClick(
-                                version.level,
-                                version.process_id,
-                                version.version
-                              )
-                            }
-                          >
-                            {t("replace")}
-                          </button>
+                          {index !== 0 && (
+                            <>
+                              <button
+                                onClick={() =>
+                                  viewVersion(
+                                    version.process_id,
+                                    version.level,
+                                    version.version
+                                  )
+                                }
+                              >
+                                {t("view")}
+                              </button>
+                              <button
+                                onClick={() =>
+                                  handleReplaceClick(
+                                    version.level,
+                                    version.process_id,
+                                    version.version
+                                  )
+                                }
+                              >
+                                {t("restore")}
+                              </button>
+                            </>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -476,6 +578,20 @@ const VersionPopup = ({
           </div>
         )}
       </div>
+      {showTranslationPopup && (
+        <TranslationTextAreaPopup
+          isOpen={showTranslationPopup}
+          onClose={() => setShowTranslationPopup(false)}
+          defaultValues={translations}
+          onSubmit={(values) => {
+            setTranslations(values);
+            const langKey = langMap[selectedLanguage] || "en";
+            setRevisionText(values[langKey]?.content || "");
+            setShowTranslationPopup(false);
+          }}
+          supportedLanguages={supportedLanguages}
+        />
+      )}
     </div>
   );
 };

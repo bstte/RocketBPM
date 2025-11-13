@@ -9,6 +9,7 @@ import { ImageBaseUrl } from "../API/api";
 import { useTranslation } from "../hooks/useTranslation";
 import ShareDropdown from "./ShareDropdown";
 import LanguageDropdown from "../hooks/LanguageDropdown";
+import { useLangMap } from "../hooks/useLangMap";
 
 const Header = ({
   title,
@@ -43,6 +44,7 @@ const Header = ({
   const dispatch = useDispatch();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const langMap = useLangMap();
 
   const t = useTranslation();
   const { breadcrumbs, removeBreadcrumbsAfter } =
@@ -127,6 +129,8 @@ const Header = ({
       document.removeEventListener("click", handleClickOutside);
     };
   }, []);
+  const languageKey = langMap[selectedLanguage] || "loading...";
+  // console.log("header breadcrumbs", breadcrumbs);
 
   return (
     <>
@@ -139,42 +143,41 @@ const Header = ({
               onClick={handleBackdata}
             />
           ) : (
-            breadcrumbs
-          .slice(0, -1)
-              .map((crumb, index, array) => (
-                <span key={index} className="ss_hm_dash_home_icon">
-                  {index === 0 ? (
-                    <span
-                      onClick={() =>
-                        handleBreadcrumbClick(crumb.path, crumb.state)
-                      }
-                    >
-                      <img
-                        src={`${process.env.PUBLIC_URL}/img/rocket-solid.svg`}
-                        alt="Rocket"
-                      />
-                    </span>
-                  ) : (
-                    <span
-                      onClick={() =>
-                        handleBreadcrumbClick(crumb.path, crumb.state, index)
-                      }
-                      style={styles.breadcrumbLink}
-                    >
-                      {crumb.label}
-                    </span>
-                  )}
-                  {index < array.length - 1 && (
-                    <span style={styles.separator}> {">"} </span>
-                  )}
-                </span>
-              ))
+            breadcrumbs.slice(0, -1).map((crumb, index, array) => (
+              <span key={index} className="ss_hm_dash_home_icon">
+                {index === 0 ? (
+                  <span
+                    onClick={() =>
+                      handleBreadcrumbClick(crumb.path, crumb.state)
+                    }
+                  >
+                    <img
+                      src={`${process.env.PUBLIC_URL}/img/rocket-solid.svg`}
+                      alt="Rocket"
+                    />
+                  </span>
+                ) : (
+                  <span
+                    onClick={() =>
+                      handleBreadcrumbClick(crumb.path, crumb.state, index)
+                    }
+                    style={styles.breadcrumbLink}
+                  >
+                    {crumb?.state?.TitleTranslation?.[languageKey]
+                      ? crumb.state.TitleTranslation[languageKey]
+                      : crumb.label}
+                  </span>
+                )}
+                {index < array.length - 1 && (
+                  <span style={styles.separator}> {">"} </span>
+                )}
+              </span>
+            ))
           )}
         </div>
 
         <div style={styles.mhcolright} className="ss_header_new_right">
           <div style={styles.loginuserbox} className="ss_hed_rit_user_secnew">
-          
             {Page !== "ViewProcessmapVersion" && (
               <LanguageDropdown
                 supportedLanguages={supportedLanguages}

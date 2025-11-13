@@ -1,17 +1,11 @@
 import { useNavigate, useParams } from "react-router-dom";
-import React, {
-  useState,
-  useMemo,
-  useEffect,
-} from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   ReactFlow,
   ReactFlowProvider,
-
   SmoothStepEdge,
   BezierEdge,
   StraightEdge,
-
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import "@xyflow/react/dist/style.css";
@@ -23,14 +17,15 @@ import { getVersionViewData } from "../../API/api";
 import { useDynamicHeight } from "../../hooks/useDynamicHeight";
 
 const DraftProcessMapVersion = () => {
-  const { processId, level, version, pageTitle,user_id } = useParams();
+  const { processId, level, version, pageTitle, user_id, currentParentId } =
+    useParams();
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
-  const [Title, SetTitle] = useState("")
+  const [Title, SetTitle] = useState("");
+  const [currentModeltitle, SetcurrentModeltitle] = useState("");
 
   const windowHeight = window.innerHeight;
-  const totalHeight = 0
-
+  const totalHeight = 0;
 
   const windowSize = {
     width: window.innerWidth - 300,
@@ -39,12 +34,11 @@ const DraftProcessMapVersion = () => {
 
   const { remainingHeight } = useDynamicHeight();
 
-
   const memoizedNodeTypes = useMemo(
     () => ({
       progressArrow: PublishArrowBoxNode,
       pentagon: PublishPentagonNode,
-      StickyNote: StickyNote
+      StickyNote: StickyNote,
     }),
     []
   );
@@ -60,9 +54,17 @@ const DraftProcessMapVersion = () => {
   useEffect(() => {
     const fetchVersionData = async () => {
       try {
-        const response = await getVersionViewData(processId, level, version, pageTitle,user_id);
-        const { nodes, edges } = response;
-        SetTitle(nodes[0]?.version)
+        const response = await getVersionViewData(
+          processId,
+          level,
+          version,
+          pageTitle,
+          user_id,
+          currentParentId
+        );
+        const { nodes, edges, title } = response;
+        SetcurrentModeltitle(title);
+        SetTitle(nodes[0]?.version);
         const parsedNodes = nodes.map((node) => ({
           ...node,
           data: {
@@ -122,30 +124,28 @@ const DraftProcessMapVersion = () => {
   };
   const navigate = useNavigate();
 
-
   return (
     <div>
       <Header
-        title={`Version: ${Title}`}
+  title={`${currentModeltitle} (Version: ${Title})`}
         Page={"ViewProcessmapVersion"}
         iconNames={{}} // ✅ prevent crash if Header uses Object.keys
-        onSave={() => { }} // optional stub functions
-        onPublish={() => { }}
+        onSave={() => {}} // optional stub functions
+        onPublish={() => {}}
         handleBackdata={() => {
           navigate(-1);
         }}
       />
       <ReactFlowProvider>
-        <div className="app-container" style={{ ...styles.appContainer, height: remainingHeight }}>
+        <div
+          className="app-container"
+          style={{ ...styles.appContainer, height: remainingHeight }}
+        >
           <div className="content-wrapper" style={styles.contentWrapper}>
-
             <div className="flow-container" style={styles.flowContainer}>
-
               <ReactFlow
                 nodes={nodes}
                 edges={edges}
-
-
                 nodeTypes={memoizedNodeTypes}
                 edgeTypes={memoizedEdgeTypes}
                 minZoom={0.1}
@@ -164,11 +164,7 @@ const DraftProcessMapVersion = () => {
               ></ReactFlow>
             </div>
           </div>
-
         </div>
-
-
-
       </ReactFlowProvider>
     </div>
   );
