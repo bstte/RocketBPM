@@ -19,7 +19,7 @@ const TextInputModal = ({ isOpen, onSubmit,initialValue }) => {
 
   return (
     <div style={styles.overlay}>
-      <div style={styles.modal}>
+      <div style={styles.modal} className="global_popup_modal">
         <textarea
           rows="5"
           style={styles.textarea}
@@ -27,7 +27,7 @@ const TextInputModal = ({ isOpen, onSubmit,initialValue }) => {
           value={text}
           onChange={(e) => setText(e.target.value)}
         />
-        <button style={styles.button} onClick={() =>onOk(text)}>
+        <button className="global-btn" style={styles.button} onClick={() =>onOk(text)}>
           OK
         </button>
       </div>
@@ -59,10 +59,10 @@ const styles = {
   textarea: {
     width: "100%",
     height: "100px",
-    // padding: "8px",
+    padding: "8px",
     fontSize: "16px",
     borderRadius: "4px",
-    border: "1px solid #ccc",
+    border: "1px solid #002060",
     resize: "none",
   },
   button: {

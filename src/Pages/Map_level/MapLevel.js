@@ -28,6 +28,8 @@ import ArrowBoxNode from "../../AllNode/ArrowBoxNode";
 import PentagonNode from "../../AllNode/PentagonNode";
 import api, {
   addFavProcess,
+  contentChangeRequest,
+  editorialPublishAPI,
   filter_draft,
   getNextPageGroupId,
   removeFavProcess,
@@ -45,12 +47,23 @@ import useCheckFavorite from "../../hooks/useCheckFavorite";
 import { usePageGroupIdViewer } from "../../hooks/usePageGroupIdViewer";
 import TranslationPopup from "../../hooks/TranslationPopup";
 import { useLangMap } from "../../hooks/useLangMap";
+import PublishPopup from "../../components/PublishPopup";
+import EditorialChangePopup from "../../components/EditorialChangePopup";
+import { useFetchVersions } from "../../hooks/useFetchVersions";
+import ContentChangePopup from "../../components/ContentChangePopup";
+import { getLevelKey } from "../../utils/getLevel";
 const MapLevel = () => {
   const [totalHeight, setTotalHeight] = useState(0);
   const [windowHeight, setWindowHeight] = useState(window.innerHeight);
   const [selectedNodeId, setSelectedNodeId] = useState(null);
   const [checkpublish, Setcheckpublish] = useState(true);
+  const [revisionData, setrevisionData] = useState(null);
+  const [showPublishPopup, setShowPublishPopup] = useState(false);
+  const [showEditorialPopup, setShowEditorialPopup] = useState(false);
+  const [showContentPopup, setShowContentPopup] = useState(false);
+
   const { remainingHeight } = useDynamicHeight();
+  const safeRemainingHeight = Math.min(Math.max(remainingHeight, 588), 588);
   const [supportedLanguages, setSupportedLanguages] = useState([]);
 
   useEffect(() => {
@@ -111,6 +124,8 @@ const MapLevel = () => {
   const [getDraftedDate, setDraftedDate] = useState("");
   const [process_img, setprocess_img] = useState("");
   const [processDefaultlanguage_id, setprocessDefaultlanguage_id] =
+    useState(null);
+  const [OriginalDefaultlanguge_id, setOriginalDefaultlanguge_id] =
     useState(null);
   const [versionPopupPayload, setversionPopupPayload] = useState("");
 
@@ -210,10 +225,12 @@ const MapLevel = () => {
 
   const fetchNodes = async (language_id = null) => {
     try {
-      const levelParam =
-        currentParentId !== null
-          ? `Level${currentLevel}_${currentParentId}`
-          : `Level${currentLevel}`;
+      // const levelParam =
+      //   currentParentId !== null
+      //     ? `level${currentLevel}_${currentParentId}`
+      //     : `level${currentLevel}`;
+      const levelParam = getLevelKey(currentLevel, currentParentId);
+
       const user_id = LoginUser ? LoginUser.id : null;
       const Process_id = id ? id : null;
       const publishedStatus = "Published";
@@ -229,7 +246,7 @@ const MapLevel = () => {
         NodesStatus
       );
       // console.log("respoe", data);
-      const PageGroupId = data.nodes?.[0]?.PageGroupId;
+      const PageGroupId = data.nodes?.[0]?.page_group_id;
 
       const [publishedResponse, draftResponse] = await Promise.all([
         api.GetPublishedDate(Process_id, publishedStatus, PageGroupId),
@@ -263,6 +280,7 @@ const MapLevel = () => {
       SetParentPageGroupId(data.PageGroupId);
       setprocess_img(data.process_img);
       setprocessDefaultlanguage_id(data.processDefaultlanguage_id);
+      setOriginalDefaultlanguge_id(data.OriginalDefaultlanguge_id);
       setSupportedLanguages(data.ProcessSupportLanguage);
       const parsedNodes = await Promise.all(
         data.nodes.map(async (node) => {
@@ -273,8 +291,8 @@ const MapLevel = () => {
           const newLevel = currentLevel + 1;
           const levelParam =
             node.node_id !== null
-              ? `Level${newLevel}_${node.node_id}`
-              : `Level${currentLevel}`;
+              ? `level${newLevel}_${node.node_id}`
+              : `level${currentLevel}`;
           const Process_id = id ? id : null;
           let hasNextLevel = false;
           try {
@@ -369,8 +387,8 @@ const MapLevel = () => {
     const label = currentLevel === 0 ? title : title;
     const path =
       currentLevel === 0
-        ? `/Draft-Process-View/${id}`
-        : `/Draft-Process-View/${currentLevel}/${currentParentId}/${id}`;
+        ? `/draft-process-view/${id}`
+        : `/draft-process-view/${currentLevel}/${currentParentId}/${id}`;
     const state = { id, title, TitleTranslation };
 
     // ✅ Check if breadcrumb already exists
@@ -414,31 +432,62 @@ const MapLevel = () => {
     checkpublishfunction();
   }, [ParentPageGroupId, currentLevel]);
 
-  const onConnect = useCallback((connection) => {}, []);
+  const onConnect = useCallback((connection) => { }, []);
   const addNode = async (type, position, label = "") => {
-    const newNodeId = uuidv4();
+    const flowContainer = document.querySelector(".flow-container");
+    const containerRect = flowContainer?.getBoundingClientRect();
+
+    // Default (fallback)
+    let finalX = position.x;
+    let finalY = position.y;
+
+    if (containerRect) {
+      finalX = position.x - containerRect.left;
+      finalY = position.y - containerRect.top;
+
+      const nodeWidth = type === "StickyNote" ? 240 : 326;
+      const nodeHeight = type === "StickyNote" ? 180 : 90;
+
+      // Clamp inside container
+      if (finalX < 0) finalX = 0;
+      if (finalY < 0) finalY = 0;
+
+      if (finalX + nodeWidth > containerRect.width)
+        finalX = containerRect.width - nodeWidth - 10;
+
+      if (finalY + nodeHeight > containerRect.height)
+        finalY = containerRect.height - nodeHeight - 10;
+    }
+    const GRID_SIZE = 20;
+
+    function snap(value) {
+      return Math.round(value / GRID_SIZE) * GRID_SIZE;
+    }
+    finalX = snap(finalX);
+    finalY = snap(finalY);
+    const newNodeId = uuidv4().replace(/-/g, "").substring(0, 6);
     const Page_Title = "ProcessMap";
     let PageGroupId;
-    if (!nodes[0]?.PageGroupId) {
+    if (!nodes[0]?.page_group_id) {
       const response = await getNextPageGroupId(Page_Title);
       PageGroupId = response.next_PageGroupId;
     } else {
-      PageGroupId = nodes[0]?.PageGroupId;
+      PageGroupId = nodes[0]?.page_group_id;
     }
 
     const newNode = {
       id:
         currentParentId !== null
-          ? `Level${currentLevel}_${newNodeId}_${currentParentId}`
-          : `Level${currentLevel}_${newNodeId}`,
+          ? `level${currentLevel}_${newNodeId}_${currentParentId}`
+          : `level${currentLevel}_${newNodeId}`,
       data: {
         label: type === "StickyNote" ? label : "",
         shape: type,
         onLabelChange: (newLabel) =>
           handleLabelChange(
             currentParentId !== null
-              ? `Level${currentLevel}_${newNodeId}_${currentParentId}`
-              : `Level${currentLevel}_${newNodeId}`,
+              ? `level${currentLevel}_${newNodeId}_${currentParentId}`
+              : `level${currentLevel}_${newNodeId}`,
             newLabel
           ),
         defaultwidt: 326,
@@ -446,7 +495,7 @@ const MapLevel = () => {
         width_height:
           type === "StickyNote"
             ? { width: 240, height: 180 }
-            : { width: 326, height: 90 },
+            : { width: 320, height: 98 },
         nodeResize: true,
         autoFocus: true,
         isClickable: true,
@@ -455,12 +504,12 @@ const MapLevel = () => {
             prevNodes.map((node) =>
               node.id === id
                 ? {
-                    ...node,
-                    data: {
-                      ...node.data,
-                      width_height: size,
-                    },
-                  }
+                  ...node,
+                  data: {
+                    ...node.data,
+                    width_height: size,
+                  },
+                }
                 : node
             )
           );
@@ -468,12 +517,12 @@ const MapLevel = () => {
       },
       type: type,
       status: "draft",
-      position: { x: position.x, y: position.y },
+      position: { x: finalX, y: finalY },
       draggable: true,
       isNew: true,
       animated: true,
-      Page_Title: "ProcessMap",
-      PageGroupId: PageGroupId,
+      page_title: "ProcessMap",
+      page_group_id: PageGroupId,
     };
     setNodes((nds) => nds.concat(newNode));
     setHasUnsavedChanges(true);
@@ -532,7 +581,7 @@ const MapLevel = () => {
     event.preventDefault();
     const newLevel = currentLevel + 1;
     const levelParam =
-      node.id !== null ? `Level${newLevel}_${node.id}` : `Level${currentLevel}`;
+      node.id !== null ? `level${newLevel}_${node.id}` : `level${currentLevel}`;
     const user_id = user ? user.id : null;
     const Process_id = id ? id : null;
     const data = await api.checkRecord(levelParam, Process_id);
@@ -565,7 +614,7 @@ const MapLevel = () => {
 
         if (type === "ProcessMap") {
           if (checkRecord.status === true) {
-            navigate(`/Draft-Process-View/${newLevel}/${selectedNode}/${id}`);
+            navigate(`/draft-process-view/${newLevel}/${selectedNode}/${id}`);
           } else {
             navigate(`/level/${newLevel}/${selectedNode}/${id}`);
           }
@@ -573,12 +622,12 @@ const MapLevel = () => {
         if (type === "Swimlane") {
           if (checkRecord.status === true) {
             navigate(
-              `/Draft-Swim-lanes-View/level/${newLevel}/${selectedNode}/${id}`
+              `/draft-swimlane-view/level/${newLevel}/${selectedNode}/${id}`
             );
             addBreadcrumb(
               `${selectedLabel || ""} `,
 
-              `/Draft-Swim-lanes-View/level/${newLevel}/${selectedNode}/${id}`,
+              `/draft-swimlane-view/level/${newLevel}/${selectedNode}/${id}`,
               state
             );
           } else {
@@ -613,10 +662,13 @@ const MapLevel = () => {
       ...versionPopupPayload,
     };
 
-    const Level =
-      currentParentId !== null
-        ? `Level${currentLevel}_${currentParentId}`
-        : `Level${currentLevel}`;
+    // const Level =
+    //   currentParentId !== null
+    //     ? `level${currentLevel}_${currentParentId}`
+    //     : `level${currentLevel}`;
+
+    const Level = getLevelKey(currentLevel, currentParentId);
+
     const user_id = user && user.id;
     const Process_id = id && id;
     const datasavetype = savetype;
@@ -642,9 +694,9 @@ const MapLevel = () => {
             draggable,
             animated,
             measured,
-            Page_Title,
+            page_title,
             status,
-            PageGroupId,
+            page_group_id,
           }) => ({
             id,
             data,
@@ -653,9 +705,9 @@ const MapLevel = () => {
             draggable,
             animated,
             measured,
-            Page_Title,
+            page_title,
             status,
-            PageGroupId,
+            page_group_id,
           })
         ),
         edges: edges.map(
@@ -667,7 +719,7 @@ const MapLevel = () => {
             animated,
             sourceHandle,
             targetHandle,
-            Page_Title,
+            page_title,
           }) => ({
             id,
             source,
@@ -676,7 +728,7 @@ const MapLevel = () => {
             targetHandle,
             markerEnd,
             animated,
-            Page_Title,
+            page_title,
           })
         ),
       });
@@ -693,6 +745,8 @@ const MapLevel = () => {
       }
     }
   };
+
+
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === "Delete" && selectedNode) {
@@ -710,13 +764,13 @@ const MapLevel = () => {
         nds.map((node) =>
           node.id === selectedNode
             ? {
-                ...node,
-                type: type,
-                data: {
-                  ...node.data,
-                  shape: type,
-                },
-              }
+              ...node,
+              type: type,
+              data: {
+                ...node.data,
+                shape: type,
+              },
+            }
             : node
         )
       );
@@ -815,17 +869,8 @@ const MapLevel = () => {
       backgroundColor: "#ffffff",
       position: "relative",
     },
-    gridOverlay: {
-      position: "absolute",
-      inset: 0,
-      backgroundImage: `
-      linear-gradient(to right, rgba(0,0,0,0.1) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(0,0,0,0.1) 1px, transparent 1px)
-    `,
-      backgroundSize: `calc(100% / 11) calc(100% / 7)`, // 👈 11 columns × 7 rows
-      pointerEvents: "none", // grid click-block na kare
-      zIndex: 1,
-    },
+
+
     reactFlowStyle: {
       width: "100%",
       height: "100%",
@@ -856,7 +901,7 @@ const MapLevel = () => {
       return;
     }
 
-    const PageGroupId = nodes[0]?.PageGroupId;
+    const PageGroupId = nodes[0]?.page_group_id;
 
     try {
       if (isFavorite) {
@@ -875,6 +920,7 @@ const MapLevel = () => {
           PageGroupId,
           currentParentId
         );
+
         setIsFavorite(true);
         console.log("Added to favorites:", response);
       }
@@ -893,10 +939,10 @@ const MapLevel = () => {
     if (confirmcondition) {
       if (id && user) {
         if (currentLevel === 0) {
-          navigate(`/Draft-Process-View/${id}`);
+          navigate(`/draft-process-view/${id}`);
         } else {
           navigate(
-            `/Draft-Process-View/${currentLevel}/${currentParentId}/${id}`
+            `/draft-process-view/${currentLevel}/${currentParentId}/${id}`
           );
           // navigate(`/Draft-Process-View/${currentLevel}/${currentParentId}`, { state: { id: id, title: title, user: user } })
         }
@@ -943,7 +989,7 @@ const MapLevel = () => {
 
     const encodedTitle = encodeURIComponent("ProcessMap");
     navigate(
-      `/Draft-Process-Version/${process_id}/${level}/${version}/${encodedTitle}/${user_id}/${currentParentId}`
+      `/process-version/${process_id}/${level}/${version}/${encodedTitle}/${user_id}/${currentParentId}`
     );
   };
 
@@ -973,6 +1019,93 @@ const MapLevel = () => {
     setversionPopupPayload(payload);
     setShowVersionPopup(false);
   };
+
+
+  const { responseData: revisionresponse, refetch } = useFetchVersions({
+    processId,
+    currentLevel,
+    currentParentId,
+    LoginUser,
+    status: "draft",
+  });
+
+  const handleSavePublish = async () => {
+    const latestData = await refetch();
+    const contact = latestData?.contact_info;
+    // console.log("responseData", revisionresponse)
+    // contact_info missing ya empty object
+    if (!contact || Object.keys(contact).length === 0) {
+      alert("Please assign Process Owner / Process Domain Owner and Process Modeler to publish the model.");
+      return;
+    }
+
+    // contact_info ke sare keys empty array hon?
+    const allEmpty = Object.values(contact).every(
+      (list) => !list || list.length === 0
+    );
+
+    if (allEmpty) {
+      alert("Please assign Process Owner / Process Domain Owner and Process Modeler to publish the model.");
+      return;
+    }
+
+    setShowPublishPopup(true);
+  };
+
+
+  const handleNext = (data) => {
+    setrevisionData(data);
+    if (data.editorialChange) {
+      setShowPublishPopup(false);
+      setShowEditorialPopup(true);
+    }
+
+    if (data.classificationChange) {
+      setShowPublishPopup(false);
+      setShowContentPopup(true);
+    }
+  };
+
+  const editorialPublish = async (data) => {
+    setShowEditorialPopup(false);
+    const Level = getLevelKey(currentLevel, currentParentId);
+
+    const payload = {
+      process_id: processId,
+      level: Level,
+      revision_text: revisionData?.revisionText,
+      requested_by: LoginUser ? LoginUser.id : null,
+      schedule_type: data.scheduleType,
+      scheduled_date: data.date
+    }
+
+    const response = await editorialPublishAPI(payload)
+    console.log("editorial response", response)
+    // console.log("payload", payload)
+  }
+
+  const handleContentSubmit = async (data) => {
+    setShowContentPopup(false);
+
+    const Level = getLevelKey(currentLevel, currentParentId);
+
+    const payload = {
+      process_id: processId,
+      level: Level,
+      revision_text: revisionData?.revisionText,
+      requested_by: LoginUser ? LoginUser.id : null,
+      owner_email: data.owner.email,
+      cc_architect: data.ccRoles.architect,
+      cc_manager: data.ccRoles.manager,
+      planned_publish_date: data.date,
+      personal_message: data.personalMessage
+
+    }
+ const response = await contentChangeRequest(payload)
+    console.log("contentChangeRequest response", response)
+    console.log("payload", payload)
+  }
+
   return (
     <div>
       <Header
@@ -996,11 +1129,12 @@ const MapLevel = () => {
         handleSupportViewlangugeId={handleLanguageSwitch}
         supportedLanguages={supportedLanguages}
         selectedLanguage={processDefaultlanguage_id}
+        OriginalDefaultlanguge_id={OriginalDefaultlanguge_id}
       />
       <ReactFlowProvider>
         <div
           className="app-container"
-          style={{ ...styles.appContainer, height: remainingHeight }}
+          style={{ ...styles.appContainer, height: safeRemainingHeight }}
         >
           <div className="content-wrapper" style={styles.contentWrapper}>
             <div
@@ -1033,9 +1167,16 @@ const MapLevel = () => {
                 preventScrolling={false}
                 nodesDraggable={true}
                 style={styles.reactFlowStyle}
+                snapToGrid={true}
+                snapGrid={[20, 20]}
               >
-                <div className="grid-overlay" style={styles.gridOverlay}></div>
-              </ReactFlow>
+                <Background
+                  variant={BackgroundVariant.Lines}
+
+                  gap={20}
+                  size={1}
+                  color="rgba(0,0,0,0.15)"
+                />              </ReactFlow>
               <CustomContextMenu
                 showContextMenu={showContextMenu}
                 contextMenuPosition={contextMenuPosition}
@@ -1055,22 +1196,59 @@ const MapLevel = () => {
                 condition={checkRecord}
               />
             </div>
+            {usePageGroupIdViewer(nodes)}
           </div>
 
-          {usePageGroupIdViewer(nodes)}
+
         </div>
         <TranslationPopup
           isOpen={showTranslationPopup}
           onClose={() => setShowTranslationPopup(false)}
           defaultValues={translationDefaults}
           onSubmit={(values) => {
-            
+
 
             updateNodeTranslations(selectedNode, values);
 
             setShowTranslationPopup(false);
           }}
           supportedLanguages={supportedLanguages}
+        />
+
+        <PublishPopup
+          isOpen={showPublishPopup}
+          onClose={() => setShowPublishPopup(false)}
+          onNext={handleNext}
+          revisionresponse={revisionresponse}
+          selectedLanguage={processDefaultlanguage_id}
+
+        />
+
+        <EditorialChangePopup
+          isOpen={showEditorialPopup}
+          onBack={() => {
+            setShowEditorialPopup(false);
+            setShowPublishPopup(true);
+          }}
+          onPublish={(finalData) => {
+            editorialPublish(finalData)
+          }}
+
+        />
+
+
+        <ContentChangePopup
+          isOpen={showContentPopup}
+          type={"ProcessMaps"}
+          onBack={() => {
+            setShowContentPopup(false);
+            setShowPublishPopup(true);
+          }}
+          onStartApproval={(finalData) => {
+            handleContentSubmit(finalData)
+
+          }}
+          revisionresponse={revisionresponse}
         />
 
         {showVersionPopup && (
@@ -1087,7 +1265,7 @@ const MapLevel = () => {
             type={"ProcessMaps"}
             versionPopupPayload={versionPopupPayload}
             supportedLanguages={supportedLanguages}
-              selectedLanguage={processDefaultlanguage_id}
+            selectedLanguage={processDefaultlanguage_id}
           />
         )}
       </ReactFlowProvider>

@@ -10,6 +10,7 @@ import { Box, Card, CircularProgress } from "@mui/material";
 import { useSelector } from "react-redux";
 import apiExports, {
   checkRecord,
+  checkRecordWithGetLinkDraftData,
   getFavProcessesByUser,
   getUserNodes,
   getvideo,
@@ -25,6 +26,7 @@ import { BreadcrumbsContext } from "../../context/BreadcrumbsContext";
 import MiniMapPreview from "./MiniMapPreview";
 import { useTranslation } from "../../hooks/useTranslation";
 import ProcessMenu from "../../components/ProcessMenu";
+import { buildBreadcrumbs } from "../../utils/buildBreadcrumbs";
 // import { Opacity } from "@mui/icons-material";
 
 const Dashboard = () => {
@@ -61,8 +63,8 @@ const Dashboard = () => {
   const getProcessImage = (id) => {
     const process = ProcessTitle?.find((p) => p.id === parseInt(id));
     // If image exists, return full URL else return default logo
-    return process && process.Process_img
-      ? `${ImageBaseUrl}${process.Process_img}`
+    return process && process.process_img
+      ? `${ImageBaseUrl}${process.process_img}`
       : "/img/RocketBPM_rocket_logo.png";
   };
 
@@ -73,13 +75,14 @@ const Dashboard = () => {
         if (!user_id) return;
 
         const response = await getUserNodes(parseInt(user_id));
+        console.log("dashbord response",response)
         setProcessTitle(response.ProcessTitle);
 
         if (!response?.assignedProcesses) return;
 
         const assignedUserData = response.assignedProcesses.reduce((acc, p) => {
           if (!acc[p.user_id]) acc[p.user_id] = {};
-          acc[p.user_id][p.process_id] = p.Role;
+          acc[p.user_id][p.process_id] = p.role_name;
           return acc;
         }, {});
 
@@ -116,7 +119,7 @@ const Dashboard = () => {
                 processId,
                 type: assignment.user_id === user_id ? "assign" : "assign",
                 id: assignment.user_id,
-                role: assignment.Role,
+                role: assignment.role_name,
               };
             } else {
               // If not assigned to anyone, set default
@@ -168,17 +171,19 @@ const Dashboard = () => {
 
   const [publishedDates, setPublishedDates] = useState({});
   useEffect(() => {
+    // console.log("getFavProcessesUser",getFavProcessesUser)
     const fetchPublishedDates = async () => {
       const dates = {};
       for (const item of getFavProcessesUser) {
         const date = await getPublishedDatedata(
           item.process_id,
-          item.PageGroupId
+          item.page_group_id
         );
         // Make key: processId + PageGroupId
-        const key = `${item.process_id}_${item.PageGroupId}`;
+        const key = `${item.process_id}_${item.page_group_id}`;
         dates[key] = date;
       }
+      // console.log("getPublishedDatedata",dates)
       setPublishedDates(dates);
     };
 
@@ -228,7 +233,7 @@ const Dashboard = () => {
 
       try {
         const response = await getFavProcessesByUser(user_id);
-        console.log("Response fav:", response);
+
         setgetFavProcessesUser(response.data);
         localStorage.setItem("favProcesses", JSON.stringify(response.data));
       } catch (error) {
@@ -283,7 +288,7 @@ const Dashboard = () => {
     try {
       const urlObj = new URL(url);
       const videoId = urlObj.searchParams.get("v"); // Extracting 'v' parameter
-      console.log("videoId");
+
       return videoId ? `https://www.youtube.com/embed/${videoId}` : "";
     } catch (error) {
       console.error("Error parsing URL:", error);
@@ -315,15 +320,16 @@ const Dashboard = () => {
   };
 
   const formattedDate = (dateString) => {
+    // console.log("dateString",dateString)
     if (!dateString) return "draft";
     const date = new Date(dateString);
     return isNaN(date.getTime())
       ? "Invalid Date"
       : date.toLocaleDateString("en-US", {
-          year: "numeric",
-          month: "short",
-          day: "numeric",
-        });
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
   };
 
   const NavigateOnClick = async (item) => {
@@ -331,7 +337,7 @@ const Dashboard = () => {
     if (data.status) {
       navigate(`/published-map-level/${item.processId}`);
     } else {
-      navigate(`/Draft-Process-View/${item.processId}`);
+      navigate(`/draft-process-view/${item.processId}`);
     }
   };
 
@@ -374,32 +380,61 @@ const Dashboard = () => {
         ? parseInt(Level.match(/^Level(\d+)/)[1], 10) + 1
         : 0;
 
-      const levelParam = `Level${newLevel}${Level ? `_${Level}` : ""}`;
+      const levelParam = `level${newLevel}${Level ? `_${Level}` : ""}`;
 
       const [nodeData, publishdata] = await Promise.all([
-        checkRecord(levelParam, Process_id),
+        checkRecordWithGetLinkDraftData(levelParam, parseInt(user_id), Process_id, Level),
         apiExports.checkPublishRecord(levelParam, Process_id),
       ]);
+
 
       if (!nodeData.status) {
         alert("First create next model of this existing model");
         return;
       }
+      const processTitle = nodeData.processTitle?.process_title;
+      const TitleTranslation = JSON.parse(
+        nodeData.processTitle?.translations || "{}"
+      );
+
+
+      const state = { Process_id, processTitle, TitleTranslation };
+      const basePath = publishdata.status
+        ? `/published-map-level/${Process_id}`
+        : `/draft-process-view/${Process_id}`;
+
+
+      addBreadcrumb(processTitle, basePath, state);
+
+
+
+      const breadcrumbs = buildBreadcrumbs(
+        nodeData.allNodes,     // full nodes
+        nodeData.ids,          // current ids
+        Process_id,            // process ID
+        publishdata.status ? "Publish" : "draft"
+      );
+
+      // inhe store karo
+      breadcrumbs.forEach(({ label, path, state }) => {
+        addBreadcrumb(label, path, state);
+      });
+
+
+
 
       let url = "";
 
       if (nodeData.Page_Title === "ProcessMap") {
-        url = `/${
-          publishdata.status ? "published-map-level" : "Draft-Process-View"
-        }/${newLevel === 0 ? id : `${newLevel}/${Level}/${id}`}`;
+        url = `/${publishdata.status ? "published-map-level" : "draft-process-view"
+          }/${newLevel === 0 ? id : `${newLevel}/${Level}/${id}`}`;
       }
 
       if (nodeData.Page_Title === "Swimlane") {
-        url = `/${
-          publishdata.status
-            ? "published-swimlane/level"
-            : "Draft-Swim-lanes-View/level"
-        }/${newLevel}/${Level}/${id}`;
+        url = `/${publishdata.status
+          ? "published-swimlane/level"
+          : "draft-swimlane-view/level"
+          }/${newLevel}/${Level}/${id}`;
       }
 
       if (url) navigate(url);
@@ -522,7 +557,7 @@ const Dashboard = () => {
                         >
                           <div
                             className="ss_add_proces_img"
-                            onClick={() => navigate("/Add-process-title")}
+                            onClick={() => navigate("/processes/create")}
                           >
                             <img
                               src="../../../img/plus.png"
@@ -618,7 +653,7 @@ const Dashboard = () => {
                         </div>
                         <div
                           className="ss_add_proces_img"
-                          onClick={() => navigate("/Add-process-title")}
+                          onClick={() => navigate("/processes/create")}
                         >
                           <img src="../../../img/plus.png" alt="profile img" />
                         </div>
@@ -675,7 +710,7 @@ const Dashboard = () => {
                   {getFavProcessesUser.map((item) => {
                     // parse node.data only if parentId exists and node exists
                     let label = null;
-                    if (item.parentId && item.node && item.node.data) {
+                    if (item.parent_id && item.node && item.node.data) {
                       try {
                         const parsedData = JSON.parse(item.node.data);
                         label = parsedData.label || null;
@@ -693,8 +728,8 @@ const Dashboard = () => {
                               handlefavClick(
                                 item.process_id,
                                 item.user_id,
-                                item.parentId,
-                                item.PageGroupId,
+                                item.parent_id,
+                                item.page_group_id,
                                 label
                               )
                             }
@@ -706,7 +741,7 @@ const Dashboard = () => {
                           <td>
                             {formattedDate(
                               publishedDates[
-                                `${item.process_id}_${item.PageGroupId}`
+                              `${item.process_id}_${item.page_group_id}`
                               ]
                             )}
                           </td>

@@ -1,7 +1,5 @@
 
 import LabelNode from '../../../AllNode/LabelNode';
-import YesNode from '../../../AllNode/YesNode';
-import NoNode from '../../../AllNode/NoNode';
 import PublishSwimlineBoxNode from '../../../AllNode/PublishAllNode/PublishSwimlineBoxNode';
 import PublishSwimlineDiamondNode from '../../../AllNode/PublishAllNode/PublishSwimlineDiamondNode';
 import PublishSwimlineRightsideBox from '../../../AllNode/PublishAllNode/PublishSwimlineRightsideBox';

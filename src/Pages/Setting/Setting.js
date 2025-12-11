@@ -30,7 +30,7 @@ const Setting = () => {
 
   const [processData, setProcessData] = useState({
     process_title: "",
-    Process_img: null,
+    process_img: null,
   });
   const [selectedImage, setSelectedImage] = useState(null);
   const fileInputRef = useRef(null);
@@ -58,7 +58,22 @@ const Setting = () => {
     };
     fetchProcessData();
   }, [ProcessId]);
- 
+ useEffect(() => {
+  if (!defaultLanguage || !processData?.translations) return;
+
+  // current default language key
+  const langKey = langMap[defaultLanguage];
+
+  // translation exist?
+  const translatedTitle =
+    processData.translations?.[langKey] || processData.process_title;
+
+  setProcessData((prev) => ({
+    ...prev,
+    process_title: translatedTitle,
+  }));
+}, [defaultLanguage]);
+
   // Handle image selection
   const handleImageChange = (event) => {
     const file = event.target.files[0];
@@ -185,9 +200,9 @@ const Setting = () => {
                 alt="Selected"
                 className="profile-image"
               />
-            ) : processData.Process_img ? (
+            ) : processData.process_img ? (
               <img
-                src={`${ImageBaseUrl}/${processData.Process_img}`}
+                src={`${ImageBaseUrl}/${processData.process_img}`}
                 alt="Process"
                 className="profile-image"
               />
@@ -339,11 +354,15 @@ const Setting = () => {
         defaultValues={translationDefaults}
         onSubmit={(values) => {
           // console.log("Updated Translations:", values);
-
+  const langKey = langMap[defaultLanguage];
+  const updatedTitle = values?.[langKey] || processData.process_title;
+ 
           // Update local state with translated values
           setProcessData((prev) => ({
             ...prev,
             translations: values,
+                process_title: updatedTitle, // 👈 default language translation se update
+
           }));
 
           setShowTranslationPopup(false);

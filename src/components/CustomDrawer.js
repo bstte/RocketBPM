@@ -82,9 +82,9 @@ const CustomDrawer = ({ title }) => {
               </ListItem>
               <ListItem 
                 button 
-                onClick={() => navigate('/Account')} 
-                selected={location.pathname === '/Account'} // Highlight if active
-                sx={{ backgroundColor: location.pathname === '/Account' ? '#e0e0e0' : 'transparent', mb: 1 }}
+                onClick={() => navigate('/account/settings')} 
+                selected={location.pathname === '/account/settings'} // Highlight if active
+                sx={{ backgroundColor: location.pathname === '/account/settings' ? '#e0e0e0' : 'transparent', mb: 1 }}
               >
                 <ListItemText primary="Profile" />
               </ListItem>

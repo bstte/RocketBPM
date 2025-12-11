@@ -1,6 +1,6 @@
 import React from "react";
 // import { FaTimes } from 'react-icons/fa';
-
+import { getLocalDropdownPosition } from "../components/getDropdownPosition";
 const CustomContextPopup = ({
   isVisible,
   position,
@@ -9,21 +9,21 @@ const CustomContextPopup = ({
 }) => {
   if (!isVisible) return null;
   // Menu dimensions (adjust to your style)
-  const menuWidth = 300;
-  const menuHeight = 100;
+ const menuWidth = 300;
+  const menuHeight = 130;
 
-  // Prevent menu overflow
-  let x = position.x;
-  let y = position.y;
-  const { innerWidth, innerHeight } = window;
-
-  if (x + menuWidth > innerWidth) x = innerWidth - menuWidth - 20;
-  if (y + menuHeight > innerHeight) y = innerHeight - menuHeight - 40;
-
+  // FIXED: LOCAL container-based dropdown position
+  const { x, y } = getLocalDropdownPosition(
+    position.x,
+    position.y,
+    menuWidth,
+    menuHeight
+  );
   return (
     <div
+    className="dropdown_2"
       style={{
-        position: "fixed",
+        position: 'absolute',
         top: `${y}px`,
         left: `${x}px`,
         backgroundColor: "#fff",

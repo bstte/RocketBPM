@@ -26,11 +26,11 @@ const styles = {
   },
   searchInput: {
     borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 5,
+    borderColor: "#002060",
+    borderRadius: 0,
     padding: 9,
     marginBottom: 10,
-    width: "90%"
+    width: "100%"
   },
 };
 

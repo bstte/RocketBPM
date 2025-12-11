@@ -22,8 +22,8 @@ const ArrowBoxNode = ({ data }) => {
         const response = await getdataByNodeId(data.processlink, "draft");
         if (response.data && response.data.length > 0) {
           const user_id = response.data[0].user_id;
-          const Process_id = response.data[0].Process_id;
-          const id = response.data[0].Process_id;
+          const Process_id = response.data[0].process_id;
+          const id = response.data[0].process_id;
 
           let newLevel = 1;
           if (data.processlink !== null) {
@@ -36,8 +36,8 @@ const ArrowBoxNode = ({ data }) => {
 
           const levelParam =
             data.processlink !== null
-              ? `Level${newLevel}_${data.processlink}`
-              : `Level${newLevel}`;
+              ? `level${newLevel}_${data.processlink}`
+              : `level${newLevel}`;
           // console.log("newLevel", levelParam);
 
           const nodeData = await checkRecordWithGetLinkDraftData(
@@ -54,17 +54,17 @@ const ArrowBoxNode = ({ data }) => {
               Process_id
             );
 
-            breadcrumbs.forEach(({ label, path }) => {
-              addBreadcrumb(label, path, {}); // blank state as you said
+            breadcrumbs.forEach(({ label, path,state }) => {
+              addBreadcrumb(label, path, state); // blank state as you said
             });
             if (nodeData.Page_Title === "ProcessMap") {
               navigate(
-                `/Draft-Process-View/${newLevel}/${data.processlink}/${id}`
+                `/draft-process-view/${newLevel}/${data.processlink}/${id}`
               );
             }
             if (nodeData.Page_Title === "Swimlane") {
               navigate(
-                `/Draft-Swim-lanes-View/level/${newLevel}/${data.processlink}/${id}`
+                `/draft-swimlane-view/level/${newLevel}/${data.processlink}/${id}`
               );
             }
           } else {

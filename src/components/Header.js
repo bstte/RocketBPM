@@ -33,6 +33,7 @@ const Header = ({
   handleSupportViewlangugeId,
   supportedLanguages,
   selectedLanguage,
+  OriginalDefaultlanguge_id
 }) => {
   const user = useSelector((state) => state.user.user);
   const [imageSrc, setImageSrc] = useState(null);
@@ -87,17 +88,17 @@ const Header = ({
 
   const formattedDate = getPublishedDate
     ? new Date(getPublishedDate).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      })
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    })
     : "";
   const formattedDatedraft = getDraftedDate
     ? new Date(getDraftedDate).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      })
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    })
     : "";
 
   const handleBreadcrumbClick = async (path, state, index) => {
@@ -130,6 +131,9 @@ const Header = ({
     };
   }, []);
   const languageKey = langMap[selectedLanguage] || "loading...";
+  const ORIGlanguageKey = langMap[OriginalDefaultlanguge_id] || "loading...";
+  //  console.log("languageKey", languageKey);
+  //   console.log("ORIGlanguageKey", ORIGlanguageKey);
   // console.log("header breadcrumbs", breadcrumbs);
 
   return (
@@ -163,9 +167,14 @@ const Header = ({
                     }
                     style={styles.breadcrumbLink}
                   >
-                    {crumb?.state?.TitleTranslation?.[languageKey]
-                      ? crumb.state.TitleTranslation[languageKey]
-                      : crumb.label}
+                    {
+                      crumb?.state?.TitleTranslation?.[languageKey]
+                        ? crumb.state.TitleTranslation[languageKey]
+                        : crumb?.state?.TitleTranslation?.[ORIGlanguageKey]
+                          ? crumb.state.TitleTranslation[ORIGlanguageKey]
+                          : "Loading..."
+                    }
+
                   </span>
                 )}
                 {index < array.length - 1 && (
@@ -455,12 +464,12 @@ const Header = ({
                 {/* Dropdown Button */}
                 <div ref={dropdownRef} style={{ position: "relative" }}>
                   <div id="dropdownBtn" onClick={toggleDropdown}>
-                    {user?.Profile_image ? (
+                    {user?.profile_image ? (
                       <img
                         src={
-                          user?.Profile_image.startsWith("http")
-                            ? user.Profile_image // âœ… Google ka full URL
-                            : `${ImageBaseUrl}uploads/profile_images/${user.Profile_image}` // âœ… Local image
+                          user?.profile_image.startsWith("http")
+                            ? user.profile_image // âœ… Google ka full URL
+                            : `${ImageBaseUrl}uploads/profile_images/${user.profile_image}` // âœ… Local image
                         }
                         alt="Profile"
                       />
@@ -474,7 +483,7 @@ const Header = ({
                   </div>
                   {dropdownOpen && (
                     <div className="dropdown-content">
-                      <button onClick={() => navigate("/Account")}>
+                      <button onClick={() => navigate("/account/settings")}>
                         {t("Edit_Profile")}
                       </button>
                       <button onClick={() => handleLogout()}>
@@ -490,13 +499,13 @@ const Header = ({
       </div>
 
       <header
-        className={`app-header ${
-          Page === "ViewPublishswimlane" ||
-          Page === "ViewDraftswimlane" ||
-          Page === "Swimlane"
+        className={`app-header ${Page === "ViewPublishswimlane" ||
+            Page === "ViewDraftswimlane" ||
+            Page === "Swimlane" ||
+            Page === "ViewProcessmapVersion"
             ? "hideborder"
             : ""
-        }`}
+          }`}
         style={styles.header}
       >
         <h1 style={styles.headerTitle} className="sameheight">

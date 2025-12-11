@@ -16,11 +16,11 @@ const ProcessMenu = ({ item, ProcessTitle,checkpublish, t }) => {
     if (type === "published") {
       navigate(`/published-map-level/${item.processId}`);
     } else if (type === "draft") {
-      navigate(`/Draft-Process-View/${item.processId}`);
+      navigate(`/draft-process-view/${item.processId}`);
     } else if (type === "manage") {
-      navigate("/User-Management", { state: { process: { id: parseInt(item.processId), user_id: item.id } } });
+      navigate("/users", { state: { process: { id: parseInt(item.processId), user_id: item.id } } });
     } else if (type === "setting") {
-      navigate("/Setting", { state: { ProcessId: parseInt(item.processId) } });
+      navigate("/setting", { state: { ProcessId: parseInt(item.processId) } });
     }
   };
 

@@ -145,8 +145,8 @@ const Login = () => {
           </div>
         {error && <p className="error-message">{error}</p>}
         <button type="submit" className="login-button">SIGN IN</button>
-        <p>Not a member?<button className="btn_form" type='button' onClick={()=> navigate('/SignupForm')}>Sign up</button></p>
-        <button className="btn_form" type='button' onClick={()=> navigate('/forgotpassword')}>Forgot your password?</button>
+        <p>Not a member?<button className="btn_form" type='button' onClick={()=> navigate('/signup-form')}>Sign up</button></p>
+        <button className="btn_form" type='button' onClick={()=> navigate('/forgot-password')}>Forgot your password?</button>
       </form>
     
       <div className="or-separator">

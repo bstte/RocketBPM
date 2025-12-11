@@ -66,15 +66,6 @@ const ListProcessTitle = () => {
     // addHomeBreadCrums();
   }, [user, resetBreadcrumbs, addBreadcrumb, processTitles.length]);
 
-  // const fetchAssignedUsers = async (processId) => {
-  //   try {
-  //     const response = await defaultApi.post('/get-assigned-users', { process_id: processId });
-  //     return response.data.assigned_users;
-  //   } catch (error) {
-  //     console.error('Error fetching assigned users:', error);
-  //     return [];
-  //   }
-  // };
 
   const combineProcesses = () => {
     const combined = [];
@@ -122,7 +113,7 @@ const ListProcessTitle = () => {
       <div style={styles.content}>
         <div style={styles.header}>
           {user && user.type !== "User" ? (
-            <button style={styles.addButton} onClick={() => navigate('/Add-process-title')}>
+            <button style={styles.addButton} onClick={() => navigate('/processes/create')}>
               Add Process
             </button>
           ) : null}
@@ -157,7 +148,7 @@ const ListProcessTitle = () => {
                       <td style={styles.td}>{new Date(process.created_at).toLocaleString()}</td>
                       <td style={styles.td}>{process.assignedBy || 'Self'}</td>
                       <td style={styles.td}>
-                        <button onClick={()=>navigate("/User-Management",{state:{process:process}})}>
+                        <button onClick={()=>navigate("/users",{state:{process:process}})}>
                           Managed users
                         </button>
 
@@ -192,7 +183,7 @@ const ListProcessTitle = () => {
                         </button>
 
 
-                        <button onClick={() => navigate("/Draft-Process-View", { state: { id: process.id, title: process.process_title, user: currentUser } })} style={styles.PublishactionButton}>
+                        <button onClick={() => navigate("/draft-process-view", { state: { id: process.id, title: process.process_title, user: currentUser } })} style={styles.PublishactionButton}>
 
                           View Draft
                         </button>

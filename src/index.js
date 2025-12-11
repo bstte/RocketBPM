@@ -11,12 +11,16 @@ import "@fontsource/poppins/500.css";
 import { PublicClientApplication } from "@azure/msal-browser";
 import { MsalProvider } from "@azure/msal-react";
 import { msalConfig } from './hooks/msalConfig';
+// import GlobalZoomButtons from './components/ZoomController';
+
 const msalInstance = new PublicClientApplication(msalConfig);
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <MsalProvider instance={msalInstance}>
-
+{/* <div className='screen_modes'>
+    <GlobalZoomButtons />
+  </div> */}
   <Provider store={store}>  {/* Wrap App with Provider */}
     <div className='main-app'>
       <App />

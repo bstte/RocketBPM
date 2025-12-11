@@ -6,6 +6,7 @@ import { ImageBaseUrl, versionlist } from "../API/api";
 import { DefaultemailIcon, DefaultUserIcon } from "./Icon";
 import { useTranslation } from "../hooks/useTranslation";
 import { useLangMap } from "../hooks/useLangMap";
+import { useFetchVersions } from "../hooks/useFetchVersions";
 
 const VersionPopupView = ({
   processId,
@@ -18,6 +19,7 @@ const VersionPopupView = ({
   status,
   type,
   selectedLanguage,
+  OriginalDefaultlanguge_id
 }) => {
   const [activeTab, setActiveTab] = useState("contact");
   const [versions, setVersions] = useState([]);
@@ -30,63 +32,54 @@ const VersionPopupView = ({
     architecture: [],
     manager: [],
     domain_owner: [],
+    modeler: [],
   });
   const langMap = useLangMap(); // inside component
 
   const t = useTranslation();
-
+  const { responseData, refetch } = useFetchVersions({
+    processId,
+    currentLevel,
+    currentParentId,
+    LoginUser,
+    status,
+  });
   useEffect(() => {
-          if (!langMap || Object.keys(langMap).length === 0) return; // 🛑 Wait until langMap is ready
+    if (!responseData) return;
+    if (!langMap || Object.keys(langMap).length === 0) return;
+    setLoading(false)
+  
+    setVersions(responseData.versions || []);
+    setAssignedUsers(responseData.assigned_users || []);
 
-    const fetchVersions = async () => {
-      try {
-        const LoginUserId = LoginUser ? LoginUser.id : null;
-
-        const levelParam =
-          currentParentId !== null
-            ? `Level${currentLevel}_${currentParentId}`
-            : `Level${currentLevel}`;
-        const response = await versionlist(
-          processId,
-          levelParam,
-          LoginUserId,
-          status
-        );
-
-        setVersions(response.versions || []);
-        setAssignedUsers(response.assigned_users || []);
-
-        setSelectedEmails(
-          response.contact_info || {
-            owner: [],
-            architecture: [],
-            manager: [],
-            domain_owner: [],
-          }
-        );
-
-        let revisionData = {};
-        try {
-          revisionData =
-            typeof response.revision_info === "string"
-              ? JSON.parse(response.revision_info)
-              : response.revision_info || {};
-        } catch (e) {
-          console.error("Failed to parse revision_info", e);
-        }
-
-        const langKey = langMap[selectedLanguage] || "en";
-        
-        setRevisionText(revisionData[langKey]?.content || "");
-      } catch (error) {
-        console.error("Error fetching version data:", error);
-      } finally {
-        setLoading(false);
+    setSelectedEmails(
+      responseData.contact_info || {
+        owner: [],
+        architecture: [],
+        manager: [],
+        domain_owner: [],
+        modeler: [],
       }
-    };
+    );
 
-    fetchVersions();
-  }, [processId, currentLevel, currentParentId, LoginUser, langMap,  selectedLanguage]);
+    let revisionData = {};
+    try {
+      revisionData =
+        typeof responseData.revision_info === "string"
+          ? JSON.parse(responseData.revision_info)
+          : responseData.revision_info || {};
+    } catch (e) {
+      console.error("Failed to parse revision_info", e);
+    }
+
+    const langKey = langMap[selectedLanguage] || "loading...";
+    const ORIGlanguageKey = langMap[OriginalDefaultlanguge_id] || "loading...";
+    setRevisionText(
+      revisionData[langKey]?.content ??
+      revisionData[ORIGlanguageKey]?.content ??
+      ""
+    );
+  }, [responseData, langMap, selectedLanguage]);
   // ✅ Roles config
 
   return (
@@ -135,8 +128,8 @@ const VersionPopupView = ({
                 // Prepare role blocks
                 const roleBlocks =
                   type === "ProcessMaps"
-                    ? ["domain_owner", "owner"]
-                    : ["owner", "architecture", "manager"];
+                    ? ["domain_owner", "owner", "modeler"]
+                    : ["owner", "architecture", "manager", "modeler"];
 
                 // Filter roles jisme at least ek user assigned ho
                 const roleBlocksWithUsers = roleBlocks
@@ -158,13 +151,19 @@ const VersionPopupView = ({
                   <div key={block.role} className="contact-item">
                     <div className="flex_full">
                       <label style={{ textTransform: "capitalize" }}>
+
+
                         {block.role === "domain_owner"
-                          ? `${t("process_domain_owner")}`
+                          ? t("process_domain_owner")
                           : block.role === "owner"
-                          ? `${t("process_owner")}`
-                          : block.role === "architecture"
-                          ? `${t("process_architecture")}`
-                          : `${t("process_manager")}`}
+                            ? t("process_owner")
+                            : block.role === "architecture"
+                              ? t("process_architects")
+                              : block.role === "manager"
+                                ? t("process_manager")
+                                : block.role === "modeler"
+                                  ? t("process_modeler")   // ⭐ नया Label
+                                  : ""}
                       </label>
                     </div>
 

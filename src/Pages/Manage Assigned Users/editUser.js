@@ -3,22 +3,23 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import CustomAlert from '../../components/CustomAlert';
 import CustomHeader from '../../components/CustomHeader';
 import { updateAssignedUserData } from '../../API/api';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const EditUser = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { assignedUsers } = location.state || {};
-
+ const t = useTranslation();
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState('');
   const [permission, setPermission] = useState('');
 
   useEffect(() => {
     if (assignedUsers) {
-      console.log("assignedUsers",assignedUsers)
+      // console.log("assignedUsers",assignedUsers)
       setEmail(assignedUsers?.assigned_user?.email || '');
-      setStatus(assignedUsers?.status || '');
-      setPermission(assignedUsers?.Role || '');
+      setStatus(assignedUsers?.status );
+      setPermission(assignedUsers?.role );
     }
   }, [assignedUsers]);
 
@@ -36,7 +37,7 @@ const EditUser = () => {
       Role: permission,
     };
 
-    console.log("updatedUser",updatedUser)
+    // console.log("updatedUser",updatedUser)
     try {
       const response = await updateAssignedUserData(updatedUser);
       CustomAlert.success("User Updated", response.message || "User details updated successfully.");
@@ -54,7 +55,7 @@ const EditUser = () => {
   return (
     <div>
       <div className="ss_title_bar">
-        <CustomHeader title="Edit User" />
+        <CustomHeader title={t('edit_user')} />
       </div>
 
       <div className="ss_body_div">
@@ -64,7 +65,7 @@ const EditUser = () => {
           </div>
 
           <form onSubmit={handleSubmit}>
-            <h3>Edit User</h3>
+            <h3>{t('edit_user')}</h3>
 
             {/* Email */}
             <div style={{ marginBottom: '15px' }}>
@@ -85,25 +86,25 @@ const EditUser = () => {
                 onChange={(e) => setStatus(e.target.value)}
                 style={{ width: '100%', padding: '8px', marginTop: '5px' }}
               >
-                <option value="">Select status</option>
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
+                <option value="">{t("select_status")}</option>
+                <option value="1">{t("active")}</option>
+                <option value="0">{t("inactive")}</option>
               </select>
             </div>
 
             {/* Permission Checkboxes */}
             <div style={{ marginBottom: '15px', textAlign: 'left' }}>
-              <label>Permission:</label>
+              <label>{t("permission")}:</label>
               <select
                 id="permission"
                 value={permission}
                 onChange={(e) => handlePermissionChange(e.target.value)}
                 className="ss_add_eml_in"
               >
-                <option value="">-- Select Permission --</option>
-                <option value="User">User</option>
-                <option value="Modeler">Modeler</option>
-                <option value="Administrator">Administrator</option>
+                <option value="">-- {t("select_permission")} --</option>
+                 <option value="0">  {t('user')}</option>
+                <option value="1">  {t('modeler')}</option>
+                <option value="2">  {t('administrator')}</option>
               </select>
             </div>
 
@@ -115,10 +116,10 @@ const EditUser = () => {
                 onClick={() => navigate(-1)}
                 style={{ backgroundColor: '#002060', cursor: 'pointer' }}
               >
-                CANCEL
+              {t("Cancel")}
               </button>
             <button type="submit" className="ss_add_use_btn">
-              Update User
+             {t("update_user")} 
             </button>
              
             </div>

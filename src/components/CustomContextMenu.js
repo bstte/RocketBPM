@@ -8,7 +8,7 @@ const CustomContextMenu = ({
     handleContextMenuOptionClick,
 }) => {
 
-      const t = useTranslation(); // ✅ Hook moved to the top
+    const t = useTranslation(); // ✅ Hook moved to the top
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -28,25 +28,36 @@ const CustomContextMenu = ({
 
     if (!showContextMenu) return null;
     // Menu dimensions (adjust to your style)
+    const container = document.querySelector(".flow-container");
+    const containerRect = container?.getBoundingClientRect();
+
+    if (!containerRect) return null;
+
+    // Convert to container-relative coordinates
+    let x = contextMenuPosition.x - containerRect.left + 10;
+    let y = contextMenuPosition.y - containerRect.top + 10;
+
     const menuWidth = 300;
-    const menuHeight = 100;
+    const menuHeight = 120;
 
-    // Prevent menu overflow
-    let x = contextMenuPosition.x;
-    let y = contextMenuPosition.y;
-    const { innerWidth, innerHeight } = window;
+    // Boundaries (stay inside container)
+    const maxX = containerRect.width - menuWidth - 10;
+    const maxY = containerRect.height - menuHeight - 10;
 
-    if (x + menuWidth > innerWidth) x = innerWidth - menuWidth - 20;
-    if (y + menuHeight > innerHeight) y = innerHeight - menuHeight - 40;
+    // Clamp final position
+    if (x > maxX) x = maxX;
+    if (y > maxY) y = maxY;
+    if (x < 10) x = 10;
+    if (y < 10) y = 10;
 
     return (
         <div
             id="custom-context-menu"
             style={{
-               position: 'fixed',
+                position: 'absolute',
                 top: `${y}px`,
                 left: `${x}px`,
-                background: '#f5f5f5', 
+                background: '#f5f5f5',
                 boxShadow: "rgba(0, 0, 0, 0.1) 0px 2px 10px",
                 zIndex: 1000,
                 minWidth: '100px',

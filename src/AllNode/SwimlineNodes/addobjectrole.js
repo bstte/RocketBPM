@@ -15,12 +15,12 @@
 //     >
 //       {options.map((option, index) => (
 //         <div className="menuitems" key={index}>
-//           <div            
+//           <div
 //             onClick={() => {
 //               onOptionClick(option.value);
 //               onClose();
 //             }}
-            
+
 //           >
 //             {option.label}
 //           </div>
@@ -65,9 +65,6 @@
 
 // export default AddObjectRole;
 
-
-
-
 import React, { useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 
@@ -87,26 +84,35 @@ const AddObjectRole = ({ position, options, onOptionClick, onClose }) => {
   if (!options || options.length === 0) return null;
 
   const flowContainer = document.querySelector(".publishcontainer");
-  const containerRect = flowContainer?.getBoundingClientRect();
+  if (!flowContainer) return null;
 
-  let x = position.x;
-  let y = position.y;
+  const containerRect = flowContainer.getBoundingClientRect();
+
+  // ⚙️ Relative position inside the container
+  let x = position.x - containerRect.left + 10; // thoda right
+  let y = position.y - containerRect.top + 10; // thoda below
+
   const menuWidth = 200;
   const menuHeight = options.length * 40;
 
-  if (containerRect) {
-    const maxX = containerRect.width - menuWidth - 10;
-    const maxY = containerRect.height - menuHeight - 10;
-
-    if (x > maxX) x = maxX;
-    if (y > maxY) y = maxY;
-
-    if (x < 10) x = 10;
-    if (y < 10) y = 10;
+  // 🔹 Smart open direction (upar ya niche)
+  const spaceBelow = containerRect.height - (y + menuHeight);
+  if (spaceBelow < 0) {
+    // Agar bottom me space kam hai, upar open karo
+    y = y - menuHeight - 10;
   }
+
+  // 🔹 Clamp to container bounds
+  const maxX = containerRect.width - menuWidth - 10;
+  const maxY = containerRect.height - menuHeight - 10;
+
+  x = Math.min(Math.max(x, 10), maxX);
+  y = Math.min(Math.max(y, 10), maxY);
 
   return (
     <div
+    className="swimlane_add_dropdown"
+
       ref={menuRef}
       style={{
         ...styles.container,

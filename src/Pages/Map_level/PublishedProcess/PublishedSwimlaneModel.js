@@ -26,9 +26,11 @@ import useCheckFavorite from "../../../hooks/useCheckFavorite";
 import { usePageGroupIdViewer } from "../../../hooks/usePageGroupIdViewer";
 import YesNode from "../../../AllNode/YesNode";
 import NoNode from "../../../AllNode/NoNode";
+import { getLevelKey } from "../../../utils/getLevel";
 
 const PublishedSwimlaneModel = () => {
   const { height, appHeaderHeight, remainingHeight } = useDynamicHeight();
+  const safeRemainingHeight = Math.min(Math.max(remainingHeight, 588), 588);
   const [windowSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
@@ -42,6 +44,8 @@ const PublishedSwimlaneModel = () => {
   const [user, setUser] = useState(null);
   const [processDefaultlanguage_id, setprocessDefaultlanguage_id] =
     useState(null);
+      const [OriginalDefaultlanguge_id, setOriginalDefaultlanguge_id] =
+    useState(null);
   const [supportedLanguages, setSupportedLanguages] = useState([]);
   const id = processId; // string
 
@@ -52,13 +56,13 @@ const PublishedSwimlaneModel = () => {
     () =>
       generateNodesAndEdges(
         windowSize.width,
-        windowSize.height,
+        736,
         "viewmode",
         height + 10,
         appHeaderHeight,
-        remainingHeight
+        safeRemainingHeight
       ),
-    [windowSize, height, appHeaderHeight, remainingHeight]
+    [windowSize, height, appHeaderHeight, safeRemainingHeight]
   );
   useEffect(() => {
     setNodes(initialNodes);
@@ -111,10 +115,12 @@ const PublishedSwimlaneModel = () => {
 
   const fetchNodes = async (language_id = null) => {
     try {
-      const levelParam =
-        currentParentId !== null
-          ? `Level${currentLevel}_${currentParentId}`
-          : `Level${currentLevel}`;
+      // const levelParam =
+      //   currentParentId !== null
+      //     ? `level${currentLevel}_${currentParentId}`
+      //     : `level${currentLevel}`;
+      const levelParam = getLevelKey(currentLevel, currentParentId);
+      
       const user_id = LoginUser ? LoginUser.id : null;
       const Process_id = id ? id : null;
       const publishedStatus = "Published";
@@ -126,7 +132,6 @@ const PublishedSwimlaneModel = () => {
         currentParentId,
         language_id
       );
-
       if (data && data.user_id) {
         // Construct user object based on backend logic
         setUser({
@@ -137,7 +142,7 @@ const PublishedSwimlaneModel = () => {
           actual_user_id: data.actual_user_id,
         });
       }
-      const PageGroupId = data.nodes?.[0]?.PageGroupId;
+      const PageGroupId = data.nodes?.[0]?.page_group_id;
       const getPublishedDate = await api.GetPublishedDate(
         Process_id,
         publishedStatus,
@@ -149,6 +154,7 @@ const PublishedSwimlaneModel = () => {
       );
       setprocess_img(data.process_img);
       setprocessDefaultlanguage_id(data.processDefaultlanguage_id);
+        setOriginalDefaultlanguge_id(data.OriginalDefaultlanguge_id);
       setSupportedLanguages(data.ProcessSupportLanguage);
       // setprocess_udid(data.process_uid)
       Settitle(data.title);
@@ -192,7 +198,7 @@ const PublishedSwimlaneModel = () => {
 
               // 🔹 Increment level
               const newLevel = extractedLevel + 1;
-              const levelParam = `Level${newLevel}_${parsedData.processlink}`;
+              const levelParam = `level${newLevel}_${parsedData.processlink}`;
               try {
                 const check = await api.checkPublishRecord(
                   levelParam,
@@ -207,18 +213,18 @@ const PublishedSwimlaneModel = () => {
             // Parent node positioning
             const nodeStyle =
               node.type === "Yes" ||
-              node.type === "No" ||
-              node.type === "FreeText"
+                node.type === "No" ||
+                node.type === "FreeText"
                 ? {} // No styles applied for these node types
                 : {
-                    width: groupWidth,
-                    height: groupHeight,
-                    childWidth: childWidth,
-                    childHeight: childHeight,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  };
+                  width: groupWidth,
+                  height: groupHeight,
+                  childWidth: childWidth,
+                  childHeight: childHeight,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                };
 
             return {
               ...node,
@@ -232,7 +238,7 @@ const PublishedSwimlaneModel = () => {
               },
               type: node.type,
               id: node.node_id,
-              parentId: node.parentId,
+              parentId: node.parent_id,
               extent: "parent",
               measured: parsedMeasured,
               position: centeredPosition,
@@ -306,7 +312,7 @@ const PublishedSwimlaneModel = () => {
 
       return {
         ...crumb,
-        path: crumb.path.replace("published-map-level", "Draft-Process-View"),
+        path: crumb.path.replace("published-map-level", "draft-process-view"),
       };
     });
     setBreadcrumbs(updatedBreadcrumbs);
@@ -314,7 +320,7 @@ const PublishedSwimlaneModel = () => {
     if (id && user) {
       // navigate(`/Draft-Swim-lanes-View/level/${currentLevel}/${currentParentId}`, { state: { id: id, title: title, user: user, parentId: currentParentId, level: currentLevel,ParentPageGroupId } })
       navigate(
-        `/Draft-Swim-lanes-View/level/${currentLevel}/${currentParentId}/${id}`
+        `/draft-swimlane-view/level/${currentLevel}/${currentParentId}/${id}`
       );
 
       // removeBreadcrumbsAfter(0);
@@ -327,7 +333,7 @@ const PublishedSwimlaneModel = () => {
     const user_id = LoginUser ? LoginUser.id : null;
     const encodedTitle = encodeURIComponent("swimlane");
     navigate(
-      `/Swimlane-Version/${process_id}/${level}/${version}/${encodedTitle}/${user_id}/${currentParentId}`
+      `/swimlane-version/${process_id}/${level}/${version}/${encodedTitle}/${user_id}/${currentParentId}`
     );
   };
 
@@ -345,7 +351,7 @@ const PublishedSwimlaneModel = () => {
       return;
     }
 
-    const PageGroupId = ChildNodes[0]?.PageGroupId;
+    const PageGroupId = ChildNodes[0]?.page_group_id;
 
     try {
       if (isFavorite) {
@@ -398,10 +404,11 @@ const PublishedSwimlaneModel = () => {
         handleSupportViewlangugeId={handleSupportViewlangugeId}
         supportedLanguages={supportedLanguages}
         selectedLanguage={processDefaultlanguage_id}
+        OriginalDefaultlanguge_id={OriginalDefaultlanguge_id}
       />
-      <div style={{ ...styles.appContainer, height: remainingHeight }}>
+      <div style={{ ...styles.appContainer, height: safeRemainingHeight }}>
         <ReactFlowProvider>
-          <div className="ss_publish_border" style={styles.scrollableWrapper}>
+          <div className="ss_publish_border scrollbar_wrapper" style={styles.scrollableWrapper}>
             <ReactFlow
               nodes={[...nodes, ...ChildNodes]}
               edges={edges}
@@ -428,30 +435,26 @@ const PublishedSwimlaneModel = () => {
             >
               <Background color="#fff" gap={16} />
             </ReactFlow>
+            {showVersionPopup && (
+              <VersionPopupView
+                processId={id}
+                currentLevel={currentLevel}
+                onClose={() => setShowVersionPopup(false)}
+                currentParentId={currentParentId}
+                viewVersion={navigateToVersion}
+                LoginUser={LoginUser}
+                title={headerTitle}
+                status={"Published"}
+                selectedLanguage={processDefaultlanguage_id}
+                     OriginalDefaultlanguge_id={OriginalDefaultlanguge_id}
+              />
+            )}
             {usePageGroupIdViewer(ChildNodes)}
           </div>
 
-          {/* {showSharePopup && (
-            <SharePopup
-              processId={id}
-              processName={`${headerTitle}`}
-              onClose={() => setShowSharePopup(false)}
-            />
-          )} */}
 
-          {showVersionPopup && (
-            <VersionPopupView
-              processId={id}
-              currentLevel={currentLevel}
-              onClose={() => setShowVersionPopup(false)}
-              currentParentId={currentParentId}
-              viewVersion={navigateToVersion}
-              LoginUser={LoginUser}
-              title={headerTitle}
-              status={"Published"}
-              selectedLanguage={processDefaultlanguage_id}
-            />
-          )}
+
+
         </ReactFlowProvider>
       </div>
     </div>

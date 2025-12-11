@@ -22,8 +22,8 @@ const ArrowBoxNode = ({ data }) => {
         const response = await getdataByNodeId(data.processlink, "draft");
         if (response.data && response.data.length > 0) {
           const user_id = response.data[0].user_id;
-          const Process_id = response.data[0].Process_id;
-          const id = response.data[0].Process_id;
+          const Process_id = response.data[0].process_id;
+          const id = response.data[0].process_id;
 
           let newLevel = 1;
           if (data.processlink !== null) {
@@ -36,9 +36,8 @@ const ArrowBoxNode = ({ data }) => {
 
           const levelParam =
             data.processlink !== null
-              ? `Level${newLevel}_${data.processlink}`
-              : `Level${newLevel}`;
-          console.log("newLevel", levelParam);
+              ? `level${newLevel}_${data.processlink}`
+              : `level${newLevel}`;
 
           const nodeData = await checkRecordWithGetLinkPublishData(
             levelParam,
@@ -55,10 +54,11 @@ const ArrowBoxNode = ({ data }) => {
               "Publish"
             );
 
-            breadcrumbs.forEach(({ label, path }) => {
-              addBreadcrumb(label, path, {}); // blank state as you said
+            breadcrumbs.forEach(({ label, path,state }) => {
+              addBreadcrumb(label, path, state); // blank state as you said
             });
-            // console.log("nodeData", nodeData);
+            // console.log("nodeData123", breadcrumbs);
+            //   console.log("nodeData", nodeData);
 
             if (nodeData.Page_Title === "ProcessMap") {
               navigate(

@@ -202,12 +202,12 @@ const Account = () => {
                         alt="Profile"
                         className="profile-image"
                       />
-                    ) : user?.Profile_image ? (
+                    ) : user?.profile_image ? (
                       <img
                         src={
-                          user?.Profile_image.startsWith("http")
-                            ? user.Profile_image // ✅ Google ka full URL
-                            : `${ImageBaseUrl}uploads/profile_images/${user.Profile_image}` // ✅ Local image
+                          user?.profile_image.startsWith("http")
+                            ? user.profile_image // ✅ Google ka full URL
+                            : `${ImageBaseUrl}uploads/profile_images/${user.profile_image}` // ✅ Local image
                         }
                         alt="Profile"
                         className="profile-image"

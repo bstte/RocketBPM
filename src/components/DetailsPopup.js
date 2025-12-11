@@ -6,8 +6,9 @@ import "../Css/DetailsPopup.css";
 import { ResizableBox } from "react-resizable";
 import TranslationTextAreaPopup from "../hooks/TranslationTextAreaPopup";
 import { useLangMap } from "../hooks/useLangMap";
+import { useTranslation } from "../hooks/useTranslation";
 
-const DetailsPopup = ({ isOpen, onClose, onSave, Details,supportedLanguages,selectedLanguage }) => {
+const DetailsPopup = ({ isOpen, onClose, onSave, Details, supportedLanguages, selectedLanguage }) => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [popupSize, setPopupSize] = useState({ width: 600, height: 450 });
@@ -16,10 +17,10 @@ const DetailsPopup = ({ isOpen, onClose, onSave, Details,supportedLanguages,sele
   const [showTranslationPopup, setShowTranslationPopup] = useState(false);
   const [translations, setTranslations] = useState({});
   const langMap = useLangMap(); // same hook used in first component
-
+  const t = useTranslation();
   useEffect(() => {
     const updateMaxConstraints = () => {
-      setMaxConstraints([window.innerWidth - 30, window.innerHeight - 30]);
+      setMaxConstraints([1460, 560]);
     };
 
     updateMaxConstraints();
@@ -28,12 +29,12 @@ const DetailsPopup = ({ isOpen, onClose, onSave, Details,supportedLanguages,sele
     return () => window.removeEventListener("resize", updateMaxConstraints);
   }, []);
 
-useEffect(() => {
+  useEffect(() => {
 
-      if (isOpen && Details) {
-          setTitle(
-      Details.data.details.title?.replace(/<br\s*\/?>/gi, " ").replace(/&nbsp;/g, " ") || ""
-    );
+    if (isOpen && Details) {
+      setTitle(
+        Details.data.details.title?.replace(/<br\s*\/?>/gi, " ").replace(/&nbsp;/g, " ") || ""
+      );
       const allTranslations =
         Details.data.details.translations || {
           en: { title: "", content: "" },
@@ -43,7 +44,7 @@ useEffect(() => {
 
       setTranslations(allTranslations);
 
-  
+
       const langKey = langMap[selectedLanguage] || "en";
       setContent(allTranslations[langKey]?.content || "");
     }
@@ -63,20 +64,20 @@ useEffect(() => {
   // };
 
   const handleContentChange = (value) => {
-  setContent(value);
+    setContent(value);
 
-  setTranslations((prev) => {
-    const langKey = langMap[selectedLanguage] || "en";
-    return {
-      ...prev,
-      [langKey]: { ...prev[langKey], content: value },
-    };
-  });
-};
+    setTranslations((prev) => {
+      const langKey = langMap[selectedLanguage] || "en";
+      return {
+        ...prev,
+        [langKey]: { ...prev[langKey], content: value },
+      };
+    });
+  };
 
   const handleSave = () => {
     if (onSave) {
-      onSave({ title, content, translations }); 
+      onSave({ title, content, translations });
     }
     setContent("");
     setTitle("");
@@ -86,7 +87,28 @@ useEffect(() => {
 
   return (
     <>
-      <Draggable handle=".popup-header">
+      <Draggable handle=".popup-header"
+        bounds="parent"
+        onDrag={(e, data) => {
+          const scrollbarEl = document.querySelector(".scrollbar_wrapper");
+          if (!scrollbarEl) return;
+
+          const popupRect = e.target.getBoundingClientRect();
+          const scrollRect = scrollbarEl.getBoundingClientRect();
+
+          // Check if popup is completely outside scrollbar_wrapper
+          const isOutside =
+            popupRect.right < scrollRect.left ||
+            popupRect.left > scrollRect.right ||
+            popupRect.bottom < scrollRect.top ||
+            popupRect.top > scrollRect.bottom;
+
+          if (isOutside) {
+            // Reset transform immediately
+            e.target.style.transform = "translate(0px, 0px)";
+          }
+        }}
+      >
         <ResizableBox
           width={popupSize.width}
           height={popupSize.height}
@@ -98,9 +120,10 @@ useEffect(() => {
           }}
           style={{
             position: "absolute",
-            top: "25%",
+            top: "12%",
             left: "30%",
-            transform: "translate(-50%, -50%)",
+            right: "0",
+            transform: "translate(-50%, 0%)",
             backgroundColor: "#ffffff",
             border: "1px solid #002060",
             boxShadow: "0 2px 5px #002060",
@@ -145,13 +168,15 @@ useEffect(() => {
                   className="popup-button"
                   onClick={() => setShowTranslationPopup(true)}
                 >
-                  Translations
+                  {t("translation")}
                 </button>
                 <button className="popup-button cancel" onClick={onClose}>
-                  Cancel
+
+                  {t("Cancel")}
                 </button>
                 <button className="popup-button save" onClick={handleSave}>
-                  Save
+
+                  {t("Save")}
                 </button>
               </div>
             </div>
@@ -181,26 +206,26 @@ useEffect(() => {
         </ResizableBox>
       </Draggable>
 
-          {showTranslationPopup && (
+      {showTranslationPopup && (
         <TranslationTextAreaPopup
           isOpen={showTranslationPopup}
           onClose={() => setShowTranslationPopup(false)}
           defaultValues={translations}
-      onSubmit={(values) => {
-  setTranslations(values);
+          onSubmit={(values) => {
+            setTranslations(values);
 
-  // get the current language key
-  const langKey = langMap[selectedLanguage] || "en";
+            // get the current language key
+            const langKey = langMap[selectedLanguage] || "en";
 
-  // update the visible content immediately
-  setContent(values[langKey]?.content || "");
+            // update the visible content immediately
+            setContent(values[langKey]?.content || "");
 
-  setShowTranslationPopup(false);
-}}
+            setShowTranslationPopup(false);
+          }}
 
           supportedLanguages={supportedLanguages}
         />
-            )}
+      )}
     </>
   );
 };

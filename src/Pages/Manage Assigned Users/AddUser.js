@@ -4,6 +4,7 @@ import { checkEmail, saveAssingUserData } from '../../API/api';
 import CustomAlert from '../../components/CustomAlert';
 import CustomHeader from '../../components/CustomHeader';
 import { useSelector } from 'react-redux';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const AddUser = () => {
   const location = useLocation();
@@ -21,7 +22,7 @@ const AddUser = () => {
   const [isEmailValid, setIsEmailValid] = useState(false);
   const [assignId, setAssignId] = useState(null);
   const [isSelfEmail, setIsSelfEmail] = useState(false);
-
+ const t = useTranslation();
   const typingTimeoutRef = useRef(null);
 
   const handlePermissionChange = (value) => {
@@ -44,16 +45,16 @@ const AddUser = () => {
       const response = await checkEmail(enteredEmail);
       if (response && response.exists !== undefined) {
         if (response.exists) {
-          setEmailStatus('Email exists ✔️');
+          setEmailStatus('✅ Email Exists');
           setIsEmailValid(true);
           setAssignId(response.id);
         } else {
-          setEmailStatus('Email does not exist ❌');
+       setEmailStatus('❌ Email does not exist');
           setIsEmailValid(false);
           setAssignId(null);
         }
       } else {
-        setEmailStatus('Invalid response from server ❌');
+       setEmailStatus('❌ Invalid response from server');
       }
     } catch (error) {
       console.error('Error checking email:', error);
@@ -128,13 +129,13 @@ const AddUser = () => {
   return (
     <div>
       <div className="ss_title_bar">
-        <CustomHeader title="Add user" />
+        <CustomHeader title={t('Add_User')} />
       </div>
 
       <div className="ss_body_div">
         <div className="ss_add_user_bx">
           <form onSubmit={handleSubmit}>
-            <h3>Add User</h3>
+            <h3>{t('Add_User')}</h3>
 
             {/* Email Input */}
             <div style={{ marginBottom: '15px' }}>
@@ -142,13 +143,13 @@ const AddUser = () => {
                 type="email"
                 value={email}
                 onChange={handleEmailChange}
-                placeholder="Enter email"
+                placeholder={t('enter_email')}
                 required
                 className="ss_add_eml_in"
               />
               {emailStatus && (
                 <div style={{
-                  color: isSelfEmail ? 'orange' : isEmailValid ? 'blue' : 'red',
+                color: isSelfEmail ? 'orange' : isEmailValid ? '#002060' : '#ff364a',
                   marginTop: '5px'
                 }}>
                   {emailStatus}
@@ -157,25 +158,25 @@ const AddUser = () => {
             </div>
 
             {/* First & Last Name */}
-            {!isEmailValid && emailStatus === 'Email does not exist ❌' && (
+            {!isEmailValid && emailStatus === '❌ Email does not exist' && (
               <>
                 <div style={{ marginBottom: '15px', textAlign: 'left' }}>
-                  <label>First Name:</label>
+                  <label>{t('First_Name')}:</label>
                   <input
                     type="text"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
-                    placeholder="Enter first name"
+                    placeholder={t('enter_first_name')}
                     className="ss_add_eml_in"
                   />
                 </div>
                 <div style={{ marginBottom: '15px', textAlign: 'left' }}>
-                  <label>Last Name:</label>
+                  <label>{t('Last_Name')}:</label>
                   <input
                     type="text"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
-                    placeholder="Enter last name"
+                    placeholder={t('enter_last_name')}
                     className="ss_add_eml_in"
                   />
                 </div>
@@ -184,17 +185,17 @@ const AddUser = () => {
 
             {/* Permissions Dropdown */}
             <div style={{ marginBottom: '15px', textAlign: 'left' }}>
-              <label>Permission:</label>
+              <label>{t('permission')}:</label>
               <select
                 id="permission"
                 value={permission}
                 onChange={(e) => handlePermissionChange(e.target.value)}
                 className="ss_add_eml_in"
               >
-                <option value="">-- Select Permission --</option>
-                <option value="User">User</option>
-                <option value="Modeler">Modeler</option>
-                <option value="Administrator">Administrator</option>
+                <option value="">-- {t('select_permission')} --</option>
+                <option value="0">  {t('user')}</option>
+                <option value="1">  {t('modeler')}</option>
+                <option value="2">  {t('administrator')}</option>
               </select>
             </div>
 
@@ -206,14 +207,14 @@ const AddUser = () => {
                 onClick={() => navigate(-1)}
                 style={{ backgroundColor: '#002060', cursor: 'pointer' }}
               >
-                CANCEL
+               {t('Cancel')}
               </button>
               <button
                 type="submit"
                 className="ss_add_use_btn"
                 disabled={isSelfEmail}
               >
-                ADD USER
+               {t('Add_User')}
               </button>
             </div>
 

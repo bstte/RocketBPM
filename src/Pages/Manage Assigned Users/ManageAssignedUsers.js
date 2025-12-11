@@ -31,8 +31,6 @@ const ManageAssignedUsers = () => {
     };
     getProcessAssignUsersData();
   }, [process]);
-  const capitalize = (str) =>
-    str ? str.charAt(0).toUpperCase() + str.slice(1) : "N/A";
 
   return (
     <div>
@@ -48,7 +46,7 @@ const ManageAssignedUsers = () => {
           <button
             className="ss_add_user_btn"
             onClick={() =>
-              navigate("/Add-User", { state: { process: process } })
+              navigate("/users/create", { state: { process: process } })
             }
           >
             {t("Add_User")}
@@ -78,16 +76,16 @@ const ManageAssignedUsers = () => {
                     <td>{user.assigned_user?.first_name || "N/A"}</td>
                     <td>{user.assigned_user?.last_name || "N/A"}</td>
                     <td>{user.assigned_user?.email || "N/A"}</td>
-                    <td>{user?.Role || "N/A"}</td>
-                    <td>{capitalize(user.assigned_user?.status)}</td>
-                    <td>{user?.status || "N/A"}</td>
+                    <td>{user?.role_name || "N/A"}</td>
+                    <td>{user.assigned_user?.status_name}</td>
+                    <td>{user?.status_name || "N/A"}</td>
 
                     <td>
-                      {user.Role !== "Owner" && (
+                      {user.role_name !== "Owner" && (
                         <button
                           className="ss_add_user_btn"
                           onClick={() =>
-                            navigate("/edit-User", {
+                            navigate("/users/edit", {
                               state: { assignedUsers: user },
                             })
                           }
@@ -101,7 +99,7 @@ const ManageAssignedUsers = () => {
               ) : (
                 <tr>
                   <td
-                    colSpan="4"
+                    colSpan="7"
                     style={{ textAlign: "center", padding: "10px" }}
                   >
                     {t("No_assigned_user_msg")}

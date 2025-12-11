@@ -5,6 +5,7 @@ import Draggable from "react-draggable";
 import { ResizableBox } from "react-resizable";
 import "react-resizable/css/styles.css";
 import "./publishnode.css";
+import { useTranslation } from "../../hooks/useTranslation";
 // import { color } from "@mui/system";
 
 const SwimlineDiamondNode = ({ data }) => {
@@ -13,7 +14,7 @@ const SwimlineDiamondNode = ({ data }) => {
   // const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   const [popupSize, setPopupSize] = useState({ width: 600, height: 450 });
   const titleRef = useRef(null);
-
+ const t = useTranslation();
   const handleBoxClick = () => {
     if (titleRef.current) {
       // const { top, left } = titleRef.current.getBoundingClientRect();
@@ -46,20 +47,22 @@ const SwimlineDiamondNode = ({ data }) => {
 
 
   const renderPopup = () => (
-    <Draggable handle=".popupHeader">
+    <Draggable   handle=".popupHeader"
+      bounds=".scrollbar_wrapper"
+      cancel=".popupContent_content">
       <ResizableBox
         width={popupSize.width}
         height={popupSize.height}
         minConstraints={[300, 200]}
         maxConstraints={[800, 600]}
         onResizeStop={(e, { size }) => setPopupSize(size)}
-        style={{
+     style={{
           position: "absolute",
-          top: "20%",
-          left: "0",
+          top: "12%",
+          left: "30%",
           right: "0",
-          margin: "0 auto",
-          transform: "translate(0, -50%)",
+   
+          transform: "translate(-50%, 0)",
           backgroundColor: "#ffffff",
           border: "1px solid #011f60",
           overflow: "hidden",
@@ -75,7 +78,7 @@ const SwimlineDiamondNode = ({ data }) => {
 
               </h3>
             <button style={styles.closeButton} onClick={handleClosePopup}>
-              Close
+             {t("CLOSE")}  
             </button>
           </div>
           <div
@@ -90,6 +93,7 @@ const SwimlineDiamondNode = ({ data }) => {
 
   const nodebgheight = document.querySelector(".react-flow__node");
   const nodebgheights = nodebgheight ? nodebgheight.getBoundingClientRect().height : 0;
+  const container = document.querySelector(".ss_publish_border");
 
   return (
     <>
@@ -118,9 +122,14 @@ const SwimlineDiamondNode = ({ data }) => {
 
       </div>
 
-      {isPopupVisible &&
+      {/* {isPopupVisible &&
         data.details.title &&
-        ReactDOM.createPortal(renderPopup(), document.body)}
+        ReactDOM.createPortal(renderPopup(), document.body)} */}
+
+          {isPopupVisible &&
+                data.details.title &&
+                container &&
+                ReactDOM.createPortal(renderPopup(), container)}
     </>
   );
 };

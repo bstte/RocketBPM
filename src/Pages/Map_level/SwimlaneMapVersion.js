@@ -23,7 +23,7 @@ import NoNode from "../../AllNode/NoNode";
 
 const SwimlaneMapVersion = () => {
   const { height, appHeaderHeight, remainingHeight } = useDynamicHeight();
-
+const safeRemainingHeight = Math.min(Math.max(remainingHeight, 588), 588);
   const [windowSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
@@ -41,9 +41,9 @@ const SwimlaneMapVersion = () => {
         "viewmode",
         height + 10,
         appHeaderHeight,
-        remainingHeight
+        safeRemainingHeight
       ),
-    [windowSize, height, appHeaderHeight, remainingHeight]
+    [windowSize, height, appHeaderHeight, safeRemainingHeight]
   );
   useEffect(() => {
     setNodes(initialNodes);
@@ -233,7 +233,7 @@ const SwimlaneMapVersion = () => {
       />
       <div
         class="maincontainer"
-        style={{ ...styles.appContainer, height: remainingHeight }}
+        style={{ ...styles.appContainer, height: safeRemainingHeight }}
       >
         <ReactFlowProvider>
           <div className="ss_publish_border" style={styles.scrollableWrapper}>

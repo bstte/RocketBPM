@@ -1,4 +1,4 @@
-const generateNodesAndEdges = (windowWidth, windowHeight,BorderCondiction,height,appheaderheight,remainingHeight) => {
+const generateNodesAndEdges = (windowWidth, windowHeight,BorderCondiction,height,appheaderheight,safeRemainingHeight) => {
     const nodes = [];
     const edges = [];
 
@@ -8,7 +8,7 @@ const generateNodesAndEdges = (windowWidth, windowHeight,BorderCondiction,height
     const totalRows = 7; 
     const totalColumns = 11;
     const groupWidth = rfWidth / totalColumns;
-    const groupHeight = remainingHeight / totalRows - 0.3;
+    const groupHeight = safeRemainingHeight / totalRows - 0.3;
 
     for (let row = 0; row < totalRows; row++) {
       for (let col = 0; col < totalColumns; col++) {

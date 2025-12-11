@@ -7,7 +7,7 @@ const useCheckFavorite = ({ id, nodes = [], childNodes = [], setIsFavorite }) =>
 
   // ✅ PageGroupId ko effect ke bahar nikal lo
   const PageGroupId =
-    nodes.length > 0 ? nodes[0]?.PageGroupId : childNodes[0]?.PageGroupId;
+    nodes.length > 0 ? nodes[0]?.page_group_id : childNodes[0]?.page_group_id;
 
   useEffect(() => {
     const checkFav = async () => {

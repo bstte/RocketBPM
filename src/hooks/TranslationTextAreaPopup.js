@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { useLangMap } from "./useLangMap"; // same hook as TranslationPopup
+import { useTranslation } from "./useTranslation";
 
 const overlayStyle = {
   position: "fixed",
@@ -42,7 +43,7 @@ export default function TranslationTextAreaPopup({
   const langMap = useLangMap(); // same hook used in first component
   const [values, setValues] = useState({});
   const firstInputRef = useRef(null);
-
+ const t = useTranslation();
   // create default structure dynamically
   useEffect(() => {
     if (isOpen) {
@@ -86,8 +87,8 @@ export default function TranslationTextAreaPopup({
   };
 
   return (
-    <div style={overlayStyle} onMouseDown={handleOverlayClick}>
-      <div style={cardStyle} role="dialog" aria-modal="true" aria-label={title}>
+    <div style={overlayStyle} onMouseDown={handleOverlayClick} className="translate_popup_swimlane">
+      <div className="global_popup_modal" role="dialog" aria-modal="true" aria-label={title}>
         {/* Header */}
         <div
           style={{
@@ -141,11 +142,11 @@ export default function TranslationTextAreaPopup({
             marginTop: 16,
           }}
         >
-          <button onClick={onClose} style={btnSecondary}>
-            Cancel
+          <button onClick={onClose} className="global-btn">
+           {t("Cancel")}
           </button>
-          <button onClick={handleSubmit} style={btnPrimary}>
-            Save
+          <button onClick={handleSubmit} className="global-btn">
+            {t("Save")}
           </button>
         </div>
       </div>
@@ -154,22 +155,22 @@ export default function TranslationTextAreaPopup({
 }
 
 // inline styles
-const btnPrimary = {
-  padding: "10px 14px",
-  borderRadius: 10,
-  border: "none",
-  background: "#2563eb",
-  color: "#fff",
-  cursor: "pointer",
-  fontWeight: 600,
-};
+// const btnPrimary = {
+//   padding: "10px 14px",
+//   borderRadius: 10,
+//   border: "none",
+//   background: "#2563eb",
+//   color: "#fff",
+//   cursor: "pointer",
+//   fontWeight: 600,
+// };
 
-const btnSecondary = {
-  padding: "10px 14px",
-  borderRadius: 10,
-  border: "1px solid #d0d5dd",
-  background: "#fff",
-  color: "#111827",
-  cursor: "pointer",
-  fontWeight: 600,
-};
+// const btnSecondary = {
+//   padding: "10px 14px",
+//   borderRadius: 10,
+//   border: "1px solid #d0d5dd",
+//   background: "#fff",
+//   color: "#111827",
+//   cursor: "pointer",
+//   fontWeight: 600,
+// };

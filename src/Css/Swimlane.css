@@ -60,6 +60,7 @@
 .ss_publish_border{
     border: 1px solid rgb(0 32 96) !important;
     border-top: 0 !important;
+       position: relative;
 }
 
 
@@ -80,7 +81,9 @@
   }
   
 
-  
+  .publishcontainer {
+    position: relative;
+}
   /* Dropdown content */
   .dropdown-content {
     position: absolute;
@@ -89,6 +92,7 @@
     z-index: 100;
     overflow: hidden;
     right:0;
+    top:33px;
   }
   
   .ss_header_new_right .dropdown-content button {

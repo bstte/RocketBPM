@@ -34,6 +34,8 @@ import useCheckFavorite from "../../../hooks/useCheckFavorite";
 import { usePageGroupIdViewer } from "../../../hooks/usePageGroupIdViewer";
 import YesNode from "../../../AllNode/YesNode";
 import NoNode from "../../../AllNode/NoNode";
+import { useTranslation } from "../../../hooks/useTranslation";
+import { getLevelKey } from "../../../utils/getLevel";
 
 const DraftSwimlineLevel = () => {
   const [windowSize] = useState({
@@ -44,7 +46,7 @@ const DraftSwimlineLevel = () => {
   const location = useLocation();
   const [showVersionPopup, setShowVersionPopup] = useState(false);
   const [title, Settitle] = useState("");
-
+const t = useTranslation();
   const [user, setUser] = useState(null);
 
   const id = processId; // string
@@ -55,19 +57,20 @@ const DraftSwimlineLevel = () => {
   const currentParentId = parentId || null;
   const currentLevel = level ? parseInt(level, 10) : 0;
   const { height, appHeaderHeight, remainingHeight } = useDynamicHeight();
+  const safeRemainingHeight = Math.min(Math.max(remainingHeight, 588), 588);
   const [checkpublish, Setcheckpublish] = useState();
 
   const { nodes: initialNodes } = useMemo(
     () =>
       generateNodesAndEdges(
         windowSize.width,
-        windowSize.height,
+       736,
         "viewmode",
         height + 10,
         appHeaderHeight,
-        remainingHeight
+        safeRemainingHeight
       ),
-    [windowSize, height, appHeaderHeight, remainingHeight]
+    [windowSize, height, appHeaderHeight, safeRemainingHeight]
   );
   useEffect(() => {
     setNodes(initialNodes);
@@ -80,6 +83,8 @@ const DraftSwimlineLevel = () => {
   const [edges, setEdges] = useState([]);
   const [processDefaultlanguage_id, setprocessDefaultlanguage_id] =
     useState(null);
+         const [OriginalDefaultlanguge_id, setOriginalDefaultlanguge_id] =
+        useState(null);
   const [supportedLanguages, setSupportedLanguages] = useState([]);
 
   const nodeTypes = PublishNodeType;
@@ -97,10 +102,13 @@ const DraftSwimlineLevel = () => {
 
   const checkPublishData = useCallback(
     async (processId) => {
-      const levelParam =
-        currentParentId !== null
-          ? `Level${currentLevel}_${currentParentId}`
-          : `Level${currentLevel}`;
+      // const levelParam =
+      //   currentParentId !== null
+      //     ? `level${currentLevel}_${currentParentId}`
+      //     : `level${currentLevel}`;
+
+          const levelParam = getLevelKey(currentLevel, currentParentId);
+          
       const Process_id = processId ? processId : null;
       const data = await apiExports.checkPublishRecord(levelParam, Process_id);
 
@@ -124,7 +132,7 @@ const DraftSwimlineLevel = () => {
 
   useEffect(() => {
     // checkfav()
-   const savedLang = localStorage.getItem("selectedLanguageId");
+    const savedLang = localStorage.getItem("selectedLanguageId");
     if (savedLang) {
       fetchNodes(parseInt(savedLang)); // language apply karo
     } else {
@@ -142,10 +150,12 @@ const DraftSwimlineLevel = () => {
 
   const fetchNodes = async (language_id = null) => {
     try {
-      const levelParam =
-        currentParentId !== null
-          ? `Level${currentLevel}_${currentParentId}`
-          : `Level${currentLevel}`;
+      // const levelParam =
+      //   currentParentId !== null
+      //     ? `level${currentLevel}_${currentParentId}`
+      //     : `level${currentLevel}`;
+      const levelParam = getLevelKey(currentLevel, currentParentId);
+      
       const user_id = LoginUser ? LoginUser.id : null;
       const Process_id = id ? id : null;
       const draftStatus = "Draft";
@@ -170,7 +180,7 @@ const DraftSwimlineLevel = () => {
         });
       }
 
-      const PageGroupId = data.nodes?.[0]?.PageGroupId;
+      const PageGroupId = data.nodes?.[0]?.page_group_id;
       const getPublishedDate = await api.GetPublishedDate(
         Process_id,
         draftStatus,
@@ -182,6 +192,7 @@ const DraftSwimlineLevel = () => {
       );
       setprocessDefaultlanguage_id(data.processDefaultlanguage_id);
       setSupportedLanguages(data.ProcessSupportLanguage);
+       setOriginalDefaultlanguge_id(data.OriginalDefaultlanguge_id);
       setprocess_img(data.process_img);
       Settitle(data.title);
       const nodebgwidth = document.querySelector(".react-flow__node");
@@ -209,9 +220,9 @@ const DraftSwimlineLevel = () => {
           let centeredPosition = parsedPosition;
 
           // Parent node positioning
-          if (node.parentId) {
+          if (node.parent_id) {
             const parentNode = data.nodes.find(
-              (n) => n.node_id === node.parentId
+              (n) => n.node_id === node.parent_id
             );
             if (parentNode && parentNode.position) {
               const parentPos = JSON.parse(parentNode.position);
@@ -238,7 +249,7 @@ const DraftSwimlineLevel = () => {
 
             // 🔹 Increment level
             const newLevel = extractedLevel + 1;
-            const levelParam = `Level${newLevel}_${parsedData.processlink}`;
+            const levelParam = `level${newLevel}_${parsedData.processlink}`;
             try {
               const check = await api.checkRecord(levelParam, Process_id);
 
@@ -250,18 +261,18 @@ const DraftSwimlineLevel = () => {
           // Conditional styling
           const nodeStyle =
             node.type === "Yes" ||
-            node.type === "No" ||
-            node.type === "FreeText"
+              node.type === "No" ||
+              node.type === "FreeText"
               ? {} // No styles applied for these node types
               : {
-                  width: groupWidth,
-                  height: groupHeight,
-                  childWidth: childWidth,
-                  childHeight: childHeight,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                };
+                width: groupWidth,
+                height: groupHeight,
+                childWidth: childWidth,
+                childHeight: childHeight,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              };
 
           return {
             ...node,
@@ -275,7 +286,7 @@ const DraftSwimlineLevel = () => {
             },
             type: node.type,
             id: node.node_id,
-            parentId: node.parentId,
+            parentId: node.parent_id,
             extent: "parent",
             measured: parsedMeasured,
             position: centeredPosition,
@@ -359,11 +370,11 @@ const DraftSwimlineLevel = () => {
         path:
           page === "editdraft"
             ? crumb.path
-                .replace("published-map-level", "Draft-Process-View")
-                .replace("Map-level", "Draft-Process-View")
+              .replace("published-map-level", "draft-process-view")
+              .replace("Map-level", "draft-process-view")
             : crumb.path
-                .replace("Draft-Process-View", "published-map-level")
-                .replace("Draft-Process-View", "Map-level"),
+              .replace("draft-process-view", "published-map-level")
+              .replace("draft-process-view", "Map-level"),
       };
     });
 
@@ -373,9 +384,9 @@ const DraftSwimlineLevel = () => {
       page === "editdraft"
         ? navigate(`/swimlane/level/${currentLevel}/${currentParentId}/${id}`)
         : // navigate(`/published-swimlane/level/${currentLevel}/${currentParentId}`, { state: { id: id, title: title, user: user, parentId: currentParentId, level: currentLevel ,ParentPageGroupId: ParentPageGroupId} })
-          navigate(
-            `/published-swimlane/level/${currentLevel}/${currentParentId}/${id}`
-          );
+        navigate(
+          `/published-swimlane/level/${currentLevel}/${currentParentId}/${id}`
+        );
 
       // removeBreadcrumbsAfter(0);
     } else {
@@ -400,7 +411,7 @@ const DraftSwimlineLevel = () => {
       return;
     }
 
-    const PageGroupId = ChildNodes[0]?.PageGroupId;
+    const PageGroupId = ChildNodes[0]?.page_group_id;
 
     try {
       if (isFavorite) {
@@ -430,7 +441,7 @@ const DraftSwimlineLevel = () => {
     const user_id = LoginUser ? LoginUser.id : null;
     const encodedTitle = encodeURIComponent("swimlane");
     navigate(
-      `/Swimlane-Version/${process_id}/${level}/${version}/${encodedTitle}/${user_id}/${currentParentId}`
+      `/swimlane-version/${process_id}/${level}/${version}/${encodedTitle}/${user_id}/${currentParentId}`
     );
   };
   const handleSupportViewlangugeId = (langId) => {
@@ -460,13 +471,14 @@ const DraftSwimlineLevel = () => {
         handleSupportViewlangugeId={handleSupportViewlangugeId}
         supportedLanguages={supportedLanguages}
         selectedLanguage={processDefaultlanguage_id}
+        OriginalDefaultlanguge_id={OriginalDefaultlanguge_id}
       />
       <div
         class="maincontainer"
-        style={{ ...styles.appContainer, height: remainingHeight }}
+        style={{ ...styles.appContainer, height: safeRemainingHeight }}
       >
         <ReactFlowProvider>
-          <div className="ss_publish_border" style={styles.scrollableWrapper}>
+          <div className="ss_publish_border scrollbar_wrapper" style={styles.scrollableWrapper}>
             <div
               style={{
                 position: "absolute",
@@ -485,7 +497,7 @@ const DraftSwimlineLevel = () => {
                 userSelect: "none", // Prevent text selection
               }}
             >
-              Draft
+               {t("Draft")}
             </div>
             <ReactFlow
               nodes={[...nodes, ...ChildNodes]}
@@ -510,29 +522,26 @@ const DraftSwimlineLevel = () => {
             >
               <Background color="#fff" gap={16} />
             </ReactFlow>
+
+
+
+            {showVersionPopup && (
+              <VersionPopupView
+                processId={id}
+                currentLevel={currentLevel}
+                onClose={() => setShowVersionPopup(false)}
+                currentParentId={currentParentId}
+                viewVersion={navigateToVersion}
+                LoginUser={LoginUser}
+                title={headerTitle}
+                status={"draft"}
+                selectedLanguage={processDefaultlanguage_id}
+                     OriginalDefaultlanguge_id={OriginalDefaultlanguge_id}
+              />
+            )}
             {usePageGroupIdViewer(ChildNodes)}
           </div>
-          {/* {showSharePopup && (
-            <SharePopup
-              processId={id}
-              processName={`${headerTitle}`}
-              onClose={() => setShowSharePopup(false)}
-            />
-          )} */}
 
-          {showVersionPopup && (
-            <VersionPopupView
-              processId={id}
-              currentLevel={currentLevel}
-              onClose={() => setShowVersionPopup(false)}
-              currentParentId={currentParentId}
-              viewVersion={navigateToVersion}
-              LoginUser={LoginUser}
-              title={headerTitle}
-              status={"draft"}
-              selectedLanguage={processDefaultlanguage_id}
-            />
-          )}
         </ReactFlowProvider>
       </div>
     </div>

@@ -1,10 +1,10 @@
 .version-popup-overlay {
-    position: fixed;
-    top: 10%;
+    position: absolute;
+    top: 50%;
     left: 0px;
     right: 0px;
     margin: 0px auto;
-    transform: translate(0px, 0px);
+   transform: translateY(-50%);
     background-color: rgb(255, 255, 255);
     border: 1px solid rgb(1, 31, 96);
     overflow: hidden;
@@ -150,12 +150,15 @@
 }
 
 /* Action buttons */
-.actions {
+/* .actions {
   display: flex;
   gap: 10px;
-  margin-top: 10px;
-}
+} */
 
+
+.actions button:not(:first-child) {
+    margin-left: 5px;
+}
 .actions button {
   flex: 1;
   background-color: #002060;
@@ -167,6 +170,7 @@
   font-size: 14px;
   white-space: nowrap;
   transition: background-color 0.3s ease;
+  height: 33px;
 }
 
 .actions button:hover {

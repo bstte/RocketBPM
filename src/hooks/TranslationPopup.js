@@ -12,16 +12,17 @@ const overlayStyle = {
 };
 
 const cardStyle = (anchor) => ({
-  position: anchor ? "absolute" : "relative",
+position: anchor ? "absolute" : "relative",
   top: anchor?.y ?? "auto",
   left: anchor?.x ?? "auto",
   transform: anchor ? "translate(0, 0)" : "none",
-  minWidth: 360,
+  minWidth: 400,
   maxWidth: 480,
   background: "#fff",
-  borderRadius: 12,
-  boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
-  padding: 16,
+  borderRadius: 0,
+  border: "1px solid #011f60",
+  boxShadow: "rgba(1, 31, 96, 0.28) 0px 0px 10px",
+  padding: 25,
 });
 
 const rowStyle = {
@@ -80,6 +81,7 @@ export default function TranslationPopup({
 
   return (
     <div
+    className="translate_popup"
       style={overlayStyle}
       onMouseDown={handleOverlayClick}
       onKeyDown={handleKeyDown}
@@ -155,10 +157,10 @@ export default function TranslationPopup({
             marginTop: 8,
           }}
         >
-          <button onClick={onClose} style={btnSecondary}>
+          <button onClick={onClose} className="global-btn">
             Cancel
           </button>
-          <button onClick={handleSubmit} style={btnPrimary}>
+          <button onClick={handleSubmit} className="global-btn">
             Save
           </button>
         </div>
@@ -169,30 +171,30 @@ export default function TranslationPopup({
 
 // 🎨 Simple Inline Styles
 const inputStyle = {
-  width: "90%",
+  width: "100%",
   padding: "10px 12px",
-  borderRadius: 8,
-  border: "1px solid #d0d5dd",
+  borderRadius: 0,
+  border: "1px solid #002060",
   outline: "none",
   fontSize: 14,
 };
 
-const btnPrimary = {
-  padding: "10px 14px",
-  borderRadius: 10,
-  border: "none",
-  background: "#2563eb",
-  color: "#fff",
-  cursor: "pointer",
-  fontWeight: 600,
-};
+// const btnPrimary = {
+//   padding: "8px 30px",
+//   borderRadius: 0,
+//   border: "none",
+//   background: "#002060",
+//   color: "#fff",
+//   cursor: "pointer",
+//   fontWeight: 600,
+// };
 
-const btnSecondary = {
-  padding: "10px 14px",
-  borderRadius: 10,
-  border: "1px solid #d0d5dd",
-  background: "#fff",
-  color: "#111827",
-  cursor: "pointer",
-  fontWeight: 600,
-};
+// const btnSecondary = {
+//   padding: "8px 30px",
+//   borderRadius: 0,
+//   border: "none",
+//   background: "#002060",
+//   color: "#fff",
+//   cursor: "pointer",
+//   fontWeight: 600,
+// };

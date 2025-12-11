@@ -4,6 +4,7 @@ import ReactDOM from "react-dom";
 import Draggable from "react-draggable";
 import { ResizableBox } from "react-resizable";
 import "react-resizable/css/styles.css";
+import { useTranslation } from "../../hooks/useTranslation";
 
 const decodeHtmlEntities = (str) => {
   const textArea = document.createElement("textarea");
@@ -14,22 +15,24 @@ const decodeHtmlEntities = (str) => {
 const BoxNode = ({ data }) => {
   const [isPopupVisible, setIsPopupVisible] = useState(false);
   const [popupSize, setPopupSize] = useState({ width: 600, height: 450 });
-    const [maxConstraints, setMaxConstraints] = useState([800, 600]);
-    // const [editorHeight, setEditorHeight] = useState(450);
+  const [maxConstraints, setMaxConstraints] = useState([800, 600]);
+  // const [editorHeight, setEditorHeight] = useState(450);
+  const t = useTranslation();
+  useEffect(() => {
+    const updateMaxConstraints = () => {
+      setMaxConstraints([1460, 560]);
+    };
 
-     useEffect(() => {
-        const updateMaxConstraints = () => {
-          setMaxConstraints([window.innerWidth - 30, window.innerHeight - 30]);
-        };
-    
-        updateMaxConstraints();
-        window.addEventListener("resize", updateMaxConstraints);
-    
-        return () => window.removeEventListener("resize", updateMaxConstraints);
-      }, []);
+    updateMaxConstraints();
+    window.addEventListener("resize", updateMaxConstraints);
 
-      const title = decodeHtmlEntities((data.details.title || "").replace(/<br\s*\/?>/gi, " "));
-      const boxRef = useRef(null);
+    return () => window.removeEventListener("resize", updateMaxConstraints);
+  }, []);
+
+  const title = decodeHtmlEntities(
+    (data.details.title || "").replace(/<br\s*\/?>/gi, " ")
+  );
+  const boxRef = useRef(null);
 
   const handleBoxClick = () => {
     setIsPopupVisible(true);
@@ -56,7 +59,11 @@ const BoxNode = ({ data }) => {
   }, [isPopupVisible]);
 
   const renderPopup = () => (
-    <Draggable handle=".popupHeader">
+    <Draggable
+      handle=".popupHeader"
+      bounds=".scrollbar_wrapper"
+      cancel=".popupContent_content"
+    >
       <ResizableBox
         width={popupSize.width}
         height={popupSize.height}
@@ -65,11 +72,11 @@ const BoxNode = ({ data }) => {
         onResizeStop={(e, { size }) => setPopupSize(size)}
         style={{
           position: "absolute",
-          top: "20%",
-          left: "0",
+          top: "12%",
+          left: "30%",
           right: "0",
-          margin: "0 auto",
-          transform: "translate(0, -50%)",
+   
+          transform: "translate(-50%, 0)",
           backgroundColor: "#ffffff",
           border: "1px solid #011f60",
           overflow: "hidden",
@@ -77,11 +84,14 @@ const BoxNode = ({ data }) => {
           boxShadow: "0 0 10px #011f6047",
         }}
       >
-        <div className="publishpopupdetails" style={{ ...styles.popup, width: "100%", height: "100%" }}>
+        <div
+          className="publishpopupdetails"
+          style={{ ...styles.popup, width: "100%", height: "100%" }}
+        >
           <div className="popupHeader" style={styles.popupHeader}>
             <h3 style={styles.popupTitle}>{title}</h3>
             <button style={styles.closeButton} onClick={handleClosePopup}>
-              Close
+              {t("CLOSE")}  
             </button>
           </div>
           <div
@@ -94,15 +104,26 @@ const BoxNode = ({ data }) => {
     </Draggable>
   );
 
+  const container = document.querySelector(".ss_publish_border");
+
   return (
     <>
-      <div className="swimboxnode_2" style={styles.wrapper} onClick={handleBoxClick} ref={boxRef}>
+      <div
+        className="swimboxnode_2"
+        style={styles.wrapper}
+        onClick={handleBoxClick}
+        ref={boxRef}
+      >
         <div className="borderBox" style={styles.box}>
           <div>
-            <button className="published_box_text" style={styles.withoutlinkButton}>{title}</button>
+            <button
+              className="published_box_text"
+              style={styles.withoutlinkButton}
+            >
+              {title}
+            </button>
           </div>
         </div>
-
 
         {[20, 50, 80].map((leftOffset, index) => (
           <>
@@ -114,18 +135,15 @@ const BoxNode = ({ data }) => {
               style={{ ...styles.handle, top: "0px", left: `${leftOffset}%` }}
             />
 
-
             <Handle
               key={`top-source-${index}`}
               type="source"
               position={Position.Top}
               id={`top-source-${index}`}
               style={{ ...styles.handle, top: "0px", left: `${leftOffset}%` }}
-
             />
           </>
         ))}
-
 
         {/* Bottom Handles */}
         {[20, 50, 80].map((leftOffset, index) => (
@@ -135,7 +153,11 @@ const BoxNode = ({ data }) => {
               type="target"
               position={Position.Bottom}
               id={`bottom-target-${index}`}
-              style={{ ...styles.handle, bottom: "0px", left: `${leftOffset}%` }}
+              style={{
+                ...styles.handle,
+                bottom: "0px",
+                left: `${leftOffset}%`,
+              }}
             />
 
             <Handle
@@ -143,7 +165,11 @@ const BoxNode = ({ data }) => {
               type="source"
               position={Position.Bottom}
               id={`bottom-source-${index}`}
-              style={{ ...styles.handle, bottom: "0px", left: `${leftOffset}%` }}
+              style={{
+                ...styles.handle,
+                bottom: "0px",
+                left: `${leftOffset}%`,
+              }}
             />
           </>
         ))}
@@ -153,7 +179,6 @@ const BoxNode = ({ data }) => {
           position={Position.Left}
           id="left-target"
           style={styles.handle}
-
         />
         <Handle
           type="source"
@@ -176,8 +201,11 @@ const BoxNode = ({ data }) => {
 
         <div style={styles.borderOverlay}></div>
       </div>
-        
-      {isPopupVisible && data.details.title && ReactDOM.createPortal(renderPopup(), document.body)}
+
+      {isPopupVisible &&
+        data.details.title &&
+        container &&
+        ReactDOM.createPortal(renderPopup(), container)}
     </>
   );
 };
@@ -185,7 +213,7 @@ const BoxNode = ({ data }) => {
 const styles = {
   wrapper: {
     position: "relative",
-    width: "86%",
+    width: "90%",
     height: "78%",
     alignItems: "center",
     justifyContent: "center",
@@ -200,7 +228,7 @@ const styles = {
     border: "1px solid #002060",
     width: "100%",
     height: "100%",
-  paddingTop: "2px",
+    paddingTop: "2px",
     paddingBottom: "2px",
     paddingLeft: "5px",
     paddingRight: "5px",
@@ -268,7 +296,7 @@ const styles = {
     fontSize: "14px",
     padding: "2px 20px",
     textTransform: "uppercase",
-    border: "0"
+    border: "0",
   },
 };
 

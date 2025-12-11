@@ -1,3 +1,6 @@
+* {
+  box-sizing: border-box;
+}
 body {
   color: #002060;
 }
@@ -5,6 +8,71 @@ body {
   text-align: center;
 }
 
+@media(max-width:1800px) {
+  .zoom_screen_btns {
+    display: none !important;
+}
+}
+.zoom_screen_btns {
+    display: flex;
+    align-items: center;
+    gap: 0.3vw;
+    white-space: nowrap;
+    position: fixed;
+    right: 0.41vw;
+    font-size: 1.1vw;
+}
+.zoom_screen_btns button {
+    background: #002060;
+    border: 0;
+    width: 2vw;
+    height: 2vw;
+    color: #fff;
+    font-size: 1.1vw;
+    border-radius: 10px !important;
+}
+
+
+#root {
+  margin: 0 auto;
+  max-width: 1500px;
+}
+html, body {
+    /* display: flex;
+    align-content: center;
+    justify-content: center;
+    height: 100%; */
+    margin: 0 auto;
+    padding: 0;
+}
+#root {
+  width: 1440px;
+}
+#root {
+    margin:0 auto;
+    /* display: table-cell; */
+    padding: 12px 12px 8px;
+    vertical-align: middle;
+}
+@media(min-width:1536px) {
+  #root {
+    overflow: hidden;
+  }
+}
+@media(max-width:1535px) {
+  #root {
+    overflow: hidden;
+  }
+}
+.main-app {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+}
+.main-app>div {
+  width: 100%;
+  height: 100%;
+}
 .App-logo {
   height: 40vmin;
   pointer-events: none;
@@ -65,6 +133,12 @@ body {
 .ss_publish_border {
   box-shadow: 0px 5px 10px #afadad5e;
 }
+.content-wrapper,
+.ss_publish_border,
+.mainbox_swimlane,
+.scrollbar_wrapper {
+  position: relative;
+}
 .node-container {
   position: absolute;
   display: flex;
@@ -83,9 +157,7 @@ body {
   cursor: pointer;
 }
 
-#root {
-  margin: 0 auto;
-}
+
 
 body,
 p,
@@ -166,6 +238,14 @@ textarea {
   }
   .am_page-group-id-viewer {
     font-size: 0.855vw;
+  }
+}
+@media(min-width: 1920px) {
+  .am_rocket-icon {
+    width: 20px;
+  }
+  .am_page-group-id-viewer {
+    font-size: 13px;
   }
 }
 @media(max-width: 766px) {
@@ -299,6 +379,42 @@ textarea {
   align-items: center;
     justify-content: center;
 
+}
+.am_page-group-id-viewer {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  color: #002060;
+  font-family: 'Poppins', sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.global-btn {
+  padding: 8px 30px !important;
+    border-radius: 10px !important;
+    border: 0px !important;
+    background: rgb(0, 32, 96) !important;
+    color: rgb(255, 255, 255) !important;
+    cursor: pointer !important;
+    font-weight: 600 !important;
+}
+
+.microsoft-login {
+    text-align: center;
+    margin-top: 10px;
+}
+/* .global-btn:hover {
+  background-color: #ff364a !important;
+
+} */
+.global_popup_modal {
+    background: rgb(255, 255, 255) !important;
+    border-radius: 0px !important;
+    border: 1px solid rgb(1, 31, 96) !important;
+    box-shadow: rgba(1, 31, 96, 0.28) 0px 0px 10px !important;
+    padding: 25px !important;
+    border-radius: 0 !important;
 }
 @media(min-width:980px) and (max-width:1280px) {
   .borderBox button {

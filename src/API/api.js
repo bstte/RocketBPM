@@ -1,14 +1,8 @@
-// src/api.js
-import axios from 'axios';
-// const baseUrl = 'https://teamwebdevelopers.com/proto-type/api'
-// export const ImageBaseUrl = 'https://teamwebdevelopers.com/proto-type/public/'
 
+import axios from 'axios';
 const baseUrl = 'https://admin.rocketbpm.com/api'
 export const ImageBaseUrl = 'https://admin.rocketbpm.com/public/'
 
-
-// export const ImageBaseUrl = 'http://localhost:8000/'
-// const baseUrl ='http://localhost:8000/api/'
 export const defaultApi = axios.create({
   baseURL: baseUrl,
   headers: {
@@ -23,7 +17,28 @@ const api = axios.create({
   },
 });
 
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+}, (error) => Promise.reject(error));
 
+// Response: handle 401 globally
+api.interceptors.response.use(
+  (res) => res,
+  (error) => {
+    const status = error?.response?.status;
+    if (status === 401) {
+      // Clear auth and redirect to login
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      window.location.href = "/login";
+    }
+    return Promise.reject(error);
+  }
+);
 export const saveNodes = async (data) => {
   try {
     const response = await api.post('/nodes', data);
@@ -33,10 +48,32 @@ export const saveNodes = async (data) => {
     throw error;
   }
 };
-export const getNextPageGroupId = async (Page_Title=null) => {
+
+export const editorialPublishAPI = async (payload) => {
   try {
-    const response = await api.get('/getNext-PageGroupId',{
-      params:{
+    const response = await api.post('/editorial-publish', payload);
+    return response.data;
+  } catch (error) {
+    console.error('Error in Editorial Publish:', error);
+    throw error;
+  }
+};
+
+export const contentChangeRequest = async (payload) => {
+  try {
+    const response = await api.post('/content-change-request', payload);
+    return response.data;
+  } catch (error) {
+    console.error('Error in Editorial Publish:', error);
+    throw error;
+  }
+};
+
+
+export const getNextPageGroupId = async (Page_Title = null) => {
+  try {
+    const response = await api.get('/getNext-PageGroupId', {
+      params: {
         Page_Title
       }
     });
@@ -47,7 +84,7 @@ export const getNextPageGroupId = async (Page_Title=null) => {
   }
 };
 
-export const getNodes = async (level = null, user_id = null, Process_id = null,currentParentId=null,language_id=null,NodesStatus=null) => {
+export const getNodes = async (level = null, user_id = null, Process_id = null, currentParentId = null, language_id = null, NodesStatus = null) => {
   try {
     const response = await api.get('/nodes', {
       params: {
@@ -66,7 +103,7 @@ export const getNodes = async (level = null, user_id = null, Process_id = null,c
   }
 };
 
-export const getallpublishObject_Tolinkexistingmodel = async ( user_id = null, Process_id = null,processDefaultlanguage_id=null) => {
+export const getallpublishObject_Tolinkexistingmodel = async (user_id = null, Process_id = null, processDefaultlanguage_id = null) => {
   try {
     const response = await api.get('/getallpublishObject_Tolinkexistingmodel', {
       params: {
@@ -100,7 +137,7 @@ export const getexistingrole = async (level = null, user_id = null, Process_id =
 };
 
 
-export const checkRecord = async (level = null,  Process_id = null) => {
+export const checkRecord = async (level = null, Process_id = null) => {
   try {
     const response = await api.get('/check-record', {
       params: {
@@ -116,7 +153,7 @@ export const checkRecord = async (level = null,  Process_id = null) => {
 };
 
 
-export const checkRecordWithGetLinkDraftData = async (level = null, user_id = null, Process_id = null,LinkLevel=null) => {
+export const checkRecordWithGetLinkDraftData = async (level = null, user_id = null, Process_id = null, LinkLevel = null) => {
   try {
     const response = await api.get('/check-record-withgetlinkdraft-data', {
       params: {
@@ -133,7 +170,7 @@ export const checkRecordWithGetLinkDraftData = async (level = null, user_id = nu
   }
 };
 
-export const checkRecordWithGetLinkPublishData = async (level = null, user_id = null, Process_id = null,LinkLevel=null) => {
+export const checkRecordWithGetLinkPublishData = async (level = null, user_id = null, Process_id = null, LinkLevel = null) => {
   try {
     const response = await api.get('/check-record-withgetlinkPublish-data', {
       params: {
@@ -166,7 +203,7 @@ export const checkPublishRecord = async (level = null, Process_id = null) => {
 };
 
 
-export const GetPublishedDate = async ( Process_id = null, status = null,PageGroupId=null) => {
+export const GetPublishedDate = async (Process_id = null, status = null, PageGroupId = null) => {
   try {
     const response = await api.get('/GetPublishedDate', {
       params: {
@@ -199,7 +236,7 @@ export const getUserNodes = async (user_id = null) => {
 
 
 
-export const getPublishedNodes = async (level = null, user_id = null, Process_id = null,currentParentId=null,language_id=null) => {
+export const getPublishedNodes = async (level = null, user_id = null, Process_id = null, currentParentId = null, language_id = null) => {
   try {
     const response = await api.get('/Publishnodes', {
       params: {
@@ -333,7 +370,7 @@ export const updateprofile = async (token, profileData) => {
   }
 };
 
-export const deleteExistingRole = async (Process_id = null, PageGroupId = null, parentId = null,link=null) => {
+export const deleteExistingRole = async (Process_id = null, PageGroupId = null, parentId = null, link = null) => {
   try {
     const response = await api.post('/delete-role-link', {
       Process_id,
@@ -367,9 +404,9 @@ export const removeProfileImgage = async (token) => {
   }
 };
 
-export const saveProcessTitle = async (title, user_id,defaultLanguage,supportedLanguages, translations) => {
+export const saveProcessTitle = async (title, user_id, defaultLanguage, supportedLanguages, translations) => {
   try {
-    const response = await api.post('/process-titles', { process_title: title, user_id: user_id,defaultLanguage,supportedLanguages, translations });
+    const response = await api.post('/process-titles', { process_title: title, user_id: user_id, defaultLanguage, supportedLanguages, translations });
     return response.data;
   } catch (error) {
     console.error('Error saving process title:', error);
@@ -455,9 +492,9 @@ export const updateAssignedUserData = async (newUserObject = null) => {
 };
 
 
-export const addFavProcess = async (user_id, process_id, type,PageGroupId,currentParentId) => {
+export const addFavProcess = async (user_id, process_id, type, PageGroupId, currentParentId) => {
   try {
-    const response = await api.post('/add-fav-process', { user_id, process_id, type,PageGroupId ,currentParentId});
+    const response = await api.post('/add-fav-process', { user_id, process_id, type, PageGroupId, currentParentId });
     return response.data;
   } catch (error) {
     console.error('Error fetching process titles:', error);
@@ -466,9 +503,9 @@ export const addFavProcess = async (user_id, process_id, type,PageGroupId,curren
 };
 
 
-export const removeFavProcess = async (user_id, process_id,PageGroupId) => {
+export const removeFavProcess = async (user_id, process_id, PageGroupId) => {
   try {
-    const response = await api.post('/remove-fav-process', { user_id, process_id ,PageGroupId});
+    const response = await api.post('/remove-fav-process', { user_id, process_id, PageGroupId });
     return response.data;
   } catch (error) {
     console.error('Error removing favorite process:', error);
@@ -478,11 +515,11 @@ export const removeFavProcess = async (user_id, process_id,PageGroupId) => {
 
 
 
-export const checkFavProcess = async (user_id, process_id,PageGroupId) => {
+export const checkFavProcess = async (user_id, process_id, PageGroupId) => {
   try {
     const response = await api.get('/check-fav-process', {
       params: {
-        user_id, process_id,PageGroupId
+        user_id, process_id, PageGroupId
       }
     });
     return response.data;
@@ -548,9 +585,9 @@ export const deleteProcess = async (processId) => {
   }
 };
 
-export const removeProcessImage = async (token,ProcessId) => {
+export const removeProcessImage = async (token, ProcessId) => {
   try {
-  
+
     const response = await api.delete(`/remove-process-image?id=${ProcessId}`);
 
     return response;
@@ -592,7 +629,7 @@ export const submitSignupForm = async (newUserObject = null) => {
 };
 
 
-export const versionlist = async (processId ,level,LoginUserId,status) => {
+export const versionlist = async (processId, level, LoginUserId, status) => {
   try {
 
 
@@ -600,8 +637,8 @@ export const versionlist = async (processId ,level,LoginUserId,status) => {
       params: {
         process_id: processId,
         level: level,
-        LoginUserId:LoginUserId,
-        status:status
+        LoginUserId: LoginUserId,
+        status: status
       }
     });
     return response.data;
@@ -630,11 +667,11 @@ export const ReplaceVersion = async (level, processId, version) => {
 };
 
 
-export const getVersionViewData = async (processId, level, version, pageTitle,user_id,currentParentId) => {
+export const getVersionViewData = async (processId, level, version, pageTitle, user_id, currentParentId) => {
   try {
-    const response = await api.get(`/process/view/${processId}/${level}/${version}/${pageTitle}/${user_id}`,{
-      params:{
-        currentParentId:currentParentId
+    const response = await api.get(`/process/view/${processId}/${level}/${version}/${pageTitle}/${user_id}`, {
+      params: {
+        currentParentId: currentParentId
       }
     });
     return response.data;
@@ -691,6 +728,6 @@ export const getLanguages = async () => {
   }
 };
 
-const apiExports = { saveNodes,getallpublishObject_Tolinkexistingmodel, getexistingrole,getNodes, checkPublishRecord, GetPublishedDate, checkRecord, Login, saveProcessTitle, defaultApi, filter_draft, getPublishedNodes, getdataByNodeId };
+const apiExports = { saveNodes, getallpublishObject_Tolinkexistingmodel, getexistingrole, getNodes, checkPublishRecord, GetPublishedDate, checkRecord, Login, saveProcessTitle, defaultApi, filter_draft, getPublishedNodes, getdataByNodeId };
 
 export default apiExports;

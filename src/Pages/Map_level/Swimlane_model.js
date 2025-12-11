@@ -57,6 +57,69 @@ import { useLangMap } from "../../hooks/useLangMap";
 import { buildBreadcrumbs } from "../../utils/buildBreadcrumbs";
 import YesNode from "../../AllNode/YesNode";
 import NoNode from "../../AllNode/NoNode";
+import { useFetchVersions } from "../../hooks/useFetchVersions";
+import PublishPopup from "../../components/PublishPopup";
+import EditorialChangePopup from "../../components/EditorialChangePopup";
+import ContentChangePopup from "../../components/ContentChangePopup";
+import { getLevelKey } from "../../utils/getLevel";
+export function getDropdownPosition(clickClientX, clickClientY, menuWidth, menuHeight) {
+  const container = document.querySelector(".publishcontainer");
+  if (!container) {
+    return { x: clickClientX, y: clickClientY };
+  }
+
+  const rect = container.getBoundingClientRect();
+  const offsetX = clickClientX - rect.left + container.scrollLeft;
+  const offsetY = clickClientY - rect.top + container.scrollTop;
+
+  const padding = 8;
+  let x = offsetX + 12;
+  let y = offsetY + 8;
+
+  const visibleW = container.clientWidth;
+  const visibleH = container.clientHeight;
+
+  if (x + menuWidth > visibleW - padding) {
+    x = visibleW - menuWidth - padding;
+  }
+
+  if (y + menuHeight > visibleH - padding) {
+    const aboveY = offsetY - menuHeight - 12; // open above cursor
+    if (aboveY >= padding) {
+      y = aboveY;
+    } else {
+      y = Math.max(padding, visibleH - menuHeight - padding);
+    }
+  }
+  x = Math.max(padding, x);
+  y = Math.max(padding, y);
+
+  return { x, y };
+}
+
+function getLocalPositionInsideContainer(clickX, clickY, offsetX = 20, offsetY = 20) {
+  const container = document.querySelector(".publishcontainer");
+  if (!container) return { x: clickX, y: clickY };
+
+  const rect = container.getBoundingClientRect();
+
+  // Convert click to container local coordinates
+  let x = clickX - rect.left + offsetX;
+  let y = clickY - rect.top + offsetY;
+
+  // STICKY NOTE SIZE (your note has 240x180)
+  const NOTE_WIDTH = 240;
+  const NOTE_HEIGHT = 180;
+
+  // Clamp horizontally
+  x = Math.max(10, Math.min(x, rect.width - NOTE_WIDTH - 10));
+
+  // Clamp vertically (THIS FIXES BOTTOM ISSUE)
+  y = Math.max(10, Math.min(y, rect.height - NOTE_HEIGHT - 10));
+
+  return { x, y };
+}
+
 
 const SwimlaneModel = () => {
   const [windowSize, setWindowSize] = useState({
@@ -69,7 +132,9 @@ const SwimlaneModel = () => {
   const navigate = useNavigate();
   const [title, Settitle] = useState("");
   const [ParentPageGroupId, SetParentPageGroupId] = useState(null);
-
+  const [showPublishPopup, setShowPublishPopup] = useState(false);
+  const [showEditorialPopup, setShowEditorialPopup] = useState(false);
+  const [showContentPopup, setShowContentPopup] = useState(false);
   const [user, setUser] = useState(null);
   const id = processId; // string
   const headerTitle = `${title} `;
@@ -96,7 +161,7 @@ const SwimlaneModel = () => {
   const [process_img, setprocess_img] = useState("");
   const LoginUser = useSelector((state) => state.user.user);
   const { height, appHeaderHeight, remainingHeight } = useDynamicHeight();
-
+  const safeRemainingHeight = Math.min(Math.max(remainingHeight, 588), 588);
   const [selectedTitle, setSelectedTitle] = useState("");
   const [showTranslationPopup, setShowTranslationPopup] = useState(false);
   const [translationDefaults, setTranslationDefaults] = useState({
@@ -113,9 +178,9 @@ const SwimlaneModel = () => {
         "",
         height + 10,
         appHeaderHeight,
-        remainingHeight
+        safeRemainingHeight
       ),
-    [windowSize, height, appHeaderHeight, remainingHeight]
+    [windowSize, height, appHeaderHeight, safeRemainingHeight]
   );
 
   useEffect(() => {
@@ -133,6 +198,8 @@ const SwimlaneModel = () => {
   const [versionPopupPayload, setversionPopupPayload] = useState("");
   const [processDefaultlanguage_id, setprocessDefaultlanguage_id] =
     useState(null);
+  const [OriginalDefaultlanguge_id, setOriginalDefaultlanguge_id] =
+    useState(null);
   const [supportedLanguages, setSupportedLanguages] = useState([]);
 
   const [selectedEdge, setSelectedEdge] = useState(null);
@@ -144,6 +211,11 @@ const SwimlaneModel = () => {
 
   const [checkpublish, Setcheckpublish] = useState();
   const langMap = useLangMap();
+  const menuWidth = 180;
+  const menuHeight = 160;
+
+  // compute position relative to .publishcontainer
+  const fixedPos = getDropdownPosition(position.x, position.y, menuWidth, menuHeight);
 
   const ChildNodesRef = useRef(ChildNodes);
   useEffect(() => {
@@ -186,19 +258,19 @@ const SwimlaneModel = () => {
                 ...node.data,
                 ...(node.type === "StickyNote"
                   ? {
-                      label: newLabel,
-                      translations: {
-                        ...(node.data.translations || {}),
-                        [langKey]: newLabel,
-                      },
-                    }
+                    label: newLabel,
+                    translations: {
+                      ...(node.data.translations || {}),
+                      [langKey]: newLabel,
+                    },
+                  }
                   : {
-                      details: { ...node.data.details, title: newLabel },
-                      translations: {
-                        ...(node.data.translations || {}),
-                        [langKey]: newLabel,
-                      },
-                    }),
+                    details: { ...node.data.details, title: newLabel },
+                    translations: {
+                      ...(node.data.translations || {}),
+                      [langKey]: newLabel,
+                    },
+                  }),
               },
             };
           }
@@ -267,7 +339,7 @@ const SwimlaneModel = () => {
   });
 
   useEffect(() => {
-   const savedLang = localStorage.getItem("selectedLanguageId");
+    const savedLang = localStorage.getItem("selectedLanguageId");
     if (savedLang) {
       fetchNodes(parseInt(savedLang)); // language apply karo
     } else {
@@ -277,10 +349,13 @@ const SwimlaneModel = () => {
 
   const fetchNodes = async (language_id = null) => {
     try {
-      const levelParam =
-        currentParentId !== null
-          ? `Level${currentLevel}_${currentParentId}`
-          : `Level${currentLevel}`;
+      // const levelParam =
+      //   currentParentId !== null
+      //     ? `level${currentLevel}_${currentParentId}`
+      //     : `level${currentLevel}`;
+
+          const levelParam = getLevelKey(currentLevel, currentParentId);
+          
       const user_id = LoginUser ? LoginUser.id : null;
       const Process_id = id ? id : null;
       const publishedStatus = "Published";
@@ -294,7 +369,7 @@ const SwimlaneModel = () => {
         language_id,
         NodesStatus
       );
-      const PageGroupId = data.nodes?.[0]?.PageGroupId;
+      const PageGroupId = data.nodes?.[0]?.page_group_id;
 
       const [publishedResponse, draftResponse] = await Promise.all([
         api.GetPublishedDate(Process_id, publishedStatus, PageGroupId),
@@ -308,6 +383,7 @@ const SwimlaneModel = () => {
         draftResponse.status ? draftResponse.updated_at || "" : ""
       );
 
+      console.log("data", data)
       if (data && data.user_id) {
         // Construct user object based on backend logic
         setUser({
@@ -322,6 +398,7 @@ const SwimlaneModel = () => {
       Settitle(data.title);
       SetParentPageGroupId(data.PageGroupId);
       setprocessDefaultlanguage_id(data.processDefaultlanguage_id);
+      setOriginalDefaultlanguge_id(data.OriginalDefaultlanguge_id);
       setSupportedLanguages(data.ProcessSupportLanguage);
       const nodebgwidth = document.querySelector(".react-flow__node");
       const nodebgwidths = nodebgwidth
@@ -343,7 +420,7 @@ const SwimlaneModel = () => {
 
       const parsedNodes = await Promise.all(
         data.nodes.map(async (node) => {
-          const { parentId, ...remainingNodeProps } = node;
+          const { parent_id, ...remainingNodeProps } = node;
           const parsedData = JSON.parse(node.data);
           const parsedPosition = JSON.parse(node.position);
           const parsedMeasured = JSON.parse(node.measured);
@@ -351,8 +428,8 @@ const SwimlaneModel = () => {
           let centeredPosition = parsedPosition || { x: 0, y: 0 };
 
           // Parent node positioning
-          if (parentId) {
-            const parentNode = data.nodes.find((n) => n.node_id === parentId);
+          if (parent_id) {
+            const parentNode = data.nodes.find((n) => n.node_id === parent_id);
             if (parentNode && parentNode.position) {
               const parentPos = JSON.parse(parentNode.position);
               const parentWidth = windowSize.width / totalColumns - 14;
@@ -380,7 +457,7 @@ const SwimlaneModel = () => {
 
             // 🔹 Increment level
             const newLevel = extractedLevel + 1;
-            const levelParam = `Level${newLevel}_${parsedData.processlink}`;
+            const levelParam = `level${newLevel}_${parsedData.processlink}`;
             try {
               const check = await api.checkRecord(levelParam, Process_id);
 
@@ -392,25 +469,25 @@ const SwimlaneModel = () => {
 
           const nodeStyle =
             node.type === "Yes" ||
-            node.type === "No" ||
-            node.type === "FreeText" ||
-            node.type === "StickyNote"
+              node.type === "No" ||
+              node.type === "FreeText" ||
+              node.type === "StickyNote"
               ? {} // No styles applied for these node types
               : {
-                  width: groupWidth,
-                  height: groupHeight,
-                  childWidth: childWidth,
-                  childHeight: childHeight,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                };
+                width: groupWidth,
+                height: groupHeight,
+                childWidth: childWidth,
+                childHeight: childHeight,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              };
 
           return {
             ...remainingNodeProps,
             id: node.node_id,
-            parentNode: parentId,
-            parentId: parentId,
+            parentNode: parent_id,
+            parentId: parent_id,
             data: {
               ...parsedData,
               onLabelChange: (newLabel) =>
@@ -499,14 +576,16 @@ const SwimlaneModel = () => {
               height: 12,
             },
             style: { stroke: "#002060", strokeWidth: 2 },
-            Level:
-              currentParentId !== null
-                ? `Level${currentLevel}_${currentParentId}`
-                : `Level${currentLevel}`,
+            // Level:
+            //   currentParentId !== null
+            //     ? `level${currentLevel}_${currentParentId}`
+            //     : `level${currentLevel}`,
+            Level: getLevelKey(currentLevel, currentParentId),
+            
             user_id: user && user.id,
             Process_id: id && id,
             type: "step", // ✅ dynamic edge type
-            Page_Title: "Swimlane",
+            page_title: "Swimlane",
             status: "draft",
           },
           eds
@@ -558,12 +637,19 @@ const SwimlaneModel = () => {
   ) => {
     let PageGroupId;
     const Page_Title = "Swimlane";
-    if (!ChildNodes[0]?.PageGroupId) {
-      const response = await getNextPageGroupId(Page_Title);
-      PageGroupId = response.next_PageGroupId;
+    if (!ChildNodes[0]?.page_group_id) {
+      try {
+        const response = await getNextPageGroupId(Page_Title);
+        PageGroupId = response.next_PageGroupId;
+      } catch (error) {
+        console.error("next id error", error)
+      }
+
     } else {
-      PageGroupId = ChildNodes[0]?.PageGroupId;
+
+      PageGroupId = ChildNodes[0]?.page_group_id;
     }
+
     if (
       type === "Yes" ||
       type === "No" ||
@@ -575,12 +661,12 @@ const SwimlaneModel = () => {
         return;
       }
 
-      const newNodeId = uuidv4();
+      const newNodeId = uuidv4().replace(/-/g, "").substring(0, 6);
       const newNode = {
         id:
           currentParentId !== null
-            ? `Level${currentLevel}_${newNodeId}_${currentParentId}`
-            : `Level${currentLevel}_${newNodeId}`,
+            ? `level${currentLevel}_${newNodeId}_${currentParentId}`
+            : `level${currentLevel}_${newNodeId}`,
 
         data: {
           label: type === "FreeText" || type === "StickyNote" ? label : "",
@@ -588,8 +674,8 @@ const SwimlaneModel = () => {
           onLabelChange: (newLabel) =>
             handleLabelChange(
               currentParentId !== null
-                ? `Level${currentLevel}_${newNodeId}_${currentParentId}`
-                : `Level${currentLevel}_${newNodeId}`,
+                ? `level${currentLevel}_${newNodeId}_${currentParentId}`
+                : `level${currentLevel}_${newNodeId}`,
               newLabel
             ),
           defaultwidt: "40px",
@@ -597,9 +683,9 @@ const SwimlaneModel = () => {
           translations:
             type === "FreeText"
               ? existingNodeData?.translations || {
-                  [langMapRef.current[Number(processLangRef.current)] || "en"]:
-                    label,
-                }
+                [langMapRef.current[Number(processLangRef.current)] || "en"]:
+                  label,
+              }
               : {},
           width_height:
             type === "StickyNote"
@@ -614,12 +700,12 @@ const SwimlaneModel = () => {
               prevNodes.map((node) =>
                 node.id === id
                   ? {
-                      ...node,
-                      data: {
-                        ...node.data,
-                        width_height: size,
-                      },
-                    }
+                    ...node,
+                    data: {
+                      ...node.data,
+                      width_height: size,
+                    },
+                  }
                   : node
               )
             );
@@ -630,9 +716,9 @@ const SwimlaneModel = () => {
         draggable: true,
         isNew: true,
         animated: true,
-        Page_Title: "Swimlane",
+        page_title: "Swimlane",
         status: "draft",
-        PageGroupId: PageGroupId,
+        page_group_id: PageGroupId,
       };
 
       setChiledNodes((nds) => [...nds, newNode]);
@@ -663,52 +749,52 @@ const SwimlaneModel = () => {
       const newNode = {
         id:
           currentParentId !== null
-            ? `Level${currentLevel}_${newNodeId}_${currentParentId}`
-            : `Level${currentLevel}_${newNodeId}`,
+            ? `level${currentLevel}_${newNodeId}_${currentParentId}`
+            : `level${currentLevel}_${newNodeId}`,
         node_id:
           currentParentId !== null
-            ? `Level${currentLevel}_${newNodeId}_${currentParentId}`
-            : `Level${currentLevel}_${newNodeId}`,
+            ? `level${currentLevel}_${newNodeId}_${currentParentId}`
+            : `level${currentLevel}_${newNodeId}`,
 
         parentNode: selectedGroupId,
         extent: "parent",
         data: existingNodeData
           ? {
-              ...existingNodeData,
-              onLabelChange: (newLabel) =>
-                handleLabelChange(
-                  currentParentId !== null
-                    ? `Level${currentLevel}_${newNodeId}_${currentParentId}`
-                    : `Level${currentLevel}_${newNodeId}`,
-                  newLabel
-                ),
-            }
+            ...existingNodeData,
+            onLabelChange: (newLabel) =>
+              handleLabelChange(
+                currentParentId !== null
+                  ? `level${currentLevel}_${newNodeId}_${currentParentId}`
+                  : `level${currentLevel}_${newNodeId}`,
+                newLabel
+              ),
+          }
           : {
-              label: label,
-              details: { title: label, content: "" },
-              link: selectedexistigrolenodeId ? selectedexistigrolenodeId : "",
-              autoFocus: true,
-              shape: type,
-              onLabelChange: (newLabel) =>
-                handleLabelChange(
-                  currentParentId !== null
-                    ? `Level${currentLevel}_${newNodeId}_${currentParentId}`
-                    : `Level${currentLevel}_${newNodeId}`,
-                  newLabel
-                ),
+            label: label,
+            details: { title: label, content: "" },
+            link: selectedexistigrolenodeId ? selectedexistigrolenodeId : "",
+            autoFocus: true,
+            shape: type,
+            onLabelChange: (newLabel) =>
+              handleLabelChange(
+                currentParentId !== null
+                  ? `level${currentLevel}_${newNodeId}_${currentParentId}`
+                  : `level${currentLevel}_${newNodeId}`,
+                newLabel
+              ),
 
-              defaultwidt: "40px",
-              defaultheight: "40px",
-              nodeResize: false,
-            },
+            defaultwidt: "40px",
+            defaultheight: "40px",
+            nodeResize: false,
+          },
         type: type,
         position: centeredPosition,
         draggable: true,
         isNew: true,
         animated: true,
-        Page_Title: "Swimlane",
+        page_title: "Swimlane",
         status: "draft",
-        PageGroupId: PageGroupId,
+        page_group_id: PageGroupId,
         style: {
           width: nodebgwidths,
           childWidth: nodebgwidths,
@@ -788,11 +874,13 @@ const SwimlaneModel = () => {
       savetype,
       ...versionPopupPayload,
     };
-console.log("payload",payload)
-    const Level =
-      currentParentId !== null
-        ? `Level${currentLevel}_${currentParentId}`
-        : `Level${currentLevel}`;
+    // console.log("payload", payload)
+    // const Level =
+    //   currentParentId !== null
+    //     ? `level${currentLevel}_${currentParentId}`
+    //     : `level${currentLevel}`;
+    const Level = getLevelKey(currentLevel, currentParentId);
+
     const user_id = user && user.id;
     const Process_id = id && id;
     const datasavetype = savetype;
@@ -818,10 +906,10 @@ console.log("payload",payload)
             draggable,
             animated,
             measured,
-            Page_Title,
+            page_title,
             parentNode,
             status,
-            PageGroupId,
+            page_group_id,
           }) => ({
             id,
             data,
@@ -830,10 +918,10 @@ console.log("payload",payload)
             draggable,
             animated,
             measured,
-            Page_Title,
+            page_title,
             parentNode,
             status,
-            PageGroupId,
+            page_group_id,
           })
         ),
         edges: edges.map(
@@ -845,7 +933,7 @@ console.log("payload",payload)
             animated,
             sourceHandle,
             targetHandle,
-            Page_Title,
+            page_title,
             status,
           }) => ({
             id,
@@ -855,7 +943,7 @@ console.log("payload",payload)
             targetHandle,
             markerEnd,
             animated,
-            Page_Title,
+            page_title,
             status,
           })
         ),
@@ -890,22 +978,22 @@ console.log("payload",payload)
       nodes.map((node) =>
         node.node_id === selectedNodeId
           ? {
-              ...node,
-              data: {
-                ...node.data,
-                label: details?.title,
+            ...node,
+            data: {
+              ...node.data,
+              label: details?.title,
 
-                details: {
-                  ...node.data.details,
-                  ...details,
-                },
-
-                translations: {
-                  ...(node.data.translations || {}),
-                  [langKey]: details?.title || "",
-                },
+              details: {
+                ...node.data.details,
+                ...details,
               },
-            }
+
+              translations: {
+                ...(node.data.translations || {}),
+                [langKey]: details?.title || "",
+              },
+            },
+          }
           : node
       )
     );
@@ -946,9 +1034,10 @@ console.log("payload",payload)
         selectedNode.type === "SwimlineRightsideBox" &&
         selectedNode.data?.link
       ) {
+
         try {
-          const Process_id = selectedNode?.Process_id;
-          const PageGroupId = selectedNode?.PageGroupId;
+          const Process_id = selectedNode?.process_id;
+          const PageGroupId = selectedNode?.page_group_id;
           const parentId = selectedNode?.parentId;
           const link = selectedNode.data?.link;
 
@@ -958,6 +1047,7 @@ console.log("payload",payload)
             parentId,
             link
           );
+          console.log("deleteresponse", deleteresponse)
           if (deleteresponse.status) {
             CustomAlert.success("Success", deleteresponse.message);
           }
@@ -981,7 +1071,7 @@ console.log("payload",payload)
   const handleNodeRightClick = (event, node) => {
     // console.log("node id", node);
     setSelectedEdge(null);
-    if (node.Page_Title === "Swimlane") {
+    if (node.page_title === "Swimlane") {
       setOptions([]);
       if (node.node_id) {
         setSelectedNodeId(node.node_id);
@@ -1180,10 +1270,10 @@ console.log("payload",payload)
           prev.map((child) =>
             child.id === node.id
               ? {
-                  ...child,
-                  parentNode: nearestParentNode.id,
-                  position: updatedPosition,
-                }
+                ...child,
+                parentNode: nearestParentNode.id,
+                position: updatedPosition,
+              }
               : child
           )
         );
@@ -1216,13 +1306,13 @@ console.log("payload",payload)
         nds.map((node) =>
           node.id === selectedNodeId
             ? {
-                ...node,
-                type: type,
-                data: {
-                  ...node.data,
-                  shape: type,
-                },
-              }
+              ...node,
+              type: type,
+              data: {
+                ...node.data,
+                shape: type,
+              },
+            }
             : node
         )
       );
@@ -1330,7 +1420,7 @@ console.log("payload",payload)
 
       // 🔹 Increment level
       const newLevel = extractedLevel + 1;
-      const levelParam = `Level${newLevel}_${selectedLinknodeIds}`;
+      const levelParam = `level${newLevel}_${selectedLinknodeIds}`;
       try {
         const check = await api.checkRecord(levelParam, processId);
 
@@ -1418,8 +1508,8 @@ console.log("payload",payload)
           const response = await getdataByNodeId(nodelink, "draft");
           if (response.data && response.data.length > 0) {
             const user_id = response.data[0].user_id;
-            const Process_id = response.data[0].Process_id;
-            const id = response.data[0].Process_id;
+            const Process_id = response.data[0].process_id;
+            const id = response.data[0].process_id;
 
             let newLevel = 1;
             if (nodelink !== null) {
@@ -1432,12 +1522,8 @@ console.log("payload",payload)
 
             const levelParam =
               nodelink !== null
-                ? `Level${newLevel}_${nodelink}`
-                : `Level${newLevel}`;
-
-            // console.log("nodelink", nodelink);
-            // console.log("newLevel", newLevel);
-            // console.log("levelParam", levelParam);
+                ? `level${newLevel}_${nodelink}`
+                : `level${newLevel}`;
 
             const nodeData = await checkRecordWithGetLinkDraftData(
               levelParam,
@@ -1455,15 +1541,15 @@ console.log("payload",payload)
                 Process_id
               );
               // console.log("breadcrums", breadcrumbs);
-              breadcrumbs.forEach(({ label, path }) => {
-                addBreadcrumb(label, path, {}); // blank state as you said
+              breadcrumbs.forEach(({ label, path, state }) => {
+                addBreadcrumb(label, path, state); // blank state as you said
               });
               if (nodeData.Page_Title === "ProcessMap") {
-                navigate(`/Draft-Process-View/${newLevel}/${nodelink}/${id}`);
+                navigate(`/draft-process-view/${newLevel}/${nodelink}/${id}`);
               }
               if (nodeData.Page_Title === "Swimlane") {
                 navigate(
-                  `/Draft-Swim-lanes-View/level/${newLevel}/${nodelink}/${id}`
+                  `/draft-swimlane-view/level/${newLevel}/${nodelink}/${id}`
                 );
               }
             } else {
@@ -1518,7 +1604,7 @@ console.log("payload",payload)
       const translations = { [langKey]: enteredText };
       addNode(
         "FreeText",
-        { x: modalPosition.x - 70, y: modalPosition.y - 125 },
+        { x: modalPosition.x, y: modalPosition.y - 20 },
         enteredText,
         { translations }
       );
@@ -1534,14 +1620,15 @@ console.log("payload",payload)
   };
 
   const handlePopupAction = (action) => {
-    const { x, y } = contextMenu;
+    const { x, y } = fixedPos;
     // console.log("contextMenu", contextMenu);
+    // console.log("fixedPos",fixedPos);
 
     const edgeId = contextMenu.edgeId;
     if (action === "Yes") {
-      addNode("Yes", { x: x - 30, y: y - 125 }, edgeId);
+      addNode("Yes", { x: x, y: y - 20 }, edgeId);
     } else if (action === "No") {
-      addNode("No", { x: x - 70, y: y - 125 }, edgeId);
+      addNode("No", { x: x, y: y - 20 }, edgeId);
     } else if (action === "addFreeText") {
       setIsModalOpen(true);
       setModalText("");
@@ -1555,88 +1642,88 @@ console.log("payload",payload)
 
   const menuItems = [
     ...(detailschecking?.type !== "SwimlineRightsideBox" &&
-    detailschecking?.type !== "progressArrow" &&
-    detailschecking?.type !== "Yes" &&
-    detailschecking?.type !== "No" &&
-    detailschecking?.type !== "FreeText" &&
-    detailschecking?.type !== "StickyNote"
+      detailschecking?.type !== "progressArrow" &&
+      detailschecking?.type !== "Yes" &&
+      detailschecking?.type !== "No" &&
+      detailschecking?.type !== "FreeText" &&
+      detailschecking?.type !== "StickyNote"
       ? [
-          {
-            label:
-              detailschecking &&
+        {
+          label:
+            detailschecking &&
               (!detailschecking?.data?.details?.title ||
                 detailschecking?.data?.details?.title === "") &&
               (!detailschecking?.data?.details?.content ||
                 detailschecking?.data?.details?.content === "")
-                ? `${t("add_details")}`
-                : `${t("edit_details")}`,
-            action: () => handlePopupAction("addDetails"),
-            borderBottom: true,
-          },
-        ]
+              ? `${t("add_details")}`
+              : `${t("edit_details")}`,
+          action: () => handlePopupAction("addDetails"),
+          borderBottom: true,
+        },
+      ]
       : []),
     ...(detailschecking?.type === "box"
       ? [
-          {
-            label: `${t("switch_shape_to_decision")}`,
-            action: () => switchNodeType("diamond"),
-            borderBottom: true,
-          },
-        ]
+        {
+          label: `${t("switch_shape_to_decision")}`,
+          action: () => switchNodeType("diamond"),
+          borderBottom: true,
+        },
+      ]
       : []),
     ...(detailschecking?.type === "diamond"
       ? [
-          {
-            label: `${t("switch_shape_to_activity")}`,
-            action: () => switchNodeType("box"),
-            borderBottom: true,
-          },
-        ]
+        {
+          label: `${t("switch_shape_to_activity")}`,
+          action: () => switchNodeType("box"),
+          borderBottom: true,
+        },
+      ]
       : []),
     ...(detailschecking?.type === "progressArrow"
       ? [
-          ...(detailschecking?.data?.processlink
-            ? [
-                {
-                  label: `${t("open_existing_model")}`,
-                  action: () =>
-                    openExistingModel(detailschecking?.data?.processlink),
-                  borderBottom: true,
-                },
-                {
-                  label: `${t("remove_existing_model")}`,
-                  action: () => removeExistingLink(),
-                  borderBottom: true,
-                },
-              ]
-            : [
-                {
-                  label: `${t("link_existing_model")}`,
-                  action: () => linkExistingmodel(),
-                  borderBottom: true,
-                },
-              ]),
-        ]
+        ...(detailschecking?.data?.processlink
+          ? [
+            {
+              label: `${t("open_existing_model")}`,
+              action: () =>
+                openExistingModel(detailschecking?.data?.processlink),
+              borderBottom: true,
+            },
+            {
+              label: `${t("remove_existing_model")}`,
+              action: () => removeExistingLink(),
+              borderBottom: true,
+            },
+          ]
+          : [
+            {
+              label: `${t("link_existing_model")}`,
+              action: () => linkExistingmodel(),
+              borderBottom: true,
+            },
+          ]),
+      ]
       : []),
 
     ...(detailschecking?.type === "FreeText"
       ? [
-          {
-            label: `${t("edit_text")}`,
-            action: () => UpdateText(),
-            borderBottom: true,
-          },
-        ]
+        {
+          label: `${t("edit_text")}`,
+          action: () => UpdateText(),
+          borderBottom: true,
+        },
+      ]
       : []),
 
     ...(detailschecking?.type !== "Yes" && detailschecking?.type !== "No"
       ? [
-          {
-            label: `${t("translation")}`,
-            action: translation,
-            borderBottom: false,
-          },
-        ]
+        {
+          label: `${t("translation")}`,
+          action: translation,
+          borderBottom: false,
+        },
+      ]
       : []),
 
     {
@@ -1662,7 +1749,7 @@ console.log("payload",payload)
   const onEdgeClick = useCallback((event, edge) => {
     const { clientX, clientY } = event;
     setPosition({ x: clientX, y: clientY });
-    // console.log("asdf", event);
+    console.log("asdf", event);
     setMenuVisible(false);
     setOptions([]);
     setSelectedEdge(edge);
@@ -1685,7 +1772,11 @@ console.log("payload",payload)
     } else if (option === "Add Process") {
       addNode("progressArrow");
     } else if (option === "Add Sticky Note") {
-      addNode("StickyNote", { x: position.x, y: position.y });
+      // addNode("StickyNote", { x: position.x, y: position.y });
+
+      const pos = getLocalPositionInsideContainer(position.x, position.y);
+
+      addNode("StickyNote", pos);
     }
 
     setOptions([]);
@@ -1695,18 +1786,6 @@ console.log("payload",payload)
     event.preventDefault();
   };
 
-  // const handleBack = async () => {
-  //   if (hasUnsavedChanges) {
-  //     const userConfirmed = window.confirm(
-  //       "You have unsaved changes. Do you want to save them before leaving?"
-  //     );
-  //     if (!userConfirmed) {
-  //       return false;
-  //     }
-  //     await handleSaveNodes("draft"); // Wait for saving to complete
-  //   }
-  //   return true;
-  // };
 
   const handleExitBack = async () => {
     if (!hasUnsavedChanges) return true; // No unsaved changes, just exit
@@ -1740,7 +1819,7 @@ console.log("payload",payload)
     if (confirmcondition) {
       if (id && user) {
         navigate(
-          `/Draft-Swim-lanes-View/level/${currentLevel}/${currentParentId}/${id}`
+          `/draft-swimlane-view/level/${currentLevel}/${currentParentId}/${id}`
         );
       } else {
         alert("Currently not navigate on draft mode");
@@ -1794,7 +1873,7 @@ console.log("payload",payload)
       return;
     }
 
-    const PageGroupId = ChildNodes[0]?.PageGroupId;
+    const PageGroupId = ChildNodes[0]?.page_group_id;
 
     try {
       if (isFavorite) {
@@ -1826,7 +1905,7 @@ console.log("payload",payload)
     const user_id = LoginUser ? LoginUser.id : null;
     const encodedTitle = encodeURIComponent("swimlane");
     navigate(
-      `/Swimlane-Version/${process_id}/${level}/${version}/${encodedTitle}/${user_id}/${currentParentId}`
+      `/swimlane-version/${process_id}/${level}/${version}/${encodedTitle}/${user_id}/${currentParentId}`
     );
   };
 
@@ -1868,6 +1947,56 @@ console.log("payload",payload)
       })
     );
     setHasUnsavedChanges(true);
+  };
+
+  
+  const handleNext = (data) => {
+    console.log("STEP-1 DATA: ", data);
+
+    // 👉 Agar Editorial Change select kiya hai
+    if (data.editorialChange) {
+      setShowPublishPopup(false);
+      setShowEditorialPopup(true);
+    }
+
+    // 👉 Agar Classification Change select kiya hoga
+    // yaha par future me doosra popup open karna h
+    if (data.classificationChange) {
+      setShowPublishPopup(false);
+      setShowContentPopup(true);
+    }
+  };
+  
+  const { responseData: revisionresponse, refetch } = useFetchVersions({
+    processId,
+    currentLevel,
+    currentParentId,
+    LoginUser,
+    status: "draft",
+  });
+
+  const handleSavePublish = async () => {
+    const latestData = await refetch();
+    const contact = latestData?.contact_info;
+    // console.log("responseData", revisionresponse)
+    // contact_info missing ya empty object
+    if (!contact || Object.keys(contact).length === 0) {
+      alert("Please assign Process Owner / Process Modeler to publish the model.");
+      return;
+    }
+
+    // contact_info ke sare keys empty array hon?
+    const allEmpty = Object.values(contact).every(
+      (list) => !list || list.length === 0
+    );
+
+    if (allEmpty) {
+      alert("Please assign Process Owner /  Process Modeler to publish the model.");
+      return;
+    }
+
+    // Open popup if valid
+    setShowPublishPopup(true);
   };
 
   const handleSaveVersionDetails = (payload) => {
@@ -1929,14 +2058,15 @@ console.log("payload",payload)
         handleSupportViewlangugeId={handleLanguageSwitch}
         supportedLanguages={supportedLanguages}
         selectedLanguage={processDefaultlanguage_id}
+        OriginalDefaultlanguge_id={OriginalDefaultlanguge_id}
       />
 
       <div
         className="publishcontainer"
-        style={{ ...styles.appContainer, height: remainingHeight }}
+        style={{ ...styles.appContainer, height: safeRemainingHeight }}
       >
         <ReactFlowProvider>
-          <div style={styles.scrollableWrapper}>
+          <div style={styles.scrollableWrapper} className="scrollbar_wrapper">
             <ReactFlow
               nodes={[...nodes, ...ChildNodes]}
               edges={edges}
@@ -1976,10 +2106,11 @@ console.log("payload",payload)
 
             {selectedEdge && (
               <div
+                className="dropdown_1"
                 style={{
                   position: "absolute",
-                  top: position.y,
-                  left: position.x,
+                  top: fixedPos.y,
+                  left: fixedPos.x,
                   backgroundColor: "#fff",
                   border: "1px solid #ccc",
                   borderRadius: "4px",
@@ -2027,7 +2158,46 @@ console.log("payload",payload)
               onClose={handleClosePopup}
             />
 
+
+            <PublishPopup
+              isOpen={showPublishPopup}
+              onClose={() => setShowPublishPopup(false)}
+              onNext={handleNext}
+              revisionresponse={revisionresponse}
+              selectedLanguage={processDefaultlanguage_id}
+
+            />
+
+            <EditorialChangePopup
+              isOpen={showEditorialPopup}
+              onBack={() => {
+                setShowEditorialPopup(false);
+                setShowPublishPopup(true);
+              }}
+              onPublish={(finalData) => {
+                console.log("FINAL PUBLISH DATA", finalData);
+                setShowEditorialPopup(false);
+              }}
+
+            />
+
+
+            <ContentChangePopup
+              isOpen={showContentPopup}
+              type={"Swimlane"}
+              onBack={() => {
+                setShowContentPopup(false);
+                setShowPublishPopup(true);
+              }}
+              onStartApproval={(finalData) => {
+                console.log("CONTENT CHANGE FINAL:", finalData);
+                setShowContentPopup(false);
+              }}
+              revisionresponse={revisionresponse}
+            />
+
             <DetailsPopup
+              className="detailspopup_swimlane"
               isOpen={isPopupOpen}
               onClose={closePopup}
               onSave={saveDetails}
@@ -2038,162 +2208,167 @@ console.log("payload",payload)
               supportedLanguages={supportedLanguages}
               selectedLanguage={processDefaultlanguage_id}
             />
-          </div>
 
-          {/* Checkbox Popup */}
-          {isCheckboxPopupOpen && (
-            <div style={popupStyle.container} className="swimlanepopup">
-              <div style={popupStyle.header}>
-                <span>{t("existing_model")}</span>
-              </div>
 
-              <input
-                type="text"
-                style={styles.searchInput}
-                placeholder="Search..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
+            {isCheckboxPopupOpen && (
+              <div style={popupStyle.container} className="swimlanepopup global_popup_modal">
+                <div style={popupStyle.header}>
+                  <span>{t("existing_model")}</span>
+                </div>
 
-              <div style={popupStyle.body}>
-                {filteredData.map((node) => (
-                  <label
-                    key={node.node_id}
-                    style={{
-                      ...popupStyle.label,
-                      backgroundColor:
-                        selectedLinknodeIds === node.node_id
-                          ? "#f0f8ff"
-                          : "transparent",
-                    }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedLinknodeIds === node.node_id}
-                      onChange={() =>
-                        handleCheckboxChange(node.node_id, node.data.label)
-                      }
-                      style={popupStyle.checkbox}
-                    />
-                    {node.data.label && node.data.label}
-                  </label>
-                ))}
-              </div>
-              <div style={popupStyle.footer}>
-                <button
-                  onClick={saveSelectedNodes}
-                  style={popupStyle.saveButton}
-                >
-                  {t("Save")}
-                </button>
-              </div>
-            </div>
-          )}
+                <input
+                  type="text"
+                  style={styles.searchInput}
+                  placeholder="Search..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
 
-          {/* Existing Add role Popup */}
-          {isexistingroleCheckboxPopupOpen && (
-            <div style={popupStyle.container} className="swimlanepopup">
-              <div style={popupStyle.header}>
-                <span>{t("add_existing_role")}</span>
-              </div>
-
-              <input
-                type="text"
-                style={styles.searchInput}
-                placeholder={t("search")}
-                value={ExistingrolesearchQuery}
-                onChange={(e) => setExistingrolesearchQuery(e.target.value)}
-              />
-
-              <div style={popupStyle.body}>
-                {filteredDataExistingrole.map((node) => {
-                  const isSelected = selectedexistigrolenodeId === node.node_id;
-                  const title = node?.data?.details?.title || "Untitled";
-
-                  return (
-                    <div
+                <div style={popupStyle.body}>
+                  {filteredData.map((node) => (
+                    <label
                       key={node.node_id}
-                      onClick={() =>
-                        handleexistingroleCheckboxChange(node.node_id)
-                      }
-                      onMouseEnter={(e) =>
-                        (e.currentTarget.style.backgroundColor = "#e6f7ff")
-                      }
-                      onMouseLeave={(e) =>
+                      style={{
+                        ...popupStyle.label,
+                        backgroundColor:
+                          selectedLinknodeIds === node.node_id
+                            ? "#f0f8ff"
+                            : "transparent",
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedLinknodeIds === node.node_id}
+                        onChange={() =>
+                          handleCheckboxChange(node.node_id, node.data.label)
+                        }
+                        style={popupStyle.checkbox}
+                      />
+                      {node.data.label && node.data.label}
+                    </label>
+                  ))}
+                </div>
+                <div style={popupStyle.footer}>
+                  <button
+                    onClick={saveSelectedNodes}
+                    className="global-btn"
+                  >
+                    {t("Save")}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Existing Add role Popup */}
+            {isexistingroleCheckboxPopupOpen && (
+              <div style={popupStyle.container} className="swimlanepopup global_popup_modal">
+                <div style={popupStyle.header}>
+                  <span>{t("add_existing_role")}</span>
+                </div>
+
+                <input
+                  type="text"
+                  style={styles.searchInput}
+                  placeholder={t("search")}
+                  value={ExistingrolesearchQuery}
+                  onChange={(e) => setExistingrolesearchQuery(e.target.value)}
+                />
+
+                <div style={popupStyle.body}>
+                  {filteredDataExistingrole.map((node) => {
+                    const isSelected = selectedexistigrolenodeId === node.node_id;
+                    const title = node?.data?.details?.title || "Untitled";
+
+                    return (
+                      <div
+                        key={node.node_id}
+                        onClick={() =>
+                          handleexistingroleCheckboxChange(node.node_id)
+                        }
+                        onMouseEnter={(e) =>
+                          (e.currentTarget.style.backgroundColor = "#e6f7ff")
+                        }
+                        onMouseLeave={(e) =>
                         (e.currentTarget.style.backgroundColor = isSelected
                           ? "#f0f8ff"
                           : "transparent")
-                      }
-                      style={{
-                        ...popupStyle.label,
-                        cursor: "pointer",
-                        backgroundColor: isSelected ? "#f0f8ff" : "transparent",
-                      }}
-                    >
-                      {title}
-                    </div>
-                  );
-                })}
+                        }
+                        style={{
+                          ...popupStyle.label,
+                          cursor: "pointer",
+                          backgroundColor: isSelected ? "#f0f8ff" : "transparent",
+                        }}
+                      >
+                        {title}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div style={popupStyle.footer}>
+                  <button
+                    onClick={handleSaveExistingRole}
+                    className="global-btn"
+                  >
+                    {t("Save")}
+                  </button>
+                </div>
               </div>
+            )}
 
-              <div style={popupStyle.footer}>
-                <button
-                  onClick={handleSaveExistingRole}
-                  style={popupStyle.saveButton}
-                >
-                  {t("Save")}
-                </button>
-              </div>
-            </div>
-          )}
-
-          <TextInputModal
-            isOpen={isModalOpen}
-            onClose={() => setIsModalOpen(false)}
-            onSubmit={handleTextSubmit}
-            initialValue={modalText} // Pass existing value to modal
-          />
-
-          {options.length > 0 && (
-            <AddObjectRole
-              position={position}
-              options={options}
-              onOptionClick={handleOptionClick}
-              onClose={() => setIsPopupOpen(false)}
+            <TextInputModal
+              isOpen={isModalOpen}
+              onClose={() => setIsModalOpen(false)}
+              onSubmit={handleTextSubmit}
+              initialValue={modalText} // Pass existing value to modal
             />
-          )}
 
-          {usePageGroupIdViewer(ChildNodes)}
-          <TranslationPopup
-            isOpen={showTranslationPopup}
-            onClose={() => setShowTranslationPopup(false)}
-            defaultValues={translationDefaults}
-            onSubmit={(values) => {
-              console.log("Translations:", values);
+            {options.length > 0 && (
+              <AddObjectRole
+                position={position}
+                options={options}
+                onOptionClick={handleOptionClick}
+                onClose={() => setIsPopupOpen(false)}
+              />
+            )}
 
-              updateNodeTranslations(selectedNodeId, values);
+            {usePageGroupIdViewer(ChildNodes)}
+            <TranslationPopup
+              isOpen={showTranslationPopup}
+              onClose={() => setShowTranslationPopup(false)}
+              defaultValues={translationDefaults}
+              onSubmit={(values) => {
+                console.log("Translations:", values);
 
-              setShowTranslationPopup(false);
-            }}
-            supportedLanguages={supportedLanguages}
-          />
+                updateNodeTranslations(selectedNodeId, values);
 
-          {showVersionPopup && (
-            <VersionPopup
-              processId={id}
-              currentLevel={currentLevel}
-              onClose={() => setShowVersionPopup(false)}
-              currentParentId={currentParentId}
-              viewVersion={navigateToVersion}
-              LoginUser={LoginUser}
-              title={headerTitle}
-              handleSaveVersionDetails={handleSaveVersionDetails}
-              status={"draft"}
-              versionPopupPayload={versionPopupPayload} // <-- ADD THIS
-                  supportedLanguages={supportedLanguages}
-              selectedLanguage={processDefaultlanguage_id}
+                setShowTranslationPopup(false);
+              }}
+              supportedLanguages={supportedLanguages}
             />
-          )}
+
+            {showVersionPopup && (
+              <VersionPopup
+                processId={id}
+                currentLevel={currentLevel}
+                onClose={() => setShowVersionPopup(false)}
+                currentParentId={currentParentId}
+                viewVersion={navigateToVersion}
+                LoginUser={LoginUser}
+                title={headerTitle}
+                handleSaveVersionDetails={handleSaveVersionDetails}
+                status={"draft"}
+                versionPopupPayload={versionPopupPayload} // <-- ADD THIS
+                supportedLanguages={supportedLanguages}
+                selectedLanguage={processDefaultlanguage_id}
+              />
+            )}
+
+
+          </div>
+
+          {/* Checkbox Popup */}
+
         </ReactFlowProvider>
       </div>
     </div>

@@ -14,16 +14,30 @@ const Popup = ({
 }) => {
   const t = useTranslation();
 // Menu dimensions (adjust to your style)
+// Get container (jisme popup rehna hai)
+  const container = document.querySelector(".flow-container"); // <-- apke container ka real class
+  const rect = container?.getBoundingClientRect();
+
+  if (!rect) return null;
+
+  // Detect current zoom level
+  const zoom = window.devicePixelRatio || 1;
+
+  // Position inside container (ZOOM FIXED)
+  let x = (popupPosition.x - rect.left) / zoom + 12;
+  let y = (popupPosition.y - rect.top) / zoom + 12;
+
   const menuWidth = 300;
-  const menuHeight = 250;
+  const menuHeight = 50;
 
-  // Prevent menu overflow
-  let x = popupPosition.x;
-  let y = popupPosition.y;
-  const { innerWidth, innerHeight } = window;
+  // Boundaries (container ke andar hi rehna)
+  const maxX = rect.width - menuWidth - 12;
+  const maxY = rect.height - menuHeight - 12;
 
-  if (x + menuWidth > innerWidth) x = innerWidth - menuWidth - 80;
-  if (y + menuHeight > innerHeight) y = innerHeight - menuHeight;
+  if (x > maxX) x = maxX;
+  if (y > maxY) y = maxY;
+  if (x < 12) x = 12;
+  if (y < 12) y = 12;
   
   return (
     showPopup && (
@@ -101,7 +115,7 @@ const Popup = ({
 };
 const styles = {
   popup: {
-    position: "fixed",
+    position: "absolute",
     background: "#e7e7e7",
     borderRadius: "0px",
     padding: 0,

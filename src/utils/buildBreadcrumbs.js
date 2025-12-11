@@ -11,13 +11,20 @@ export const buildBreadcrumbs = (allNodes, ids, processId,pathstatus = "draft") 
     if (!node) return;
 
     // Extract label from node.data JSON
-    let label = 'Untitled';
+      let label = "Untitled";
+    let TitleTranslation = "";
+
     try {
-      const parsedData = JSON.parse(node.data || '{}');
+      const parsedData = JSON.parse(node.data || "{}");
+
       if (parsedData?.label) label = parsedData.label;
+
+      // 👉 ADD YOUR NEW LINE
+      TitleTranslation = parsedData?.translations || "";
     } catch {
-      console.warn('Invalid JSON in node.data for', nodeId);
+      console.warn("Invalid JSON in node.data for", nodeId);
     }
+
 
     // Extract current level number
     const match = nodeId.match(/^Level(\d+)/);
@@ -25,14 +32,16 @@ export const buildBreadcrumbs = (allNodes, ids, processId,pathstatus = "draft") 
 
     // New level = currentLevel + 1
     const nextLevel = currentLevel + 1;
+    
 
     // Build path → "/Draft-Process-View/{nextLevel}/{currentNodeId}/{processId}"
   const path =
       pathstatus === "Publish"
         ? `/published-map-level/${nextLevel}/${nodeId}/${processId}`
-        : `/Draft-Process-View/${nextLevel}/${nodeId}/${processId}`;
+        : `/draft-process-view/${nextLevel}/${nodeId}/${processId}`;
 
-    breadcrumbs.push({ label, path });
+  const state = { processId, label, path, TitleTranslation };
+    breadcrumbs.push({ label, path,state });
   });
 
   return breadcrumbs;

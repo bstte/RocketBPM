@@ -27,6 +27,7 @@ import VersionPopupView from "../../../components/VersionPopupView";
 import useCheckFavorite from "../../../hooks/useCheckFavorite";
 import { usePageGroupIdViewer } from "../../../hooks/usePageGroupIdViewer";
 import { useLangMap } from "../../../hooks/useLangMap";
+import { getLevelKey } from "../../../utils/getLevel";
 
 const PublishedMapLevel = () => {
   const [totalHeight, setTotalHeight] = useState(0);
@@ -37,7 +38,7 @@ const PublishedMapLevel = () => {
   };
   const langMap = useLangMap();
   const [remainingHeight, setRemainingHeight] = useState(0);
-
+  const safeRemainingHeight = Math.min(Math.max(remainingHeight, 588), 588);
   const LoginUser = useSelector((state) => state.user.user);
 
   const [isFavorite, setIsFavorite] = useState(false);
@@ -83,14 +84,15 @@ const PublishedMapLevel = () => {
   const { level, parentId, processId } = useParams();
   const [showVersionPopup, setShowVersionPopup] = useState(false);
   const [title, Settitle] = useState("");
-    const [TitleTranslation, SetTitleTranslation] = useState("");
+  const [TitleTranslation, SetTitleTranslation] = useState("");
   // const [ParentPageGroupId, SetParentPageGroupId] = useState(null);
   const [user, setUser] = useState(null);
   const [supportedLanguages, setSupportedLanguages] = useState([]);
   const id = processId;
   const [processDefaultlanguage_id, setprocessDefaultlanguage_id] =
     useState(null);
-
+ const [OriginalDefaultlanguge_id, setOriginalDefaultlanguge_id] =
+    useState(null);
   const currentLevel = level ? parseInt(level, 10) : 0;
   const currentParentId = parentId || null;
   const { addBreadcrumb, removeBreadcrumbsAfter, breadcrumbs, setBreadcrumbs } =
@@ -149,10 +151,12 @@ const PublishedMapLevel = () => {
 
   const fetchNodes = async (language_id = null) => {
     try {
-      const levelParam =
-        currentParentId !== null
-          ? `Level${currentLevel}_${currentParentId}`
-          : `Level${currentLevel}`;
+      // const levelParam =
+      //   currentParentId !== null
+      //     ? `level${currentLevel}_${currentParentId}`
+      //     : `level${currentLevel}`;
+      const levelParam = getLevelKey(currentLevel, currentParentId);
+      
       const user_id = LoginUser ? LoginUser.id : null;
 
       const Process_id = id ? id : null;
@@ -165,6 +169,7 @@ const PublishedMapLevel = () => {
         language_id
       );
 
+      console.log("data", data)
       // ✅ Set user from backend response
       if (data && data.user_id) {
         // Construct user object based on backend logic
@@ -176,7 +181,7 @@ const PublishedMapLevel = () => {
           actual_user_id: data.actual_user_id,
         });
       }
-      const PageGroupId = data.nodes?.[0]?.PageGroupId;
+      const PageGroupId = data.nodes?.[0]?.page_group_id;
       const getPublishedDate = await api.GetPublishedDate(
         Process_id,
         publishedStatus,
@@ -188,8 +193,9 @@ const PublishedMapLevel = () => {
         setgetPublishedDate("");
       }
       Settitle(data.title);
-            SetTitleTranslation(data.TitleTranslation);
+      SetTitleTranslation(data.TitleTranslation);
       setprocessDefaultlanguage_id(data.processDefaultlanguage_id);
+        setOriginalDefaultlanguge_id(data.OriginalDefaultlanguge_id);
       setSupportedLanguages(data.ProcessSupportLanguage);
       setprocess_img(data.process_img);
       const parsedNodes = await Promise.all(
@@ -204,8 +210,8 @@ const PublishedMapLevel = () => {
             const newLevel = currentLevel + 1;
             const levelParam =
               node.node_id !== null
-                ? `Level${newLevel}_${node.node_id}`
-                : `Level${currentLevel}`;
+                ? `level${newLevel}_${node.node_id}`
+                : `level${currentLevel}`;
             const Process_id = id ? id : null;
 
             let hasNextLevel = false;
@@ -251,7 +257,7 @@ const PublishedMapLevel = () => {
         style: { stroke: "#002060", strokeWidth: 2 },
         type: "step",
       }));
-// console.log("parsedNodes",parsedNodes)
+      // console.log("parsedNodes",parsedNodes)
       setNodes(parsedNodes);
       setEdges(parsedEdges);
     } catch (error) {
@@ -275,7 +281,7 @@ const PublishedMapLevel = () => {
     if (!title) return;
 
     const label = currentLevel === 0 ? title : title;
-    const state = { id, title, currentPath,TitleTranslation };
+    const state = { id, title, currentPath, TitleTranslation };
 
     const path =
       currentLevel === 0
@@ -288,6 +294,7 @@ const PublishedMapLevel = () => {
         const safeIndex = Math.max(1, currentLevel - 1);
         removeBreadcrumbsAfter(safeIndex);
       }
+      // console.log("label, path, state", label, path, state)
       addBreadcrumb(label, path, state);
     }
 
@@ -307,19 +314,24 @@ const PublishedMapLevel = () => {
     // console.log("data", node);
     event.preventDefault();
     const selectedLabel = node.data.label || "";
-      const TitleTranslation = node.data.translations || "";
+    const TitleTranslation = node.data.translations || "";
     const newLevel = currentLevel + 1;
     const levelParam =
-      node.id !== null ? `Level${newLevel}_${node.id}` : `Level${currentLevel}`;
+      node.id !== null ? `level${newLevel}_${node.id}` : `level${currentLevel}`;
     const Process_id = id ? id : null;
     const data = await api.checkPublishRecord(levelParam, Process_id);
 
     if (data.status === true) {
-        const state = { id, selectedLabel, currentPath,TitleTranslation };
+      const state = { id, selectedLabel, currentPath, TitleTranslation };
       if (data.Page_Title === "ProcessMap") {
         navigate(`/published-map-level/${newLevel}/${node.id}/${id}`);
+        addBreadcrumb(
+          `${selectedLabel} `,
+          `/published-map-level/${newLevel}/${node.id}/${id}`,
+          state
+        );
       }
-    
+
       if (data.Page_Title === "Swimlane") {
         addBreadcrumb(
           `${selectedLabel} `,
@@ -350,16 +362,16 @@ const PublishedMapLevel = () => {
 
       return {
         ...crumb,
-        path: crumb.path.replace("published-map-level", "Draft-Process-View"),
+        path: crumb.path.replace("published-map-level", "draft-process-view"),
       };
     });
     setBreadcrumbs(updatedBreadcrumbs);
     if (id && user) {
       if (currentLevel === 0) {
-        navigate(`/Draft-Process-View/${id}`);
+        navigate(`/draft-process-view/${id}`);
       } else {
         navigate(
-          `/Draft-Process-View/${currentLevel}/${currentParentId}/${id}`
+          `/draft-process-view/${currentLevel}/${currentParentId}/${id}`
         );
       }
     } else {
@@ -398,7 +410,7 @@ const PublishedMapLevel = () => {
     const user_id = LoginUser ? LoginUser.id : null;
     const encodedTitle = encodeURIComponent("ProcessMap");
     navigate(
-      `/Draft-Process-Version/${process_id}/${level}/${version}/${encodedTitle}/${user_id}/${currentParentId}`
+      `/process-version/${process_id}/${level}/${version}/${encodedTitle}/${user_id}/${currentParentId}`
     );
   };
 
@@ -416,7 +428,7 @@ const PublishedMapLevel = () => {
       return;
     }
 
-    const PageGroupId = nodes[0]?.PageGroupId;
+    const PageGroupId = nodes[0]?.page_group_id;
 
     try {
       if (isFavorite) {
@@ -464,12 +476,13 @@ const PublishedMapLevel = () => {
         handleSupportViewlangugeId={handleSupportViewlangugeId}
         supportedLanguages={supportedLanguages}
         selectedLanguage={processDefaultlanguage_id}
+         OriginalDefaultlanguge_id={OriginalDefaultlanguge_id}
       />
 
       <ReactFlowProvider>
         <div
           className="app-container"
-          style={{ ...styles.appContainer, height: remainingHeight }}
+          style={{ ...styles.appContainer, height: safeRemainingHeight }}
         >
           <div className="content-wrapper" style={styles.contentWrapper}>
             <div className="flow-container" style={styles.flowContainer}>
@@ -497,9 +510,10 @@ const PublishedMapLevel = () => {
                 style={styles.reactFlowStyle}
               ></ReactFlow>
             </div>
+            {usePageGroupIdViewer(nodes)}
           </div>
 
-          {usePageGroupIdViewer(nodes)}
+
         </div>
 
         {showVersionPopup && (
@@ -513,7 +527,8 @@ const PublishedMapLevel = () => {
             title={headerTitle}
             status={"Published"}
             type={"ProcessMaps"}
-             selectedLanguage={processDefaultlanguage_id}
+            selectedLanguage={processDefaultlanguage_id}
+                 OriginalDefaultlanguge_id={OriginalDefaultlanguge_id}
           />
         )}
       </ReactFlowProvider>

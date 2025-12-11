@@ -32,7 +32,7 @@
     transform: translate(-13px, -6px) scale(0.3) !important;
 
 }
-
+/* 
 @media(min-width:1320px) and (max-width:1500px) {
     .ss_dash_slid_bx .react-flow__viewport {
         transform: translate(-13px, -6px) scale(0.26) !important;
@@ -57,7 +57,7 @@
     .ss_dash_slid_bx .react-flow__viewport {
         transform: translate(-13px, -6px) scale(0.18) !important;
     }
-}
+} */
 
 .ss_title_bar header {
     position: relative;
@@ -99,19 +99,24 @@
     border: 1px solid #002060;
     box-shadow: 0px 5px 10px #afadad5e;
     border-top: 0;
-    padding: 10px 18px 10px 10px !important;
+    padding: 10px !important;
 }
 .ss_dash_slid_bx .slick-slide>div {
     width: 100%;
+    padding-bottom: 2px;
 }
 .ss_dash_slid_bx {
     border: 0px solid #002060;
     box-shadow: 0px 0px 0px #afadad5e;
     border-top: 0;
-    padding: 0px 15px 0px 0px !important;
+    padding: 0px !important;
     width: 100%;
 }
 
+.version-table td {
+    height: 44px;
+    white-space: nowrap;
+}
 .ss_add_process_div {
     padding: 0px !important;
     border: 1px solid #002060;

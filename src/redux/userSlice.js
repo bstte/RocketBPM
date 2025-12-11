@@ -8,19 +8,26 @@ export const loginUser = createAsyncThunk(
   async ({ email, password }, { rejectWithValue }) => {
     try {
       const response = await Login(email, password);
-      const { access_token, user, translations } = response; // Access data correctly
+
+      const { access_token, user, translations, expires_in } = response;
+
+      // Save Token
       localStorage.setItem("token", access_token);
-      // console.log("inside login",response)
+console.log("login",response)
+      // Save Token Expiry
+      if (expires_in) {
+        const expireTime = Date.now() + expires_in * 1000;
+        localStorage.setItem("token_expire", expireTime);
+      }
 
       return { user, translations };
     } catch (error) {
-      console.error("login error", error);
       CustomAlert.warning("Error", error.response.data.message);
-
-      return rejectWithValue(error.response?.data || "An error occurred"); // Improved error handling
+      return rejectWithValue(error.response?.data || "An error occurred");
     }
   }
 );
+
 
 // Create logout asyncThunk
 export const logoutUser = createAsyncThunk(

@@ -57,11 +57,11 @@ const CustomHeader = ({ title }) => {
           {/* Dropdown Button */}
           <div className='ss_header_new_right' ref={dropdownRef} style={{ position: "relative" }}>
             <div id="dropdownBtn" onClick={toggleDropdown}> 
-            { user?.Profile_image ? (
+            { user?.profile_image ? (
             <img src={
-              user?.Profile_image.startsWith('http')
-                ? user.Profile_image // ✅ Google ka full URL
-                : `${ImageBaseUrl}uploads/profile_images/${user.Profile_image}` // ✅ Local image
+              user?.profile_image.startsWith('http')
+                ? user.profile_image // ✅ Google ka full URL
+                : `${ImageBaseUrl}uploads/profile_images/${user.profile_image}` // ✅ Local image
             } alt="Profile" className="profile-image"  />
           ) : (
             <img src="../../../img/user-circle-solid.svg" alt="" />
@@ -69,7 +69,7 @@ const CustomHeader = ({ title }) => {
             </div>
             {dropdownOpen && (
             <div className="dropdown-content">
-            <button onClick={() => navigate('/Account')} className="dropdown-link">{t('Edit_Profile')}</button>
+            <button onClick={() => navigate('/account/settings')} className="dropdown-link">{t('Edit_Profile')}</button>
             <button onClick={() => handleLogout()} className="dropdown-link">{t("Log_out")}</button>
           </div>
           

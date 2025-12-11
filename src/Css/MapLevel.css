@@ -1,4 +1,4 @@
-@media(min-width:1240px) {
+/* @media(min-width:1240px) {
     .flow-container .react-flow__viewport {
         transform: none !important;
     }
@@ -32,7 +32,23 @@
     .flow-container .react-flow__viewport {
         transform: scale(0.5) !important;
     }
-}
+} */
 .flow-container {
     overflow: hidden;
+}
+.flow-container .react-flow__viewport {
+    transform: none !important;
+}
+
+.customHandle {
+  width: 8px !important;
+  height: 8px !important;
+  border: 2px solid #007bff !important;
+  background:"#007bff" !important;
+  border-radius: 4px !important;
+  cursor: nwse-resize !important;
+}
+
+.customLine {
+  border-color: rgba(0, 0, 0, 0.3) !important;
 }

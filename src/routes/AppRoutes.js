@@ -36,48 +36,42 @@ const AppRoutes = () => {
       {/* Public Routes */}
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
-      <Route path="/SignupForm" element={<SignupForm />} />
-
-      <Route path="/forgotpassword" element={<Forgotpassword />} />
-      <Route path="/account" element={<Account />} />
+      <Route path="/signup-form" element={<SignupForm />} />
+      <Route path="/forgot-password" element={<Forgotpassword />} />
+      <Route path="/account/settings" element={<Account />} />
       <Route path="/setting" element={<Setting />} />
-  <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       {/* Private Routes */}
-      <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-      <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
-      <Route path="/user-management" element={<PrivateRoute><ManageAssignedUsers /></PrivateRoute>} />
-      <Route path="/add-user" element={<PrivateRoute><AddUser /></PrivateRoute>} />
-      <Route path="/edit-user" element={<PrivateRoute><EditUser /></PrivateRoute>} />
 
-      <Route
-        path="/map-level/:processId/*"
-        element={
-          <PrivateRoute>
+      <Route element={<PrivateRoute />}>
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/users" element={<ManageAssignedUsers />} />
+        <Route path="/users/create" element={<AddUser />} />
+        <Route path="/users/edit" element={<EditUser />} />
+        <Route
+          path="/map-level/:processId/*"
+          element={
+
             <ReactFlowProvider>
               <MapLevel />
             </ReactFlowProvider>
-          </PrivateRoute>
-        }
-      />
-   <Route path="/level/:level/:parentId/:processId/*" element={<PrivateRoute><MapLevel /></PrivateRoute>} />
-      <Route path="/add-process-title" element={<PrivateRoute><ProcessTitle /></PrivateRoute>} />
-      <Route path="/list-process-title" element={<PrivateRoute><ListProcessTitle /></PrivateRoute>} />
-      <Route path="/swimlane/level/:level/:parentId/:processId/*" element={<PrivateRoute><SwimlaneModel /></PrivateRoute>} />
-      <Route path="/published-map-level/:processId" element={<PrivateRoute><PublishedMapLevel /></PrivateRoute>} />
 
-      <Route path="/published-map-level/:level/:parentId/:processId/*" element={<PrivateRoute><PublishedMapLevel /></PrivateRoute>} />
-      <Route path="/published-swimlane/level/:level/:parentId/:processId" element={<PrivateRoute><PublishedSwimlaneModel /></PrivateRoute>} />
-      {/* <Route path="/draft-process-view" element={<PrivateRoute><DraftProcesMapLevel /></PrivateRoute>} /> */}
-      <Route path="/draft-process-view/:processId" element={<PrivateRoute><DraftProcesMapLevel /></PrivateRoute>} />
-
-
-      <Route path="/draft-process-view/:level/:parentId/:processId/*" element={<PrivateRoute><DraftProcesMapLevel /></PrivateRoute>} />
-      <Route path="/draft-swim-lanes-view/level/:level/:parentId/:processId" element={<PrivateRoute><DraftSwimlineLevel /></PrivateRoute>} />
-
-      <Route path="/Swimlane-Version/:processId/:level/:version/:pageTitle/:user_id/:currentParentId" element={<SwimlaneMapVersion />} />
-
-      <Route path="/Draft-Process-Version/:processId/:level/:version/:pageTitle/:user_id/:currentParentId" element={<DraftProcessMapVersion />} />
-
+          }
+        />
+        <Route path="/level/:level/:parentId/:processId/*" element={<MapLevel />} />
+        <Route path="/processes/create" element={<ProcessTitle />} />
+        <Route path="/list-process-title" element={<ListProcessTitle />} />
+        <Route path="/swimlane/level/:level/:parentId/:processId/*" element={<SwimlaneModel />} />
+        <Route path="/published-map-level/:processId" element={<PublishedMapLevel />} />
+        <Route path="/published-map-level/:level/:parentId/:processId/*" element={<PublishedMapLevel />} />
+        <Route path="/published-swimlane/level/:level/:parentId/:processId" element={<PublishedSwimlaneModel />} />
+        <Route path="/draft-process-view/:processId" element={<DraftProcesMapLevel />} />
+        <Route path="/draft-process-view/:level/:parentId/:processId/*" element={<DraftProcesMapLevel />} />
+        <Route path="/draft-swimlane-view/level/:level/:parentId/:processId" element={<DraftSwimlineLevel />} />
+        <Route path="/swimlane-version/:processId/:level/:version/:pageTitle/:user_id/:currentParentId" element={<SwimlaneMapVersion />} />
+        <Route path="/process-version/:processId/:level/:version/:pageTitle/:user_id/:currentParentId" element={<DraftProcessMapVersion />} />
+      </Route>
       {/* Redirect for unknown routes */}
       <Route path="*" element={<Navigate to="/login" />} />
     </Routes>

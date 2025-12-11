@@ -21,16 +21,6 @@ const ArrowBoxNode = ({ data, id, selectedNodeId }) => {
     setLabel(data.label || "");
   }, [data]);
 
-  // useEffect(() => {
-  //   if (autoFocus && arrowRef.current) {
-  //     setTimeout(() => {
-  //       arrowRef.current.focus();
-  //       setAutoFocus(false);
-  //     }, 0);
-  //   }
-  // }, [autoFocus]);
-
-  // 👇 add this below your existing useEffect(autoFocus...)
 useEffect(() => {
   if (isClickable && arrowRef.current) {
     setTimeout(() => {
@@ -64,6 +54,10 @@ useEffect(() => {
     )`;
   }, [width, height]);
 
+  const GRID_SIZE = 20;
+const snap = (v) => Math.round(v / GRID_SIZE) * GRID_SIZE;
+
+
   const handleResize = (event, size) => {
     if (
       !size ||
@@ -73,11 +67,14 @@ useEffect(() => {
       console.warn("Size is undefined", size);
       return;
     }
-    setWidth(size.width);
-    setHeight(size.height);
+   const snappedWidth = snap(size.width);
+  const snappedHeight = snap(size.height);
+
+  setWidth(snappedWidth);
+  setHeight(snappedHeight);
 
     if (data.updateWidthHeight) {
-      data.updateWidthHeight(id, { width: size.width, height: size.height });
+      data.updateWidthHeight(id, { width: snappedWidth, height: snappedHeight });
     }
   };
 
@@ -126,7 +123,7 @@ useEffect(() => {
             value={label}
             onChange={handleChange}
             onInput={adjustHeight}
-            placeholder="Type ...."
+            placeholder=""
             style={styles.textarea}
             rows={1}
             maxLength={200}
@@ -136,7 +133,8 @@ useEffect(() => {
       </div>
 
       {isClickable && (
-        <NodeResizer minWidth={120} minHeight={80} onResize={handleResize} />
+        <NodeResizer minWidth={120} minHeight={80} onResize={handleResize}  handleClassName="customHandle"
+  lineClassName="customLine" />
       )}
     </div>
   );
@@ -145,8 +143,8 @@ useEffect(() => {
 const styles = {
   wrapper: {
     position: "relative",
-    width: "100%",
-    height: "100%",
+    // width: "100%",
+    // height: "100%",
   },
   arrowBox: {
     display: "flex",
