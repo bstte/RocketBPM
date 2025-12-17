@@ -129,8 +129,8 @@ const SwimlineDiamondNode = ({ data }) => {
 const styles = {
   wrapper: {
     position: "relative",
-    width: "90%",
-    height: "90%",
+    width: "80%",
+    height: "72%",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",

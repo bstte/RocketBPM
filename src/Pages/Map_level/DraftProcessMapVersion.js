@@ -24,8 +24,8 @@ const DraftProcessMapVersion = () => {
   const [Title, SetTitle] = useState("");
   const [currentModeltitle, SetcurrentModeltitle] = useState("");
 
-  const windowHeight = window.innerHeight;
-  const totalHeight = 0;
+  // const windowHeight = window.innerHeight;
+  // const totalHeight = 0;
 
   const windowSize = {
     width: window.innerWidth - 300,
@@ -101,7 +101,7 @@ const DraftProcessMapVersion = () => {
     appContainer: {
       display: "flex",
       flexDirection: "column",
-      height: totalHeight > 0 ? `${windowHeight - totalHeight}px` : "auto",
+      // height: totalHeight > 0 ? `${windowHeight - totalHeight}px` : "auto",
       marginTop: "0px",
       backgroundColor: "#f8f9fa",
     },

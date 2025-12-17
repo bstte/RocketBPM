@@ -1,5 +1,7 @@
+import { buildProcessPath } from "../routes/buildProcessPath";
+
 // utils/buildBreadcrumbs.js
-export const buildBreadcrumbs = (allNodes, ids, processId,pathstatus = "draft") => {
+export const buildBreadcrumbs = (allNodes, ids, processId, pathstatus = "draft") => {
   if (!Array.isArray(allNodes) || !Array.isArray(ids)) return [];
 
   const breadcrumbs = [];
@@ -11,7 +13,7 @@ export const buildBreadcrumbs = (allNodes, ids, processId,pathstatus = "draft") 
     if (!node) return;
 
     // Extract label from node.data JSON
-      let label = "Untitled";
+    let label = "Untitled";
     let TitleTranslation = "";
 
     try {
@@ -27,21 +29,30 @@ export const buildBreadcrumbs = (allNodes, ids, processId,pathstatus = "draft") 
 
 
     // Extract current level number
-    const match = nodeId.match(/^Level(\d+)/);
+    const match = nodeId.match(/^level(\d+)/);
     const currentLevel = match ? parseInt(match[1], 10) : 0;
 
     // New level = currentLevel + 1
     const nextLevel = currentLevel + 1;
-    
 
+    const mode = pathstatus==="Publish"?"Published":"draft"
+    const view = "map"
+
+    const path = buildProcessPath({
+      mode,
+      view,
+      processId: processId,
+      level: nextLevel,
+      parentId: nextLevel === 0 ? undefined : nodeId,
+    });
     // Build path → "/Draft-Process-View/{nextLevel}/{currentNodeId}/{processId}"
-  const path =
-      pathstatus === "Publish"
-        ? `/published-map-level/${nextLevel}/${nodeId}/${processId}`
-        : `/draft-process-view/${nextLevel}/${nodeId}/${processId}`;
+    // const path =
+    //   pathstatus === "Publish"
+    //     ? `/published/map/${processId}/${nextLevel}/${nodeId}`
+    //     : `/draft/map/${processId}/${nextLevel}/${nodeId}`;
 
-  const state = { processId, label, path, TitleTranslation };
-    breadcrumbs.push({ label, path,state });
+    const state = { processId, label, path, TitleTranslation };
+    breadcrumbs.push({ label, path, state });
   });
 
   return breadcrumbs;

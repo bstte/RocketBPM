@@ -27,11 +27,13 @@ import MiniMapPreview from "./MiniMapPreview";
 import { useTranslation } from "../../hooks/useTranslation";
 import ProcessMenu from "../../components/ProcessMenu";
 import { buildBreadcrumbs } from "../../utils/buildBreadcrumbs";
+import { useLangMap } from "../../hooks/useLangMap";
+import { useProcessNavigation } from "../../hooks/useProcessNavigation";
 // import { Opacity } from "@mui/icons-material";
 
 const Dashboard = () => {
   const user = useSelector((state) => state.user.user);
-
+  const langMap = useLangMap();
   const [checkpublish, Setcheckpublish] = useState();
   const [Loading, SetLoading] = useState(false);
   const [filteredNodes, setFilteredNodes] = useState(() => {
@@ -51,6 +53,8 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
+  const { goToProcess } = useProcessNavigation();
+
   const t = useTranslation();
 
   const { addBreadcrumb, resetBreadcrumbs } = useContext(BreadcrumbsContext);
@@ -75,7 +79,7 @@ const Dashboard = () => {
         if (!user_id) return;
 
         const response = await getUserNodes(parseInt(user_id));
-        console.log("dashbord response",response)
+        console.log("dashbord response", response)
         setProcessTitle(response.ProcessTitle);
 
         if (!response?.assignedProcesses) return;
@@ -334,11 +338,18 @@ const Dashboard = () => {
 
   const NavigateOnClick = async (item) => {
     const data = await checkPublishData(item);
-    if (data.status) {
-      navigate(`/published-map-level/${item.processId}`);
-    } else {
-      navigate(`/draft-process-view/${item.processId}`);
-    }
+    // if (data.status) {
+    //   navigate(`/published-map-level/${item.processId}`);
+    // } else {
+    //   navigate(`/draft-process-view/${item.processId}`);
+    // }
+
+
+    goToProcess({
+      mode: data.status ? "published" : "draft",
+      view: "map",
+      processId: item.processId,
+    });
   };
 
   const sliderRef = useRef(null);
@@ -368,17 +379,16 @@ const Dashboard = () => {
     Process_id,
     user_id,
     Level,
-    PageGroupId,
-    label
+
   ) => {
     try {
       const id = Process_id;
       const user = { id: user_id, type: "dashboard on click time" };
 
-      // Extract level number if possible, else 0
-      const newLevel = Level?.match(/^Level(\d+)/)?.[1]
-        ? parseInt(Level.match(/^Level(\d+)/)[1], 10) + 1
+      const newLevel = Level?.match(/^level(\d+)/)?.[1]
+        ? parseInt(Level.match(/^level(\d+)/)[1], 10) + 1
         : 0;
+
 
       const levelParam = `level${newLevel}${Level ? `_${Level}` : ""}`;
 
@@ -386,7 +396,6 @@ const Dashboard = () => {
         checkRecordWithGetLinkDraftData(levelParam, parseInt(user_id), Process_id, Level),
         apiExports.checkPublishRecord(levelParam, Process_id),
       ]);
-
 
       if (!nodeData.status) {
         alert("First create next model of this existing model");
@@ -400,8 +409,8 @@ const Dashboard = () => {
 
       const state = { Process_id, processTitle, TitleTranslation };
       const basePath = publishdata.status
-        ? `/published-map-level/${Process_id}`
-        : `/draft-process-view/${Process_id}`;
+        ? `/published/map/${Process_id}`
+        : `/draft/map/${Process_id}`;
 
 
       addBreadcrumb(processTitle, basePath, state);
@@ -415,29 +424,56 @@ const Dashboard = () => {
         publishdata.status ? "Publish" : "draft"
       );
 
-      // inhe store karo
       breadcrumbs.forEach(({ label, path, state }) => {
         addBreadcrumb(label, path, state);
       });
 
 
+      const mode = publishdata.status ? "published" : "draft";
+
+      const view =
+        nodeData.Page_Title === "Swimlane" ? "swimlane" : "map";
+      // goToProcess({
+      //   mode,
+      //   view,
+      //   processId: id,
+      //   level: newLevel,
+      //   parentId: Level,
+      // });
 
 
-      let url = "";
+      // let url = "";
 
-      if (nodeData.Page_Title === "ProcessMap") {
-        url = `/${publishdata.status ? "published-map-level" : "draft-process-view"
-          }/${newLevel === 0 ? id : `${newLevel}/${Level}/${id}`}`;
+      // if (nodeData.Page_Title === "ProcessMap") {
+      // url = `/${publishdata.status ? "published-map-level" : "draft-process-view"
+      //   }/${newLevel === 0 ? id : `${newLevel}/${Level}/${id}`}`;
+      if (newLevel === 0) {
+        goToProcess({
+          mode,
+          view,
+          processId: id,
+
+        });
+      } else {
+        goToProcess({
+          mode,
+          view,
+          processId: id,
+          level: newLevel,
+          parentId: Level,
+        });
       }
 
-      if (nodeData.Page_Title === "Swimlane") {
-        url = `/${publishdata.status
-          ? "published-swimlane/level"
-          : "draft-swimlane-view/level"
-          }/${newLevel}/${Level}/${id}`;
-      }
+      // }
 
-      if (url) navigate(url);
+      // if (nodeData.Page_Title === "Swimlane") {
+      //   url = `/${publishdata.status
+      //     ? "published-swimlane/level"
+      //     : "draft-swimlane-view/level"
+      //     }/${newLevel}/${Level}/${id}`;
+      // }
+
+      // if (url) navigate(url);
     } catch (error) {
       console.error("Error fetching link data:", error);
     }
@@ -708,14 +744,21 @@ const Dashboard = () => {
                   </thead>
 
                   {getFavProcessesUser.map((item) => {
-                    // parse node.data only if parentId exists and node exists
-                    let label = null;
-                    if (item.parent_id && item.node && item.node.data) {
+                    // console.log("item", item)
+
+                    let translatedLabel = null;
+
+                    const langKey = langMap[item.process.language_id] || "en";
+                    // console.log("langKey", langKey)
+                    if (item.process && item.node) {
                       try {
-                        const parsedData = JSON.parse(item.node.data);
-                        label = parsedData.label || null;
+                        const nodeData = JSON.parse(item.node.data);
+                        const transObj = nodeData.translations || {};
+                        translatedLabel = transObj[langKey] || null;
+
+                        translatedLabel = transObj[langKey] || null;
                       } catch (e) {
-                        console.error("Error parsing node data", e);
+                        console.error("translation parse error", e);
                       }
                     }
 
@@ -729,12 +772,11 @@ const Dashboard = () => {
                                 item.process_id,
                                 item.user_id,
                                 item.parent_id,
-                                item.page_group_id,
-                                label
+
                               )
                             }
                           >
-                            {label || getProcessTitle(item.process_id)}
+                            {translatedLabel || getProcessTitle(item.process_id)}
                           </td>
                           <td>{getProcessTitle(item.process_id)}</td>
 

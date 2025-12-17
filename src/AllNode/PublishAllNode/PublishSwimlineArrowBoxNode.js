@@ -4,17 +4,19 @@ import api, {
   checkRecordWithGetLinkPublishData,
   getdataByNodeId,
 } from "../../API/api";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 import { BreadcrumbsContext } from "../../context/BreadcrumbsContext";
 import { buildBreadcrumbs } from "../../utils/buildBreadcrumbs";
+import { getLevelKey } from "../../utils/getLevel";
+import { useProcessNavigation } from "../../hooks/useProcessNavigation";
 
 const ArrowBoxNode = ({ data }) => {
   const title = data.details.title;
 
   const { addBreadcrumb, removeBreadcrumbsAfter } =
     useContext(BreadcrumbsContext);
-  const navigate = useNavigate();
-
+  // const navigate = useNavigate();
+ const { goToProcess } = useProcessNavigation();
   const handleLinkClick = async () => {
     // console.log(data.processlink)
     if (data.processlink) {
@@ -27,17 +29,18 @@ const ArrowBoxNode = ({ data }) => {
 
           let newLevel = 1;
           if (data.processlink !== null) {
-            const match = data.processlink.match(/^Level(\d+)/);
+            const match = data.processlink.match(/^level(\d+)/);
             if (match && match[1]) {
               const currentLevel = parseInt(match[1], 10);
               newLevel = currentLevel + 1;
             }
           }
 
-          const levelParam =
-            data.processlink !== null
-              ? `level${newLevel}_${data.processlink}`
-              : `level${newLevel}`;
+          // const levelParam =
+          //   data.processlink !== null
+          //     ? `level${newLevel}_${data.processlink}`
+          //     : `level${newLevel}`;
+          const levelParam = getLevelKey(newLevel, data.processlink);
 
           const nodeData = await checkRecordWithGetLinkPublishData(
             levelParam,
@@ -54,22 +57,32 @@ const ArrowBoxNode = ({ data }) => {
               "Publish"
             );
 
-            breadcrumbs.forEach(({ label, path,state }) => {
+            breadcrumbs.forEach(({ label, path, state }) => {
               addBreadcrumb(label, path, state); // blank state as you said
             });
-            // console.log("nodeData123", breadcrumbs);
-            //   console.log("nodeData", nodeData);
+            const mode = "published";
 
-            if (nodeData.Page_Title === "ProcessMap") {
-              navigate(
-                `/published-map-level/${newLevel}/${data.processlink}/${id}`
-              );
-            }
-            if (nodeData.Page_Title === "Swimlane") {
-              navigate(
-                `/published-swimlane/level/${newLevel}/${data.processlink}/${id}`
-              );
-            }
+            const view =
+              nodeData.Page_Title === "Swimlane" ? "swimlane" : "map";
+
+            goToProcess({
+              mode,
+              view,
+              processId: id,
+              level: newLevel,
+              parentId: data.processlink,
+            });
+
+            // if (nodeData.Page_Title === "ProcessMap") {
+            //   navigate(
+            //     `/published-map-level/${newLevel}/${data.processlink}/${id}`
+            //   );
+            // }
+            // if (nodeData.Page_Title === "Swimlane") {
+            //   navigate(
+            //     `/published-swimlane/level/${newLevel}/${data.processlink}/${id}`
+            //   );
+            // }
           } else {
             alert("First create next model of this existing model");
           }
@@ -101,7 +114,7 @@ const ArrowBoxNode = ({ data }) => {
               <button
                 style={styles.linkButton}
                 dangerouslySetInnerHTML={{ __html: title }}
-                // onClick={handleLinkClick}
+              // onClick={handleLinkClick}
               ></button>
             </div>
           ) : (
@@ -176,8 +189,8 @@ const ArrowBoxNode = ({ data }) => {
 const styles = {
   wrapper: {
     position: "relative",
-    width: "90%",
-    height: "90%",
+    width: "80%",
+    height: "72%",
     alignItems: "center",
     justifyContent: "center",
     cursor: "pointer",

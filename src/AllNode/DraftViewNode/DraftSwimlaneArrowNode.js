@@ -7,6 +7,8 @@ import api, {
 import { useNavigate } from "react-router-dom";
 import { BreadcrumbsContext } from "../../context/BreadcrumbsContext";
 import { buildBreadcrumbs } from "../../utils/buildBreadcrumbs";
+import { getLevelKey } from "../../utils/getLevel";
+import { useProcessNavigation } from "../../hooks/useProcessNavigation";
 
 const ArrowBoxNode = ({ data }) => {
   const title = data.details.title;
@@ -14,7 +16,7 @@ const ArrowBoxNode = ({ data }) => {
   const { addBreadcrumb, removeBreadcrumbsAfter } =
     useContext(BreadcrumbsContext);
   const navigate = useNavigate();
-
+  const { goToProcess } = useProcessNavigation();
   const handleLinkClick = async () => {
     // console.log(data.processlink);
     if (data.processlink) {
@@ -27,17 +29,18 @@ const ArrowBoxNode = ({ data }) => {
 
           let newLevel = 1;
           if (data.processlink !== null) {
-            const match = data.processlink.match(/^Level(\d+)/);
+            const match = data.processlink.match(/^level(\d+)/);
             if (match && match[1]) {
               const currentLevel = parseInt(match[1], 10);
               newLevel = currentLevel + 1;
             }
           }
 
-          const levelParam =
-            data.processlink !== null
-              ? `level${newLevel}_${data.processlink}`
-              : `level${newLevel}`;
+          // const levelParam =
+          //   data.processlink !== null
+          //     ? `level${newLevel}_${data.processlink}`
+          //     : `level${newLevel}`;
+          const levelParam = getLevelKey(newLevel, data.processlink);
           // console.log("newLevel", levelParam);
 
           const nodeData = await checkRecordWithGetLinkDraftData(
@@ -54,19 +57,33 @@ const ArrowBoxNode = ({ data }) => {
               Process_id
             );
 
-            breadcrumbs.forEach(({ label, path,state }) => {
+            breadcrumbs.forEach(({ label, path, state }) => {
               addBreadcrumb(label, path, state); // blank state as you said
             });
-            if (nodeData.Page_Title === "ProcessMap") {
-              navigate(
-                `/draft-process-view/${newLevel}/${data.processlink}/${id}`
-              );
-            }
-            if (nodeData.Page_Title === "Swimlane") {
-              navigate(
-                `/draft-swimlane-view/level/${newLevel}/${data.processlink}/${id}`
-              );
-            }
+
+            const mode = "draft";
+
+            const view =
+              nodeData.Page_Title === "Swimlane" ? "swimlane" : "map";
+
+            goToProcess({
+              mode,
+              view,
+              processId: id,
+              level: newLevel,
+              parentId: data.processlink,
+            });
+
+            // if (nodeData.Page_Title === "ProcessMap") {
+            //   navigate(
+            //     `/draft-process-view/${newLevel}/${data.processlink}/${id}`
+            //   );
+            // }
+            // if (nodeData.Page_Title === "Swimlane") {
+            //   navigate(
+            //     `/draft-swimlane-view/level/${newLevel}/${data.processlink}/${id}`
+            //   );
+            // }
           } else {
             alert("First create next model of this existing model");
           }
@@ -97,7 +114,7 @@ const ArrowBoxNode = ({ data }) => {
           ...styles.arrowBox,
           // filter: data.processlink ? "drop-shadow(0px 0px 10px #0000004f)" : "none",
         }}
-        // onClick={handleLinkClick}
+      // onClick={handleLinkClick}
       >
         <div style={styles.textView}>
           {data.processlink ? (
@@ -180,8 +197,8 @@ const ArrowBoxNode = ({ data }) => {
 const styles = {
   wrapper: {
     position: "relative",
-    width: "90%",
-    height: "90%",
+    width: "80%",
+    height: "72%",
     alignItems: "center",
     justifyContent: "center",
     cursor: "pointer",

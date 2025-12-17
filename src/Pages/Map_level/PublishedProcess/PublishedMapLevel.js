@@ -28,10 +28,13 @@ import useCheckFavorite from "../../../hooks/useCheckFavorite";
 import { usePageGroupIdViewer } from "../../../hooks/usePageGroupIdViewer";
 import { useLangMap } from "../../../hooks/useLangMap";
 import { getLevelKey } from "../../../utils/getLevel";
+import { useLabelChange } from "../../../hooks/useLabelChange";
+import { useFetchNodes } from "../../../hooks/useFetchNodes";
+import { getProcessDates } from "../../../utils/getProcessDates";
+import { useProcessNavigation } from "../../../hooks/useProcessNavigation";
+import { buildProcessPath } from "../../../routes/buildProcessPath";
 
 const PublishedMapLevel = () => {
-  const [totalHeight, setTotalHeight] = useState(0);
-  const [windowHeight, setWindowHeight] = useState(window.innerHeight);
   const windowSize = {
     width: window.innerWidth - 300,
     height: window.innerHeight - 300,
@@ -42,43 +45,7 @@ const PublishedMapLevel = () => {
   const LoginUser = useSelector((state) => state.user.user);
 
   const [isFavorite, setIsFavorite] = useState(false);
-
-  useEffect(() => {
-    const calculateHeight = () => {
-      const breadcrumbsElement = document.querySelector(
-        ".breadcrumbs-container"
-      );
-      const appHeaderElement = document.querySelector(".app-header");
-
-      const element = document.querySelector(".ss_new_hed");
-      const element2 = document.querySelector(".app-header");
-
-      const elementHeight = element
-        ? element.getBoundingClientRect().height
-        : 0;
-      const appHeaderHeight = element2
-        ? element2.getBoundingClientRect().height
-        : 0;
-
-      const newHeight = window.innerHeight - (elementHeight + appHeaderHeight);
-      setRemainingHeight(newHeight - 33);
-
-      if (breadcrumbsElement && appHeaderElement) {
-        const combinedHeight =
-          breadcrumbsElement.offsetHeight + appHeaderElement.offsetHeight + 100;
-        setTotalHeight(combinedHeight);
-      }
-    };
-    calculateHeight();
-    const handleResize = () => {
-      setWindowHeight(window.innerHeight);
-      calculateHeight();
-    };
-    window.addEventListener("resize", handleResize);
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
+  const { goToProcess } = useProcessNavigation();
 
   const navigate = useNavigate();
   const { level, parentId, processId } = useParams();
@@ -91,7 +58,7 @@ const PublishedMapLevel = () => {
   const id = processId;
   const [processDefaultlanguage_id, setprocessDefaultlanguage_id] =
     useState(null);
- const [OriginalDefaultlanguge_id, setOriginalDefaultlanguge_id] =
+  const [OriginalDefaultlanguge_id, setOriginalDefaultlanguge_id] =
     useState(null);
   const currentLevel = level ? parseInt(level, 10) : 0;
   const currentParentId = parentId || null;
@@ -120,151 +87,178 @@ const PublishedMapLevel = () => {
     }),
     []
   );
-  const handleLabelChange = useCallback(
-    (nodeId, newLabel) => {
-      setNodes((nds) =>
-        nds.map((node) =>
-          node.id === nodeId
-            ? { ...node, data: { ...node.data, label: newLabel } }
-            : node
-        )
-      );
-    },
-    [setNodes]
-  );
+  // const handleLabelChange = useCallback(
+  //   (nodeId, newLabel) => {
+  //     setNodes((nds) =>
+  //       nds.map((node) =>
+  //         node.id === nodeId
+  //           ? { ...node, data: { ...node.data, label: newLabel } }
+  //           : node
+  //       )
+  //     );
+  //   },
+  //   [setNodes]
+  // );
 
-  useEffect(() => {
-    const savedLang = localStorage.getItem("selectedLanguageId");
-    if (savedLang) {
-      fetchNodes(parseInt(savedLang)); // language apply karo
-    } else {
-      fetchNodes(processDefaultlanguage_id); // default
-    }
-  }, [
+  // ---- Label Change (Publish = simple) ----
+  const { handleLabelChange } = useLabelChange(setNodes);
+
+
+  // ---- Fetch Hook ----
+  const { fetchNodes } = useFetchNodes({
+    getLevelKey,
     currentLevel,
-    handleLabelChange,
+    currentParentId,
+    LoginUser,
+    id,
     setNodes,
     setEdges,
-    currentParentId,
-    id,
+    setUser,
+    setters: {
+      Settitle,
+      SetTitleTranslation,
+      setprocess_img,
+      setprocessDefaultlanguage_id,
+      setOriginalDefaultlanguge_id,
+      setSupportedLanguages,
+      setgetPublishedDate,
+    },
+    mode: "publish", // ⚡️ PUBLISH MODE
+    handleLabelChange,
+  });
+
+  useEffect(() => {
+
+    // if (!processId || nodes?.[0]?.page_group_id === null) return;
+    (async () => {
+      // const dates = await getProcessDates(processId, nodes?.[0]?.page_group_id);
+      // setgetPublishedDate(dates.publishedDate);
+      const savedLang = localStorage.getItem("selectedLanguageId");
+      if (savedLang) {
+        fetchNodes(parseInt(savedLang)); // language apply karo
+      } else {
+        fetchNodes(processDefaultlanguage_id); // default
+      }
+
+    })();
+  }, [
+    currentLevel,
+
   ]);
 
-  const fetchNodes = async (language_id = null) => {
-    try {
-      // const levelParam =
-      //   currentParentId !== null
-      //     ? `level${currentLevel}_${currentParentId}`
-      //     : `level${currentLevel}`;
-      const levelParam = getLevelKey(currentLevel, currentParentId);
-      
-      const user_id = LoginUser ? LoginUser.id : null;
+  // const fetchNodes = async (language_id = null) => {
+  //   try {
 
-      const Process_id = id ? id : null;
-      const publishedStatus = "Published";
-      const data = await api.getPublishedNodes(
-        levelParam,
-        parseInt(user_id),
-        Process_id,
-        currentParentId,
-        language_id
-      );
+  //     const levelParam = getLevelKey(currentLevel, currentParentId);
 
-      console.log("data", data)
-      // ✅ Set user from backend response
-      if (data && data.user_id) {
-        // Construct user object based on backend logic
-        setUser({
-          id: data.actual_user_id,
-          type: data.type || "self",
-          role: data.role || "self",
-          OwnId: data.user_id,
-          actual_user_id: data.actual_user_id,
-        });
-      }
-      const PageGroupId = data.nodes?.[0]?.page_group_id;
-      const getPublishedDate = await api.GetPublishedDate(
-        Process_id,
-        publishedStatus,
-        PageGroupId
-      );
-      if (getPublishedDate.status === true) {
-        setgetPublishedDate(getPublishedDate.updated_at);
-      } else {
-        setgetPublishedDate("");
-      }
-      Settitle(data.title);
-      SetTitleTranslation(data.TitleTranslation);
-      setprocessDefaultlanguage_id(data.processDefaultlanguage_id);
-        setOriginalDefaultlanguge_id(data.OriginalDefaultlanguge_id);
-      setSupportedLanguages(data.ProcessSupportLanguage);
-      setprocess_img(data.process_img);
-      const parsedNodes = await Promise.all(
-        data.nodes
-          .filter((node) => node.type !== "StickyNote")
-          .map(async (node) => {
-            const parsedData = JSON.parse(node.data);
-            const parsedPosition = JSON.parse(node.position);
-            const parsedMeasured = JSON.parse(node.measured);
+  //     const user_id = LoginUser ? LoginUser.id : null;
 
-            // 👇 Next Level check
-            const newLevel = currentLevel + 1;
-            const levelParam =
-              node.node_id !== null
-                ? `level${newLevel}_${node.node_id}`
-                : `level${currentLevel}`;
-            const Process_id = id ? id : null;
+  //     const Process_id = id ? id : null;
+  //     const publishedStatus = "Published";
+  //     const data = await api.getPublishedNodes(
+  //       levelParam,
+  //       parseInt(user_id),
+  //       Process_id,
+  //       currentParentId,
+  //       language_id
+  //     );
 
-            let hasNextLevel = false;
-            try {
-              const check = await api.checkPublishRecord(
-                levelParam,
-                Process_id
-              );
-              hasNextLevel = check?.status === true;
-            } catch (err) {
-              console.error("checkPublishRecord error:", err);
-            }
-            return {
-              ...node,
-              data: {
-                ...parsedData,
-                onLabelChange: (newLabel) =>
-                  handleLabelChange(node.node_id, newLabel),
+  //     console.log("data", data)
+  //     // ✅ Set user from backend response
+  //     if (data && data.user_id) {
+  //       // Construct user object based on backend logic
+  //       setUser({
+  //         id: data.actual_user_id,
+  //         type: data.type || "self",
+  //         role: data.role || "self",
+  //         OwnId: data.user_id,
+  //         actual_user_id: data.actual_user_id,
+  //       });
+  //     }
+  //     const PageGroupId = data.nodes?.[0]?.page_group_id;
+  //     const getPublishedDate = await api.GetPublishedDate(
+  //       Process_id,
+  //       publishedStatus,
+  //       PageGroupId
+  //     );
+  //     if (getPublishedDate.status === true) {
+  //       setgetPublishedDate(getPublishedDate.updated_at);
+  //     } else {
+  //       setgetPublishedDate("");
+  //     }
+  //     Settitle(data.title);
+  //     SetTitleTranslation(data.TitleTranslation);
+  //     setprocessDefaultlanguage_id(data.processDefaultlanguage_id);
+  //       setOriginalDefaultlanguge_id(data.OriginalDefaultlanguge_id);
+  //     setSupportedLanguages(data.ProcessSupportLanguage);
+  //     setprocess_img(data.process_img);
+  //     const parsedNodes = await Promise.all(
+  //       data.nodes
+  //         .filter((node) => node.type !== "StickyNote")
+  //         .map(async (node) => {
+  //           const parsedData = JSON.parse(node.data);
+  //           const parsedPosition = JSON.parse(node.position);
+  //           const parsedMeasured = JSON.parse(node.measured);
 
-                width_height: parsedMeasured,
-                autoFocus: true,
-                node_id: node.node_id,
-                nodeResize: true,
-                LinkToStatus: node.LinkToStatus,
-                hasNextLevel,
-              },
-              type: node.type,
-              id: node.node_id,
+  //           // 👇 Next Level check
+  //           const newLevel = currentLevel + 1;
+  //           const levelParam =
+  //             node.node_id !== null
+  //               ? `level${newLevel}_${node.node_id}`
+  //               : `level${currentLevel}`;
+  //           const Process_id = id ? id : null;
 
-              measured: parsedMeasured,
-              position: parsedPosition,
-              draggable: false,
-              animated: false,
-            };
-          })
-      );
-      const parsedEdges = data.edges.map((edge) => ({
-        ...edge,
-        animated: Boolean(edge.animated),
-        markerEnd: {
-          type: MarkerType.ArrowClosed,
-        },
-        style: { stroke: "#002060", strokeWidth: 2 },
-        type: "step",
-      }));
-      // console.log("parsedNodes",parsedNodes)
-      setNodes(parsedNodes);
-      setEdges(parsedEdges);
-    } catch (error) {
-      console.error("Error fetching nodes:", error);
-      alert("Failed to fetch nodes. Please try again.");
-    }
-  };
+  //           let hasNextLevel = false;
+  //           try {
+  //             const check = await api.checkPublishRecord(
+  //               levelParam,
+  //               Process_id
+  //             );
+  //             hasNextLevel = check?.status === true;
+  //           } catch (err) {
+  //             console.error("checkPublishRecord error:", err);
+  //           }
+  //           return {
+  //             ...node,
+  //             data: {
+  //               ...parsedData,
+  //               onLabelChange: (newLabel) =>
+  //                 handleLabelChange(node.node_id, newLabel),
+
+  //               width_height: parsedMeasured,
+  //               autoFocus: true,
+  //               node_id: node.node_id,
+  //               nodeResize: true,
+  //               LinkToStatus: node.LinkToStatus,
+  //               hasNextLevel,
+  //             },
+  //             type: node.type,
+  //             id: node.node_id,
+
+  //             measured: parsedMeasured,
+  //             position: parsedPosition,
+  //             draggable: false,
+  //             animated: false,
+  //           };
+  //         })
+  //     );
+  //     const parsedEdges = data.edges.map((edge) => ({
+  //       ...edge,
+  //       animated: Boolean(edge.animated),
+  //       markerEnd: {
+  //         type: MarkerType.ArrowClosed,
+  //       },
+  //       style: { stroke: "#002060", strokeWidth: 2 },
+  //       type: "step",
+  //     }));
+  //     // console.log("parsedNodes",parsedNodes)
+  //     setNodes(parsedNodes);
+  //     setEdges(parsedEdges);
+  //   } catch (error) {
+  //     console.error("Error fetching nodes:", error);
+  //     alert("Failed to fetch nodes. Please try again.");
+  //   }
+  // };
 
   const handleSupportViewlangugeId = (langId) => {
     localStorage.setItem("selectedLanguageId", langId);
@@ -282,12 +276,19 @@ const PublishedMapLevel = () => {
 
     const label = currentLevel === 0 ? title : title;
     const state = { id, title, currentPath, TitleTranslation };
-
-    const path =
-      currentLevel === 0
-        ? `/published-map-level/${id}`
-        : `/published-map-level/${currentLevel}/${currentParentId}/${id}`;
-
+    const mode = "published"
+    const view = "map"
+    // const path =
+    //   currentLevel === 0
+    //     ? `/published/map/${id}`
+    //     : `/published/map/${currentLevel}/${currentParentId}/${id}`;
+    const path = buildProcessPath({
+      mode,
+      view,
+      processId: id,
+      level: currentLevel,
+      parentId: currentLevel === 0 ? undefined : currentParentId,
+    });
     const exists = breadcrumbs.some((b) => b.path === path);
     if (!exists) {
       if (currentLevel >= 0 && isNavigating) {
@@ -320,30 +321,66 @@ const PublishedMapLevel = () => {
       node.id !== null ? `level${newLevel}_${node.id}` : `level${currentLevel}`;
     const Process_id = id ? id : null;
     const data = await api.checkPublishRecord(levelParam, Process_id);
-
     if (data.status === true) {
-      const state = { id, selectedLabel, currentPath, TitleTranslation };
-      if (data.Page_Title === "ProcessMap") {
-        navigate(`/published-map-level/${newLevel}/${node.id}/${id}`);
-        addBreadcrumb(
-          `${selectedLabel} `,
-          `/published-map-level/${newLevel}/${node.id}/${id}`,
-          state
-        );
-      }
+      const mode = "published";
 
-      if (data.Page_Title === "Swimlane") {
-        addBreadcrumb(
-          `${selectedLabel} `,
-          `/published-swimlane/level/${newLevel}/${node.id}/${id}`,
-          state
-        );
+      const view =
+        data.Page_Title === "Swimlane" ? "swimlane" : "map";
 
-        navigate(`/published-swimlane/level/${newLevel}/${node.id}/${id}`);
-      }
+      const state = {
+        id,
+        selectedLabel,
+        currentPath,
+        TitleTranslation,
+      };
+
+      const path = buildProcessPath({
+        mode,
+        view,
+        processId: id,
+        level: newLevel,
+        parentId: node.id,
+      });
+
+      // breadcrumb always uses same builder
+      addBreadcrumb(`${selectedLabel}`, path, state);
+
+      // single navigation point
+      goToProcess({
+        mode,
+        view,
+        processId: id,
+        level: newLevel,
+        parentId: node.id,
+      });
     } else {
       alert("Next level not Published");
     }
+
+    // if (data.status === true) {
+    //   const state = { id, selectedLabel, currentPath, TitleTranslation };
+    //   if (data.Page_Title === "ProcessMap") {
+
+    //     navigate(`/published-map-level/${newLevel}/${node.id}/${id}`);
+    //     addBreadcrumb(
+    //       `${selectedLabel} `,
+    //       `/published-map-level/${newLevel}/${node.id}/${id}`,
+    //       state
+    //     );
+    //   }
+
+    //   if (data.Page_Title === "Swimlane") {
+    //     addBreadcrumb(
+    //       `${selectedLabel} `,
+    //       `/published-swimlane/level/${newLevel}/${node.id}/${id}`,
+    //       state
+    //     );
+
+    //     navigate(`/published-swimlane/level/${newLevel}/${node.id}/${id}`);
+    //   }
+    // } else {
+    //   alert("Next level not Published");
+    // }
   };
 
   const onConnect = useCallback((connection) => {
@@ -357,33 +394,63 @@ const PublishedMapLevel = () => {
 
   const iconNames = {};
   const navigateOnDraft = () => {
+    // const updatedBreadcrumbs = breadcrumbs.map((crumb, index) => {
+    //   if (index === 0) return crumb; // First breadcrumb ko as it is rakhna
+
+    //   return {
+    //     ...crumb,
+    //     path: crumb.path.replace("published-map-level", "draft-process-view"),
+    //   };
+    // });
+    if (!id || !user) {
+      alert("Currently not navigate on draft mode");
+      return;
+    }
     const updatedBreadcrumbs = breadcrumbs.map((crumb, index) => {
-      if (index === 0) return crumb; // First breadcrumb ko as it is rakhna
+      // Home breadcrumb ko touch nahi karna
+      if (index === 0) return crumb;
+
+      if (!crumb.path) return crumb;
+
+      // 🔥 published → draft
+      const newPath = crumb.path.replace(
+        "/published/",
+        "/draft/"
+      );
 
       return {
         ...crumb,
-        path: crumb.path.replace("published-map-level", "draft-process-view"),
+        path: newPath,
       };
     });
+
+    // console.log("updatedBreadcrumbs", updatedBreadcrumbs)
     setBreadcrumbs(updatedBreadcrumbs);
-    if (id && user) {
-      if (currentLevel === 0) {
-        navigate(`/draft-process-view/${id}`);
-      } else {
-        navigate(
-          `/draft-process-view/${currentLevel}/${currentParentId}/${id}`
-        );
-      }
-    } else {
-      alert("Currently not navigate on draft mode");
-    }
+    goToProcess({
+      mode: "draft",
+      view: "map",
+      processId: id,
+      level: currentLevel,
+      parentId: currentLevel === 0 ? undefined : currentParentId,
+    });
+    // if (id && user) {
+    //   if (currentLevel === 0) {
+    //     navigate(`/draft-process-view/${id}`);
+    //   } else {
+    //     navigate(
+    //       `/draft-process-view/${currentLevel}/${currentParentId}/${id}`
+    //     );
+    //   }
+    // } else {
+    //   alert("Currently not navigate on draft mode");
+    // }
   };
 
   const styles = {
     appContainer: {
       display: "flex",
       flexDirection: "column",
-      height: totalHeight > 0 ? `${windowHeight - totalHeight}px` : "auto",
+      // height: totalHeight > 0 ? `${windowHeight - totalHeight}px` : "auto",
       marginTop: "0px",
       backgroundColor: "#f8f9fa",
     },
@@ -476,7 +543,7 @@ const PublishedMapLevel = () => {
         handleSupportViewlangugeId={handleSupportViewlangugeId}
         supportedLanguages={supportedLanguages}
         selectedLanguage={processDefaultlanguage_id}
-         OriginalDefaultlanguge_id={OriginalDefaultlanguge_id}
+        OriginalDefaultlanguge_id={OriginalDefaultlanguge_id}
       />
 
       <ReactFlowProvider>
@@ -528,7 +595,7 @@ const PublishedMapLevel = () => {
             status={"Published"}
             type={"ProcessMaps"}
             selectedLanguage={processDefaultlanguage_id}
-                 OriginalDefaultlanguge_id={OriginalDefaultlanguge_id}
+            OriginalDefaultlanguge_id={OriginalDefaultlanguge_id}
           />
         )}
       </ReactFlowProvider>

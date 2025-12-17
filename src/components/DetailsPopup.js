@@ -127,7 +127,7 @@ const DetailsPopup = ({ isOpen, onClose, onSave, Details, supportedLanguages, se
             backgroundColor: "#ffffff",
             border: "1px solid #002060",
             boxShadow: "0 2px 5px #002060",
-            overflow: "hidden",
+            // overflow: "hidden",
             zIndex: 1001,
             padding: "10px",
           }}

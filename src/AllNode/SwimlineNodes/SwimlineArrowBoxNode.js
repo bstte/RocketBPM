@@ -178,8 +178,8 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
 const styles = {
   wrapper: {
     position: "relative",
-    width: "90%",
-    height: "90%",
+    width: "80%",
+    height: "72%",
     alignItems: "center",
     justifyContent: "center",
     cursor: "pointer",

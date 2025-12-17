@@ -29,6 +29,8 @@ import Setting from "../Pages/Setting/Setting";
 import DraftProcessMapVersion from "../Pages/Map_level/DraftProcessMapVersion";
 import SwimlaneMapVersion from "../Pages/Map_level/SwimlaneMapVersion";
 import ResetPassword from "../Pages/Forgotpassword/ResetPassword";
+import MapResolver from "./resolvers/MapResolver";
+import SwimlaneResolver from "./resolvers/SwimlaneResolver";
 
 const AppRoutes = () => {
   return (
@@ -49,26 +51,17 @@ const AppRoutes = () => {
         <Route path="/users" element={<ManageAssignedUsers />} />
         <Route path="/users/create" element={<AddUser />} />
         <Route path="/users/edit" element={<EditUser />} />
-        <Route
-          path="/map-level/:processId/*"
-          element={
-
-            <ReactFlowProvider>
-              <MapLevel />
-            </ReactFlowProvider>
-
-          }
-        />
-        <Route path="/level/:level/:parentId/:processId/*" element={<MapLevel />} />
         <Route path="/processes/create" element={<ProcessTitle />} />
         <Route path="/list-process-title" element={<ListProcessTitle />} />
-        <Route path="/swimlane/level/:level/:parentId/:processId/*" element={<SwimlaneModel />} />
-        <Route path="/published-map-level/:processId" element={<PublishedMapLevel />} />
-        <Route path="/published-map-level/:level/:parentId/:processId/*" element={<PublishedMapLevel />} />
-        <Route path="/published-swimlane/level/:level/:parentId/:processId" element={<PublishedSwimlaneModel />} />
-        <Route path="/draft-process-view/:processId" element={<DraftProcesMapLevel />} />
-        <Route path="/draft-process-view/:level/:parentId/:processId/*" element={<DraftProcesMapLevel />} />
-        <Route path="/draft-swimlane-view/level/:level/:parentId/:processId" element={<DraftSwimlineLevel />} />
+
+
+        {/* MAP */}
+        <Route path=":mode/map/:processId" element={<MapResolver />} />
+        <Route path=":mode/map/:processId/:level/:parentId" element={<MapResolver />} />
+
+        {/* SWIMLANE */}
+        <Route path=":mode/swimlane/:processId" element={<SwimlaneResolver />} />
+        <Route path=":mode/swimlane/:processId/:level/:parentId" element={<SwimlaneResolver />} />
         <Route path="/swimlane-version/:processId/:level/:version/:pageTitle/:user_id/:currentParentId" element={<SwimlaneMapVersion />} />
         <Route path="/process-version/:processId/:level/:version/:pageTitle/:user_id/:currentParentId" element={<DraftProcessMapVersion />} />
       </Route>
@@ -79,3 +72,25 @@ const AppRoutes = () => {
 };
 
 export default AppRoutes;
+
+
+
+
+{/* <Route
+          path="/map-level/:processId/*"
+          element={
+
+            <ReactFlowProvider>
+              <MapLevel />
+            </ReactFlowProvider>
+
+          }
+        /> */}
+{/* <Route path="/level/:level/:parentId/:processId/*" element={<MapLevel />} /> */ }
+{/* <Route path="/swimlane/level/:level/:parentId/:processId/*" element={<SwimlaneModel />} /> */ }
+{/* <Route path="/published-map-level/:processId" element={<PublishedMapLevel />} /> */ }
+{/* <Route path="/published-map-level/:level/:parentId/:processId/*" element={<PublishedMapLevel />} /> */ }
+{/* <Route path="/published-swimlane/level/:level/:parentId/:processId" element={<PublishedSwimlaneModel />} /> */ }
+{/* <Route path="/draft-process-view/:processId" element={<DraftProcesMapLevel />} /> */ }
+{/* <Route path="/draft-process-view/:level/:parentId/:processId/*" element={<DraftProcesMapLevel />} /> */ }
+{/* <Route path="/draft-swimlane-view/level/:level/:parentId/:processId" element={<DraftSwimlineLevel />} /> */ }

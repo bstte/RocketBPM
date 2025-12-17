@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import './Signup.css'; 
+import './Signup.css';
 
 import CustomAlert from '../../components/CustomAlert';
 import { CurrentUser, signup } from '../../API/api';
@@ -21,7 +21,7 @@ const Signup = () => {
     confirmPassword: '', // ✅ Add this
     role: ''
   });
-  
+
   const dispatch = useDispatch();
 
   const getQueryParams = useCallback(() => {
@@ -33,11 +33,11 @@ const Signup = () => {
       role: searchParams.get('role') || ''
     };
   }, [location.search]);
-  
+
   useEffect(() => {
     setFormData(getQueryParams());
   }, [getQueryParams]);
-  
+
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -61,34 +61,34 @@ const Signup = () => {
       CustomAlert.error("Error", "Passwords do not match!");
       return;
     }
-    
+
     try {
       // Yahan aap API call kar sakte hain signup ke liye
-    
+
       const response = await signup({
         first_name: formData.firstName,
         last_name: formData.lastName,
         email: formData.email,
         password: formData.password,
-     
+
       });
       // CustomAlert.success("Success", response.message);
-    
+
       // navigate('/login',{ replace: true }); 
 
-    // ✅ Store token in localStorage
-    localStorage.setItem('token', response.access_token);
+      // ✅ Store token in localStorage
+      localStorage.setItem('token', response.access_token);
 
-    // ✅ Get current user
-    const userResponse = await CurrentUser(response.access_token);
-    dispatch(setUser(userResponse)); // store in redux
+      // ✅ Get current user
+      const userResponse = await CurrentUser(response.access_token);
+      dispatch(setUser(userResponse)); // store in redux
 
-    // ✅ Success
-    CustomAlert.success("Success", response.message);
+      // ✅ Success
+      CustomAlert.success("Success", response.message);
 
-    // ✅ Go to dashboard directly
-    navigate('/dashboard', { replace: true });
-   
+      // ✅ Go to dashboard directly
+      navigate('/dashboard', { replace: true });
+
     } catch (error) {
       CustomAlert.error("Error", error.response.data.message);
       console.error("Signup error:", error);
@@ -99,7 +99,7 @@ const Signup = () => {
     <div className="login-container">
       <div className="login-wrapper">
         <div className="login-image">
-        <img src="/img/RocketBPM_rocket_logo.png" alt='' style={{ width: "15vw"}}/>
+          <img src="/img/RocketBPM_rocket_logo.png" alt='' style={{ width: "15vw" }} />
         </div>
         <h2>Join RocketBPM.com</h2>
         <form className="login-form" onSubmit={handleSubmit}>
@@ -128,7 +128,7 @@ const Signup = () => {
             className="login-input"
             disabled // Email change na ho
           />
-         
+
           <input
             type="password"
             name="password"
@@ -138,16 +138,16 @@ const Signup = () => {
             className="login-input"
           />
           <input
-  type="password"
-  name="confirmPassword"
-  value={formData.confirmPassword}
-  onChange={handleChange}
-  placeholder="Confirm Password"
-  className="login-input"
-/>
+            type="password"
+            name="confirmPassword"
+            value={formData.confirmPassword}
+            onChange={handleChange}
+            placeholder="Confirm Password"
+            className="login-input"
+          />
 
           <button type="submit" className="login-button">SIGN UP</button>
-          <p>Already a member?<button className="btn_form" type='button' onClick={()=> navigate('/login')}>Sign in</button></p>
+          <p>Already a member?<button className="btn_form" type='button' onClick={() => navigate('/login')}>Sign in</button></p>
         </form>
       </div>
     </div>

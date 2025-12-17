@@ -186,8 +186,8 @@ const BoxNode = ({ data }) => {
 const styles = {
   wrapper: {
     position: "relative",
-    width: "86%",
-    height: "78%",
+    width: "80%",
+    height: "72%",
     alignItems: "center",
     justifyContent: "center",
   },

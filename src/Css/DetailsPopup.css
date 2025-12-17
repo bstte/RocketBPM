@@ -131,6 +131,7 @@
     padding:0 10px 30px 10px;
     font-family: 'Poppins';
     margin-top: 10px;
+    max-height: 340px;
   }
   .ql-editor ul {
     padding: 0 0 0 15px;

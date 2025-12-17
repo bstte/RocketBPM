@@ -111,8 +111,8 @@ const SwimlineRightsideBox = ({ data}) => {
 const styles = {
   wrapper: {
     position: 'relative',
-    width: "86%",
-    height: "84%",
+    width: "80%",
+    height: "72%",
     alignItems: 'center',
     justifyContent: 'center',
   },
