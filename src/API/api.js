@@ -1,7 +1,14 @@
 
 import axios from 'axios';
-const baseUrl = 'https://admin.rocketbpm.com/api'
-export const ImageBaseUrl = 'https://admin.rocketbpm.com/public/'
+// const baseUrl = 'https://admin.rocketbpm.com/api'
+// export const ImageBaseUrl = 'https://admin.rocketbpm.com/public/'
+
+
+
+// staging api and images
+const baseUrl = 'https://stagingadmin.rocketbpm.com/api'
+export const ImageBaseUrl = 'https://stagingadmin.rocketbpm.com/'
+
 
 export const defaultApi = axios.create({
   baseURL: baseUrl,
