@@ -391,12 +391,12 @@ const Dashboard = () => {
 
 
       const levelParam = `level${newLevel}${Level ? `_${Level}` : ""}`;
-
+console.log(levelParam, parseInt(user_id), Process_id, Level)
       const [nodeData, publishdata] = await Promise.all([
         checkRecordWithGetLinkDraftData(levelParam, parseInt(user_id), Process_id, Level),
         apiExports.checkPublishRecord(levelParam, Process_id),
       ]);
-
+console.log("nodedata",nodeData)
       if (!nodeData.status) {
         alert("First create next model of this existing model");
         return;

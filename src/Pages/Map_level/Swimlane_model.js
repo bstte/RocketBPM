@@ -3,8 +3,8 @@ import React, {
   useMemo,
   useState,
   useEffect,
-  useContext,
   useRef,
+  useContext,
 } from "react";
 import {
   ReactFlow,
@@ -26,7 +26,6 @@ import { v4 as uuidv4 } from "uuid";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import api, {
   addFavProcess,
-  checkFavProcess,
   checkRecordWithGetLinkDraftData,
   deleteExistingRole,
   filter_draft,
@@ -41,6 +40,7 @@ import NodeTypes from "./NodeTypes";
 import generateNodesAndEdges from "../../AllNode/SwimlineNodes/generateNodesAndEdges";
 import styles from "./SwimlaneStyles";
 import AddObjectRole from "../../AllNode/SwimlineNodes/addobjectrole";
+import SwimlineRightsideBox from "../../AllNode/SwimlineNodes/SwimlineRightsideBox";
 import { BreadcrumbsContext } from "../../context/BreadcrumbsContext";
 import "../../Css/Swimlane.css";
 import { useSelector } from "react-redux";
@@ -65,64 +65,16 @@ import { getLevelKey } from "../../utils/getLevel";
 import { useSwimlaneLabelChange } from "../../hooks/swimlane/useSwimlaneLabelChange";
 import { useSwimlaneFetchNodes } from "../../hooks/swimlane/useSwimlaneFetchNodes";
 import { useProcessNavigation } from "../../hooks/useProcessNavigation";
-export function getDropdownPosition(clickClientX, clickClientY, menuWidth, menuHeight) {
-  const container = document.querySelector(".publishcontainer");
-  if (!container) {
-    return { x: clickClientX, y: clickClientY };
-  }
+import EdgeContextMenu from "../../components/EdgeContextMenu";
+import ExistingModelPopup from "../../components/ExistingModelPopup";
+import ExistingRolePopup from "../../components/ExistingRolePopup";
+import ManageRoleGroupModal from "./components/ManageRoleGroupModal";
+import AssignRoleOwnerModal from "./components/AssignRoleOwnerModal";
 
-  const rect = container.getBoundingClientRect();
-  const offsetX = clickClientX - rect.left + container.scrollLeft;
-  const offsetY = clickClientY - rect.top + container.scrollTop;
-
-  const padding = 8;
-  let x = offsetX + 12;
-  let y = offsetY + 8;
-
-  const visibleW = container.clientWidth;
-  const visibleH = container.clientHeight;
-
-  if (x + menuWidth > visibleW - padding) {
-    x = visibleW - menuWidth - padding;
-  }
-
-  if (y + menuHeight > visibleH - padding) {
-    const aboveY = offsetY - menuHeight - 12; // open above cursor
-    if (aboveY >= padding) {
-      y = aboveY;
-    } else {
-      y = Math.max(padding, visibleH - menuHeight - padding);
-    }
-  }
-  x = Math.max(padding, x);
-  y = Math.max(padding, y);
-
-  return { x, y };
-}
-
-function getLocalPositionInsideContainer(clickX, clickY, offsetX = 20, offsetY = 20) {
-  const container = document.querySelector(".publishcontainer");
-  if (!container) return { x: clickX, y: clickY };
-
-  const rect = container.getBoundingClientRect();
-
-  // Convert click to container local coordinates
-  let x = clickX - rect.left + offsetX;
-  let y = clickY - rect.top + offsetY;
-
-  // STICKY NOTE SIZE (your note has 240x180)
-  const NOTE_WIDTH = 240;
-  const NOTE_HEIGHT = 180;
-
-  // Clamp horizontally
-  x = Math.max(10, Math.min(x, rect.width - NOTE_WIDTH - 10));
-
-  // Clamp vertically (THIS FIXES BOTTOM ISSUE)
-  y = Math.max(10, Math.min(y, rect.height - NOTE_HEIGHT - 10));
-
-  return { x, y };
-}
-
+// NEW IMPORTS
+import { getDropdownPosition, getLocalPositionInsideContainer } from "../../utils/swimlaneUtils";
+import { useSwimlaneDrag } from "../../hooks/swimlane/useSwimlaneDrag";
+import { useSwimlaneAddNode } from "../../hooks/swimlane/useSwimlaneAddNode";
 
 const SwimlaneModel = () => {
   const [windowSize, setWindowSize] = useState({
@@ -195,6 +147,8 @@ const SwimlaneModel = () => {
   const [contextMenu, setContextMenu] = useState(null);
   const [MenuVisible, setMenuVisible] = useState(false);
   const [selectedNode, setSelectedNode] = useState(null);
+  const [roleGroupEditData, setRoleGroupEditData] = useState(null);
+
   const [selectedNodeId, setSelectedNodeId] = useState(null);
   const [selectedNodefreetextId, setSelectedNodefreetextId] = useState(null);
   const [showVersionPopup, setShowVersionPopup] = useState(false);
@@ -213,6 +167,9 @@ const SwimlaneModel = () => {
   const [ExistingrolesearchQuery, setExistingrolesearchQuery] = useState("");
 
   const [checkpublish, Setcheckpublish] = useState();
+  const [showRoleGroupModal, setShowRoleGroupModal] = useState(false);
+  const [showAssignOwnerModal, setShowAssignOwnerModal] = useState(false);
+  const [activeRoleForOwner, setActiveRoleForOwner] = useState(null);
   const langMap = useLangMap();
   const menuWidth = 180;
   const menuHeight = 160;
@@ -256,99 +213,20 @@ const SwimlaneModel = () => {
     isInitialLoad,
   });
 
-
-  // const handleLabelChange = useCallback(
-  //   (nodeId, newLabel) => {
-  //     setChiledNodes((nds) =>
-  //       nds.map((node) => {
-  //         if (node.id === nodeId) {
-  //           const currentLangId = processLangRef.current; // ✅ always latest
-  //           const langKey = langMapRef.current[Number(currentLangId)] || "en";
-  //           return {
-  //             ...node,
-  //             data: {
-  //               ...node.data,
-  //               ...(node.type === "StickyNote"
-  //                 ? {
-  //                   label: newLabel,
-  //                   translations: {
-  //                     ...(node.data.translations || {}),
-  //                     [langKey]: newLabel,
-  //                   },
-  //                 }
-  //                 : {
-  //                   details: { ...node.data.details, title: newLabel },
-  //                   translations: {
-  //                     ...(node.data.translations || {}),
-  //                     [langKey]: newLabel,
-  //                   },
-  //                 }),
-  //             },
-  //           };
-  //         }
-  //         return node;
-  //       })
-  //     );
-
-  //     if (!isInitialLoad.current) {
-  //       setHasUnsavedChanges(true);
-  //     }
-  //   },
-  //   [setChiledNodes, setHasUnsavedChanges]
-  // );
-  // const handleLabelChange = useCallback(
-  //   (nodeId, newLabel) => {
-  //     setChiledNodes((nds) =>
-  //       nds.map((node) => {
-  //         if (node.id !== nodeId) return node;
-
-  //         // langKey nikaalo
-  //         const langKey = langMap[processDefaultlanguage_id] || "en";
-
-  //         if (node.type === "StickyNote") {
-  //           return {
-  //             ...node,
-  //             data: {
-  //               ...node.data,
-  //               label: newLabel,
-  //               translations: {
-  //                 ...(node.data.translations || {}),
-  //                 [langKey]: newLabel,
-  //               },
-  //             },
-  //           };
-  //         }
-
-  //         // Swimlane ya dusre nodes jisme details.title hote hain
-  //         return {
-  //           ...node,
-  //           data: {
-  //             ...node.data,
-  //             details: {
-  //               ...node.data.details,
-  //               title: newLabel,
-  //             },
-  //             translations: {
-  //               ...(node.data.translations || {}),
-  //               [langKey]: newLabel,
-  //             },
-  //           },
-  //         };
-  //       })
-  //     );
-
-  //     if (!isInitialLoad.current) {
-  //       setHasUnsavedChanges(true);
-  //     }
-  //   },
-  //   [setChiledNodes, processDefaultlanguage_id, setHasUnsavedChanges]
-  // );
-
   useCheckFavorite({
     id,
     childNodes: ChildNodes,
     setIsFavorite,
   });
+
+  const { responseData } = useFetchVersions({
+    processId: id,
+    currentLevel,
+    currentParentId,
+    LoginUser,
+    status: "draft",
+  });
+  const assignedUsers = responseData?.assigned_users || [];
 
   const { fetchNodes } = useSwimlaneFetchNodes({
     api,
@@ -377,8 +255,6 @@ const SwimlaneModel = () => {
     handleLabelChange,
   });
 
-
-
   useEffect(() => {
     const savedLang = localStorage.getItem("selectedLanguageId");
     if (savedLang) {
@@ -386,180 +262,21 @@ const SwimlaneModel = () => {
     } else {
       fetchNodes(processDefaultlanguage_id); // default
     }
-  }, []);
-
-  // const fetchNodes = async (language_id = null) => {
-  //   try {
-
-  //     const levelParam = getLevelKey(currentLevel, currentParentId);
-
-  //     const user_id = LoginUser ? LoginUser.id : null;
-  //     const Process_id = id ? id : null;
-
-  //     const NodesStatus = "Editmode";
-  //     const data = await api.getNodes(
-  //       levelParam,
-  //       parseInt(user_id),
-  //       Process_id,
-  //       currentParentId,
-  //       language_id,
-  //       NodesStatus
-  //     );
-
-
-
-
-  //     // console.log("data", data)
-  //     if (data && data.user_id) {
-  //       // Construct user object based on backend logic
-  //       setUser({
-  //         id: data.actual_user_id,
-  //         type: data.type || "self",
-  //         role: data.role || "self",
-  //         OwnId: data.user_id,
-  //         actual_user_id: data.actual_user_id,
-  //       });
-  //     }
-  //     setprocess_img(data.process_img);
-  //     Settitle(data.title);
-  //     SetParentPageGroupId(data.PageGroupId);
-  //     setprocessDefaultlanguage_id(data.processDefaultlanguage_id);
-  //     setOriginalDefaultlanguge_id(data.OriginalDefaultlanguge_id);
-  //     setSupportedLanguages(data.ProcessSupportLanguage);
-  //     const nodebgwidth = document.querySelector(".react-flow__node");
-  //     const nodebgwidths = nodebgwidth
-  //       ? nodebgwidth.getBoundingClientRect().width
-  //       : 0;
-
-  //     const nodebgheight = document.querySelector(".react-flow__node");
-  //     const nodebgheights = nodebgheight
-  //       ? nodebgheight.getBoundingClientRect().height
-  //       : 0;
-
-  //     // Centralized size calculation
-  //     const totalRows = 7;
-  //     const totalColumns = 11;
-  //     const groupWidth = nodebgwidths;
-  //     const groupHeight = nodebgheights;
-  //     const childWidth = groupWidth * 0.9;
-  //     const childHeight = groupHeight * 0.9;
-
-  //     const parsedNodes = await Promise.all(
-  //       data.nodes.map(async (node) => {
-  //         const { parent_id, ...remainingNodeProps } = node;
-  //         const parsedData = JSON.parse(node.data);
-  //         const parsedPosition = JSON.parse(node.position);
-  //         const parsedMeasured = JSON.parse(node.measured);
-  //         // console.log('parsedMeasured: ' + parsedMeasured);
-  //         let centeredPosition = parsedPosition || { x: 0, y: 0 };
-
-  //         // Parent node positioning
-  //         if (parent_id) {
-  //           const parentNode = data.nodes.find((n) => n.node_id === parent_id);
-  //           if (parentNode && parentNode.position) {
-  //             const parentPos = JSON.parse(parentNode.position);
-  //             const parentWidth = windowSize.width / totalColumns - 14;
-  //             const parentHeight = windowSize.height / totalRows - 14;
-  //             const childWidth = parentWidth * 0.9;
-  //             const childHeight = parentHeight * 0.9;
-
-  //             // Proper center calculation
-  //             centeredPosition = {
-  //               x: parentPos.x + parentWidth / 2 - childWidth / 2,
-  //               y: parentPos.y + parentHeight / 2 - childHeight / 2,
-  //             };
-  //           }
-  //         }
-  //         let hasNextLevel = false;
-
-  //         if (
-  //           node.type === "progressArrow" &&
-  //           parsedData?.processlink &&
-  //           parsedData.processlink !== null &&
-  //           parsedData.processlink !== ""
-  //         ) {
-  //           const match = parsedData.processlink.match(/level(\d+)/i);
-  //           const extractedLevel = match ? parseInt(match[1]) : currentLevel;
-
-  //           // 🔹 Increment level
-  //           const newLevel = extractedLevel + 1;
-  //           const levelParam = `level${newLevel}_${parsedData.processlink}`;
-  //           try {
-  //             const check = await api.checkRecord(levelParam, Process_id);
-
-  //             hasNextLevel = check?.status === true;
-  //           } catch (e) {
-  //             console.error("checkRecord error", e);
-  //           }
-  //         }
-
-  //         const nodeStyle =
-  //           node.type === "Yes" ||
-  //             node.type === "No" ||
-  //             node.type === "FreeText" ||
-  //             node.type === "StickyNote"
-  //             ? {} // No styles applied for these node types
-  //             : {
-  //               width: groupWidth,
-  //               height: groupHeight,
-  //               childWidth: childWidth,
-  //               childHeight: childHeight,
-  //               display: "flex",
-  //               alignItems: "center",
-  //               justifyContent: "center",
-  //             };
-
-  //         return {
-  //           ...remainingNodeProps,
-  //           id: node.node_id,
-  //           parentNode: parent_id,
-  //           parentId: parent_id,
-  //           data: {
-  //             ...parsedData,
-  //             onLabelChange: (newLabel) =>
-  //               handleLabelChange(node.node_id, newLabel),
-  //             width_height: parsedMeasured,
-  //             defaultwidt: "40px",
-  //             defaultheight: "40px",
-  //             nodeResize: false,
-  //             hasNextLevel,
-  //           },
-  //           type: node.type,
-  //           extent: "parent",
-  //           measured: parsedMeasured,
-  //           position: centeredPosition,
-  //           draggable: true,
-  //           isNew: true,
-
-  //           animated: Boolean(node.animated),
-  //           style: nodeStyle,
-  //         };
-  //       })
-  //     );
-
-  //     const parsedEdges = data.edges.map((edge) => {
-  //       return {
-  //         ...edge,
-  //         animated: Boolean(edge.animated),
-  //         markerEnd: {
-  //           type: MarkerType.ArrowClosed,
-  //           color: "#002060",
-  //           width: 12,
-  //           height: 12,
-  //         },
-  //         style: { stroke: "#002060", strokeWidth: 2 },
-  //         type: "step",
-  //       };
-  //     });
-  //     // console.log("swimalne data", parsedNodes);
-
-  //     setChiledNodes(parsedNodes);
-  //     setEdges(parsedEdges);
-  //   } catch (error) {
-  //     console.error("Error fetching nodes:", error);
-  //     alert("Failed to fetch nodes. Please try again.");
-  //   }
-  // };
+    // Proactively fetch existing roles for Role Groups
+    const fetchExistingRoles = async () => {
+      try {
+        const levelParam = "level0";
+        const user_id = user ? user.id : LoginUser?.id;
+        const Process_id = id;
+        const data = await api.getexistingrole(levelParam, parseInt(user_id), Process_id);
+        const filteredNodes = data.AllexistingRole.filter((node) => node.node_id !== currentParentId);
+        setLinkexistingRole(filteredNodes);
+      } catch (error) {
+        console.error("Proactive role fetch error:", error);
+      }
+    };
+    if (LoginUser?.id) fetchExistingRoles();
+  }, [id, LoginUser, currentParentId]);
 
   const onNodesChange = useCallback(
     (changes) => setChiledNodes((nds) => applyNodeChanges(changes, nds)),
@@ -616,6 +333,7 @@ const SwimlaneModel = () => {
     []
   );
 
+
   useEffect(() => {
     const checkpublishfunction = async () => {
       if (currentLevel !== 0) {
@@ -635,189 +353,31 @@ const SwimlaneModel = () => {
     };
     checkpublishfunction();
   }, [ParentPageGroupId, currentLevel]);
-  const addNode = async (
-    type,
-    position,
-    label = "",
-    existingNodeData = null
-  ) => {
-    let PageGroupId;
-    const Page_Title = "Swimlane";
-    if (!ChildNodes[0]?.page_group_id) {
-      try {
-        const response = await getNextPageGroupId(Page_Title);
-        PageGroupId = response.next_PageGroupId;
-      } catch (error) {
-        console.error("next id error", error)
-      }
 
-    } else {
+  // Hook for adding nodes
+  const { addNode } = useSwimlaneAddNode({
+    ChildNodes,
+    setChiledNodes,
+    nodes,
+    currentParentId,
+    currentLevel,
+    setHasUnsavedChanges,
+    handleLabelChange,
+    selectedGroupId,
+    selectedexistigrolenodeId,
+    langMapRef,
+    processLangRef
+  });
 
-      PageGroupId = ChildNodes[0]?.page_group_id;
-    }
-
-    if (
-      type === "Yes" ||
-      type === "No" ||
-      type === "FreeText" ||
-      type === "StickyNote"
-    ) {
-      if (!position) {
-        alert("Position not defind");
-        return;
-      }
-
-      const newNodeId = uuidv4().replace(/-/g, "").substring(0, 6);
-      const newNode = {
-        id:
-          currentParentId !== null
-            ? `level${currentLevel}_${newNodeId}_${currentParentId}`
-            : `level${currentLevel}_${newNodeId}`,
-
-        data: {
-          label: type === "FreeText" || type === "StickyNote" ? label : "",
-          shape: type,
-          onLabelChange: (newLabel) =>
-            handleLabelChange(
-              currentParentId !== null
-                ? `level${currentLevel}_${newNodeId}_${currentParentId}`
-                : `level${currentLevel}_${newNodeId}`,
-              newLabel
-            ),
-          defaultwidt: "40px",
-          defaultheight: "40px",
-          translations:
-            type === "FreeText"
-              ? existingNodeData?.translations || {
-                [langMapRef.current[Number(processLangRef.current)] || "en"]:
-                  label,
-              }
-              : {},
-          width_height:
-            type === "StickyNote"
-              ? { width: 240, height: 180 }
-              : { width: 326, height: 90 },
-          autoFocus: true,
-
-          nodeResize: false,
-
-          updateWidthHeight: (id, size) => {
-            setChiledNodes((prevNodes) =>
-              prevNodes.map((node) =>
-                node.id === id
-                  ? {
-                    ...node,
-                    data: {
-                      ...node.data,
-                      width_height: size,
-                    },
-                  }
-                  : node
-              )
-            );
-          },
-        },
-        type: type,
-        position: position,
-        draggable: true,
-        isNew: true,
-        animated: true,
-        page_title: "Swimlane",
-        status: "draft",
-        page_group_id: PageGroupId,
-      };
-
-      setChiledNodes((nds) => [...nds, newNode]);
-      setHasUnsavedChanges(true);
-    } else if (selectedGroupId) {
-      const selectedGroup = nodes.find((node) => node.id === selectedGroupId);
-
-      const nodebgwidth = document.querySelector(".react-flow__node");
-      const nodebgwidths = nodebgwidth
-        ? nodebgwidth.getBoundingClientRect().width
-        : 0;
-
-      const nodebgheight = document.querySelector(".react-flow__node");
-      const nodebgheights = nodebgheight
-        ? nodebgheight.getBoundingClientRect().height
-        : 0;
-
-      const groupWidth = nodebgwidths;
-      const groupHeight = nodebgheights;
-      const childWidth = groupWidth * 0.9;
-      const childHeight = groupHeight * 0.9;
-      const centeredPosition = {
-        x: selectedGroup.position.x + (groupWidth - childWidth) / 14 - 1,
-        y: selectedGroup.position.y + (groupHeight - childHeight) / 14 - 0.5,
-      };
-
-      const newNodeId = uuidv4();
-      const newNode = {
-        id:
-          currentParentId !== null
-            ? `level${currentLevel}_${newNodeId}_${currentParentId}`
-            : `level${currentLevel}_${newNodeId}`,
-        node_id:
-          currentParentId !== null
-            ? `level${currentLevel}_${newNodeId}_${currentParentId}`
-            : `level${currentLevel}_${newNodeId}`,
-
-        parentNode: selectedGroupId,
-        extent: "parent",
-        data: existingNodeData
-          ? {
-            ...existingNodeData,
-            onLabelChange: (newLabel) =>
-              handleLabelChange(
-                currentParentId !== null
-                  ? `level${currentLevel}_${newNodeId}_${currentParentId}`
-                  : `level${currentLevel}_${newNodeId}`,
-                newLabel
-              ),
-          }
-          : {
-            label: label,
-            details: { title: label, content: "" },
-            link: selectedexistigrolenodeId ? selectedexistigrolenodeId : "",
-            autoFocus: true,
-            shape: type,
-            onLabelChange: (newLabel) =>
-              handleLabelChange(
-                currentParentId !== null
-                  ? `level${currentLevel}_${newNodeId}_${currentParentId}`
-                  : `level${currentLevel}_${newNodeId}`,
-                newLabel
-              ),
-
-            defaultwidt: "40px",
-            defaultheight: "40px",
-            nodeResize: false,
-          },
-        type: type,
-        position: centeredPosition,
-        draggable: true,
-        isNew: true,
-        animated: true,
-        page_title: "Swimlane",
-        status: "draft",
-        page_group_id: PageGroupId,
-        style: {
-          width: nodebgwidths,
-          childWidth: nodebgwidths,
-          childHeight: nodebgheights,
-          height: nodebgheights,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        },
-      };
-
-      setChiledNodes((nds) => [...nds, newNode]);
-      setHasUnsavedChanges(true);
-    } else {
-      alert("Please select a group node first!");
-    }
-  };
+  // Hook for dragging
+  const { handleNodeDragStart, handleNodeDragStop } = useSwimlaneDrag({
+    setChiledNodes,
+    setKeepOldPosition,
+    KeepOldPosition,
+    nodes,
+    ChildNodes,
+    setHasUnsavedChanges
+  });
 
   useEffect(() => {
     const handleResize = () => {
@@ -841,6 +401,13 @@ const SwimlaneModel = () => {
           editable={true}
         />
       ),
+      SwimlineRightsideBox: (props) => (
+        <SwimlineRightsideBox
+          {...props}
+          processDefaultlanguage_id={processDefaultlanguage_id}
+          langMap={langMap}
+        />
+      ),
       Yes: (props) => (
         <YesNode
           {...props}
@@ -854,13 +421,13 @@ const SwimlaneModel = () => {
         />
       ),
     }),
-    [selectedNodeId, processDefaultlanguage_id]
+    [selectedNodeId, processDefaultlanguage_id, langMap]
   );
 
   const memoizedEdgeTypes = useMemo(() => edgeTypes, [edgeTypes]);
 
   const handleSaveNodes = async (savetype) => {
-    // console.log("chiils node", ChildNodes);
+    console.log("chiils node", ChildNodes);
     if (savetype === "Published" && currentLevel !== 0) {
       try {
         const response = await filter_draft(ParentPageGroupId);
@@ -880,11 +447,7 @@ const SwimlaneModel = () => {
       savetype,
       ...versionPopupPayload,
     };
-    // console.log("payload", payload)
-    // const Level =
-    //   currentParentId !== null
-    //     ? `level${currentLevel}_${currentParentId}`
-    //     : `level${currentLevel}`;
+
     const Level = getLevelKey(currentLevel, currentParentId);
 
     const user_id = user && user.id;
@@ -1087,6 +650,11 @@ const SwimlaneModel = () => {
 
       setdetailschecking(node);
       event.preventDefault();
+      if (node?.data?.isRoleGroup) {
+        setRoleGroupEditData(node.data);
+      } else {
+        setRoleGroupEditData(null);
+      }
       setSelectedNode(node);
       setPosition({ x: event.clientX, y: event.clientY });
       setMenuVisible(true);
@@ -1130,181 +698,43 @@ const SwimlaneModel = () => {
       setOptions(options);
       setSelectedGroupId(node.id);
       setSelectedNode(node);
+
+      // Add "Add Role Group" if vertical header
+      if (col === 0 && row < 6) {
+        setOptions(prev => [...prev, { label: "Add Role Group", value: "Add Role Group" }]);
+      }
     }
   };
 
-  const centerChildInParent = (parentNode, childNode) => {
-    const parentCenterX = parentNode.position.x + parentNode.style.width / 11;
-    const parentCenterY = parentNode.position.y + parentNode.style.height / 11;
-    const updatedChildPosition = {
-      x: parentCenterX - childNode.style.childWidth / 11,
-      y: parentCenterY - childNode.style.childHeight / 11,
+  const handleSaveRoleGroup = (data) => {
+    setShowRoleGroupModal(false);
+
+    // Check if we are editing an existing node
+    const isEditing = selectedNode?.data?.isRoleGroup;
+
+    const newNodeData = {
+      label: data.groupName,
+      isRoleGroup: true,
+      roles: data.roles,
+      translations: data.translations,
+      details: {
+        title: data.groupName,
+        content: ""
+      }
     };
-    return updatedChildPosition;
-  };
 
-  const handleNodeDragStart = (event, node) => {
-    setChiledNodes((prev) =>
-      prev.map((child) =>
-        child.id === node.id ? { ...child, parentId: undefined } : child
-      )
-    );
-
-    setKeepOldPosition(node.position);
-  };
-
-  const getNearestParentNode = (childNode) => {
-    if (!childNode || !childNode.style) {
-      return null; // Avoid error by returning null
-    }
-    return nodes.reduce((nearest, parentNode) => {
-      const childCenterX = childNode.position.x + childNode.style.width / 2;
-      const childCenterY = childNode.position.y + childNode.style.height / 2;
-
-      const parentLeft = parentNode.position.x;
-      const parentRight = parentNode.position.x + parentNode.style.width + 1;
-      const parentTop = parentNode.position.y;
-      const parentBottom = parentNode.position.y + parentNode.style.height;
-
-      // Check if at least 10% of the node is inside any cell
-      const isOverlapping =
-        childCenterX > parentLeft + parentNode.style.width * 0.05 &&
-        childCenterX < parentRight - parentNode.style.width * 0.05 &&
-        childCenterY > parentTop + parentNode.style.height * 0.05 &&
-        childCenterY < parentBottom - parentNode.style.height * 0.05;
-
-      if (isOverlapping) {
-        return parentNode;
-      }
-      return nearest;
-    }, null);
-  };
-
-  const handleNodeDragStop = (event, node) => {
-    // console.log("old nodes ", node);
-
-    if (node.id.startsWith("level")) {
-      // Find the nearest parent node
-      const nearestParentNode = getNearestParentNode(node);
-
-      if (node.type === "SwimlineRightsideBox") {
-        const [, row, col] =
-          nearestParentNode?.row_id.split("_").map(Number) || [];
-        if (!nearestParentNode || col !== 0 || row >= 6) {
-          setChiledNodes((prev) =>
-            prev.map((child) =>
-              child.id === node.id
-                ? { ...child, position: KeepOldPosition }
-                : child
-            )
-          );
-          return;
-        }
-      }
-
-      if (node.type === "progressArrow") {
-        const [, row, col] =
-          nearestParentNode?.row_id.split("_").map(Number) || [];
-
-        // Ensure the node can only drop in the last row (row 6) and not in the first column (col !== 0)
-        if (!nearestParentNode || row !== 6 || col === 0) {
-          setChiledNodes((prev) =>
-            prev.map((child) =>
-              child.id === node.id
-                ? { ...child, position: KeepOldPosition }
-                : child
-            )
-          );
-          return;
-        }
-      }
-
-      if (node.type === "diamond" || node.type === "box") {
-        const [, row, col] =
-          nearestParentNode?.row_id.split("_").map(Number) || [];
-
-        // Ensure the node can drop in any row except the last row and not in the first column
-        if (!nearestParentNode || row === 6 || col === 0) {
-          setChiledNodes((prev) =>
-            prev.map((child) =>
-              child.id === node.id
-                ? { ...child, position: KeepOldPosition }
-                : child
-            )
-          );
-          return;
-        }
-      }
-
-      if (
-        node.type === "StickyNote" ||
-        node.type === "Yes" ||
-        node.type === "No" ||
-        node.type === "FreeText"
-      ) {
-        const flowContainer = document.querySelector(".publishcontainer");
-        if (!flowContainer) return;
-
-        const { left, top, right, bottom } =
-          flowContainer.getBoundingClientRect();
-        const nodeElement = document.querySelector(`[data-id="${node.id}"]`);
-        if (!nodeElement) return;
-
-        const nodeRect = nodeElement.getBoundingClientRect();
-        const isOutOfBounds =
-          nodeRect.left < left ||
-          nodeRect.top < top ||
-          nodeRect.right > right ||
-          nodeRect.bottom > bottom;
-
-        if (isOutOfBounds) {
-          setChiledNodes((prev) =>
-            prev.map((child) =>
-              child.id === node.id
-                ? { ...child, position: KeepOldPosition } // revert if out of bounds
-                : child
-            )
-          );
-        }
-        return;
-      }
-
-      if (nearestParentNode) {
-        const updatedPosition = centerChildInParent(nearestParentNode, node);
-        setHasUnsavedChanges(true);
-        setChiledNodes((prev) =>
-          prev.map((child) =>
-            child.id === node.id
-              ? {
-                ...child,
-                parentNode: nearestParentNode.id,
-                position: updatedPosition,
-              }
-              : child
-          )
-        );
-      }
-    } else {
-      // Handle parent node dragging and adjust children
-      const affectedChildren = ChildNodes.filter(
-        (child) => child.parentNode === node.id
-      );
-
-      const updatedChildren = affectedChildren.map((child) => ({
-        ...child,
-        position: centerChildInParent(node, child),
-      }));
-
-      setChiledNodes((prev) =>
-        prev.map(
-          (child) =>
-            updatedChildren.find((updated) => updated.id === child.id) || child
+    if (isEditing) {
+      setChiledNodes((nds) =>
+        nds.map((node) =>
+          node.id === selectedNode.id ? { ...node, data: { ...node.data, ...newNodeData } } : node
         )
       );
+      setHasUnsavedChanges(true);
+      CustomAlert.success("Updated", "Role Group updated successfully.");
+    } else {
+      addNode("SwimlineRightsideBox", "", "", newNodeData);
     }
   };
-
-  // Ensure to bind the handleNodeDragStart to the drag event on the node
 
   const switchNodeType = (type) => {
     if (selectedNodeId) {
@@ -1346,18 +776,11 @@ const SwimlaneModel = () => {
       Process_id
     );
 
-    // console.log("Before filtering:", data.nodes.length);
-    // console.log("currentParentId 1:", currentParentId);
-
     const filteredNodes = data.nodes.filter(
       (node) => node.type !== "StickyNote" && node.node_id !== currentParentId
     );
 
-    // console.log("After filtering:", filteredNodes.length);
-    // console.log("Filtered nodes:", filteredNodes);
-
     setLinknodeList(filteredNodes);
-    // console.log("check data filteredNodes", filteredNodes)
     setIsCheckboxPopupOpen(true);
   };
 
@@ -1551,7 +974,7 @@ const SwimlaneModel = () => {
 
               const view =
                 nodeData.Page_Title === "Swimlane" ? "swimlane" : "map";
-              
+
 
               // single navigation point
               goToProcess({
@@ -1561,14 +984,6 @@ const SwimlaneModel = () => {
                 level: newLevel,
                 parentId: nodelink,
               });
-              // if (nodeData.Page_Title === "ProcessMap") {
-              //   navigate(`/draft-process-view/${newLevel}/${nodelink}/${id}`);
-              // }
-              // if (nodeData.Page_Title === "Swimlane") {
-              //   navigate(
-              //     `/draft-swimlane-view/level/${newLevel}/${nodelink}/${id}`
-              //   );
-              // }
             } else {
               alert("First create next model of this existing model");
             }
@@ -1652,9 +1067,16 @@ const SwimlaneModel = () => {
       setModalPosition({ x, y });
     } else if (action === "addDetails") {
       openPopup();
+    } else if (action === "Add Role Group") {
+      setShowRoleGroupModal(true);
     }
     setContextMenu(null);
     setSelectedEdge(null);
+  };
+
+  const handleAssignOwnerAction = (role) => {
+    setActiveRoleForOwner(role);
+    setShowAssignOwnerModal(true);
   };
 
   const menuItems = [
@@ -1743,6 +1165,23 @@ const SwimlaneModel = () => {
       ]
       : []),
 
+    ...(detailschecking?.type === "SwimlineRightsideBox"
+      ? [
+        {
+          label: "Assign Role Owner",
+          action: () => handleAssignOwnerAction(detailschecking),
+          borderBottom: true,
+        },
+        ...(detailschecking?.data?.isRoleGroup ? [
+          {
+            label: "Manage Role Group",
+            action: () => setShowRoleGroupModal(true),
+            borderBottom: true,
+          }
+        ] : [])
+      ]
+      : []),
+
     {
       label: `${t("Delete")}`,
       action: handleDeleteNode,
@@ -1788,6 +1227,8 @@ const SwimlaneModel = () => {
       addNode("diamond");
     } else if (option === "Add Process") {
       addNode("progressArrow");
+    } else if (option === "Add Role Group") {
+      setShowRoleGroupModal(true);
     } else if (option === "Add Sticky Note") {
       // addNode("StickyNote", { x: position.x, y: position.y });
 
@@ -1828,7 +1269,7 @@ const SwimlaneModel = () => {
 
   const ExitNavigation = async (type) => {
     let confirmcondition = true;
-   if (!id || !user) {
+    if (!id || !user) {
       alert("Currently not navigate on draft mode");
       return;
     }
@@ -1837,20 +1278,13 @@ const SwimlaneModel = () => {
       confirmcondition = await handleExitBack();
     }
     if (confirmcondition) {
-        goToProcess({
+      goToProcess({
         mode: "draft",
         view: "swimlane",
         processId: id,
         level: currentLevel,
         parentId: currentLevel === 0 ? undefined : currentParentId,
       });
-      // if (id && user) {
-      //   navigate(
-      //     `/draft-swimlane-view/level/${currentLevel}/${currentParentId}/${id}`
-      //   );
-      // } else {
-      //   alert("Currently not navigate on draft mode");
-      // }
     }
   };
   const parsedData = LinknodeList.map((item) => ({
@@ -2131,52 +1565,13 @@ const SwimlaneModel = () => {
               <Background color="#fff" gap={16} />
             </ReactFlow>
 
-            {selectedEdge && (
-              <div
-                className="dropdown_1"
-                style={{
-                  position: "absolute",
-                  top: fixedPos.y,
-                  left: fixedPos.x,
-                  backgroundColor: "#fff",
-                  border: "1px solid #ccc",
-                  borderRadius: "4px",
-                  boxShadow: "0 2px 5px rgba(0,0,0,0.3)",
-                  zIndex: 10,
-                  minWidth: "180px",
-                }}
-              >
-                {/* Menu Items */}
-
-                {[
-                  { label: `${t("add_yes_label")}`, action: "Yes" },
-                  { label: `${t("add_no_label")}`, action: "No" },
-                  { label: `${t("add_free_text")}`, action: "addFreeText" },
-                ].map((item, index) => (
-                  <div
-                    className="menuitems"
-                    key={index}
-                    onClick={() => handlePopupAction(item.action)}
-                  >
-                    {item.label}
-                  </div>
-                ))}
-                <div
-                  className="menuitems"
-                  onClick={() => {
-                    if (
-                      window.confirm(
-                        "Are you sure you want to delete this arrow?"
-                      )
-                    ) {
-                      deleteEdge();
-                    }
-                  }}
-                >
-                  {t("delete_arrow")}
-                </div>
-              </div>
-            )}
+            <EdgeContextMenu
+              visible={!!selectedEdge}
+              position={fixedPos}
+              t={t}
+              onAction={handlePopupAction}
+              onDelete={deleteEdge}
+            />
 
             <CustomContextPopup
               isVisible={!!MenuVisible}
@@ -2236,112 +1631,31 @@ const SwimlaneModel = () => {
               selectedLanguage={processDefaultlanguage_id}
             />
 
+            <ExistingModelPopup
+              isOpen={isCheckboxPopupOpen}
+              t={t}
+              popupStyle={popupStyle}
+              styles={styles}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              filteredData={filteredData}
+              selectedId={selectedLinknodeIds}
+              onCheckboxChange={handleCheckboxChange}
+              onSave={saveSelectedNodes}
+            />
 
-            {isCheckboxPopupOpen && (
-              <div style={popupStyle.container} className="swimlanepopup global_popup_modal">
-                <div style={popupStyle.header}>
-                  <span>{t("existing_model")}</span>
-                </div>
-
-                <input
-                  type="text"
-                  style={styles.searchInput}
-                  placeholder="Search..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-
-                <div style={popupStyle.body}>
-                  {filteredData.map((node) => (
-                    <label
-                      key={node.node_id}
-                      style={{
-                        ...popupStyle.label,
-                        backgroundColor:
-                          selectedLinknodeIds === node.node_id
-                            ? "#f0f8ff"
-                            : "transparent",
-                      }}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedLinknodeIds === node.node_id}
-                        onChange={() =>
-                          handleCheckboxChange(node.node_id, node.data.label)
-                        }
-                        style={popupStyle.checkbox}
-                      />
-                      {node.data.label && node.data.label}
-                    </label>
-                  ))}
-                </div>
-                <div style={popupStyle.footer}>
-                  <button
-                    onClick={saveSelectedNodes}
-                    className="global-btn"
-                  >
-                    {t("Save")}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Existing Add role Popup */}
-            {isexistingroleCheckboxPopupOpen && (
-              <div style={popupStyle.container} className="swimlanepopup global_popup_modal">
-                <div style={popupStyle.header}>
-                  <span>{t("add_existing_role")}</span>
-                </div>
-
-                <input
-                  type="text"
-                  style={styles.searchInput}
-                  placeholder={t("search")}
-                  value={ExistingrolesearchQuery}
-                  onChange={(e) => setExistingrolesearchQuery(e.target.value)}
-                />
-
-                <div style={popupStyle.body}>
-                  {filteredDataExistingrole.map((node) => {
-                    const isSelected = selectedexistigrolenodeId === node.node_id;
-                    const title = node?.data?.details?.title || "Untitled";
-
-                    return (
-                      <div
-                        key={node.node_id}
-                        onClick={() =>
-                          handleexistingroleCheckboxChange(node.node_id)
-                        }
-                        onMouseEnter={(e) =>
-                          (e.currentTarget.style.backgroundColor = "#e6f7ff")
-                        }
-                        onMouseLeave={(e) =>
-                        (e.currentTarget.style.backgroundColor = isSelected
-                          ? "#f0f8ff"
-                          : "transparent")
-                        }
-                        style={{
-                          ...popupStyle.label,
-                          cursor: "pointer",
-                          backgroundColor: isSelected ? "#f0f8ff" : "transparent",
-                        }}
-                      >
-                        {title}
-                      </div>
-                    );
-                  })}
-                </div>
-
-                <div style={popupStyle.footer}>
-                  <button
-                    onClick={handleSaveExistingRole}
-                    className="global-btn"
-                  >
-                    {t("Save")}
-                  </button>
-                </div>
-              </div>
-            )}
+            <ExistingRolePopup
+              isOpen={isexistingroleCheckboxPopupOpen}
+              t={t}
+              popupStyle={popupStyle}
+              styles={styles}
+              searchQuery={ExistingrolesearchQuery}
+              setSearchQuery={setExistingrolesearchQuery}
+              data={filteredDataExistingrole}
+              selectedId={selectedexistigrolenodeId}
+              onSelect={handleexistingroleCheckboxChange}
+              onSave={handleSaveExistingRole}
+            />
 
             <TextInputModal
               isOpen={isModalOpen}
@@ -2364,14 +1678,18 @@ const SwimlaneModel = () => {
               isOpen={showTranslationPopup}
               onClose={() => setShowTranslationPopup(false)}
               defaultValues={translationDefaults}
+              supportedLanguages={supportedLanguages}
               onSubmit={(values) => {
                 console.log("Translations:", values);
 
-                updateNodeTranslations(selectedNodeId, values);
+                // Update node logic
+                const node = ChildNodes.find((n) => n.id === selectedNodeId);
+                if (node) {
+                  updateNodeTranslations(node.id, values);
+                }
 
                 setShowTranslationPopup(false);
               }}
-              supportedLanguages={supportedLanguages}
             />
 
             {showVersionPopup && (
@@ -2385,17 +1703,40 @@ const SwimlaneModel = () => {
                 title={headerTitle}
                 handleSaveVersionDetails={handleSaveVersionDetails}
                 status={"draft"}
-                versionPopupPayload={versionPopupPayload} // <-- ADD THIS
+                versionPopupPayload={versionPopupPayload}
                 supportedLanguages={supportedLanguages}
                 selectedLanguage={processDefaultlanguage_id}
               />
             )}
 
+            <ManageRoleGroupModal
+              isOpen={showRoleGroupModal}
+              onClose={() => {
+                setShowRoleGroupModal(false);
+                setRoleGroupEditData(null);
+              }}
+              onSav
+              onSave={handleSaveRoleGroup}
+              initialData={roleGroupEditData}
+              supportedLanguages={supportedLanguages}
+              langMap={langMap}
+              existingRoles={parsedDataExistingrole}
+              allUsers={assignedUsers}
+              selectedLanguage={processDefaultlanguage_id}
+            />
 
+            <AssignRoleOwnerModal
+              isOpen={showAssignOwnerModal}
+              onClose={() => setShowAssignOwnerModal(false)}
+              onAssign={(user) => {
+                setChiledNodes(prev => prev.map(n =>
+                  n.id === activeRoleForOwner.id ? { ...n, data: { ...n.data, owner: user } } : n
+                ));
+              }}
+              initialOwner={activeRoleForOwner?.data?.owner}
+              users={assignedUsers}
+            />
           </div>
-
-          {/* Checkbox Popup */}
-
         </ReactFlowProvider>
       </div>
     </div>

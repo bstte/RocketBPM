@@ -12,7 +12,7 @@ const overlayStyle = {
 };
 
 const cardStyle = (anchor) => ({
-position: anchor ? "absolute" : "relative",
+  position: anchor ? "absolute" : "relative",
   top: anchor?.y ?? "auto",
   left: anchor?.x ?? "auto",
   transform: anchor ? "translate(0, 0)" : "none",
@@ -45,18 +45,22 @@ export default function TranslationPopup({
 }) {
   const [values, setValues] = useState(defaultValues);
   const firstInputRef = useRef(null);
- const langMap = useLangMap();
+  const langMap = useLangMap();
   // Set initial values when popup opens
   useEffect(() => {
     if (isOpen) {
       // Build dynamic default values
-       
+
       const dynamicDefaults = supportedLanguages.reduce((acc, langId) => {
         const langKey = langMap[langId] || `lang_${langId}`;
         acc[langKey] = defaultValues?.[langKey] || "";
         return acc;
       }, {});
-      setValues(dynamicDefaults);
+
+      setValues((prev) => {
+        const same = JSON.stringify(prev) === JSON.stringify(dynamicDefaults);
+        return same ? prev : dynamicDefaults;
+      });
 
       // focus first input
       setTimeout(() => firstInputRef.current?.focus(), 0);
@@ -81,7 +85,7 @@ export default function TranslationPopup({
 
   return (
     <div
-    className="translate_popup"
+      className="translate_popup"
       style={overlayStyle}
       onMouseDown={handleOverlayClick}
       onKeyDown={handleKeyDown}

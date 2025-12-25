@@ -58,7 +58,7 @@ const translations = supportedLanguages.reduce((acc, langId) => {
          translations
       );
 
-      navigate(`/map-level/${response.data.id}`, { replace: true });
+      navigate(`/edit/map/${response.data.id}`, { replace: true });
     } catch (error) {
       alert("Error saving process title");
     }

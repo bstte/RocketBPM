@@ -27,6 +27,7 @@ const Setting = () => {
   const langMap = useLangMap();
   const [supportedLanguages, setSupportedLanguages] = useState([]);
   const [defaultLanguage, setDefaultLanguage] = useState("");
+  const [domains, setDomains] = useState([]);
 
   const [processData, setProcessData] = useState({
     process_title: "",
@@ -47,7 +48,7 @@ const Setting = () => {
           setSupportedLanguages(response.data.supportedLanguages);
           setDefaultLanguage(response.data.language_id || "");
           setTranslationDefaults(response.data.translations || "");
-
+          setDomains(response.data?.allowed_domains);
           setProcessData(response.data);
         }
       } catch (error) {
@@ -58,21 +59,21 @@ const Setting = () => {
     };
     fetchProcessData();
   }, [ProcessId]);
- useEffect(() => {
-  if (!defaultLanguage || !processData?.translations) return;
+  useEffect(() => {
+    if (!defaultLanguage || !processData?.translations) return;
 
-  // current default language key
-  const langKey = langMap[defaultLanguage];
+    // current default language key
+    const langKey = langMap[defaultLanguage];
 
-  // translation exist?
-  const translatedTitle =
-    processData.translations?.[langKey] || processData.process_title;
+    // translation exist?
+    const translatedTitle =
+      processData.translations?.[langKey] || processData.process_title;
 
-  setProcessData((prev) => ({
-    ...prev,
-    process_title: translatedTitle,
-  }));
-}, [defaultLanguage]);
+    setProcessData((prev) => ({
+      ...prev,
+      process_title: translatedTitle,
+    }));
+  }, [defaultLanguage]);
 
   // Handle image selection
   const handleImageChange = (event) => {
@@ -110,6 +111,8 @@ const Setting = () => {
     formData.append("process_title", processData.process_title);
     formData.append("language_id", defaultLanguage);
     formData.append("supportedLanguages", JSON.stringify(supportedLanguages));
+    formData.append("allowed_domains", JSON.stringify(domains));
+
     formData.append(
       "translations",
       JSON.stringify(processData.translations || {})
@@ -315,6 +318,37 @@ const Setting = () => {
                   ))}
             </select>
           </div>
+
+
+          <div style={styles.sectionBox}>
+            <h4>Allowed Domains</h4>
+
+            <input
+              type="text"
+              placeholder="example.com"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  const value = e.target.value.trim().toLowerCase();
+                  if (value && !domains.includes(value)) {
+                    setDomains([...domains, value]);
+                  }
+                  e.target.value = "";
+                }
+              }}
+            />
+
+            <div className="domain-tags">
+              {domains?.map((d, i) => (
+                <span key={i}>
+                  {d}
+                  <button onClick={() =>
+                    setDomains(domains.filter(x => x !== d))
+                  }>×</button>
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
 
         <div className="ss_sett_delete">
@@ -322,6 +356,7 @@ const Setting = () => {
           <p>{t("Be_careful_delete_msg")}</p>
           <button onClick={handleDeleteProcess}>{t("Delete")}</button>
         </div>
+
 
         <div className="ss_table_btm_btn">
           <ul>
@@ -354,14 +389,14 @@ const Setting = () => {
         defaultValues={translationDefaults}
         onSubmit={(values) => {
           // console.log("Updated Translations:", values);
-  const langKey = langMap[defaultLanguage];
-  const updatedTitle = values?.[langKey] || processData.process_title;
- 
+          const langKey = langMap[defaultLanguage];
+          const updatedTitle = values?.[langKey] || processData.process_title;
+
           // Update local state with translated values
           setProcessData((prev) => ({
             ...prev,
             translations: values,
-                process_title: updatedTitle, // 👈 default language translation se update
+            process_title: updatedTitle, // 👈 default language translation se update
 
           }));
 

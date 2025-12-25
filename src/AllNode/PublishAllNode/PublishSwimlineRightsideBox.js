@@ -1,10 +1,11 @@
 import React, { memo, useEffect, useRef, useState } from "react";
+import RoleGroupTooltip from "../../Pages/Map_level/components/RoleGroupTooltip";
 
-const SwimlineRightsideBox = ({ data }) => {
+const SwimlineRightsideBox = ({ data, processDefaultlanguage_id, langMap }) => {
 
-  const title=data.details.title
+  const title = data.details.title
   const contentEditableRef = useRef(null);
-
+  const [isHovered, setIsHovered] = useState(false);
   const [autoFocus, setAutoFocus] = useState(data.autoFocus);
 
 
@@ -19,12 +20,23 @@ const SwimlineRightsideBox = ({ data }) => {
 
 
   return (
-    <div style={styles.wrapper}>
+    <div style={styles.wrapper}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       <div className="borderBox" style={styles.box}>
         <div>
           <button style={styles.withoutlinkButton}>{title}</button>
         </div>
       </div>
+      {data.isRoleGroup && isHovered && data.roles && (
+        <RoleGroupTooltip
+          roles={data.roles}
+          langMap={langMap}
+          processDefaultlanguage_id={processDefaultlanguage_id}
+        />
+      )}
+
     </div>
   );
 };

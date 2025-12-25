@@ -132,8 +132,8 @@ const Header = ({
   }, []);
   const languageKey = langMap[selectedLanguage] || "loading...";
   const ORIGlanguageKey = langMap[OriginalDefaultlanguge_id] || "loading...";
-   console.log("languageKey", languageKey);
-    console.log("ORIGlanguageKey", ORIGlanguageKey);
+  console.log("languageKey", languageKey);
+  console.log("ORIGlanguageKey", ORIGlanguageKey);
   console.log("header breadcrumbs", breadcrumbs);
 
   return (
@@ -500,11 +500,11 @@ const Header = ({
 
       <header
         className={`app-header ${Page === "ViewPublishswimlane" ||
-            Page === "ViewDraftswimlane" ||
-            Page === "Swimlane" ||
-            Page === "ViewProcessmapVersion"
-            ? "hideborder"
-            : ""
+          Page === "ViewDraftswimlane" ||
+          Page === "Swimlane" ||
+          Page === "ViewProcessmapVersion"
+          ? "hideborder"
+          : ""
           }`}
         style={styles.header}
       >
