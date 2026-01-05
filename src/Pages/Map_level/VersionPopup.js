@@ -41,7 +41,7 @@ const VersionPopup = ({
   const [currentRole, setCurrentRole] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const [selectedEmails, setSelectedEmails] = useState({
+  const [selectedUsers, setSelectedUsers] = useState({
     domain_owner: [],
     owner: [],
     architecture: [],
@@ -64,7 +64,7 @@ const VersionPopup = ({
 
   useEffect(() => {
     if (versionPopupPayload) {
-      setSelectedEmails(
+      setSelectedUsers(
         versionPopupPayload.contact_info || {
           domain_owner: [],
           owner: [],
@@ -103,7 +103,7 @@ const VersionPopup = ({
     if (versionPopupPayload) return;
 
     // contact_info
-    setSelectedEmails(
+    setSelectedUsers(
       responseData.contact_info || {
         domain_owner: [],
         owner: [],
@@ -140,18 +140,22 @@ const VersionPopup = ({
   };
 
   // ✅ Select/Deselect email
-  const selectEmail = (email) => {
-    setSelectedEmails((prev) => {
+  const selectUser = (userId) => {
+    setSelectedUsers((prev) => {
       const currentList = prev[currentRole] || [];
-      const alreadySelected = currentList.includes(email);
+      const alreadySelected = currentList.includes(userId);
 
       let updated = alreadySelected
-        ? currentList.filter((e) => e !== email)
-        : [...currentList, email];
+        ? currentList.filter((id) => id !== userId)
+        : [...currentList, userId];
 
-      // Process Owner / Domain Owner => only 1 allowed
-      if (currentRole === "owner" || currentRole === "modeler" || currentRole === "domain_owner") {
-        updated = alreadySelected ? [] : [email];
+      // Single user roles
+      if (
+        currentRole === "owner" ||
+        currentRole === "modeler" ||
+        currentRole === "domain_owner"
+      ) {
+        updated = alreadySelected ? [] : [userId];
       }
 
       return {
@@ -161,28 +165,27 @@ const VersionPopup = ({
     });
   };
 
+
   // ❌ Remove user
-  const removeUser = (role, email) => {
-    setSelectedEmails((prev) => ({
+  const removeUser = (role, userId) => {
+    setSelectedUsers((prev) => ({
       ...prev,
-      [role]: prev[role].filter((e) => e !== email),
+      [role]: prev[role].filter((id) => id !== userId),
     }));
   };
+
 
   // 💾 Save
   const handleSave = async (tab) => {
     console.log("revision_info", translations);
     try {
-      // const levelParam =
-      //   currentParentId !== null
-      //     ? `level${currentLevel}_${currentParentId}`
-      //     : `level${currentLevel}`;
-const levelParam = getLevelKey(currentLevel, currentParentId);
+
+      const levelParam = getLevelKey(currentLevel, currentParentId);
 
       const payload = {
         process_id: processId,
         level: levelParam,
-        contact_info: selectedEmails,
+        contact_info: selectedUsers,
         revision_info: translations,
       };
 
@@ -222,8 +225,7 @@ const levelParam = getLevelKey(currentLevel, currentParentId);
     );
   };
 
-  // 🔎 Filtered users by search
-  // 🔎 Filtered users by search
+
   const filteredUsers =
     searchQuery.trim() === ""
       ? []
@@ -297,8 +299,9 @@ const levelParam = getLevelKey(currentLevel, currentParentId);
                 {roleBlocks.map((role) => {
                   const roleUsers = assignedUsers
                     .filter((user) =>
-                      (selectedEmails[role] || []).includes(user.user.email)
+                      (selectedUsers[role] || []).includes(user.user.id)
                     )
+
                     .sort((a, b) =>
                       a.user.last_name.localeCompare(b.user.last_name)
                     );
@@ -364,7 +367,7 @@ const levelParam = getLevelKey(currentLevel, currentParentId);
                                     style={{ marginLeft: 20 }}
                                     className="popup-button remove"
                                     onClick={() =>
-                                      removeUser(role, roleUser.user.email)
+                                      removeUser(role, roleUser.user.id)
                                     }
                                   >
 
@@ -560,10 +563,10 @@ const levelParam = getLevelKey(currentLevel, currentParentId);
                       <input
                         type="checkbox"
                         id={`email-${index}`}
-                        checked={(selectedEmails[currentRole] || []).includes(
-                          u.user.email
+                        checked={(selectedUsers[currentRole] || []).includes(
+                          u.user.id
                         )}
-                        onChange={() => selectEmail(u.user.email)}
+                        onChange={() => selectUser(u.user.id)}
                       />
                       <label htmlFor={`email-${index}`}>
                         {u.user.first_name} {u.user.last_name} ({u.user.email})

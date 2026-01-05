@@ -109,6 +109,7 @@ const translations = supportedLanguages.reduce((acc, langId) => {
               value={defaultLanguage}
               onChange={(e) => setDefaultLanguage(e.target.value)}
               className="select_field"
+              style={styles.selectBox}
               disabled={supportedLanguages.length === 0}
             >
               <option value="">Select Default Language</option>
@@ -170,10 +171,14 @@ const styles = {
     display: "flex",
     flexDirection: "row",
     gap: "8px",
+    flexWrap: "wrap",
+    maxWidth: "100%",
   },
   languageItem: {
     display: "flex",
     alignItems: "center",
+    whiteSpace: "nowrap",
+    marginRight: "8px",
   },
   selectBox: {
     width: "100%",

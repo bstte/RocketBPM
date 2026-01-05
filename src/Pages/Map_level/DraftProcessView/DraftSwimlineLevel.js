@@ -38,6 +38,8 @@ import { useTranslation } from "../../../hooks/useTranslation";
 import { getLevelKey } from "../../../utils/getLevel";
 import { useSwimlaneFetchNodes } from "../../../hooks/swimlane/useSwimlaneFetchNodes";
 import { useProcessNavigation } from "../../../hooks/useProcessNavigation";
+import { isRTLLanguage, getDirection } from "../../../utils/rtlUtils";
+import { useLanguages } from "../../../hooks/useLanguages";
 
 const DraftSwimlineLevel = () => {
   const [windowSize] = useState({
@@ -101,6 +103,11 @@ const DraftSwimlineLevel = () => {
 
   const { removeBreadcrumbsAfter, breadcrumbs, setBreadcrumbs } =
     useContext(BreadcrumbsContext);
+
+  // Local RTL state based on process language
+  const [isRTL, setIsRTL] = useState(false);
+  const [direction, setDirection] = useState('ltr');
+  const { languages } = useLanguages();
 
   const checkPublishData = useCallback(
     async (processId) => {
@@ -337,6 +344,38 @@ const DraftSwimlineLevel = () => {
     childNodes: ChildNodes,
     setIsFavorite,
   });
+
+  // Update RTL based on process language
+  useEffect(() => {
+    if (processDefaultlanguage_id && languages.length > 0) {
+      const currentLang = languages.find(l => l.id === processDefaultlanguage_id);
+      if (currentLang?.code) {
+        const rtl = isRTLLanguage(currentLang.code);
+        const dir = getDirection(currentLang.code);
+        setIsRTL(rtl);
+        setDirection(dir);
+      }
+    }
+  }, [processDefaultlanguage_id, languages]);
+
+  // Listen for language switcher changes
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      const savedLangId = localStorage.getItem("selectedLanguageId");
+      if (savedLangId && languages.length > 0) {
+        const currentLang = languages.find(l => l.id === parseInt(savedLangId));
+        if (currentLang?.code) {
+          const rtl = isRTLLanguage(currentLang.code);
+          const dir = getDirection(currentLang.code);
+          setIsRTL(rtl);
+          setDirection(dir);
+        }
+      }
+    };
+
+    window.addEventListener('languageChanged', handleLanguageChange);
+    return () => window.removeEventListener('languageChanged', handleLanguageChange);
+  }, [languages]);
   // const memoizedNodeTypes = useMemo(() => nodeTypes, [nodeTypes]);
   const memoizedNodeTypes = useMemo(
     () => ({
@@ -464,8 +503,9 @@ const DraftSwimlineLevel = () => {
     fetchNodes(langId);
   };
 
+
   return (
-    <div>
+    <div dir="ltr">
       <Header
         title={headerTitle}
         onSave={navigateOnDraft}
@@ -533,6 +573,7 @@ const DraftSwimlineLevel = () => {
               ]}
               defaultEdgeOptions={{ zIndex: 1 }}
               style={styles.rfStyle}
+              className={isRTL ? 'rtl-flow' : ''}
             >
               <Background color="#fff" gap={16} />
             </ReactFlow>

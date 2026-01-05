@@ -1,4 +1,7 @@
-.main-app{
+/* Import RTL styles */
+@import './Css/rtl.css';
+
+.main-app {
   height: 100%;
   width: 100%;
 }
@@ -13,3 +16,21 @@ html {
   transform-origin: top center !important;
 }
 
+/* RTL Base Configuration */
+html[dir="rtl"] {
+  direction: rtl;
+}
+
+html[dir="ltr"] {
+  direction: ltr;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+/* Ensure proper text rendering for Arabic */
+[dir="rtl"] {
+  font-family: 'Poppins', 'Arial', 'Tahoma', sans-serif;
+}

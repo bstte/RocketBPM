@@ -4,12 +4,13 @@ const flagCountryMap = {
   de: "de",
   es: "es",
   fr: "fr",
-  "pt-BR": "br",
+  "PT-BR": "br",
   it: "it",
   pl: "pl",
   nl: "nl",
-  "zh-CN": "cn",
+  zh: "cn",
   hi: "in",
+  ar: "sa",
 };
 export const getFlagUrl = (langId) =>
   `https://flagcdn.com/w20/${flagCountryMap[langId] || "un"}.png`;

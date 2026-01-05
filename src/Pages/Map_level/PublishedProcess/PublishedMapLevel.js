@@ -23,6 +23,8 @@ import { useLabelChange } from "../../../hooks/useLabelChange";
 import { useFetchNodes } from "../../../hooks/useFetchNodes";
 import { useProcessNavigation } from "../../../hooks/useProcessNavigation";
 import { buildProcessPath } from "../../../routes/buildProcessPath";
+import { isRTLLanguage, getDirection } from "../../../utils/rtlUtils";
+import { useLanguages } from "../../../hooks/useLanguages";
 
 // Custom Hooks
 import { useMapLevelViewState } from "../hooks/useMapLevelViewState";
@@ -54,13 +56,18 @@ const PublishedMapLevel = () => {
   const currentParentId = parentId || null;
   const { addBreadcrumb, removeBreadcrumbsAfter, breadcrumbs, setBreadcrumbs } = useContext(BreadcrumbsContext);
 
+  // Local RTL state based on process language
+  const [isRTL, setIsRTL] = useState(false);
+  const [direction, setDirection] = useState('ltr');
+  const { languages } = useLanguages();
+
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
   const memoizedNodeTypes = useMemo(() => ({
-    progressArrow: PublishArrowBoxNode,
-    pentagon: PublishPentagonNode,
-  }), []);
+    progressArrow: (props) => <PublishArrowBoxNode {...props} isRTL={isRTL} />,
+    pentagon: (props) => <PublishPentagonNode {...props} isRTL={isRTL} />,
+  }), [isRTL]);
 
   const memoizedEdgeTypes = useMemo(() => ({
     smoothstep: SmoothStepEdge,
@@ -110,9 +117,55 @@ const PublishedMapLevel = () => {
   useEffect(() => {
     const savedLang = localStorage.getItem("selectedLanguageId");
     fetchNodes(savedLang ? parseInt(savedLang) : state.processDefaultlanguage_id);
-  }, [currentLevel]);
+
+    // Also set RTL on initial load
+    if (languages.length > 0) {
+      const langId = savedLang ? parseInt(savedLang) : state.processDefaultlanguage_id;
+      if (langId) {
+        const currentLang = languages.find(l => l.id === langId);
+        if (currentLang?.code) {
+          const rtl = isRTLLanguage(currentLang.code);
+          const dir = getDirection(currentLang.code);
+          setIsRTL(rtl);
+          setDirection(dir);
+        }
+      }
+    }
+  }, [currentLevel, languages, state.processDefaultlanguage_id]);
 
   useCheckFavorite({ id: processId, nodes, setIsFavorite });
+
+  // Update RTL based on process language
+  useEffect(() => {
+    if (state.processDefaultlanguage_id && languages.length > 0) {
+      const currentLang = languages.find(l => l.id === state.processDefaultlanguage_id);
+      if (currentLang?.code) {
+        const rtl = isRTLLanguage(currentLang.code);
+        const dir = getDirection(currentLang.code);
+        setIsRTL(rtl);
+        setDirection(dir);
+      }
+    }
+  }, [state.processDefaultlanguage_id, languages]);
+
+  // Listen for language switcher changes
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      const savedLangId = localStorage.getItem("selectedLanguageId");
+      if (savedLangId && languages.length > 0) {
+        const currentLang = languages.find(l => l.id === parseInt(savedLangId));
+        if (currentLang?.code) {
+          const rtl = isRTLLanguage(currentLang.code);
+          const dir = getDirection(currentLang.code);
+          setIsRTL(rtl);
+          setDirection(dir);
+        }
+      }
+    };
+
+    window.addEventListener('languageChanged', handleLanguageChange);
+    return () => window.removeEventListener('languageChanged', handleLanguageChange);
+  }, [languages]);
 
   useEffect(() => {
     if (!title) return;
@@ -138,8 +191,9 @@ const PublishedMapLevel = () => {
     setHeaderTitle(`${title}`);
   }, [title, setHeaderTitle]);
 
+
   return (
-    <div>
+    <div dir="ltr">
       <Header
         title={headerTitle}
         onSave={handlers.navigateOnDraft}
@@ -183,6 +237,7 @@ const PublishedMapLevel = () => {
                 proOptions={{ hideAttribution: true }}
                 maxZoom={0.6}
                 style={{ width: "100%", height: "100%" }}
+                className={isRTL ? 'rtl-flow' : ''}
               />
             </div>
             {usePageGroupIdViewer(nodes)}

@@ -77,9 +77,10 @@ const PublishPopup = ({
 
       <h3 style={styles.subheading}>Classification of Changes:</h3>
       <div style={styles.checkboxGroup}>
-        <label>
+        <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
           <input
-            type="checkbox"
+            type="radio"
+            name="changeType"
             checked={classificationChange}
             onChange={() => {
               setClassificationChange(true);
@@ -89,9 +90,10 @@ const PublishPopup = ({
           Content Change
         </label>
 
-        <label>
+        <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
           <input
-            type="checkbox"
+            type="radio"
+            name="changeType"
             checked={editorialChange}
             onChange={() => {
               setEditorialChange(true);

@@ -13,7 +13,7 @@ export const loginUser = createAsyncThunk(
 
       // Save Token
       localStorage.setItem("token", access_token);
-console.log("login",response)
+      console.log("login", response)
       // Save Token Expiry
       if (expires_in) {
         const expireTime = Date.now() + expires_in * 1000;
@@ -56,6 +56,8 @@ export const logoutUser = createAsyncThunk(
 );
 const savedTranslations = localStorage.getItem("translations");
 const savedUser = localStorage.getItem("user");
+const savedDirection = localStorage.getItem("appDirection") || "ltr";
+
 // Add setUser action to set user data directly
 export const userSlice = createSlice({
   name: "user",
@@ -63,6 +65,9 @@ export const userSlice = createSlice({
     user: savedUser ? JSON.parse(savedUser) : null, // ✅ Restore user
 
     translations: savedTranslations ? JSON.parse(savedTranslations) : {}, // ✅ localStorage se load
+
+    direction: savedDirection, // ✅ RTL/LTR direction
+    isRTL: savedDirection === "rtl", // ✅ RTL flag
 
     loading: false,
     error: null,
@@ -75,11 +80,19 @@ export const userSlice = createSlice({
       state.translations = action.payload;
       localStorage.setItem("translations", JSON.stringify(action.payload)); // ✅ update bhi karo
     },
+    setDirection: (state, action) => {
+      state.direction = action.payload;
+      state.isRTL = action.payload === "rtl";
+      localStorage.setItem("appDirection", action.payload); // ✅ persist direction
+    },
     logout: (state) => {
       localStorage.removeItem("token");
       localStorage.removeItem("translations"); // ✅ clear karo
       localStorage.removeItem("user"); // ✅ remove user data too
+      localStorage.removeItem("appDirection"); // ✅ clear direction
       state.user = null;
+      state.direction = "ltr";
+      state.isRTL = false;
     },
   },
   extraReducers: (builder) => {
@@ -110,6 +123,6 @@ export const userSlice = createSlice({
   },
 });
 
-export const { setUser, setTranslations, logout } = userSlice.actions;
+export const { setUser, setTranslations, setDirection, logout } = userSlice.actions;
 
 export default userSlice.reducer;

@@ -1,21 +1,24 @@
-.custom_swimlane .react-flow__viewport.xyflow__viewport.react-flow__container {
+/* Disable transform for normal swimlane viewport (NOT for RTL) */
+.custom_swimlane:not(.rtl-flow) .react-flow__viewport.xyflow__viewport.react-flow__container {
     transform: none !important;
 }
+
 .custom_swimlane .react-flow__node-group {
     border-top: 0;
     border-bottom: 1px solid #002060 !important;
     /* border-color: #002060 !important; */
     /* width: 136.636px!important; */
 }
+
 .react-flow__edge-path {
     stroke: #002060 !important;
 }
-.custom_swimlane .borderBox {
-    /* border: 1px solid rgb(0 32 96) !important; */
-    /* box-shadow: rgb(0 32 96 / 14%) 0px 2px 5px !important; */
- }
 
- /* .react-flow__node.react-flow__node-group.selectable {
+.custom_swimlane .borderBox {
+    /* Border styling handled by parent components */
+}
+
+/* .react-flow__node.react-flow__node-group.selectable {
     height: 89px !important;
 } */
 
@@ -26,11 +29,11 @@
     max-width: 600px !important;
     height: 450px !important;
     width: 600px !important;
-   
+
     overflow-y: auto;
 }
 
-.popupContent_content{
+.popupContent_content {
     max-height: 400px !important;
 }
 
@@ -39,28 +42,35 @@
     background-color: transparent;
     font-size: 20px;
 }
-.popupPosition_fix > * {
+
+.popupPosition_fix>* {
     color: #002060 !important;
     font-family: 'Poppins', sans-serif !important;
     font-weight: normal !important;
 }
-.popupContent_content::-webkit-scrollbar, .ql-editor::-webkit-scrollbar-thumb{
+
+.popupContent_content::-webkit-scrollbar,
+.ql-editor::-webkit-scrollbar-thumb {
     width: 5px;
-    height:20px;
+    height: 20px;
 }
-.ql-editor::-webkit-scrollbar-thumb{
-	background-color: #002060;
+
+.ql-editor::-webkit-scrollbar-thumb {
+    background-color: #002060;
 }
+
 .popupPosition_fix h3 {
     text-transform: capitalize;
 }
-.popupContent_content::-webkit-scrollbar-thumb{
-	background-color: #002060;
+
+.popupContent_content::-webkit-scrollbar-thumb {
+    background-color: #002060;
 }
-.ss_publish_border{
+
+.ss_publish_border {
     border: 1px solid rgb(0 32 96) !important;
     border-top: 0 !important;
-       position: relative;
+    position: relative;
 }
 
 
@@ -70,32 +80,33 @@
 .dropdown-container {
     position: relative;
     display: inline-block;
-  }
-  
-  /* Button styling */
-  #dropdownBtn {
+}
+
+/* Button styling */
+#dropdownBtn {
     border: none;
     cursor: pointer;
     font-size: 16px;
     border-radius: 5px;
-  }
-  
+}
 
-  .publishcontainer {
+
+.publishcontainer {
     position: relative;
 }
-  /* Dropdown content */
-  .dropdown-content {
+
+/* Dropdown content */
+.dropdown-content {
     position: absolute;
     background-color: #e7e7e7;
     min-width: 160px;
     z-index: 100;
     overflow: hidden;
-    right:0;
-    top:33px;
-  }
-  
-  .ss_header_new_right .dropdown-content button {
+    right: 0;
+    top: 33px;
+}
+
+.ss_header_new_right .dropdown-content button {
     display: block;
     width: 100%;
     background: none;
@@ -112,20 +123,20 @@
     font-weight: 300;
     font-size: 1rem !important;
     height: auto !important;
-  }
-  
-  .ss_header_new_right .dropdown-content button:hover {
+}
+
+.ss_header_new_right .dropdown-content button:hover {
     background: #ff364a !important;
     color: #fff !important;
 
-  }
-  
+}
 
-  .ss_dash_3dots_sec img {
+
+.ss_dash_3dots_sec img {
     width: 4px;
 }
 
-.ss_process_title img{
+.ss_process_title img {
     width: 20px;
 }
 
@@ -135,6 +146,7 @@
         padding-right: 13px;
     }
 }
+
 .ss_process_title {
     display: flex;
     align-items: center;
@@ -142,6 +154,33 @@
 }
 
 
-.hideborder{
+.hideborder {
     border-bottom: 0 !important;
+}
+
+/* ========================================
+   RTL Support for React Flow Swimlane
+   ======================================== */
+
+/* RTL text inputs - ensure proper direction */
+.rtl-flow textarea,
+.rtl-flow input[type="text"],
+.rtl-flow .mapleveltextarea {
+    direction: rtl !important;
+    text-align: center !important;
+}
+
+/* RTL dropdown positioning */
+[dir="rtl"] .dropdown-content {
+    left: 0;
+    right: auto;
+}
+
+[dir="rtl"] .ss_header_new_right .dropdown-content button {
+    text-align: right;
+}
+
+/* RTL process title */
+[dir="rtl"] .ss_process_title {
+    flex-direction: row-reverse;
 }

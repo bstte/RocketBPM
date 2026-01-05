@@ -7,734 +7,809 @@ import axios from 'axios';
 
 // staging api and images
 const baseUrl = 'https://stagingadmin.rocketbpm.com/api'
-export const ImageBaseUrl = 'https://stagingadmin.rocketbpm.com/'
+export const ImageBaseUrl = 'https://stagingadmin.rocketbpm.com/public/'
 
 
 export const defaultApi = axios.create({
-  baseURL: baseUrl,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+    baseURL: baseUrl,
+    headers: {
+        'Content-Type': 'application/json',
+    },
 });
 
 const api = axios.create({
-  baseURL: baseUrl,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+    baseURL: baseUrl,
+    headers: {
+        'Content-Type': 'application/json',
+    },
 });
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
+    const token = localStorage.getItem("token");
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
 }, (error) => Promise.reject(error));
 
 // Response: handle 401 globally
 api.interceptors.response.use(
-  (res) => res,
-  (error) => {
-    const status = error?.response?.status;
-    if (status === 401) {
-      // Clear auth and redirect to login
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      window.location.href = "/login";
+    (res) => res,
+    (error) => {
+        const status = error?.response?.status;
+        if (status === 401) {
+            // Clear auth and redirect to login
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            window.location.href = "/login";
+        }
+        return Promise.reject(error);
     }
-    return Promise.reject(error);
-  }
 );
 export const saveNodes = async (data) => {
-  try {
-    const response = await api.post('/nodes', data);
-    return response.data;
-  } catch (error) {
-    console.error('Error saving nodes:', error);
-    throw error;
-  }
+    try {
+        const response = await api.post('/nodes', data);
+        return response.data;
+    } catch (error) {
+        console.error('Error saving nodes:', error);
+        throw error;
+    }
 };
 
 export const editorialPublishAPI = async (payload) => {
-  try {
-    const response = await api.post('/editorial-publish', payload);
-    return response.data;
-  } catch (error) {
-    console.error('Error in Editorial Publish:', error);
-    throw error;
-  }
+    try {
+        const response = await api.post('/editorial-publish', payload);
+        return response.data;
+    } catch (error) {
+        console.error('Error in Editorial Publish:', error);
+        throw error;
+    }
 };
 
 export const contentChangeRequest = async (payload) => {
-  try {
-    const response = await api.post('/content-change-request', payload);
-    return response.data;
-  } catch (error) {
-    console.error('Error in Editorial Publish:', error);
-    throw error;
-  }
+    try {
+        const response = await api.post('/content-change-request', payload);
+        return response.data;
+    } catch (error) {
+        console.error('Error in Editorial Publish:', error);
+        throw error;
+    }
+};
+
+export const contentapproveProcess = async (payload) => {
+    try {
+        const response = await api.post('/process/approve', payload);
+        return response.data;
+    } catch (error) {
+        console.error('Error in Approve Process:', error);
+        throw error;
+    }
+};
+
+export const contentrequestChange = async (payload) => {
+    try {
+        const response = await api.post('/process/request-change', payload);
+        return response.data;
+    } catch (error) {
+        console.error('Error in Request Change:', error);
+        throw error;
+    }
 };
 
 
 export const getNextPageGroupId = async (Page_Title = null) => {
-  try {
-    const response = await api.get('/getNext-PageGroupId', {
-      params: {
-        Page_Title
-      }
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching nodes:', error);
-    throw error;
-  }
+    try {
+        const response = await api.get('/getNext-PageGroupId', {
+            params: {
+                Page_Title
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching nodes:', error);
+        throw error;
+    }
 };
 
 export const getNodes = async (level = null, user_id = null, Process_id = null, currentParentId = null, language_id = null, NodesStatus = null) => {
-  try {
-    const response = await api.get('/nodes', {
-      params: {
-        level,
-        user_id,
-        Process_id,
-        currentParentId,
-        language_id,
-        NodesStatus
-      }
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching nodes:', error);
-    throw error;
-  }
+    try {
+        const response = await api.get('/nodes', {
+            params: {
+                level,
+                user_id,
+                Process_id,
+                currentParentId,
+                language_id,
+                NodesStatus
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching nodes:', error);
+        throw error;
+    }
 };
 
 export const getallpublishObject_Tolinkexistingmodel = async (user_id = null, Process_id = null, processDefaultlanguage_id = null) => {
-  try {
-    const response = await api.get('/getallpublishObject_Tolinkexistingmodel', {
-      params: {
-        user_id,
-        Process_id,
-        processDefaultlanguage_id
-      }
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching nodes:', error);
-    throw error;
-  }
+    try {
+        const response = await api.get('/getallpublishObject_Tolinkexistingmodel', {
+            params: {
+                user_id,
+                Process_id,
+                processDefaultlanguage_id
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching nodes:', error);
+        throw error;
+    }
 };
 
 
 export const getexistingrole = async (level = null, user_id = null, Process_id = null) => {
-  try {
-    const response = await api.get('/getexistingrole', {
-      params: {
-        level,
-        user_id,
-        Process_id
-      }
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching nodes:', error);
-    throw error;
-  }
+    try {
+        const response = await api.get('/getexistingrole', {
+            params: {
+                level,
+                user_id,
+                Process_id
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching nodes:', error);
+        throw error;
+    }
 };
 
 
 export const checkRecord = async (level = null, Process_id = null) => {
-  try {
-    const response = await api.get('/check-record', {
-      params: {
-        level,
-        Process_id
-      }
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching nodes:', error);
-    throw error;
-  }
+    try {
+        const response = await api.get('/check-record', {
+            params: {
+                level,
+                Process_id
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching nodes:', error);
+        throw error;
+    }
 };
 
 
 export const checkRecordWithGetLinkDraftData = async (level = null, user_id = null, Process_id = null, LinkLevel = null) => {
-  try {
-    const response = await api.get('/check-record-withgetlinkdraft-data', {
-      params: {
-        level,
-        user_id,
-        Process_id,
-        LinkLevel
-      }
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching nodes:', error);
-    throw error;
-  }
+    try {
+        const response = await api.get('/check-record-withgetlinkdraft-data', {
+            params: {
+                level,
+                user_id,
+                Process_id,
+                LinkLevel
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching nodes:', error);
+        throw error;
+    }
 };
 
 export const checkRecordWithGetLinkPublishData = async (level = null, user_id = null, Process_id = null, LinkLevel = null) => {
-  try {
-    const response = await api.get('/check-record-withgetlinkPublish-data', {
-      params: {
-        level,
-        user_id,
-        Process_id,
-        LinkLevel
-      }
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching nodes:', error);
-    throw error;
-  }
+    try {
+        const response = await api.get('/check-record-withgetlinkPublish-data', {
+            params: {
+                level,
+                user_id,
+                Process_id,
+                LinkLevel
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching nodes:', error);
+        throw error;
+    }
 };
 
 export const checkPublishRecord = async (level = null, Process_id = null) => {
-  try {
-    const response = await api.get('/checkPublishRecord', {
-      params: {
-        level,
-        Process_id
-      }
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching nodes:', error);
-    throw error;
-  }
+    try {
+        const response = await api.get('/checkPublishRecord', {
+            params: {
+                level,
+                Process_id
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching nodes:', error);
+        throw error;
+    }
 };
 
 
 export const GetPublishedDate = async (Process_id = null, status = null, PageGroupId = null) => {
-  try {
-    const response = await api.get('/GetPublishedDate', {
-      params: {
-        Process_id,
-        status,
-        PageGroupId
-      }
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching nodes:', error);
-    throw error;
-  }
+    try {
+        const response = await api.get('/GetPublishedDate', {
+            params: {
+                Process_id,
+                status,
+                PageGroupId
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching nodes:', error);
+        throw error;
+    }
 };
 
 export const getUserNodes = async (user_id = null) => {
-  try {
-    const response = await api.get('/getUserNodes', {
-      params: {
-        user_id,
-      }
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching nodes:', error);
-    throw error;
-  }
+    try {
+        const response = await api.get('/getUserNodes', {
+            params: {
+                user_id,
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching nodes:', error);
+        throw error;
+    }
 };
 
 
 
 
 export const getPublishedNodes = async (level = null, user_id = null, Process_id = null, currentParentId = null, language_id = null) => {
-  try {
-    const response = await api.get('/Publishnodes', {
-      params: {
-        level,
-        user_id,
-        Process_id,
-        currentParentId,
-        language_id
-      }
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching nodes:', error);
-    throw error;
-  }
+    try {
+        const response = await api.get('/Publishnodes', {
+            params: {
+                level,
+                user_id,
+                Process_id,
+                currentParentId,
+                language_id
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching nodes:', error);
+        throw error;
+    }
 };
 
 
 export const filter_draft = async (ParentPageGroupId = null) => {
-  try {
-    const response = await api.get('/nodes/filter-draft', {
-      params: { ParentPageGroupId },
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching nodes:', error);
-    throw error;
-  }
+    try {
+        const response = await api.get('/nodes/filter-draft', {
+            params: { ParentPageGroupId },
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching nodes:', error);
+        throw error;
+    }
 };
 
 
 
 export const getdataByNodeId = async (node_id = null, status = null) => {
-  try {
-    const response = await api.get('/nodes/getdataByNodeId', {
-      params: { node_id, status },
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching nodes:', error);
-    throw error;
-  }
+    try {
+        const response = await api.get('/nodes/getdataByNodeId', {
+            params: { node_id, status },
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching nodes:', error);
+        throw error;
+    }
 };
 
 
 export const Login = async (email, password) => {
-  try {
-    const response = await api.post('/login', { email, password });
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching nodes:', error);
-    throw error;
-  }
+    try {
+        const response = await api.post('/login', { email, password });
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching nodes:', error);
+        throw error;
+    }
 };
 
 
 export const forgotPassword = async (email) => {
-  try {
-    const response = await api.post('/forgot-password', { email });
-    return response.data;
-  } catch (error) {
-    console.error('Error sending forgot password link:', error);
-    throw error.response?.data || error;
-  }
+    try {
+        const response = await api.post('/forgot-password', { email });
+        return response.data;
+    } catch (error) {
+        console.error('Error sending forgot password link:', error);
+        throw error.response?.data || error;
+    }
 };
 
 export const resetPassword = async (token, password, password_confirmation) => {
-  try {
-    const response = await api.post('/reset-password', {
-      token,
-      password,
-      password_confirmation,
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error resetting password:', error);
-    throw error.response?.data || error;
-  }
+    try {
+        const response = await api.post('/reset-password', {
+            token,
+            password,
+            password_confirmation,
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error resetting password:', error);
+        throw error.response?.data || error;
+    }
 };
 
 
 export const CurrentUser = async (token) => {
-  try {
-    const response = await api.get('/user', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      }
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching nodes:', error);
-    throw error;
-  }
+    try {
+        const response = await api.get('/user', {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching nodes:', error);
+        throw error;
+    }
 };
 
 export const deactivateUser = async (token) => {
-  try {
-    const response = await api.post(
-      '/deactivate-user',
-      {}, // Empty body (if your API requires a payload, add it here)
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json', // Ensure JSON format
-        }
-      }
-    );
-    return response.data;
-  } catch (error) {
-    console.error('Error deactivating user:', error.response?.data || error.message);
-    throw error;
-  }
+    try {
+        const response = await api.post(
+            '/deactivate-user',
+            {}, // Empty body (if your API requires a payload, add it here)
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json', // Ensure JSON format
+                }
+            }
+        );
+        return response.data;
+    } catch (error) {
+        console.error('Error deactivating user:', error.response?.data || error.message);
+        throw error;
+    }
 };
 
 export const updateprofile = async (token, profileData) => {
-  try {
-    const response = await api.post(
-      '/update-profile',
-      profileData, // Pass the updated profile data here
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data',
-        },
-      }
-    );
-    return response.data;
-  } catch (error) {
-    console.error('Error updating profile:', error.response?.data || error.message);
-    throw error;
-  }
+    try {
+        const response = await api.post(
+            '/update-profile',
+            profileData, // Pass the updated profile data here
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'multipart/form-data',
+                },
+            }
+        );
+        return response.data;
+    } catch (error) {
+        console.error('Error updating profile:', error.response?.data || error.message);
+        throw error;
+    }
 };
 
 export const deleteExistingRole = async (Process_id = null, PageGroupId = null, parentId = null, link = null) => {
-  try {
-    const response = await api.post('/delete-role-link', {
-      Process_id,
-      PageGroupId,
-      parentId,
-      link
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error deleting existing role:', error);
-    throw error;
-  }
+    try {
+        const response = await api.post('/delete-role-link', {
+            Process_id,
+            PageGroupId,
+            parentId,
+            link
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error deleting existing role:', error);
+        throw error;
+    }
 };
 
 
 export const removeProfileImgage = async (token) => {
-  try {
-    const response = await api.delete(
-      '/remove-profile-image',
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    return response;
-  } catch (error) {
-    console.error('Error updating profile:', error.response?.data || error.message);
-    throw error;
-  }
+    try {
+        const response = await api.delete(
+            '/remove-profile-image',
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        return response;
+    } catch (error) {
+        console.error('Error updating profile:', error.response?.data || error.message);
+        throw error;
+    }
 };
 
 export const saveProcessTitle = async (title, user_id, defaultLanguage, supportedLanguages, translations) => {
-  try {
-    const response = await api.post('/process-titles', { process_title: title, user_id: user_id, defaultLanguage, supportedLanguages, translations });
-    return response.data;
-  } catch (error) {
-    console.error('Error saving process title:', error);
-    throw error;
-  }
+    try {
+        const response = await api.post('/process-titles', { process_title: title, user_id: user_id, defaultLanguage, supportedLanguages, translations });
+        return response.data;
+    } catch (error) {
+        console.error('Error saving process title:', error);
+        throw error;
+    }
 };
 
 
 
 export const ProcessAssign = async (user_id, process_id, assigned_users) => {
-  try {
-    const response = await api.post('/process-Assign', { user_id, process_id, assigned_users });
-    return response.data;
-  } catch (error) {
-    console.error('Error saving process title:', error);
-    throw error;
-  }
+    try {
+        const response = await api.post('/process-Assign', { user_id, process_id, assigned_users });
+        return response.data;
+    } catch (error) {
+        console.error('Error saving process title:', error);
+        throw error;
+    }
 };
 
 
 export const getProcessTitles = async (user_id = null) => {
-  try {
-    const response = await api.get('/process-titles', {
-      params: {
-        user_id,
-      }
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching process titles:', error);
-    throw error;
-  }
+    try {
+        const response = await api.get('/process-titles', {
+            params: {
+                user_id,
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching process titles:', error);
+        throw error;
+    }
 };
 
 
 export const getProcessAssignUsers = async (user_id = null, process_id = null) => {
-  try {
-    const response = await api.get('/get-process-assign-users', {
-      params: {
-        user_id,
-        process_id
-      }
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching process titles:', error);
-    throw error;
-  }
+    try {
+        const response = await api.get('/get-process-assign-users', {
+            params: {
+                user_id,
+                process_id
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching process titles:', error);
+        throw error;
+    }
 };
 
 export const checkEmail = async (email = null) => {
-  try {
-    const response = await api.get('/check-email', {
-      params: {
-        email,
-      }
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching process titles:', error);
-    throw error;
-  }
+    try {
+        const response = await api.get('/check-email', {
+            params: {
+                email,
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching process titles:', error);
+        throw error;
+    }
 };
 
 export const saveAssingUserData = async (newUserObject = null) => {
-  try {
-    const response = await api.post('/save-Assign-User-Data', newUserObject);
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching process titles:', error);
-    throw error;
-  }
+    try {
+        const response = await api.post('/save-Assign-User-Data', newUserObject);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching process titles:', error);
+        throw error;
+    }
 };
 
 export const updateAssignedUserData = async (newUserObject = null) => {
-  try {
-    const response = await api.post('/update-assigned-user', newUserObject);
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching process titles:', error);
-    throw error;
-  }
+    try {
+        const response = await api.post('/update-assigned-user', newUserObject);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching process titles:', error);
+        throw error;
+    }
 };
 
 
 export const addFavProcess = async (user_id, process_id, type, PageGroupId, currentParentId) => {
-  try {
-    const response = await api.post('/add-fav-process', { user_id, process_id, type, PageGroupId, currentParentId });
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching process titles:', error);
-    throw error;
-  }
+    try {
+        const response = await api.post('/add-fav-process', { user_id, process_id, type, PageGroupId, currentParentId });
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching process titles:', error);
+        throw error;
+    }
 };
 
 
 export const removeFavProcess = async (user_id, process_id, PageGroupId) => {
-  try {
-    const response = await api.post('/remove-fav-process', { user_id, process_id, PageGroupId });
-    return response.data;
-  } catch (error) {
-    console.error('Error removing favorite process:', error);
-    throw error;
-  }
+    try {
+        const response = await api.post('/remove-fav-process', { user_id, process_id, PageGroupId });
+        return response.data;
+    } catch (error) {
+        console.error('Error removing favorite process:', error);
+        throw error;
+    }
 };
 
 
 
 export const checkFavProcess = async (user_id, process_id, PageGroupId) => {
-  try {
-    const response = await api.get('/check-fav-process', {
-      params: {
-        user_id, process_id, PageGroupId
-      }
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching process titles:', error);
-    throw error;
-  }
+    try {
+        const response = await api.get('/check-fav-process', {
+            params: {
+                user_id, process_id, PageGroupId
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching process titles:', error);
+        throw error;
+    }
 };
 export const getFavProcessesByUser = async (user_id) => {
-  try {
-    const response = await api.get('/get-fav-processes', {
-      params: {
-        user_id
-      }
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching process titles:', error);
-    throw error;
-  }
+    try {
+        const response = await api.get('/get-fav-processes', {
+            params: {
+                user_id
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching process titles:', error);
+        throw error;
+    }
 };
 
 export const getProcessTitleById = async (id) => {
-  try {
-    const response = await api.get('/get-process-ById', {
-      params: {
-        id
-      }
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching process titles:', error);
-    throw error;
-  }
+    try {
+        const response = await api.get('/get-process-ById', {
+            params: {
+                id
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching process titles:', error);
+        throw error;
+    }
 };
 
 export const updateProcess = async (processId, processdata) => {
-  try {
-    const response = await api.post(
-      `/update-process-ById?id=${processId}`, // Pass ID as a query parameter
-      processdata,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      }
-    );
-    return response.data;
-  } catch (error) {
-    console.error('Error updating process:', error.response?.data || error.message);
-    throw error;
-  }
+    try {
+        const response = await api.post(
+            `/update-process-ById?id=${processId}`, // Pass ID as a query parameter
+            processdata,
+            {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            }
+        );
+        return response.data;
+    } catch (error) {
+        console.error('Error updating process:', error.response?.data || error.message);
+        throw error;
+    }
 };
 
 
 export const deleteProcess = async (processId) => {
-  try {
-    const response = await api.delete(`/delete-process-ById?id=${processId}`);
-    return response.data;
-  } catch (error) {
-    console.error("Error deleting process:", error.response?.data || error.message);
-    throw error;
-  }
+    try {
+        const response = await api.delete(`/delete-process-ById?id=${processId}`);
+        return response.data;
+    } catch (error) {
+        console.error("Error deleting process:", error.response?.data || error.message);
+        throw error;
+    }
 };
 
 export const removeProcessImage = async (token, ProcessId) => {
-  try {
+    try {
 
-    const response = await api.delete(`/remove-process-image?id=${ProcessId}`);
+        const response = await api.delete(`/remove-process-image?id=${ProcessId}`);
 
-    return response;
-  } catch (error) {
-    console.error('Error updating profile:', error.response?.data || error.message);
-    throw error;
-  }
+        return response;
+    } catch (error) {
+        console.error('Error updating profile:', error.response?.data || error.message);
+        throw error;
+    }
 };
 
 
 export const getvideo = async (id) => {
-  try {
-    const response = await api.get('/get-video');
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching process titles:', error);
-    throw error;
-  }
+    try {
+        const response = await api.get('/get-video');
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching process titles:', error);
+        throw error;
+    }
 };
 
 export const signup = async (newUserObject = null) => {
-  try {
-    const response = await api.post('/signup', newUserObject);
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching process titles:', error);
-    throw error;
-  }
+    try {
+        const response = await api.post('/signup', newUserObject);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching process titles:', error);
+        throw error;
+    }
 };
 
 export const submitSignupForm = async (newUserObject = null) => {
-  try {
-    const response = await api.post('/submitSignupForm', newUserObject);
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching process titles:', error);
-    throw error;
-  }
+    try {
+        const response = await api.post('/submitSignupForm', newUserObject);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching process titles:', error);
+        throw error;
+    }
 };
 
 
 export const versionlist = async (processId, level, LoginUserId, status) => {
-  try {
+    try {
 
 
-    const response = await api.get('/version/list', {
-      params: {
-        process_id: processId,
-        level: level,
-        LoginUserId: LoginUserId,
-        status: status
-      }
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching process titles:', error);
-    throw error;
-  }
+        const response = await api.get('/version/list', {
+            params: {
+                process_id: processId,
+                level: level,
+                LoginUserId: LoginUserId,
+                status: status
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching process titles:', error);
+        throw error;
+    }
 };
 
 
 export const ReplaceVersion = async (level, processId, version) => {
-  try {
+    try {
 
 
-    const response = await api.post('/replace-version', {
-      process_id: processId,
-      level: level,
-      version: version,
+        const response = await api.post('/replace-version', {
+            process_id: processId,
+            level: level,
+            version: version,
 
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching process titles:', error);
-    throw error;
-  }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching process titles:', error);
+        throw error;
+    }
 };
 
 
 export const getVersionViewData = async (processId, level, version, pageTitle, user_id, currentParentId) => {
-  try {
-    const response = await api.get(`/process/view/${processId}/${level}/${version}/${pageTitle}/${user_id}`, {
-      params: {
-        currentParentId: currentParentId
-      }
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching version view data:', error);
-    throw error;
-  }
+    try {
+        const response = await api.get(`/process/view/${processId}/${level}/${version}/${pageTitle}/${user_id}`, {
+            params: {
+                currentParentId: currentParentId
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching version view data:', error);
+        throw error;
+    }
 };
 
 
 // Save Process Info (contact + revision)
 export const saveProcessInfo = async (data) => {
-  try {
-    const response = await api.post('/process-info', data);
-    return response.data;
-  } catch (error) {
-    console.error('Error saving process info:', error);
-    throw error;
-  }
+    try {
+        const response = await api.post('/process-info', data);
+        return response.data;
+    } catch (error) {
+        console.error('Error saving process info:', error);
+        throw error;
+    }
 };
 
 export const googleOAuth = async (tokenId) => {
-  try {
-    const response = await api.post('/oauth/google', { tokenId });
-    return response.data; // Return JSON directly
-  } catch (error) {
-    console.error('Google OAuth API Error:', error);
-    throw error.response ? error.response.data : error;
-  }
+    try {
+        const response = await api.post('/oauth/google', { tokenId });
+        return response.data; // Return JSON directly
+    } catch (error) {
+        console.error('Google OAuth API Error:', error);
+        throw error.response ? error.response.data : error;
+    }
 };
 
 
 // ✅ Microsoft OAuth API Call
 export const microsoftOAuth = async (access_token) => {
-  try {
-    const response = await api.post('/oauth/microsoft', { access_token });
-    return response.data;
-  } catch (error) {
-    console.error('Microsoft OAuth API Error:', error);
-    throw error.response ? error.response.data : error;
-  }
+    try {
+        const response = await api.post('/oauth/microsoft', { access_token });
+        return response.data;
+    } catch (error) {
+        console.error('Microsoft OAuth API Error:', error);
+        throw error.response ? error.response.data : error;
+    }
 };
 
 
 
 
 export const getLanguages = async () => {
-  try {
-    const response = await api.get('/languages');
-    return response;
-  } catch (error) {
-    console.error('Error fetching process titles:', error);
-    throw error;
-  }
+    try {
+        const response = await api.get('/languages');
+        return response;
+    } catch (error) {
+        console.error('Error fetching process titles:', error);
+        throw error;
+    }
 };
 
-const apiExports = { saveNodes, getallpublishObject_Tolinkexistingmodel, getexistingrole, getNodes, checkPublishRecord, GetPublishedDate, checkRecord, Login, saveProcessTitle, defaultApi, filter_draft, getPublishedNodes, getdataByNodeId };
+
+export const duplicateNode = async (payload) => {
+    try {
+        const response = await api.post('/nodes/duplicate', payload);
+        return response.data;
+    } catch (error) {
+        console.error('Error duplicating node:', error);
+        throw error;
+    }
+};
+
+
+
+export const moveNode = async (payload) => {
+    try {
+        const response = await api.post('/nodes/move', payload);
+        return response.data;
+    } catch (error) {
+        console.error('Error moving node:', error);
+        throw error;
+    }
+};
+
+export const contectCancelPublishing = async (payload) => {
+    try {
+        const response = await api.post('/process/cancel-publishing', payload);
+        return response.data;
+    } catch (error) {
+        console.error('Error in Cancel Publishing:', error);
+        throw error;
+    }
+};
+
+
+export const contectApprovalStatus = async (payload) => {
+    try {
+        const response = await api.post('/approval/status', payload);
+        return response;
+    } catch (error) {
+        console.error('Error in Cancel Publishing:', error);
+        throw error;
+    }
+};
+
+
+export const contentreschedulePublishing = async (payload) => {
+    try {
+        const response = await api.post('/process/reschedule-publishing', payload);
+        return response.data;
+    } catch (error) {
+        console.error('Error in Reschedule Publishing:', error);
+        throw error;
+    }
+};
+
+const apiExports = { saveNodes, getallpublishObject_Tolinkexistingmodel, getexistingrole, getNodes, checkPublishRecord, GetPublishedDate, checkRecord, Login, saveProcessTitle, defaultApi, filter_draft, getPublishedNodes, getdataByNodeId, duplicateNode, moveNode };
 
 export default apiExports;

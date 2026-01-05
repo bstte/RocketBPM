@@ -8,6 +8,7 @@ import api, {
     contentChangeRequest,
     filter_draft,
     getNextPageGroupId,
+    duplicateNode,
 } from "../../../API/api";
 import CustomAlert from "../../../components/CustomAlert";
 import { buildProcessPath } from "../../../routes/buildProcessPath";
@@ -301,23 +302,46 @@ export const useMapLevelHandlers = ({
 
     const handleLanguageSwitch = useCallback(async (langId) => {
         if (!state.hasUnsavedChanges) {
-            localStorage.setItem("selectedLanguageId", langId);
             fetchNodes(langId);
+            localStorage.setItem("selectedLanguageId", langId);
+
+            // Dispatch custom event for RTL update
+            window.dispatchEvent(new Event('languageChanged'));
+
             return;
         }
 
-        CustomAlert.confirmLanguageSwitch(
-            async () => {
-                await handleSaveNodes("draft");
-                localStorage.setItem("selectedLanguageId", langId);
-                fetchNodes(langId);
-            },
-            () => {
-                localStorage.setItem("selectedLanguageId", langId);
-                fetchNodes(langId);
-            }
-        );
-    }, [state.hasUnsavedChanges, fetchNodes, handleSaveNodes]);
+        const shouldProceed = await new Promise((resolve) => {
+            CustomAlert.confirmLanguageSwitch(
+                async () => {
+                    // Save & switch
+                    await handleSaveNodes("draft");
+                    fetchNodes(langId);
+                    localStorage.setItem("selectedLanguageId", langId);
+
+                    // Dispatch custom event for RTL update
+                    window.dispatchEvent(new Event('languageChanged'));
+
+                    resolve(true);
+                },
+                () => {
+                    // Don't save, just switch
+                    fetchNodes(langId);
+                    localStorage.setItem("selectedLanguageId", langId);
+
+                    // Dispatch custom event for RTL update
+                    window.dispatchEvent(new Event('languageChanged'));
+
+                    state.setHasUnsavedChanges(false);
+                    resolve(true);
+                },
+                () => {
+                    // Cancel
+                    resolve(false);
+                }
+            );
+        });
+    }, [state.hasUnsavedChanges, fetchNodes, handleSaveNodes, state.setHasUnsavedChanges]);
 
     const handleFav = useCallback(async () => {
         const user_id = LoginUser ? LoginUser.id : null;
@@ -422,20 +446,59 @@ export const useMapLevelHandlers = ({
 
     const handleContentSubmit = useCallback(async (data) => {
         setShowContentPopup(false);
+        const processPath = buildProcessPath({
+            mode: "draft",
+            view: "map",
+            processId,
+            level: currentLevel,
+            parentId: currentLevel === 0 ? undefined : currentParentId,
+        });
+
+        const processLink = `${window.location.origin}${processPath}`;
         const Level = `level${currentLevel}${currentParentId ? `_${currentParentId}` : ""}`;
         const payload = {
             process_id: processId,
             level: Level,
             revision_text: state.revisionData?.revisionText,
             requested_by: LoginUser ? LoginUser.id : null,
-            owner_email: data.owner.email,
+            owner_id: data.owner.id,
             cc_architect: data.ccRoles.architect,
             cc_manager: data.ccRoles.manager,
             planned_publish_date: data.date,
-            personal_message: data.personalMessage
+            personal_message: data.personalMessage,
+            process_title: state.title,
+            process_link: processLink,
         };
         await contentChangeRequest(payload);
     }, [currentLevel, currentParentId, processId, state.revisionData, LoginUser, setShowContentPopup]);
+
+    const handleDuplicateNode = useCallback(async () => {
+        if (!state.selectedNode) return;
+
+        const ConfirmDuplicate = window.confirm("Are you sure you want to duplicate this node and all its sub-levels?");
+        if (!ConfirmDuplicate) return;
+
+        setShowPopup(false);
+
+        try {
+            await duplicateNode({
+                node_id: state.selectedNode,
+                process_id: processId,
+                level: `level${currentLevel}${currentParentId ? `_${currentParentId}` : ""}`, // Ensure correct level string format
+                user_id: LoginUser?.id
+            });
+            CustomAlert.success("Success", "Node duplicated successfully");
+
+            // Refresh nodes to show the new duplicate
+            // We use the same fetch implementation as initial load
+            const savedLang = localStorage.getItem("selectedLanguageId");
+            fetchNodes(savedLang ? parseInt(savedLang) : state.processDefaultlanguage_id);
+
+        } catch (error) {
+            console.error("Duplicate failed", error);
+            CustomAlert.error("Error", "Failed to duplicate node");
+        }
+    }, [state.selectedNode, processId, currentLevel, currentParentId, LoginUser, fetchNodes, state.processDefaultlanguage_id, setShowPopup]);
 
     return {
         addNode,
@@ -453,5 +516,38 @@ export const useMapLevelHandlers = ({
         editorialPublish,
         handleContentSubmit,
         goToProcess,
+        handleDuplicateNode,
+        approveProcess: async () => {
+            if (window.confirm("Do you want to approve the process and inform the modeler to publish it?")) {
+                try {
+                    await api.approveProcessAPI({
+                        process_id: processId,
+                        level: `level${currentLevel}${currentParentId ? `_${currentParentId}` : ""}`,
+                        user_id: LoginUser?.id
+                    });
+                    CustomAlert.success("Success", "Process approved successfully.");
+                    // Refresh
+                    window.location.reload();
+                } catch (e) {
+                    console.error(e);
+                    CustomAlert.error("Error", "Failed to approve process.");
+                }
+            }
+        },
+        requestChange: async (reason) => {
+            try {
+                await api.requestChangeAPI({
+                    process_id: processId,
+                    level: `level${currentLevel}${currentParentId ? `_${currentParentId}` : ""}`,
+                    user_id: LoginUser?.id,
+                    reason: reason
+                });
+                CustomAlert.success("Success", "Change requested successfully.");
+                window.location.reload();
+            } catch (e) {
+                console.error(e);
+                CustomAlert.error("Error", "Failed to request change.");
+            }
+        }
     };
 };

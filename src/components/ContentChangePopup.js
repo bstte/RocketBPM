@@ -55,32 +55,32 @@ const ContentChangePopup = ({
         });
         return `${month} ${day} : ${time}`;
     })();
-    const findUserByEmail = (email, assignedUsers) => {
-        console.log("inside fine", email, assignedUsers)
-        if (!email || !assignedUsers) return null;
+    const findUserById = (userId, assignedUsers) => {
+        if (!userId || !assignedUsers) return null;
 
         const match = assignedUsers.find(
-            (item) => item?.user?.email?.toLowerCase() === email.toLowerCase()
+            (item) => item?.user?.id === userId
         );
 
         if (!match) return null;
 
         return {
-            first_name: `${match.user.first_name}`,
-            last_name: `${match.user.last_name}`,
+            id: match.user.id,
+            first_name: match.user.first_name,
+            last_name: match.user.last_name,
             email: match.user.email,
             image: match.user.image,
         };
     };
 
-    console.log("revisionresponse", revisionresponse)
+
     // MATCH actual user details from assigned_users
-    const processOwnerEmail =
+    const processOwnerId =
         revisionresponse?.contact_info?.domain_owner?.[0] ||
         revisionresponse?.contact_info?.owner?.[0] ||
         null;
 
-    const processOwner = findUserByEmail(processOwnerEmail, revisionresponse?.assigned_users);
+    const processOwner = findUserById(processOwnerId, revisionresponse?.assigned_users);
 
 
     return (
@@ -121,9 +121,11 @@ const ContentChangePopup = ({
                         </div>
                         <div className="owner-desc">
                             <span className="owner-name">
-                                {processOwner.first_name}{" "}
-                                {processOwner.last_name || ""}
+                                {processOwner
+                                    ? `${processOwner.first_name} ${processOwner.last_name || ""}`
+                                    : "—"}
                             </span>
+
 
                             <div className="owner-email">
                                 <a

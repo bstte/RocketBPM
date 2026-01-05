@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useEffect, useContext, useRef } from "react";
+import React, { useCallback, useMemo, useEffect, useContext, useRef, useState } from "react";
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -17,7 +17,7 @@ import Popup from "../../components/Popup";
 import ArrowBoxNode from "../../AllNode/ArrowBoxNode";
 import PentagonNode from "../../AllNode/PentagonNode";
 import { getLevelKey } from "../../utils/getLevel";
-import { filter_draft } from "../../API/api";
+import { filter_draft, moveNode } from "../../API/api";
 import { BreadcrumbsContext } from "../../context/BreadcrumbsContext";
 import CustomContextMenu from "../../components/CustomContextMenu";
 import { useSelector } from "react-redux";
@@ -37,6 +37,9 @@ import { useFetchNodes } from "../../hooks/useFetchNodes";
 import { useLabelChange } from "../../hooks/useLabelChange";
 import { useProcessNavigation } from "../../hooks/useProcessNavigation";
 import { buildProcessPath } from "../../routes/buildProcessPath";
+import { isRTLLanguage, getDirection } from "../../utils/rtlUtils";
+import { useLanguages } from "../../hooks/useLanguages";
+import MoveNodePopup from "../../components/MoveNodePopup";
 
 // Custom Hooks
 import { useMapLevelState } from "./hooks/useMapLevelState";
@@ -88,14 +91,46 @@ const MapLevel = () => {
   const currentParentId = parentId || null;
   const { addBreadcrumb, removeBreadcrumbsAfter, breadcrumbs } = useContext(BreadcrumbsContext);
 
+  // Local RTL state based on process language (not profile language)
+  const [isRTL, setIsRTL] = useState(false);
+  const [direction, setDirection] = useState('ltr');
+
+  const { languages } = useLanguages();
+
+  // Move Node State
+  const [showMovePopup, setShowMovePopup] = useState(false);
+
+  const handleMoveNodeClick = () => {
+    setShowPopup(false);
+    setShowMovePopup(true);
+  };
+
+  const handleMoveConfirm = async (target) => {
+    try {
+      await moveNode({
+        node_id: selectedNode,
+        target_process_id: target.processId,
+        target_level: target.levelKey,
+        target_parent_id: null, // Depending on backend logic, moving to a map usually means root level of that map? Or we might need target parent ID if moving into a subprocess.
+     
+      });
+      setShowMovePopup(false);
+      // Refetch to update UI (node should disappear)
+      fetchNodes(processDefaultlanguage_id);
+    } catch (error) {
+      console.error("Failed to move node", error);
+      alert("Failed to move node");
+    }
+  };
+
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
   const memoizedNodeTypes = useMemo(() => ({
-    progressArrow: (props) => <ArrowBoxNode {...props} selectedNodeId={selectedNodeId} />,
-    pentagon: (props) => <PentagonNode {...props} selectedNodeId={selectedNodeId} />,
+    progressArrow: (props) => <ArrowBoxNode {...props} selectedNodeId={selectedNodeId} isRTL={isRTL} />,
+    pentagon: (props) => <PentagonNode {...props} selectedNodeId={selectedNodeId} isRTL={isRTL} />,
     StickyNote: (props) => <StickyNote {...props} selectedNodeId={selectedNodeId} editable={true} />,
-  }), [selectedNodeId]);
+  }), [selectedNodeId, isRTL]);
 
   const memoizedEdgeTypes = useMemo(() => ({
     smoothstep: SmoothStepEdge,
@@ -157,7 +192,53 @@ const MapLevel = () => {
   useEffect(() => {
     const savedLang = localStorage.getItem("selectedLanguageId");
     fetchNodes(savedLang ? parseInt(savedLang) : processDefaultlanguage_id);
-  }, [currentLevel]);
+
+    // Also set RTL on initial load
+    if (languages.length > 0) {
+      const langId = savedLang ? parseInt(savedLang) : processDefaultlanguage_id;
+      if (langId) {
+        const currentLang = languages.find(l => l.id === langId);
+        if (currentLang?.code) {
+          const rtl = isRTLLanguage(currentLang.code);
+          const dir = getDirection(currentLang.code);
+          setIsRTL(rtl);
+          setDirection(dir);
+        }
+      }
+    }
+  }, [currentLevel, languages, processDefaultlanguage_id]);
+
+  // Update RTL based on process language
+  useEffect(() => {
+    if (processDefaultlanguage_id && languages.length > 0) {
+      const currentLang = languages.find(l => l.id === processDefaultlanguage_id);
+      if (currentLang?.code) {
+        const rtl = isRTLLanguage(currentLang.code);
+        const dir = getDirection(currentLang.code);
+        setIsRTL(rtl);
+        setDirection(dir);
+      }
+    }
+  }, [processDefaultlanguage_id, languages]);
+
+  // Listen for language switcher changes
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      const savedLangId = localStorage.getItem("selectedLanguageId");
+      if (savedLangId && languages.length > 0) {
+        const currentLang = languages.find(l => l.id === parseInt(savedLangId));
+        if (currentLang?.code) {
+          const rtl = isRTLLanguage(currentLang.code);
+          const dir = getDirection(currentLang.code);
+          setIsRTL(rtl);
+          setDirection(dir);
+        }
+      }
+    };
+
+    window.addEventListener('languageChanged', handleLanguageChange);
+    return () => window.removeEventListener('languageChanged', handleLanguageChange);
+  }, [languages]);
 
   useCheckFavorite({ id: processId, nodes, setIsFavorite });
 
@@ -236,12 +317,13 @@ const MapLevel = () => {
     setShowPublishPopup(true);
   };
 
+
   return (
-    <div>
+    <div dir="ltr">
       <Header
         title={title}
         onSave={() => handlers.handleSaveNodes("draft")}
-        onPublish={handleSavePublish}
+        onPublish={() => handleSavePublish()}
         addNode={(type) => handlers.addNode(type, { x: 200, y: 200 })}
         handleBackdata={handlers.handleBack}
         iconNames={{}}
@@ -262,6 +344,10 @@ const MapLevel = () => {
         supportedLanguages={supportedLanguages}
         selectedLanguage={processDefaultlanguage_id}
         OriginalDefaultlanguge_id={OriginalDefaultlanguge_id}
+        /* New Props for Approval Flow */
+        revisionresponse={revisionresponse}
+        onApproveProcess={handlers.approveProcess}
+        onRequestChange={handlers.requestChange}
       />
       <ReactFlowProvider>
         <div className="app-container" style={{ display: "flex", flexDirection: "column", height: safeRemainingHeight, backgroundColor: "#f8f9fa" }}>
@@ -285,6 +371,7 @@ const MapLevel = () => {
                 snapToGrid={true}
                 snapGrid={[20, 20]}
                 style={{ width: "100%", height: "100%" }}
+                className={isRTL ? 'rtl-flow' : ''}
               >
                 <Background variant={BackgroundVariant.Lines} gap={20} size={1} color="rgba(0,0,0,0.15)" />
               </ReactFlow>
@@ -306,7 +393,9 @@ const MapLevel = () => {
                 handleCreateNewNode={handlers.handleCreateNewNode}
                 deleteNode={handlers.deleteNode}
                 translation={handlers.translation}
+                duplicateNode={handlers.handleDuplicateNode}
                 condition={checkRecord}
+                moveNode={handleMoveNodeClick}
               />
             </div>
             {usePageGroupIdViewer(nodes)}
@@ -358,6 +447,16 @@ const MapLevel = () => {
             selectedLanguage={processDefaultlanguage_id}
           />
         )}
+        <MoveNodePopup
+          isOpen={showMovePopup}
+          onClose={() => setShowMovePopup(false)}
+          onMove={handleMoveConfirm}
+          ProcessId={processId}
+          currentParentId={currentParentId}
+          processDefaultlanguage_id={processDefaultlanguage_id}
+          currentLevel={currentLevel}
+          userId={LoginUser?.id}
+        />
       </ReactFlowProvider>
     </div>
   );

@@ -12,7 +12,7 @@ import { FaEye, FaEyeSlash } from 'react-icons/fa'; // 👁️ Import eye icons
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-    const [showPassword, setShowPassword] = useState(false); // 👁️ password toggle state
+  const [showPassword, setShowPassword] = useState(false); // 👁️ password toggle state
 
   const [error, setError] = useState('');
   const dispatch = useDispatch();
@@ -21,9 +21,9 @@ const Login = () => {
   const { instance } = useMsal();
 
   const from = location.state?.from?.pathname
-  ? location.state.from.pathname + (location.state.from.search || '')
-  : '/dashboard';
-  
+    ? location.state.from.pathname + (location.state.from.search || '')
+    : '/dashboard';
+
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -31,22 +31,22 @@ const Login = () => {
     if (emailParam) {
       setEmail(emailParam);
     }
-    
+
 
   }, []);
   const handleMicrosoftLogin = async () => {
     try {
       const loginResponse = await instance.loginPopup(loginRequest);
       const account = loginResponse.account;
-  
+
       // Acquire token silently
       const tokenResponse = await instance.acquireTokenSilent({
         ...loginRequest,
         account: account
       });
-  
+
       const accessToken = tokenResponse.accessToken;
-  
+
       // Send token to backend
       const response = await microsoftOAuth(accessToken); // API call
       localStorage.setItem('token', response.access_token);
@@ -55,13 +55,13 @@ const Login = () => {
         dispatch(setTranslations(response.translations));
       }
       navigate(from, { replace: true });
-  
+
     } catch (error) {
       console.error("Microsoft login failed", error);
       setError("Microsoft Sign-In Failed");
     }
   };
-  
+
 
   const handleGoogleLoginSuccess = async (credentialResponse) => {
     try {
@@ -89,21 +89,22 @@ const Login = () => {
     try {
       await dispatch(loginUser({ email, password })).unwrap();
 
-      const token = localStorage.getItem('token'); 
-    if (!token) throw new Error("Token not found");
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error("Token not found");
 
-    // Fetch current user details
-    const response = await CurrentUser(token);
-    dispatch(setUser(response)); // Store user in Redux
+      // Fetch current user details
+      const response = await CurrentUser(token);
+      dispatch(setUser(response)); // Store user in Redux
 
-    // Navigate to dashboard after setting user
-    setTimeout(() => {
-      navigate(from, { replace: true }); // ⬅️ Go to original path
-    }, 500);
+      // Navigate to dashboard after setting user
+      setTimeout(() => {
+        navigate(from, { replace: true }); // ⬅️ Go to original path
+      }, 500);
 
 
     } catch (err) {
-      setError('Invalid credentials');
+      console.error("lgon error", err)
+      setError('Invalid credentials', err);
     }
   };
 
@@ -111,23 +112,23 @@ const Login = () => {
     <div className="login-container">
       {/* Add the logo image here */}
       <div className="login-wrapper">
-      <div className="login-image">
-      <img 
-        src="../../img/RocketBPM_rocket_logo.png" 
-        alt="Logo" 
-        className="login-logo"
-      />
-      </div>
-      <h2>Log in to your account</h2>
-      <form onSubmit={handleLogin} className="login-form">
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Email"
-          className="login-input"
-        />
-      <div className="password-container">
+        <div className="login-image">
+          <img
+            src="../../img/RocketBPM_rocket_logo.png"
+            alt="Logo"
+            className="login-logo"
+          />
+        </div>
+        <h2>Log in to your account</h2>
+        <form onSubmit={handleLogin} className="login-form">
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email"
+            className="login-input"
+          />
+          <div className="password-container">
             <input
               type={showPassword ? 'text' : 'password'}
               value={password}
@@ -143,13 +144,13 @@ const Login = () => {
               {showPassword ? <FaEyeSlash /> : <FaEye />}
             </button>
           </div>
-        {error && <p className="error-message">{error}</p>}
-        <button type="submit" className="login-button">SIGN IN</button>
-        <p>Not a member?<button className="btn_form" type='button' onClick={()=> navigate('/signup-form')}>Sign up</button></p>
-        <button className="btn_form" type='button' onClick={()=> navigate('/forgot-password')}>Forgot your password?</button>
-      </form>
-    
-      <div className="or-separator">
+          {error && <p className="error-message">{error}</p>}
+          <button type="submit" className="login-button">SIGN IN</button>
+          <p>Not a member?<button className="btn_form" type='button' onClick={() => navigate('/signup-form')}>Sign up</button></p>
+          <button className="btn_form" type='button' onClick={() => navigate('/forgot-password')}>Forgot your password?</button>
+        </form>
+
+        <div className="or-separator">
           <span className="line"></span>
           <span className="or-text">OR</span>
           <span className="line"></span>

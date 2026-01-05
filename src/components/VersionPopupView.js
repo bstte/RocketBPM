@@ -27,7 +27,7 @@ const VersionPopupView = ({
   const [revisionText, setRevisionText] = useState("");
 
   const [assignedUsers, setAssignedUsers] = useState([]);
-  const [selectedEmails, setSelectedEmails] = useState({
+  const [selectedUsers, setSelectedUsers] = useState({
     owner: [],
     architecture: [],
     manager: [],
@@ -52,7 +52,7 @@ const VersionPopupView = ({
     setVersions(responseData.versions || []);
     setAssignedUsers(responseData.assigned_users || []);
 
-    setSelectedEmails(
+    setSelectedUsers(
       responseData.contact_info || {
         owner: [],
         architecture: [],
@@ -135,7 +135,7 @@ const VersionPopupView = ({
                 const roleBlocksWithUsers = roleBlocks
                   .map((role) => {
                     const roleUsers = assignedUsers.filter((user) =>
-                      (selectedEmails[role] || []).includes(user.user?.email)
+                      (selectedUsers[role] || []).includes(user.user?.id)
                     );
                     return { role, roleUsers };
                   })

@@ -2,17 +2,20 @@
     display: flex !important;
     width: 93% !important;
     margin: auto;
-    padding:0 !important;
+    padding: 0 !important;
     border: 1px solid #002060;
     min-height: auto;
     border-radius: 0px;
 }
+
 .ss_dash_slid_bx .MuiPaper-root.process_box_item_1 {
     margin: inherit;
 }
+
 .ss_dash_slid_bx .MuiPaper-root .ss_dash_slid_img {
     padding: 10px;
 }
+
 .slick-prev:before,
 .slick-next:before {
     color: #002060;
@@ -32,6 +35,7 @@
     transform: translate(-13px, -6px) scale(0.3) !important;
 
 }
+
 /* 
 @media(min-width:1320px) and (max-width:1500px) {
     .ss_dash_slid_bx .react-flow__viewport {
@@ -101,10 +105,12 @@
     border-top: 0;
     padding: 10px !important;
 }
+
 .ss_dash_slid_bx .slick-slide>div {
     width: 100%;
     padding-bottom: 2px;
 }
+
 .ss_dash_slid_bx {
     border: 0px solid #002060;
     box-shadow: 0px 0px 0px #afadad5e;
@@ -117,6 +123,7 @@
     height: 44px;
     white-space: nowrap;
 }
+
 .ss_add_process_div {
     padding: 0px !important;
     border: 1px solid #002060;
@@ -124,7 +131,7 @@
     border-radius: 0px;
     width: 93% !important;
     position: relative;
-    margin:auto;
+    margin: auto;
     /* max-width: 476px; */
 }
 
@@ -161,7 +168,8 @@
     left: 0;
     margin: auto;
 }
-  .circle_icon {
+
+.circle_icon {
     background: #002060;
     border-radius: 50%;
     width: 30px;
@@ -173,8 +181,8 @@
     position: absolute;
     top: 10px;
     right: 10px;
-  }
-  
+}
+
 
 .MuiBox-root.css-1t50xtz p {
     font-size: 14px;
@@ -245,9 +253,12 @@ table {
 
 .ss_dash_table {
     padding: 14px;
-    max-height: 300px;   /* ✅ Max height set */
-    overflow-y: auto;    /* ✅ Vertical scroll enable */
-    overflow-x: hidden;  /* Horizontal scroll hide (optional) */
+    max-height: 300px;
+    /* ✅ Max height set */
+    overflow-y: auto;
+    /* ✅ Vertical scroll enable */
+    overflow-x: hidden;
+    /* Horizontal scroll hide (optional) */
 }
 
 
@@ -326,7 +337,7 @@ td {
 .ss_logo_hed_sec {
     display: flex;
     gap: 20px;
-    padding-bottom:12px;
+    padding-bottom: 12px;
     align-items: center;
 }
 
@@ -350,10 +361,12 @@ td {
     display: block;
     object-fit: cover;
 }
+
 .ss_profile_rit_div.mspage img {
     width: 22px !important;
     height: 22px;
 }
+
 .ss_hed_rit_user_sec button:nth-child(1) {
     padding: 0px !important;
 }
@@ -396,10 +409,12 @@ td {
     gap: 15px;
 
 }
+
 .ss_hed_rit_user_secnew>div,
 .ss_hed_rit_user_secnew button {
     cursor: pointer;
 }
+
 .ss_header_new_right div button {
     font-size: 12px !important;
     padding: 2px 16px 3px 16px !important;
@@ -413,15 +428,18 @@ td {
     color: #002060;
     /* display: flex; */
 }
+
 .headericons_1,
 .headericons_2 {
     position: relative;
     cursor: pointer;
 }
+
 .headericons .dropdown-content {
-    white-space:nowrap;
+    white-space: nowrap;
     display: none;
 }
+
 .headericons .dropdown-content.active {
     display: block;
 }
@@ -528,7 +546,7 @@ button.header_share_btn img {
 }
 
 .app-header {
-    padding:11.5px 10.5px 11px 9px !important;
+    padding: 11.5px 10.5px 11px 9px !important;
     box-shadow: 0px -5px 10px #afadad5e;
 }
 
@@ -539,40 +557,50 @@ button.header_share_btn img {
 .ss_logo_lft_div img {
     cursor: pointer;
 }
+
 .css-1ygil4i-MuiToolbar-root.boxHead {
     padding-left: 15px;
     padding-right: 15px;
 }
+
 .process_boxes {
     display: flex;
     gap: 2%;
+    justify-content: space-between;
 }
+
 .process_boxes>div {
-    flex: 0 0 32.3%;
-    max-width: 32.3%;
+    flex: 1 1 32%;
+    max-width: 32%;
     margin-left: 0 !important;
 }
+
 .ss_1 {
     display: block !important;
 }
+
 .title_and_logo {
     display: flex;
     align-items: center;
     gap: 5px;
 }
+
 .title_and_logo .circle_icons {
     display: flex;
 }
+
 .menu_button {
     position: relative;
 }
+
 .ss_title_underline {
     height: 1px;
-    background:#002060;
+    background: #002060;
     display: block;
     margin: 0 -12px;
-    
+
 }
+
 .header_withlogo {
     display: flex;
     align-items: center;
@@ -580,13 +608,15 @@ button.header_share_btn img {
     padding: 7px 8px;
     border-bottom: 1px solid #002060;
 }
+
 .header_logo img {
     max-width: 150px;
     display: block;
     max-height: 24px;
 }
+
 .ss_add_process_div.ss_2 .ss_dash_slid_img img,
-.noprocessimg .ss_dash_slid_img.previewimg  {
+.noprocessimg .ss_dash_slid_img.previewimg {
     position: absolute;
     opacity: 0;
     top: 0;
@@ -594,12 +624,9 @@ button.header_share_btn img {
     max-height: inherit;
     min-height: 200px;
 }
+
 .ss_add_process_div.ss_2 .ss_dash_slid_img {
     padding: 10px;
     user-select: none;
     z-index: -1;
 }
-
-
-
-

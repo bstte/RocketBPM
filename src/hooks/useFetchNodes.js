@@ -91,7 +91,7 @@ export const useFetchNodes = ({
       setprocess_img?.(data.process_img);
       setprocessDefaultlanguage_id?.(data.processDefaultlanguage_id);
       setOriginalDefaultlanguge_id?.(data.OriginalDefaultlanguge_id);
-      setSupportedLanguages?.(data.ProcessSupportLanguage);
+      setSupportedLanguages?.(data.ProcessSupportLanguage || []);
 
       SetParentPageGroupId?.(data.PageGroupId);
 
@@ -99,7 +99,7 @@ export const useFetchNodes = ({
       // NODES PROCESS
       // =============================
       const parsedNodes = await Promise.all(
-        data.nodes
+        (data.nodes || [])
           .filter((node) => (mode === "publish" ? node.type !== "StickyNote" : true))
           .map(async (node) => {
             const parsedData = JSON.parse(node.data);
@@ -142,7 +142,7 @@ export const useFetchNodes = ({
           })
       );
 
-      const parsedEdges = data.edges.map((edge) => ({
+      const parsedEdges = (data.edges || []).map((edge) => ({
         ...edge,
         animated: Boolean(edge.animated),
         markerEnd: { type: MarkerType.ArrowClosed },

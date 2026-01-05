@@ -19,7 +19,7 @@ export const useFetchVersions = ({
             //     currentParentId !== null
             //         ? `level${currentLevel}_${currentParentId}`
             //         : `level${currentLevel}`;
-const levelParam = getLevelKey(currentLevel, currentParentId);
+            const levelParam = getLevelKey(currentLevel, currentParentId);
 
             const response = await versionlist(
                 processId,
@@ -33,7 +33,7 @@ const levelParam = getLevelKey(currentLevel, currentParentId);
         } catch (error) {
             console.error("Error fetching versions:", error);
         }
-    }, [processId, currentLevel, currentParentId, LoginUser, status]);
+    }, [processId, currentLevel, currentParentId, LoginUser?.id, status]);
 
     // initial load
     useEffect(() => {

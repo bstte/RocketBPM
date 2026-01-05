@@ -1,7 +1,7 @@
 import { memo, useState, useEffect, useRef, useMemo } from "react";
 import { NodeResizer } from "@xyflow/react";
 
-const ArrowBoxNode = ({ data, id, selectedNodeId }) => {
+const ArrowBoxNode = ({ data, id, selectedNodeId, isRTL }) => {
   const [label, setLabel] = useState(data.label || "");
   const isClickable = selectedNodeId === id;
   const arrowRef = useRef(null);
@@ -21,18 +21,18 @@ const ArrowBoxNode = ({ data, id, selectedNodeId }) => {
     setLabel(data.label || "");
   }, [data]);
 
-useEffect(() => {
-  if (isClickable && arrowRef.current) {
-    setTimeout(() => {
-      const textarea = arrowRef.current;
-      textarea.focus();
+  useEffect(() => {
+    if (isClickable && arrowRef.current) {
+      setTimeout(() => {
+        const textarea = arrowRef.current;
+        textarea.focus();
 
-      // Move cursor to the end of text if user didn’t click inside manually
-      const len = textarea.value.length;
-      textarea.setSelectionRange(len, len);
-    }, 0);
-  }
-}, [isClickable]);
+        // Move cursor to the end of text if user didn’t click inside manually
+        const len = textarea.value.length;
+        textarea.setSelectionRange(len, len);
+      }, 0);
+    }
+  }, [isClickable]);
 
 
   const handleChange = (e) => {
@@ -44,6 +44,20 @@ useEffect(() => {
 
   const clipPath = useMemo(() => {
     const arrowWidth = 24;
+
+    // RTL: Flip the arrow to point right
+    if (isRTL) {
+      return `polygon(
+        ${width - 20}px ${height / 2}px,
+        ${width}px 0,
+        ${arrowWidth}px 0,
+        0 ${height / 2}px,
+        ${arrowWidth}px ${height}px,
+        ${width}px ${height}px
+      )`;
+    }
+
+    // LTR: Arrow points left (original)
     return `polygon(
       20px ${height / 2}px,
       0 0,
@@ -52,10 +66,10 @@ useEffect(() => {
       ${width - arrowWidth}px ${height}px,
       0 ${height}px
     )`;
-  }, [width, height]);
+  }, [width, height, isRTL]);
 
   const GRID_SIZE = 20;
-const snap = (v) => Math.round(v / GRID_SIZE) * GRID_SIZE;
+  const snap = (v) => Math.round(v / GRID_SIZE) * GRID_SIZE;
 
 
   const handleResize = (event, size) => {
@@ -67,11 +81,11 @@ const snap = (v) => Math.round(v / GRID_SIZE) * GRID_SIZE;
       console.warn("Size is undefined", size);
       return;
     }
-   const snappedWidth = snap(size.width);
-  const snappedHeight = snap(size.height);
+    const snappedWidth = snap(size.width);
+    const snappedHeight = snap(size.height);
 
-  setWidth(snappedWidth);
-  setHeight(snappedHeight);
+    setWidth(snappedWidth);
+    setHeight(snappedHeight);
 
     if (data.updateWidthHeight) {
       data.updateWidthHeight(id, { width: snappedWidth, height: snappedHeight });
@@ -133,8 +147,8 @@ const snap = (v) => Math.round(v / GRID_SIZE) * GRID_SIZE;
       </div>
 
       {isClickable && (
-        <NodeResizer minWidth={120} minHeight={80} onResize={handleResize}  handleClassName="customHandle"
-  lineClassName="customLine" />
+        <NodeResizer minWidth={120} minHeight={80} onResize={handleResize} handleClassName="customHandle"
+          lineClassName="customLine" />
       )}
     </div>
   );

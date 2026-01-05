@@ -11,11 +11,12 @@ const Popup = ({
   selectedNodeType,
   switchNodeType,
   condition,
+  duplicateNode,
+  moveNode,
 }) => {
   const t = useTranslation();
-// Menu dimensions (adjust to your style)
-// Get container (jisme popup rehna hai)
-  const container = document.querySelector(".flow-container"); // <-- apke container ka real class
+  
+  const container = document.querySelector(".flow-container");
   const rect = container?.getBoundingClientRect();
 
   if (!rect) return null;
@@ -38,14 +39,14 @@ const Popup = ({
   if (y > maxY) y = maxY;
   if (x < 12) x = 12;
   if (y < 12) y = 12;
-  
+
   return (
     showPopup && (
       <div
         className="popup"
         style={{
           ...styles.popup,
-         top: `${y}px`,
+          top: `${y}px`,
           left: `${x}px`,
         }}
       >
@@ -99,8 +100,17 @@ const Popup = ({
             </>
           )}
 
+
           <button onClick={translation} style={styles.popupButton}>
             {t("translation")}
+          </button>
+
+          <button onClick={duplicateNode} style={styles.popupButton}>
+            {t("Duplicate")}
+          </button>
+
+          <button onClick={moveNode} style={styles.popupButton}>
+            {t("move_model_to_another_process_map")}
           </button>
 
           <button onClick={deleteNode} style={styles.popupButton}>
@@ -153,6 +163,8 @@ Popup.propTypes = {
   }).isRequired,
   handleCreateNewNode: PropTypes.func.isRequired,
   deleteNode: PropTypes.func.isRequired,
+  duplicateNode: PropTypes.func,
+  moveNode: PropTypes.func,
   selectedNodeType: PropTypes.string,
 };
 

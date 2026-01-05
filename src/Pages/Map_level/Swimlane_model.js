@@ -75,6 +75,8 @@ import AssignRoleOwnerModal from "./components/AssignRoleOwnerModal";
 import { getDropdownPosition, getLocalPositionInsideContainer } from "../../utils/swimlaneUtils";
 import { useSwimlaneDrag } from "../../hooks/swimlane/useSwimlaneDrag";
 import { useSwimlaneAddNode } from "../../hooks/swimlane/useSwimlaneAddNode";
+import { isRTLLanguage, getDirection } from "../../utils/rtlUtils";
+import { useLanguages } from "../../hooks/useLanguages";
 
 const SwimlaneModel = () => {
   const [windowSize, setWindowSize] = useState({
@@ -124,6 +126,10 @@ const SwimlaneModel = () => {
     de: "",
     es: "",
   });
+
+  // Local RTL state based on process language (not profile language)
+  const [isRTL, setIsRTL] = useState(false);
+  const [direction, setDirection] = useState('ltr');
 
   const { nodes: initialNodes } = useMemo(
     () =>
@@ -254,6 +260,44 @@ const SwimlaneModel = () => {
     },
     handleLabelChange,
   });
+
+  // Update RTL based on process language (not profile language)
+  const { languages } = useLanguages();
+
+  useEffect(() => {
+    if (processDefaultlanguage_id && languages.length > 0) {
+      const currentLang = languages.find(l => l.id === processDefaultlanguage_id);
+      if (currentLang?.code) {
+        const rtl = isRTLLanguage(currentLang.code);
+        const dir = getDirection(currentLang.code);
+        setIsRTL(rtl);
+        setDirection(dir);
+      }
+    }
+  }, [processDefaultlanguage_id, languages]);
+
+  // Also listen for language switcher changes (temporary language selection)
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      const savedLangId = localStorage.getItem("selectedLanguageId");
+      if (savedLangId && languages.length > 0) {
+        const currentLang = languages.find(l => l.id === parseInt(savedLangId));
+        if (currentLang?.code) {
+          const rtl = isRTLLanguage(currentLang.code);
+          const dir = getDirection(currentLang.code);
+          setIsRTL(rtl);
+          setDirection(dir);
+        }
+      }
+    };
+
+    // Listen for custom event from language switcher
+    window.addEventListener('languageChanged', handleLanguageChange);
+
+    return () => {
+      window.removeEventListener('languageChanged', handleLanguageChange);
+    };
+  }, [languages]);
 
   useEffect(() => {
     const savedLang = localStorage.getItem("selectedLanguageId");
@@ -674,7 +718,7 @@ const SwimlaneModel = () => {
 
       let options = [];
 
-      // Determine options based on the node position
+      // Determine options based on the node 
       if (row === 6 && col === 0) {
         options = [];
       } else if (col === 0 && row < 6) {
@@ -775,7 +819,7 @@ const SwimlaneModel = () => {
       parseInt(user_id),
       Process_id
     );
-
+console.log("publish data",data)
     const filteredNodes = data.nodes.filter(
       (node) => node.type !== "StickyNote" && node.node_id !== currentParentId
     );
@@ -1476,6 +1520,9 @@ const SwimlaneModel = () => {
       fetchNodes(langId);
       localStorage.setItem("selectedLanguageId", langId);
 
+      // Dispatch custom event for RTL update
+      window.dispatchEvent(new Event('languageChanged'));
+
       return;
     }
 
@@ -1484,11 +1531,28 @@ const SwimlaneModel = () => {
         async () => {
           // ✅ Save & switch
           await handleSaveNodes("draft");
+          fetchNodes(langId);
+          localStorage.setItem("selectedLanguageId", langId);
+
+          // Dispatch custom event for RTL update
+          window.dispatchEvent(new Event('languageChanged'));
+
           resolve(true);
         },
         () => {
           // ⚠️ Discard and switch
+          fetchNodes(langId);
+          localStorage.setItem("selectedLanguageId", langId);
+
+          // Dispatch custom event for RTL update
+          window.dispatchEvent(new Event('languageChanged'));
+
+          setHasUnsavedChanges(false);
           resolve(true);
+        },
+        () => {
+          // ❌ Cancel
+          resolve(false);
         }
       );
     });
@@ -1497,8 +1561,9 @@ const SwimlaneModel = () => {
       fetchNodes(langId);
     }
   };
+
   return (
-    <div>
+    <div dir="ltr">
       <Header
         savefav={handleFav}
         title={headerTitle}
@@ -1527,7 +1592,7 @@ const SwimlaneModel = () => {
         style={{ ...styles.appContainer, height: safeRemainingHeight }}
       >
         <ReactFlowProvider>
-          <div style={styles.scrollableWrapper} className="scrollbar_wrapper">
+          <div style={styles.scrollableWrapper} className={`scrollbar_wrapper ${isRTL ? 'rtl-flow' : ''}`}>
             <ReactFlow
               nodes={[...nodes, ...ChildNodes]}
               edges={edges}
@@ -1560,7 +1625,11 @@ const SwimlaneModel = () => {
                 [windowSize.width, windowSize.height],
               ]}
               defaultEdgeOptions={{ zIndex: 1 }}
-              style={styles.rfStyle}
+              style={{
+                ...styles.rfStyle,
+                direction: isRTL ? 'ltr' : 'ltr', // Keep internal coordinates LTR
+              }}
+              className={isRTL ? 'rtl-flow' : ''}
             >
               <Background color="#fff" gap={16} />
             </ReactFlow>

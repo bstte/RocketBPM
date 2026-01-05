@@ -11,9 +11,10 @@ import {
 } from "../../API/api";
 import CustomAlert from "../../components/CustomAlert";
 import { useNavigate } from "react-router-dom";
-import { setTranslations, setUser } from "../../redux/userSlice";
+import { setTranslations, setUser, setDirection } from "../../redux/userSlice";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useLanguages } from "../../hooks/useLanguages";
+import { getDirection } from "../../utils/rtlUtils";
 
 const Account = () => {
   const user = useSelector((state) => state.user.user);
@@ -131,6 +132,16 @@ const Account = () => {
 
       dispatch(setUser(response.user));
       dispatch(setTranslations(response.translations)); // ✅ agar helper bana ho toh
+
+      // Update RTL direction based on selected language
+      if (selectedLanguageId && languages.length > 0) {
+        const selectedLang = languages.find(l => l.id === parseInt(selectedLanguageId));
+        if (selectedLang?.code) {
+          const direction = getDirection(selectedLang.code);
+          dispatch(setDirection(direction));
+          localStorage.setItem('selectedLanguageId', selectedLanguageId);
+        }
+      }
 
       navigate("/dashboard");
     } catch (error) {

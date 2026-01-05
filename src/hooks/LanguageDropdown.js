@@ -11,7 +11,7 @@ const LanguageDropdown = ({
   const dropdownRef = useRef(null);
   const langMap = useLangMap();
 
-  // Close dropdown when clicking outside
+  
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {

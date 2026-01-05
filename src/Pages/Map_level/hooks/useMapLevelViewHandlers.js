@@ -25,6 +25,9 @@ export const useMapLevelViewHandlers = ({
     const handleSupportViewlangugeId = useCallback((langId) => {
         localStorage.setItem("selectedLanguageId", langId);
         fetchNodes(langId);
+
+        // Dispatch custom event for RTL update
+        window.dispatchEvent(new Event('languageChanged'));
     }, [fetchNodes]);
 
     const handleFav = useCallback(async () => {
@@ -99,7 +102,7 @@ export const useMapLevelViewHandlers = ({
 
         const targetMode = page === "editdraft" ? "edit" : (viewMode === "publish" ? "draft" : "published");
 
-        const updatedBreadcrumbs = breadcrumbs.map((crumb, index) => {
+        const updatedBreadcrumbs = (breadcrumbs || []).map((crumb, index) => {
             if (index === 0 || !crumb.path) return crumb;
 
             let newPath = crumb.path;

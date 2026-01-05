@@ -8,6 +8,7 @@ import { setUser } from "./redux/userSlice";
 import "./App.css";
 import { CurrentUser } from "./API/api"; // Import the API call
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import { RTLProvider } from "./context/RTLContext";
 
 function InitializeUser() {
   const dispatch = useDispatch();
@@ -34,15 +35,16 @@ function InitializeUser() {
 
 function App() {
   return (
-      <GoogleOAuthProvider clientId="654780250240-92hncbd7gse4bm196fl056l4a2s68aqk.apps.googleusercontent.com">
-
+    <GoogleOAuthProvider clientId="654780250240-92hncbd7gse4bm196fl056l4a2s68aqk.apps.googleusercontent.com">
+      <RTLProvider>
         <BreadcrumbsProvider>
           <Router>
             <InitializeUser /> {/* Fetch user on app load */}
             <AppRoutes />
           </Router>
         </BreadcrumbsProvider>
-      </GoogleOAuthProvider>
+      </RTLProvider>
+    </GoogleOAuthProvider>
   );
 }
 
