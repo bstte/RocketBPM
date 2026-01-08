@@ -11,7 +11,7 @@ import {
 import "@xyflow/react/dist/style.css";
 import { useParams } from "react-router-dom";
 import Header from "../../../components/Header";
-import apiExports, { contectApprovalStatus, contectCancelPublishing, contentapproveProcess, contentChangeRequest, contentreschedulePublishing } from "../../../API/api";
+import apiExports, { contectApprovalStatus, contectCancelPublishing, contentapproveProcess, contentChangeRequest, contentreschedulePublishing, contentRequestChange } from "../../../API/api";
 import { BreadcrumbsContext } from "../../../context/BreadcrumbsContext";
 import PublishArrowBoxNode from "../../../AllNode/PublishAllNode/PublishArrowBoxNode";
 import PublishPentagonNode from "../../../AllNode/PublishAllNode/PublishPentagonNode";
@@ -32,8 +32,10 @@ import { useMapLevelViewState } from "../hooks/useMapLevelViewState";
 import { useMapLevelViewHandlers } from "../hooks/useMapLevelViewHandlers";
 import { useFetchVersions } from "../../../hooks/useFetchVersions";
 import TextInputModal from "../../../components/TextInputModal";
+import RequestChangeModal from "../../../components/RequestChangeModal";
 import EditScheduledPublishingModal from "../../../components/EditScheduledPublishingModal";
 import CustomAlert from "../../../components/CustomAlert";
+import { useApprovalStatus } from "../../../hooks/useApprovalStatus";
 
 const DraftProcesMapLevel = () => {
     const state = useMapLevelViewState();
@@ -63,8 +65,6 @@ const DraftProcesMapLevel = () => {
     const currentParentId = parentId || null;
     const { addBreadcrumb, removeBreadcrumbsAfter, breadcrumbs, setBreadcrumbs } = useContext(BreadcrumbsContext);
     const [editScheduledModalOpen, setEditScheduledModalOpen] = useState(false);
-    const [pendingApproval, setPendingApproval] = useState(null);
-    const [approvalLoading, setApprovalLoading] = useState(false);
 
     const [nodes, setNodes, onNodesChange] = useNodesState([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -119,86 +119,113 @@ const DraftProcesMapLevel = () => {
 
 
 
-    useEffect(() => {
-        const fetchApprovalStatus = async () => {
-            try {
-                setApprovalLoading(true);
-
-                const payload = {
-                    process_id: processId,
-                    level: getLevelKey(currentLevel, currentParentId),
-                };
-
-                const res = await contectApprovalStatus(payload);
-console.log("approver response",res.data)
-                if (res?.data?.status === true) {
-                    setPendingApproval(res.data.data); // 👈 MAIN DATA
-                } else {
-                    setPendingApproval(null);
-                }
-            } catch (error) {
-                console.error("Approval status error:", error);
-                setPendingApproval(null);
-            } finally {
-                setApprovalLoading(false);
-            }
-        };
-
-        if (processId && currentLevel !== undefined) {
-            fetchApprovalStatus();
-        }
-    }, [processId, currentLevel, currentParentId]);
+    // ✅ Check for pending approval using custom hook (replacement for local state/effect)
+    const { pendingApproval, loading: approvalLoading } = useApprovalStatus({
+        processId,
+        currentLevel,
+        currentParentId
+    });
 
 
 
     const handleApproveProcess = async () => {
-        try {
-            const payload = {
-                process_id: processId,
-                level: getLevelKey(currentLevel, currentParentId),
-                user_id: LoginUser?.id
-            };
-            const res = await contentapproveProcess(payload);
-            if (res.status) {
-                CustomAlert.success("Approved", "Process approved and published successfully.");
-                window.location.reload();
-            } else {
-                CustomAlert.error("Error", res.message);
+        CustomAlert.confirmAction({
+            title: "Approve Process",
+            text: "Do you want to approve the process and inform the modeler to publish it?",
+            confirmBtnText: "Yes",
+            cancelBtnText: "No",
+            confirmCallback: async () => {
+                const processPath = buildProcessPath({
+                    mode: "draft",
+                    view: "map",
+                    processId,
+                    level: currentLevel,
+                    parentId: currentLevel === 0 ? undefined : currentParentId,
+                });
+
+                const processLink = `${window.location.origin}${processPath}`;
+
+                try {
+                    const payload = {
+                        process_id: processId,
+                        level: getLevelKey(currentLevel, currentParentId),
+                        user_id: LoginUser?.id,
+                        process_title: title,
+                        process_link: processLink,
+                    };
+                    const res = await contentapproveProcess(payload);
+                    if (res.status) {
+                        CustomAlert.success("Approved", "Process approved and published successfully.");
+                        window.location.reload();
+                    } else {
+                        CustomAlert.error("Error", res.message);
+                    }
+                } catch (e) {
+                    console.error(e);
+                    CustomAlert.error("Error", "Failed to approve process");
+                }
             }
-        } catch (e) {
-            console.error(e);
-            CustomAlert.error("Error", "Failed to approve process");
-        }
+        });
     };
 
 
 
 
     const handleCancelPublishing = async () => {
-        try {
-            const payload = {
-                process_id: processId,
-                level: getLevelKey(currentLevel, currentParentId),
-                user_id: LoginUser?.id
-            };
-            const res = await contectCancelPublishing(payload);
-            if (res.status) {
-                CustomAlert.success("Cancelled", "Publishing cancelled.");
-                setEditScheduledModalOpen(false);
-                window.location.reload();
-            } else {
-                CustomAlert.error("Error", res.message);
+        CustomAlert.confirmAction({
+            title: "Cancel Publishing",
+            text: "Do you really want to cancel publishing?",
+            confirmBtnText: "Yes",
+            cancelBtnText: "No",
+            confirmCallback: async () => {
+                const processPath = buildProcessPath({
+                    mode: "draft",
+                    view: "map",
+                    processId,
+                    level: currentLevel,
+                    parentId: currentLevel === 0 ? undefined : currentParentId,
+                });
+                const processLink = `${window.location.origin}${processPath}`;
+
+                try {
+                    const payload = {
+                        process_id: processId,
+                        level: getLevelKey(currentLevel, currentParentId),
+                        user_id: LoginUser?.id,
+                        process_title: title,
+                        process_link: processLink,
+                    };
+                    const res = await contectCancelPublishing(payload);
+                    if (res.status) {
+                        CustomAlert.success("Cancelled", "Publishing cancelled.");
+                        setEditScheduledModalOpen(false);
+                        window.location.reload();
+                    } else {
+                        CustomAlert.error("Error", res.message);
+                    }
+                } catch (e) { console.error(e); CustomAlert.error("Error", "Failed to cancel"); }
             }
-        } catch (e) { console.error(e); CustomAlert.error("Error", "Failed to cancel"); }
+        });
     };
 
     const handleReschedulePublishing = async (newDate) => {
+        const processPath = buildProcessPath({
+            mode: "draft",
+            view: "map",
+            processId,
+            level: currentLevel,
+            parentId: currentLevel === 0 ? undefined : currentParentId,
+        });
+        const processLink = `${window.location.origin}${processPath}`;
+
         try {
             const payload = {
                 process_id: processId,
                 level: getLevelKey(currentLevel, currentParentId),
                 user_id: LoginUser?.id,
-                new_date: newDate
+                new_date: newDate,
+                process_title: title,
+                process_link: processLink,
             };
             const res = await contentreschedulePublishing(payload);
             if (res.status) {
@@ -211,25 +238,35 @@ console.log("approver response",res.data)
         } catch (e) { console.error(e); CustomAlert.error("Error", "Failed to reschedule"); }
     };
 
-    const handleRequestChange = async (reason) => {
+    // Handle Request Change (Rejection)
+    const handleContentChangeRequest = async (reason) => {
+        const processPath = buildProcessPath({
+            mode: "draft",
+            view: "map",
+            processId,
+            level: currentLevel,
+            parentId: currentLevel === 0 ? undefined : currentParentId,
+        });
+        const processLink = `${window.location.origin}${processPath}`;
         try {
             const payload = {
                 process_id: processId,
                 level: getLevelKey(currentLevel, currentParentId),
                 user_id: LoginUser?.id,
-                reason: reason
+                reason: reason,
+                process_title: title,
+                process_link: processLink,
             };
-            const res = await contentChangeRequest(payload);
+            // Call the correct API for "Request Change" (Rejection)
+            const res = await contentRequestChange(payload);
             if (res.status) {
-                CustomAlert.success("Success", "Change request submitted successfully.");
+                CustomAlert.success("Requested", "Change request sent successfully.");
+                setRequestChangeModalOpen(false);
                 window.location.reload();
             } else {
                 CustomAlert.error("Error", res.message);
             }
-        } catch (e) {
-            console.error(e);
-            CustomAlert.error("Error", "Failed to request change");
-        }
+        } catch (e) { console.error(e); CustomAlert.error("Error", "Failed to request change"); }
     };
 
     const handlers = useMapLevelViewHandlers({
@@ -319,16 +356,14 @@ console.log("approver response",res.data)
             <EditScheduledPublishingModal
                 isOpen={editScheduledModalOpen}
                 onClose={() => setEditScheduledModalOpen(false)}
-                currentDate={pendingApproval?.planned_publish_date}
+                currentDate={pendingApproval?.approval?.planned_publish_date}
                 onCancelPublishing={handleCancelPublishing}
                 onReschedulePublishing={handleReschedulePublishing}
             />
-            <TextInputModal
+            <RequestChangeModal
                 isOpen={requestChangeModalOpen}
                 onClose={() => setRequestChangeModalOpen(false)}
-                onSubmit={handleRequestChange}
-                title="Request Change"
-                placeholder="Enter reason for change request..."
+                onSubmit={handleContentChangeRequest}
             />
             <ReactFlowProvider>
                 <div className="app-container" style={{ display: "flex", flexDirection: "column", height: safeRemainingHeight, backgroundColor: "#f8f9fa" }}>

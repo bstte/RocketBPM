@@ -2,7 +2,7 @@ import Swal from "sweetalert2";
 
 const CustomAlert = {
   success: (title, text) => {
-    Swal.fire({
+    return Swal.fire({
       icon: "success",
       title: title || "Success",
       text: text || "Operation completed successfully!",
@@ -54,6 +54,28 @@ const CustomAlert = {
     });
   },
 
+  confirmAction: ({ title, text, confirmBtnText, cancelBtnText, confirmCallback, cancelCallback }) => {
+    Swal.fire({
+      icon: "question",
+      title: title || "Confirmation",
+      text: text || "Are you sure?",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: confirmBtnText || "Yes",
+      cancelButtonText: cancelBtnText || "No",
+    }).then((result) => {
+      if (result.isConfirmed && confirmCallback) {
+        confirmCallback();
+      } else if (
+        result.dismiss === Swal.DismissReason.cancel &&
+        cancelCallback
+      ) {
+        cancelCallback();
+      }
+    });
+  },
+
   confirmExit: (saveCallback, exitWithoutSaveCallback, cancelCallback) => {
     Swal.fire({
       icon: "warning",
@@ -80,22 +102,22 @@ const CustomAlert = {
 
 
   confirmLanguageSwitch: (saveCallback, dontSaveCallback) => {
-  Swal.fire({
-    icon: "question",
-    title: "Save changes before switching language?",
-    showCancelButton: true,
-    confirmButtonText: "Yes, save & switch",
-    cancelButtonText: "No, discard changes",
-    confirmButtonColor: "#3085d6",
-    cancelButtonColor: "#d33",
-  }).then((result) => {
-    if (result.isConfirmed && saveCallback) {
-      saveCallback(); // User chose to save first
-    } else if (result.dismiss === Swal.DismissReason.cancel && dontSaveCallback) {
-      dontSaveCallback(); // User chose not to save
-    }
-  });
-},
+    Swal.fire({
+      icon: "question",
+      title: "Save changes before switching language?",
+      showCancelButton: true,
+      confirmButtonText: "Yes, save & switch",
+      cancelButtonText: "No, discard changes",
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+    }).then((result) => {
+      if (result.isConfirmed && saveCallback) {
+        saveCallback(); // User chose to save first
+      } else if (result.dismiss === Swal.DismissReason.cancel && dontSaveCallback) {
+        dontSaveCallback(); // User chose not to save
+      }
+    });
+  },
 
 };
 

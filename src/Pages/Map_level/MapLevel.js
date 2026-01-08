@@ -17,7 +17,7 @@ import Popup from "../../components/Popup";
 import ArrowBoxNode from "../../AllNode/ArrowBoxNode";
 import PentagonNode from "../../AllNode/PentagonNode";
 import { getLevelKey } from "../../utils/getLevel";
-import { filter_draft, moveNode } from "../../API/api";
+import { filter_draft, moveNode, contectApprovalStatus } from "../../API/api";
 import { BreadcrumbsContext } from "../../context/BreadcrumbsContext";
 import CustomContextMenu from "../../components/CustomContextMenu";
 import { useSelector } from "react-redux";
@@ -40,6 +40,7 @@ import { buildProcessPath } from "../../routes/buildProcessPath";
 import { isRTLLanguage, getDirection } from "../../utils/rtlUtils";
 import { useLanguages } from "../../hooks/useLanguages";
 import MoveNodePopup from "../../components/MoveNodePopup";
+import { useApprovalStatus } from "../../hooks/useApprovalStatus";
 
 // Custom Hooks
 import { useMapLevelState } from "./hooks/useMapLevelState";
@@ -90,6 +91,29 @@ const MapLevel = () => {
   const currentLevel = level ? parseInt(level, 10) : 0;
   const currentParentId = parentId || null;
   const { addBreadcrumb, removeBreadcrumbsAfter, breadcrumbs } = useContext(BreadcrumbsContext);
+  const { mode } = useParams();
+
+  // Use custom hook for approval status
+  const { pendingApproval } = useApprovalStatus({
+    processId,
+    currentLevel,
+    currentParentId
+  });
+
+  // Access control: Redirect to draft if request is pending and user tries to access edit mode
+const approvalStatus = pendingApproval?.approval?.status;
+
+useEffect(() => {
+  if (mode === "edit" && approvalStatus === 0) {
+    goToProcess({
+      mode: "draft",
+      view: "map",
+      processId,
+      level: currentLevel,
+      parentId: currentParentId || undefined,
+    });
+  }
+}, [mode, approvalStatus, goToProcess, processId, currentLevel, currentParentId]);
 
   // Local RTL state based on process language (not profile language)
   const [isRTL, setIsRTL] = useState(false);
@@ -112,7 +136,7 @@ const MapLevel = () => {
         target_process_id: target.processId,
         target_level: target.levelKey,
         target_parent_id: null, // Depending on backend logic, moving to a map usually means root level of that map? Or we might need target parent ID if moving into a subprocess.
-     
+
       });
       setShowMovePopup(false);
       // Refetch to update UI (node should disappear)

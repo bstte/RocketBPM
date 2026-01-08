@@ -33,10 +33,17 @@ const EditScheduledPublishingModal = ({
 }) => {
     const [isEditingDate, setIsEditingDate] = useState(false);
     const [newDate, setNewDate] = useState(currentDate);
-    const [showCancelConfirm, setShowCancelConfirm] = useState(false);
 
-    // Reset state when opening
-    // useEffect(() => { ... }, [isOpen]);
+
+    // Update newDate when currentDate prop changes or modal opens
+    React.useEffect(() => {
+        console.log("currentDate", currentDate);
+
+        if (currentDate) {
+            setNewDate(currentDate);
+        }
+    }, [currentDate, isOpen]);
+
 
     const handleDateChange = (date) => {
         setNewDate(date[0]);
@@ -46,8 +53,6 @@ const EditScheduledPublishingModal = ({
         if (newDate) {
             // Format date for MySQL: YYYY-MM-DD HH:MM:SS
             const isoDate = new Date(newDate);
-            // Adjust to local time string or keep as is? Backend expects something.
-            // Let's use simple formatting
             const formatted = isoDate.getFullYear() + "-" +
                 String(isoDate.getMonth() + 1).padStart(2, '0') + "-" +
                 String(isoDate.getDate()).padStart(2, '0') + " " +
@@ -56,23 +61,6 @@ const EditScheduledPublishingModal = ({
             onReschedulePublishing(formatted);
         }
     };
-
-    if (showCancelConfirm) {
-        return (
-            <Modal isOpen={isOpen} onRequestClose={() => setShowCancelConfirm(false)} style={customStyles}>
-                <div className="esp-modal-header">
-                    <h3>Cancel Publishing</h3>
-                </div>
-                <div className="esp-modal-body">
-                    <p>Do you really want to cancel publishing?</p>
-                </div>
-                <div className="esp-modal-footer">
-                    <button className="esp-btn esp-btn-secondary" onClick={() => setShowCancelConfirm(false)}>No: Go back</button>
-                    <button className="esp-btn esp-btn-danger" onClick={onCancelPublishing}>YES</button>
-                </div>
-            </Modal>
-        );
-    }
 
     return (
         <Modal isOpen={isOpen} onRequestClose={onClose} style={customStyles}>
@@ -110,7 +98,7 @@ const EditScheduledPublishingModal = ({
                         and you will have to restart the approval of the model.
                     </p>
                     <button
-                        onClick={() => setShowCancelConfirm(true)}
+                        onClick={onCancelPublishing}
                         style={{ backgroundColor: 'red', color: 'white', border: 'none', padding: '8px 15px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
                     >
                         CANCEL PUBLISHING

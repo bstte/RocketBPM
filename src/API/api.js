@@ -86,6 +86,16 @@ export const contentapproveProcess = async (payload) => {
     }
 };
 
+export const contentRequestChange = async (payload) => {
+    try {
+        const response = await api.post('/process/request-change', payload);
+        return response.data;
+    } catch (error) {
+        console.error('Error in Request Change:', error);
+        throw error;
+    }
+};
+
 export const contentrequestChange = async (payload) => {
     try {
         const response = await api.post('/process/request-change', payload);

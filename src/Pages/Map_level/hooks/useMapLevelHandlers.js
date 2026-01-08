@@ -470,7 +470,20 @@ export const useMapLevelHandlers = ({
             process_link: processLink,
         };
         await contentChangeRequest(payload);
-    }, [currentLevel, currentParentId, processId, state.revisionData, LoginUser, setShowContentPopup]);
+
+        await CustomAlert.success("Success", "Content submitted successfully");
+
+        await handleBack();
+
+        goToProcess({
+            mode: "draft",
+            view: "map",
+            processId,
+            level: currentLevel,
+            parentId: currentLevel === 0 ? undefined : currentParentId,
+        });
+
+    }, [currentLevel, currentParentId, processId, state.revisionData, LoginUser, setShowContentPopup, state.title, goToProcess, handleBack]);
 
     const handleDuplicateNode = useCallback(async () => {
         if (!state.selectedNode) return;
