@@ -442,6 +442,19 @@ export const useMapLevelHandlers = ({
             scheduled_date: data.date
         };
         await editorialPublishAPI(payload);
+
+        await CustomAlert.success("Success", "Editorial Change submitted successfully");
+
+        await handleBack();
+
+        goToProcess({
+            mode: "draft",
+            view: "map",
+            processId,
+            level: currentLevel,
+            parentId: currentLevel === 0 ? undefined : currentParentId,
+        });
+
     }, [currentLevel, currentParentId, processId, state.revisionData, LoginUser, setShowEditorialPopup]);
 
     const handleContentSubmit = useCallback(async (data) => {

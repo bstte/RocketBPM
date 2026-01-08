@@ -15,6 +15,7 @@ import apiExports, {
   getUserNodes,
   getvideo,
   ImageBaseUrl,
+  contectCronPublish,
 } from "../../API/api";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
@@ -718,6 +719,33 @@ const Dashboard = () => {
               <img src="../../../img/two-fingers.svg" alt="" /> {t("Welcome")},{" "}
               {user?.first_name}!
             </h4>
+            <button
+              onClick={async () => {
+                try {
+                  const res = await contectCronPublish();
+                  console.log("cron response", res)
+                  if (res.status) {
+                    // alert("Cron executed: " + JSON.stringify(res.details));
+                    // window.location.reload();
+                  } else {
+                    alert("Cron failed or no action");
+                  }
+                } catch (e) {
+                  console.error(e);
+                  alert("Error executing cron");
+                }
+              }}
+              style={{
+                marginBottom: '10px',
+                padding: '5px 10px',
+                backgroundColor: '#002060',
+                color: 'white',
+                border: 'none',
+                borderRadius: '5px'
+              }}
+            >
+              TEST CRON PUBLISH
+            </button>
             <div className="ss_dash_sec_2_img">
               <iframe
                 className="video"

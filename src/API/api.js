@@ -820,6 +820,16 @@ export const contentreschedulePublishing = async (payload) => {
     }
 };
 
+export const contectCronPublish = async () => {
+    try {
+        const response = await api.get('/process/pending-publish');
+        return response.data;
+    } catch (error) {
+        console.error('Error in Cron Publish:', error);
+        throw error;
+    }
+};
+
 const apiExports = { saveNodes, getallpublishObject_Tolinkexistingmodel, getexistingrole, getNodes, checkPublishRecord, GetPublishedDate, checkRecord, Login, saveProcessTitle, defaultApi, filter_draft, getPublishedNodes, getdataByNodeId, duplicateNode, moveNode };
 
 export default apiExports;
