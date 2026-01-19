@@ -75,7 +75,7 @@ const BoxNode = ({ data }) => {
           top: "12%",
           left: "30%",
           right: "0",
-   
+
           transform: "translate(-50%, 0)",
           backgroundColor: "#ffffff",
           border: "1px solid #011f60",
@@ -91,7 +91,7 @@ const BoxNode = ({ data }) => {
           <div className="popupHeader" style={styles.popupHeader}>
             <h3 style={styles.popupTitle}>{title}</h3>
             <button style={styles.closeButton} onClick={handleClosePopup}>
-              {t("CLOSE")}  
+              {t("CLOSE")}
             </button>
           </div>
           <div
@@ -115,14 +115,22 @@ const BoxNode = ({ data }) => {
         ref={boxRef}
       >
         <div className="borderBox" style={styles.box}>
-          <div>
-            <button
-              className="published_box_text"
-              style={styles.withoutlinkButton}
-            >
-              {title}
-            </button>
-          </div>
+          <div
+            className="published_box_text"
+            style={{
+              fontSize: "12px",
+              fontFamily: "'Poppins', sans-serif",
+              color: "#002060",
+              background: "transparent",
+              border: "none",
+              outline: "none",
+              textAlign: "center",
+              width: "100%",
+              wordBreak: "break-word",
+              cursor: "pointer"
+            }}
+            dangerouslySetInnerHTML={{ __html: title }}
+          />
         </div>
 
         {[20, 50, 80].map((leftOffset, index) => (
@@ -228,10 +236,7 @@ const styles = {
     border: "1px solid #002060",
     width: "100%",
     height: "100%",
-    paddingTop: "2px",
-    paddingBottom: "2px",
-    paddingLeft: "5px",
-    paddingRight: "5px",
+    padding: "0px",
     boxSizing: "border-box",
     overflow: "hidden",
   },

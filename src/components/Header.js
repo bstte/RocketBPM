@@ -56,11 +56,24 @@ const Header = ({
     useContext(BreadcrumbsContext);
 
   const approval = pendingApproval?.approval;
+  const publishRequest = pendingApproval?.publish_request;
+
   console.log("approval", approval);
+  console.log("publishRequest", publishRequest);
+
   const isPending = approval?.status === 0;
-    const isActive = approval?.status === 1;
-    const canShowEdit =
-  !approval || approval.status === 3 || approval.status === 4;
+  const isActive = approval?.status === 1;
+
+  // Check if there is a pending scheduled publish
+  const isScheduledPublishPending = publishRequest?.status === 0 && publishRequest?.schedule_type === 'custom';
+
+  let canShowEdit =
+    !approval || approval.status === 3 || approval.status === 4 || approval.status === 2;
+
+  // If a scheduled publish is pending, force hide the edit button
+  if (isScheduledPublishPending) {
+    canShowEdit = false;
+  }
 
   const isRequester = user?.id === approval?.requested_by;
 
@@ -354,6 +367,18 @@ const Header = ({
                     >
                       {t("EDIT SCHEDULED PUBLISHING")}
                     </button>
+                  </div>
+                )}
+
+                {isScheduledPublishPending && (
+                  <div style={{ marginRight: '0px', color: '#002060', minWidth: "max-content", fontWeight: 'bold' }}>
+                    {t("Publish on")}: {
+                      new Date(publishRequest.scheduled_date).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric"
+                      })
+                    }
                   </div>
                 )}
 

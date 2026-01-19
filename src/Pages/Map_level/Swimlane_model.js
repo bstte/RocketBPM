@@ -33,6 +33,8 @@ import api, {
   getNextPageGroupId,
   removeFavProcess,
   saveProcessInfo,
+  editorialPublishAPI,
+  contentChangeRequest,
 } from "../../API/api";
 import CustomContextPopup from "../../components/CustomContextPopup";
 import DetailsPopup from "../../components/DetailsPopup";
@@ -55,6 +57,7 @@ import { usePageGroupIdViewer } from "../../hooks/usePageGroupIdViewer";
 import TranslationPopup from "../../hooks/TranslationPopup";
 import { useLangMap } from "../../hooks/useLangMap";
 import { buildBreadcrumbs } from "../../utils/buildBreadcrumbs";
+import { buildProcessPath } from "../../routes/buildProcessPath";
 import YesNode from "../../AllNode/YesNode";
 import NoNode from "../../AllNode/NoNode";
 import { useFetchVersions } from "../../hooks/useFetchVersions";
@@ -167,6 +170,7 @@ const SwimlaneModel = () => {
 
   const [selectedEdge, setSelectedEdge] = useState(null);
   const [getPublishedDate, setgetPublishedDate] = useState("");
+  const [revisionData, setrevisionData] = useState(null);
   const [detailschecking, setdetailschecking] = useState(null);
   const [nodes, setNodes] = useState(initialNodes);
   const [searchQuery, setSearchQuery] = useState("");
@@ -819,7 +823,7 @@ const SwimlaneModel = () => {
       parseInt(user_id),
       Process_id
     );
-console.log("publish data",data)
+    console.log("publish data", data)
     const filteredNodes = data.nodes.filter(
       (node) => node.type !== "StickyNote" && node.node_id !== currentParentId
     );
@@ -1457,7 +1461,7 @@ console.log("publish data",data)
 
   const handleNext = (data) => {
     // console.log("STEP-1 DATA: ", data);
-
+    setrevisionData(data); // Save the data from the first step
     // 👉 Agar Editorial Change select kiya hai
     if (data.editorialChange) {
       setShowPublishPopup(false);
@@ -1470,6 +1474,73 @@ console.log("publish data",data)
       setShowPublishPopup(false);
       setShowContentPopup(true);
     }
+  };
+
+  const editorialPublish = async (data) => {
+    setShowEditorialPopup(false);
+    const Level = `level${currentLevel}${currentParentId ? `_${currentParentId}` : ""}`;
+    const payload = {
+      process_id: processId,
+      level: Level,
+      revision_text: revisionData?.revisionText,
+      requested_by: LoginUser ? LoginUser.id : null,
+      schedule_type: data.scheduleType,
+      scheduled_date: data.date
+    };
+    await editorialPublishAPI(payload);
+
+    await CustomAlert.success("Success", "Editorial Change submitted successfully");
+
+    await handleExitBack();
+
+    goToProcess({
+      mode: "draft",
+      view: "swimlane",
+      processId,
+      level: currentLevel,
+      parentId: currentLevel === 0 ? undefined : currentParentId,
+    });
+  };
+
+  const handleContentSubmit = async (data) => {
+    console.log("data", data)
+    setShowContentPopup(false);
+    const processPath = buildProcessPath({
+      mode: "draft",
+      view: "swimlane",
+      processId,
+      level: currentLevel,
+      parentId: currentLevel === 0 ? undefined : currentParentId,
+    });
+
+    const processLink = `${window.location.origin}${processPath}`;
+    const Level = `level${currentLevel}${currentParentId ? `_${currentParentId}` : ""}`;
+    const payload = {
+      process_id: processId,
+      level: Level,
+      revision_text: revisionData?.revisionText,
+      requested_by: LoginUser ? LoginUser.id : null,
+      owner_id: data.owner.id,
+      cc_architect: data.ccRoles.architect,
+      cc_manager: data.ccRoles.manager,
+      planned_publish_date: data.date,
+      personal_message: data.personalMessage,
+      process_title: title,
+      process_link: processLink,
+    };
+    await contentChangeRequest(payload);
+
+    await CustomAlert.success("Success", "Content submitted successfully");
+
+    await handleExitBack();
+
+    goToProcess({
+      mode: "draft",
+      view: "swimlane",
+      processId,
+      level: currentLevel,
+      parentId: currentLevel === 0 ? undefined : currentParentId,
+    });
   };
 
   const { responseData: revisionresponse, refetch } = useFetchVersions({
@@ -1562,13 +1633,46 @@ console.log("publish data",data)
     }
   };
 
+  const approveProcess = async () => {
+    if (window.confirm("Do you want to approve the process and inform the modeler to publish it?")) {
+      try {
+        await api.approveProcessAPI({
+          process_id: id,
+          level: `level${currentLevel}${currentParentId ? `_${currentParentId}` : ""}`,
+          user_id: LoginUser?.id
+        });
+        CustomAlert.success("Success", "Process approved successfully.");
+        window.location.reload();
+      } catch (e) {
+        console.error(e);
+        CustomAlert.error("Error", "Failed to approve process.");
+      }
+    }
+  };
+
+  const requestChange = async (reason) => {
+    try {
+      await api.requestChangeAPI({
+        process_id: id,
+        level: `level${currentLevel}${currentParentId ? `_${currentParentId}` : ""}`,
+        user_id: LoginUser?.id,
+        reason: reason
+      });
+      CustomAlert.success("Success", "Change requested successfully.");
+      window.location.reload();
+    } catch (e) {
+      console.error(e);
+      CustomAlert.error("Error", "Failed to request change.");
+    }
+  };
+
   return (
     <div dir="ltr">
       <Header
         savefav={handleFav}
         title={headerTitle}
         onSave={handleSaveNodes}
-        onPublish={handleSaveNodes}
+        onPublish={handleSavePublish}
         addNode={addNode}
         handleBackdata={handleExitBack}
         iconNames={iconNames}
@@ -1585,6 +1689,9 @@ console.log("publish data",data)
         supportedLanguages={supportedLanguages}
         selectedLanguage={processDefaultlanguage_id}
         OriginalDefaultlanguge_id={OriginalDefaultlanguge_id}
+        revisionresponse={revisionresponse}
+        onApproveProcess={approveProcess}
+        onRequestChange={requestChange}
       />
 
       <div
@@ -1665,10 +1772,7 @@ console.log("publish data",data)
                 setShowEditorialPopup(false);
                 setShowPublishPopup(true);
               }}
-              onPublish={(finalData) => {
-                console.log("FINAL PUBLISH DATA", finalData);
-                setShowEditorialPopup(false);
-              }}
+              onPublish={editorialPublish}
 
             />
 
@@ -1680,10 +1784,7 @@ console.log("publish data",data)
                 setShowContentPopup(false);
                 setShowPublishPopup(true);
               }}
-              onStartApproval={(finalData) => {
-                console.log("CONTENT CHANGE FINAL:", finalData);
-                setShowContentPopup(false);
-              }}
+              onStartApproval={handleContentSubmit}
               revisionresponse={revisionresponse}
             />
 

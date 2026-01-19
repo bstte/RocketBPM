@@ -27,6 +27,7 @@ import { BreadcrumbsContext } from "../../context/BreadcrumbsContext";
 import MiniMapPreview from "./MiniMapPreview";
 import { useTranslation } from "../../hooks/useTranslation";
 import ProcessMenu from "../../components/ProcessMenu";
+import ManagedProcessesWidget from "./components/ManagedProcessesWidget";
 import { buildBreadcrumbs } from "../../utils/buildBreadcrumbs";
 import { useLangMap } from "../../hooks/useLangMap";
 import { useProcessNavigation } from "../../hooks/useProcessNavigation";
@@ -741,7 +742,8 @@ const Dashboard = () => {
                 backgroundColor: '#002060',
                 color: 'white',
                 border: 'none',
-                borderRadius: '5px'
+                borderRadius: '5px',
+                marginRight: '10px'
               }}
             >
               TEST CRON PUBLISH
@@ -832,7 +834,10 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
+
         </div>
+        {/* Managed Processes Widget */}
+        {user?.id && <ManagedProcessesWidget userId={user.id} />}
       </div>
     </div>
   );

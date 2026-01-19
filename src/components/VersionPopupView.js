@@ -48,8 +48,9 @@ const VersionPopupView = ({
     if (!responseData) return;
     if (!langMap || Object.keys(langMap).length === 0) return;
     setLoading(false)
-  
+
     setVersions(responseData.versions || []);
+    console.log("versions", responseData);
     setAssignedUsers(responseData.assigned_users || []);
 
     setSelectedUsers(
@@ -232,6 +233,9 @@ const VersionPopupView = ({
                   <thead>
                     <tr>
                       <th>{t("version")}</th>
+                      <th>{t("Type")}</th>
+                      <th>{t("Status")}</th>
+
                       <th>{t("date_time")}</th>
                       <th>{t("user")}</th>
                       <th>{t("Action")}</th>
@@ -241,6 +245,15 @@ const VersionPopupView = ({
                     {versions.map((version, index) => (
                       <tr key={index}>
                         <td>{version.version}</td>
+                        <td>{version.change_type || "-"}</td>
+                        <td>
+                          {version.approval_status === "Approved"
+                            ? `${t("Approved")} ${t("by")} ${version.approver_name}`
+                            : version.approval_status === "Rejected"
+                              ? `${t("Rejected")} ${t("by")} ${version.approver_name}`
+                              : version.approval_status || "-"}
+                        </td>
+
                         <td>{new Date(version.created_at).toLocaleString()}</td>
                         <td>
                           <div className="owner-actions owner-flex">

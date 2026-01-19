@@ -116,26 +116,18 @@ const ArrowBoxNode = ({ data }) => {
         }}
       // onClick={handleLinkClick}
       >
-        <div style={styles.textView}>
-          {data.processlink ? (
-            <div>
-              <button
-                style={styles.linkButton}
-                // onClick={handleLinkClick}
-                dangerouslySetInnerHTML={{ __html: title }}
-              ></button>
-            </div>
-          ) : (
-            <>
-              <div>
-                <button
-                  style={styles.withoutlinkButton}
-                  dangerouslySetInnerHTML={{ __html: title }}
-                />
-              </div>
-            </>
-          )}
-        </div>
+        <div
+          style={{
+            fontSize: "12px",
+            fontFamily: "'Poppins', sans-serif",
+            color: "white",
+            textAlign: "center",
+            wordBreak: "break-word",
+            cursor: "pointer",
+            width: "100%",
+          }}
+          dangerouslySetInnerHTML={{ __html: title }}
+        />
       </div>
 
       {/* Border overlay as a separate div */}

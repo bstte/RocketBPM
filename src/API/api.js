@@ -830,6 +830,17 @@ export const contectCronPublish = async () => {
     }
 };
 
-const apiExports = { saveNodes, getallpublishObject_Tolinkexistingmodel, getexistingrole, getNodes, checkPublishRecord, GetPublishedDate, checkRecord, Login, saveProcessTitle, defaultApi, filter_draft, getPublishedNodes, getdataByNodeId, duplicateNode, moveNode };
+
+export const getManagedProcesses = async (data) => {
+    try {
+        const response = await api.post('/nodes/getManagedProcesses', data);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching managed processes:', error);
+        throw error;
+    }
+};
+
+const apiExports = { saveNodes, getallpublishObject_Tolinkexistingmodel, getexistingrole, getNodes, checkPublishRecord, GetPublishedDate, checkRecord, Login, saveProcessTitle, defaultApi, filter_draft, getPublishedNodes, getdataByNodeId, duplicateNode, moveNode, getManagedProcesses };
 
 export default apiExports;

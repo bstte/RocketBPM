@@ -101,19 +101,19 @@ const MapLevel = () => {
   });
 
   // Access control: Redirect to draft if request is pending and user tries to access edit mode
-const approvalStatus = pendingApproval?.approval?.status;
+  const approvalStatus = pendingApproval?.approval?.status;
 
-useEffect(() => {
-  if (mode === "edit" && approvalStatus === 0) {
-    goToProcess({
-      mode: "draft",
-      view: "map",
-      processId,
-      level: currentLevel,
-      parentId: currentParentId || undefined,
-    });
-  }
-}, [mode, approvalStatus, goToProcess, processId, currentLevel, currentParentId]);
+  useEffect(() => {
+    if (mode === "edit" && approvalStatus === 0) {
+      goToProcess({
+        mode: "draft",
+        view: "map",
+        processId,
+        level: currentLevel,
+        parentId: currentParentId || undefined,
+      });
+    }
+  }, [mode, approvalStatus, goToProcess, processId, currentLevel, currentParentId]);
 
   // Local RTL state based on process language (not profile language)
   const [isRTL, setIsRTL] = useState(false);
@@ -369,7 +369,7 @@ useEffect(() => {
         selectedLanguage={processDefaultlanguage_id}
         OriginalDefaultlanguge_id={OriginalDefaultlanguge_id}
         /* New Props for Approval Flow */
-        revisionresponse={revisionresponse}
+        // revisionresponse={revisionresponse}
         onApproveProcess={handlers.approveProcess}
         onRequestChange={handlers.requestChange}
       />
@@ -480,6 +480,7 @@ useEffect(() => {
           processDefaultlanguage_id={processDefaultlanguage_id}
           currentLevel={currentLevel}
           userId={LoginUser?.id}
+          selectedNodeId={selectedNode}
         />
       </ReactFlowProvider>
     </div>

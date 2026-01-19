@@ -18,7 +18,7 @@ import {
 import "@xyflow/react/dist/style.css";
 import Header from "../../../components/Header";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import api, { addFavProcess, removeFavProcess } from "../../../API/api";
+import api from "../../../API/api";
 
 import generateNodesAndEdges from "../../../AllNode/SwimlineNodes/generateNodesAndEdges";
 import styles from "../SwimlaneStyles";
@@ -27,7 +27,16 @@ import { BreadcrumbsContext } from "../../../context/BreadcrumbsContext";
 
 import "../../../Css/Swimlane.css";
 import { useSelector } from "react-redux";
-import apiExports from "../../../API/api";
+
+import apiExports, {
+  addFavProcess,
+  removeFavProcess,
+  contentapproveProcess,
+  contentChangeRequest,
+  contentreschedulePublishing,
+  contectCancelPublishing,
+  contentRequestChange
+} from "../../../API/api";
 import VersionPopupView from "../../../components/VersionPopupView";
 import { useDynamicHeight } from "../../../hooks/useDynamicHeight";
 import useCheckFavorite from "../../../hooks/useCheckFavorite";
@@ -40,6 +49,11 @@ import { useSwimlaneFetchNodes } from "../../../hooks/swimlane/useSwimlaneFetchN
 import { useProcessNavigation } from "../../../hooks/useProcessNavigation";
 import { isRTLLanguage, getDirection } from "../../../utils/rtlUtils";
 import { useLanguages } from "../../../hooks/useLanguages";
+import { useApprovalStatus } from "../../../hooks/useApprovalStatus";
+import CustomAlert from "../../../components/CustomAlert";
+import RequestChangeModal from "../../../components/RequestChangeModal";
+import EditScheduledPublishingModal from "../../../components/EditScheduledPublishingModal";
+import { buildProcessPath } from "../../../routes/buildProcessPath";
 
 const DraftSwimlineLevel = () => {
   const [windowSize] = useState({
@@ -63,6 +77,14 @@ const DraftSwimlineLevel = () => {
   const { height, appHeaderHeight, remainingHeight } = useDynamicHeight();
   const safeRemainingHeight = Math.min(Math.max(remainingHeight, 588), 588);
   const [checkpublish, Setcheckpublish] = useState();
+  const [editScheduledModalOpen, setEditScheduledModalOpen] = useState(false);
+  const [requestChangeModalOpen, setRequestChangeModalOpen] = useState(false);
+
+  const { pendingApproval } = useApprovalStatus({
+    processId: id,
+    currentLevel,
+    currentParentId
+  });
 
   const { nodes: initialNodes } = useMemo(
     () =>
@@ -503,6 +525,144 @@ const DraftSwimlineLevel = () => {
     fetchNodes(langId);
   };
 
+  const handleApproveProcess = async () => {
+    CustomAlert.confirmAction({
+      title: "Approve Process",
+      text: "Do you want to approve the process and inform the modeler to publish it?",
+      confirmBtnText: "Yes",
+      cancelBtnText: "No",
+      confirmCallback: async () => {
+        const processPath = buildProcessPath({
+          mode: "draft",
+          view: "swimlane",
+          processId,
+          level: currentLevel,
+          parentId: currentLevel === 0 ? undefined : currentParentId,
+        });
+
+        const processLink = `${window.location.origin}${processPath}`;
+
+        try {
+          const payload = {
+            process_id: processId,
+            level: getLevelKey(currentLevel, currentParentId),
+            user_id: LoginUser?.id,
+            process_title: title,
+            process_link: processLink,
+          };
+          const res = await contentapproveProcess(payload);
+          if (res.status) {
+            CustomAlert.success("Approved", "Process approved and published successfully.");
+            window.location.reload();
+          } else {
+            CustomAlert.error("Error", res.message);
+          }
+        } catch (e) {
+          console.error(e);
+          CustomAlert.error("Error", "Failed to approve process");
+        }
+      }
+    });
+  };
+
+  const handleCancelPublishing = async () => {
+    CustomAlert.confirmAction({
+      title: "Cancel Publishing",
+      text: "Do you really want to cancel publishing?",
+      confirmBtnText: "Yes",
+      cancelBtnText: "No",
+      confirmCallback: async () => {
+        const processPath = buildProcessPath({
+          mode: "draft",
+          view: "swimlane",
+          processId,
+          level: currentLevel,
+          parentId: currentLevel === 0 ? undefined : currentParentId,
+        });
+        const processLink = `${window.location.origin}${processPath}`;
+
+        try {
+          const payload = {
+            process_id: processId,
+            level: getLevelKey(currentLevel, currentParentId),
+            user_id: LoginUser?.id,
+            process_title: title,
+            process_link: processLink,
+          };
+          const res = await contectCancelPublishing(payload);
+          if (res.status) {
+            CustomAlert.success("Cancelled", "Publishing cancelled.");
+            setEditScheduledModalOpen(false);
+            window.location.reload();
+          } else {
+            CustomAlert.error("Error", res.message);
+          }
+        } catch (e) { console.error(e); CustomAlert.error("Error", "Failed to cancel"); }
+      }
+    });
+  };
+
+  const handleReschedulePublishing = async (newDate) => {
+    const processPath = buildProcessPath({
+      mode: "draft",
+      view: "swimlane",
+      processId,
+      level: currentLevel,
+      parentId: currentLevel === 0 ? undefined : currentParentId,
+    });
+    const processLink = `${window.location.origin}${processPath}`;
+
+    try {
+      const payload = {
+        process_id: processId,
+        level: getLevelKey(currentLevel, currentParentId),
+        user_id: LoginUser?.id,
+        new_date: newDate,
+        process_title: title,
+        process_link: processLink,
+      };
+      const res = await contentreschedulePublishing(payload);
+      if (res.status) {
+        CustomAlert.success("Rescheduled", "Publishing rescheduled.");
+        setEditScheduledModalOpen(false);
+        window.location.reload();
+      } else {
+        CustomAlert.error("Error", res.message);
+      }
+    } catch (e) { console.error(e); CustomAlert.error("Error", "Failed to reschedule"); }
+  };
+
+  // Handle Request Change (Rejection)
+  const handleContentChangeRequest = async (reason) => {
+    const processPath = buildProcessPath({
+      mode: "draft",
+      view: "swimlane",
+      processId,
+      level: currentLevel,
+      parentId: currentLevel === 0 ? undefined : currentParentId,
+    });
+    const processLink = `${window.location.origin}${processPath}`;
+    try {
+      const payload = {
+        process_id: processId,
+        level: getLevelKey(currentLevel, currentParentId),
+        user_id: LoginUser?.id,
+        reason: reason,
+        process_title: title,
+        process_link: processLink,
+      };
+      // Call the correct API for "Request Change" (Rejection)
+      const res = await contentRequestChange(payload);
+      if (res.status) {
+        CustomAlert.success("Requested", "Change request sent successfully.");
+        setRequestChangeModalOpen(false);
+        window.location.reload();
+      } else {
+        CustomAlert.error("Error", res.message);
+      }
+    } catch (e) { console.error(e); CustomAlert.error("Error", "Failed to request change"); }
+  };
+
 
   return (
     <div dir="ltr">
@@ -526,6 +686,23 @@ const DraftSwimlineLevel = () => {
         supportedLanguages={supportedLanguages}
         selectedLanguage={processDefaultlanguage_id}
         OriginalDefaultlanguge_id={OriginalDefaultlanguge_id}
+        processId={id}
+        onApproveProcess={handleApproveProcess}
+        onRequestChange={() => setRequestChangeModalOpen(true)}
+        pendingApproval={pendingApproval}
+        onEditScheduled={() => setEditScheduledModalOpen(true)}
+      />
+      <EditScheduledPublishingModal
+        isOpen={editScheduledModalOpen}
+        onClose={() => setEditScheduledModalOpen(false)}
+        currentDate={pendingApproval?.approval?.planned_publish_date}
+        onCancelPublishing={handleCancelPublishing}
+        onReschedulePublishing={handleReschedulePublishing}
+      />
+      <RequestChangeModal
+        isOpen={requestChangeModalOpen}
+        onClose={() => setRequestChangeModalOpen(false)}
+        onSubmit={handleContentChangeRequest}
       />
       <div
         class="maincontainer"
