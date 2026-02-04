@@ -22,7 +22,7 @@ export const loginUser = createAsyncThunk(
 
       return { user, translations };
     } catch (error) {
-      CustomAlert.warning("Error", error.response.data.message);
+      CustomAlert.warning("War!", error.response.data.message);
       return rejectWithValue(error.response?.data || "An error occurred");
     }
   }

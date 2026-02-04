@@ -5,7 +5,7 @@ const RoleGroupTooltip = ({
     langMap,
     processDefaultlanguage_id,
 }) => {
-    const langKey = langMap?.[processDefaultlanguage_id] || "en";
+    const langKey = langMap?.[processDefaultlanguage_id] || "EN";
 
     return (
         <div style={styles.tooltip}>

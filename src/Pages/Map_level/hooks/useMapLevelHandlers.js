@@ -12,6 +12,9 @@ import api, {
 } from "../../../API/api";
 import CustomAlert from "../../../components/CustomAlert";
 import { buildProcessPath } from "../../../routes/buildProcessPath";
+import { useDispatch } from "react-redux";
+import { invalidateCacheForLevel } from "../../../redux/mapDataSlice";
+import { getLevelKey } from "../../../utils/getLevel";
 
 export const useMapLevelHandlers = ({
     state,
@@ -29,6 +32,14 @@ export const useMapLevelHandlers = ({
     addBreadcrumb,
     langMap,
 }) => {
+    const dispatch = useDispatch();
+    const invalidateCache = () => {
+        const levelParam = getLevelKey(currentLevel, currentParentId);
+        // Pattern: `${Process_id}_${levelParam}` matches all languages/modes for this level
+        const levelPattern = `${processId}_${levelParam}`;
+
+        dispatch(invalidateCacheForLevel({ levelPattern }));
+    };
     const {
         setSelectedNodeId,
         setSelectedNode,
@@ -221,12 +232,14 @@ export const useMapLevelHandlers = ({
                     id, source, sourceHandle, target, targetHandle, markerEnd, animated, page_title
                 })),
             });
+
             CustomAlert.success("Success", "Nodes saved successfully");
             setHasUnsavedChanges(false);
+            invalidateCache();
         } catch (error) {
             console.error("Error saving nodes:", error);
         }
-    }, [currentLevel, state.ParentPageGroupId, state.versionPopupPayload, state.user, processId, LoginUser, nodes, edges, setHasUnsavedChanges]);
+    }, [currentLevel, state.ParentPageGroupId, state.versionPopupPayload, state.user, processId, LoginUser, nodes, edges, setHasUnsavedChanges, dispatch]);
 
     const handleBack = useCallback(async () => {
         if (!state.hasUnsavedChanges) return true;
@@ -258,9 +271,23 @@ export const useMapLevelHandlers = ({
 
         const flowContainer = document.querySelector(".flow-container");
         const containerRect = flowContainer.getBoundingClientRect();
+
+        let x = event.clientX - containerRect.left;
+        let y = event.clientY - containerRect.top;
+
+        // Approximate popup dimensions to prevent overflow
+        const POPUP_ESTIMATED_HEIGHT = 200;
+
+        // If clicking near the bottom, shift popup up
+        if (y + POPUP_ESTIMATED_HEIGHT > containerRect.height) {
+            y = y - POPUP_ESTIMATED_HEIGHT;
+            // Ensure we don't push it off the top edge
+            if (y < 0) y = 10;
+        }
+
         setPopupPosition({
-            x: event.clientX - containerRect.left,
-            y: event.clientY - containerRect.top,
+            x: x,
+            y: y,
         });
         setShowPopup(true);
     }, [currentLevel, processId, setcheckRecord, setSelectedNode, setPopupTitle, setPopupPosition, setShowPopup]);
@@ -368,19 +395,31 @@ export const useMapLevelHandlers = ({
         setHasUnsavedChanges(true);
         const flowContainer = document.querySelector(".flow-container");
         if (!flowContainer) return;
-        const { left, top, right, bottom } = flowContainer.getBoundingClientRect();
-        const nodeElement = document.querySelector(`[data-id="${node.id}"]`);
-        if (!nodeElement) return;
-        const nodeRect = nodeElement.getBoundingClientRect();
-        const isOutOfBounds =
-            nodeRect.left < left ||
-            nodeRect.top < top ||
-            nodeRect.right > right ||
-            nodeRect.bottom > bottom;
-        if (isOutOfBounds) {
+
+        // Get container dimensions
+        const { width: containerWidth, height: containerHeight } = flowContainer.getBoundingClientRect();
+
+        // Get node dimensions. Prefer 'measured' from React Flow, fallback to data defaults
+        const nodeWidth = node.measured?.width || node.data?.width_height?.width || node.width || 326;
+        const nodeHeight = node.measured?.height || node.data?.width_height?.height || node.height || 90;
+
+        let newX = node.position.x;
+        let newY = node.position.y;
+
+        // Clamp values
+        // Ensure x is >= 0 and <= containerWidth - nodeWidth
+        if (newX < 0) newX = 0;
+        if (newX + nodeWidth > containerWidth) newX = containerWidth - nodeWidth;
+
+        // Ensure y is >= 0 and <= containerHeight - nodeHeight
+        if (newY < 0) newY = 0;
+        if (newY + nodeHeight > containerHeight) newY = containerHeight - nodeHeight;
+
+        // If position changed due to clamping, update it
+        if (newX !== node.position.x || newY !== node.position.y) {
             setNodes((nodes) =>
                 nodes.map((n) =>
-                    n.id === node.id ? { ...n, position: { ...n.originalPosition } } : n
+                    n.id === node.id ? { ...n, position: { x: newX, y: newY } } : n
                 )
             );
         }
@@ -403,7 +442,7 @@ export const useMapLevelHandlers = ({
         setNodes((nds) =>
             nds.map((n) => {
                 if (n.id !== nodeId) return n;
-                const langKey = langMap[state.processDefaultlanguage_id] || "en";
+                const langKey = langMap[state.processDefaultlanguage_id] || "EN";
                 const newLabel = translations[langKey] || n.data.label;
                 return {
                     ...n,
@@ -458,6 +497,10 @@ export const useMapLevelHandlers = ({
     }, [currentLevel, currentParentId, processId, state.revisionData, LoginUser, setShowEditorialPopup]);
 
     const handleContentSubmit = useCallback(async (data) => {
+        if (state.revisionData?.revisionText === "") {
+            alert("revision text is required");
+            return false;
+        }
         setShowContentPopup(false);
         const processPath = buildProcessPath({
             mode: "draft",
@@ -519,6 +562,7 @@ export const useMapLevelHandlers = ({
             // We use the same fetch implementation as initial load
             const savedLang = localStorage.getItem("selectedLanguageId");
             fetchNodes(savedLang ? parseInt(savedLang) : state.processDefaultlanguage_id);
+            invalidateCache();
 
         } catch (error) {
             console.error("Duplicate failed", error);
@@ -543,37 +587,38 @@ export const useMapLevelHandlers = ({
         handleContentSubmit,
         goToProcess,
         handleDuplicateNode,
-        approveProcess: async () => {
-            if (window.confirm("Do you want to approve the process and inform the modeler to publish it?")) {
-                try {
-                    await api.approveProcessAPI({
-                        process_id: processId,
-                        level: `level${currentLevel}${currentParentId ? `_${currentParentId}` : ""}`,
-                        user_id: LoginUser?.id
-                    });
-                    CustomAlert.success("Success", "Process approved successfully.");
-                    // Refresh
-                    window.location.reload();
-                } catch (e) {
-                    console.error(e);
-                    CustomAlert.error("Error", "Failed to approve process.");
-                }
-            }
-        },
-        requestChange: async (reason) => {
-            try {
-                await api.requestChangeAPI({
-                    process_id: processId,
-                    level: `level${currentLevel}${currentParentId ? `_${currentParentId}` : ""}`,
-                    user_id: LoginUser?.id,
-                    reason: reason
-                });
-                CustomAlert.success("Success", "Change requested successfully.");
-                window.location.reload();
-            } catch (e) {
-                console.error(e);
-                CustomAlert.error("Error", "Failed to request change.");
-            }
-        }
+        invalidateCache,
+        // approveProcess: async () => {
+        //     if (window.confirm("Do you want to approve the process and inform the modeler to publish it?")) {
+        //         try {
+        //             await api.approveProcessAPI({
+        //                 process_id: processId,
+        //                 level: `level${currentLevel}${currentParentId ? `_${currentParentId}` : ""}`,
+        //                 user_id: LoginUser?.id
+        //             });
+        //             await CustomAlert.success("Success", "Process approved successfully.");
+        //             // Refresh
+        //             window.location.reload();
+        //         } catch (e) {
+        //             console.error(e);
+        //             CustomAlert.error("Error", "Failed to approve process.");
+        //         }
+        //     }
+        // },
+        // requestChange: async (reason) => {
+        //     try {
+        //         await api.requestChangeAPI({
+        //             process_id: processId,
+        //             level: `level${currentLevel}${currentParentId ? `_${currentParentId}` : ""}`,
+        //             user_id: LoginUser?.id,
+        //             reason: reason
+        //         });
+        //         CustomAlert.success("Success", "Change requested successfully.");
+        //         window.location.reload();
+        //     } catch (e) {
+        //         console.error(e);
+        //         CustomAlert.error("Error", "Failed to request change.");
+        //     }
+        // }
     };
 };

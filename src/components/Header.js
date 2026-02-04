@@ -59,7 +59,7 @@ const Header = ({
   const publishRequest = pendingApproval?.publish_request;
 
   console.log("approval", approval);
-  console.log("publishRequest", publishRequest);
+
 
   const isPending = approval?.status === 0;
   const isActive = approval?.status === 1;
@@ -168,8 +168,8 @@ const Header = ({
   }, []);
   const languageKey = langMap[selectedLanguage] || "loading...";
   const ORIGlanguageKey = langMap[OriginalDefaultlanguge_id] || "loading...";
-  // console.log("languageKey", languageKey);
-  // console.log("ORIGlanguageKey", ORIGlanguageKey);
+  console.log("languageKey", languageKey);
+  console.log("ORIGlanguageKey", ORIGlanguageKey);
   console.log("header breadcrumbs", breadcrumbs);
 
   return (
@@ -213,9 +213,17 @@ const Header = ({
                       {
                         crumb?.state?.TitleTranslation?.[languageKey]
                           ? crumb.state.TitleTranslation[languageKey]
-                          : crumb?.state?.TitleTranslation?.[ORIGlanguageKey]
-                            ? crumb.state.TitleTranslation[ORIGlanguageKey]
-                            : "Loading..."
+                          : crumb?.state?.TitleTranslation?.[languageKey?.toUpperCase()]
+                            ? crumb.state.TitleTranslation[languageKey?.toUpperCase()]
+                            : crumb?.state?.TitleTranslation?.[languageKey?.toLowerCase()]
+                              ? crumb.state.TitleTranslation[languageKey?.toLowerCase()]
+                              : crumb?.state?.TitleTranslation?.[ORIGlanguageKey]
+                                ? crumb.state.TitleTranslation[ORIGlanguageKey]
+                                : crumb?.state?.TitleTranslation?.[ORIGlanguageKey?.toUpperCase()]
+                                  ? crumb.state.TitleTranslation[ORIGlanguageKey?.toUpperCase()]
+                                  : crumb?.state?.TitleTranslation?.[ORIGlanguageKey?.toLowerCase()]
+                                    ? crumb.state.TitleTranslation[ORIGlanguageKey?.toLowerCase()]
+                                    : "Loading..."
                       }
 
                     </span>

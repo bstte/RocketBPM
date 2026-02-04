@@ -14,6 +14,7 @@ import "@xyflow/react/dist/style.css";
 import { useLocation, useParams } from "react-router-dom";
 import Header from "../../components/Header";
 import Popup from "../../components/Popup";
+import CustomAlert from "../../components/CustomAlert";
 import ArrowBoxNode from "../../AllNode/ArrowBoxNode";
 import PentagonNode from "../../AllNode/PentagonNode";
 import { getLevelKey } from "../../utils/getLevel";
@@ -122,6 +123,8 @@ const MapLevel = () => {
   const { languages } = useLanguages();
 
   // Move Node State
+  const [isLoading, setIsLoading] = useState(false);
+
   const [showMovePopup, setShowMovePopup] = useState(false);
 
   const handleMoveNodeClick = () => {
@@ -129,23 +132,7 @@ const MapLevel = () => {
     setShowMovePopup(true);
   };
 
-  const handleMoveConfirm = async (target) => {
-    try {
-      await moveNode({
-        node_id: selectedNode,
-        target_process_id: target.processId,
-        target_level: target.levelKey,
-        target_parent_id: null, // Depending on backend logic, moving to a map usually means root level of that map? Or we might need target parent ID if moving into a subprocess.
 
-      });
-      setShowMovePopup(false);
-      // Refetch to update UI (node should disappear)
-      fetchNodes(processDefaultlanguage_id);
-    } catch (error) {
-      console.error("Failed to move node", error);
-      alert("Failed to move node");
-    }
-  };
 
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -154,7 +141,7 @@ const MapLevel = () => {
     progressArrow: (props) => <ArrowBoxNode {...props} selectedNodeId={selectedNodeId} isRTL={isRTL} />,
     pentagon: (props) => <PentagonNode {...props} selectedNodeId={selectedNodeId} isRTL={isRTL} />,
     StickyNote: (props) => <StickyNote {...props} selectedNodeId={selectedNodeId} editable={true} />,
-  }), [selectedNodeId, isRTL]);
+  }), [selectedNodeId]);
 
   const memoizedEdgeTypes = useMemo(() => ({
     smoothstep: SmoothStepEdge,
@@ -213,56 +200,94 @@ const MapLevel = () => {
     langMap,
   });
 
-  useEffect(() => {
-    const savedLang = localStorage.getItem("selectedLanguageId");
-    fetchNodes(savedLang ? parseInt(savedLang) : processDefaultlanguage_id);
+  const handleMoveConfirm = async (target) => {
+    try {
+      await moveNode({
+        node_id: selectedNode,
+        target_process_id: target.processId,
+        target_level: target.levelKey,
+        target_parent_id: null,
+      });
 
-    // Also set RTL on initial load
-    if (languages.length > 0) {
-      const langId = savedLang ? parseInt(savedLang) : processDefaultlanguage_id;
-      if (langId) {
-        const currentLang = languages.find(l => l.id === langId);
-        if (currentLang?.code) {
-          const rtl = isRTLLanguage(currentLang.code);
-          const dir = getDirection(currentLang.code);
-          setIsRTL(rtl);
-          setDirection(dir);
-        }
-      }
+      // Clear cache for current level so the moved node disappears
+      handlers.invalidateCache();
+
+      setShowMovePopup(false);
+      CustomAlert.success("Success", "Node moved successfully");
+
+      // Refetch to update UI
+      setIsLoading(true);
+      await fetchNodes(processDefaultlanguage_id);
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Failed to move node", error);
+      CustomAlert.error("Error", "Failed to move node");
+      setIsLoading(false);
     }
-  }, [currentLevel, languages, processDefaultlanguage_id]);
+  };
+
+
+  useEffect(() => {
+    const init = async () => {
+      setIsLoading(true);
+      const savedLang = localStorage.getItem("selectedLanguageId");
+      // Only fetch data on mount or level change
+      await fetchNodes(savedLang ? parseInt(savedLang) : undefined);
+      // console.log("calling")
+      setIsLoading(false);
+    };
+    init();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentLevel]);
+
+  // Separate effect for RTL/Language updates based on loaded data
+  // useEffect(() => {
+  //   const savedLang = localStorage.getItem("selectedLanguageId");
+  //   if (languages.length > 0) {
+  //     const langId = savedLang ? parseInt(savedLang) : processDefaultlanguage_id;
+  //     if (langId) {
+  //       const currentLang = languages.find(l => l.id === langId);
+  //       if (currentLang?.code) {
+  //         const rtl = isRTLLanguage(currentLang.code);
+  //         const dir = getDirection(currentLang.code);
+  //         setIsRTL(rtl);
+  //         setDirection(dir);
+  //       }
+  //     }
+  //   }
+  // }, [languages, processDefaultlanguage_id]);
 
   // Update RTL based on process language
-  useEffect(() => {
-    if (processDefaultlanguage_id && languages.length > 0) {
-      const currentLang = languages.find(l => l.id === processDefaultlanguage_id);
-      if (currentLang?.code) {
-        const rtl = isRTLLanguage(currentLang.code);
-        const dir = getDirection(currentLang.code);
-        setIsRTL(rtl);
-        setDirection(dir);
-      }
-    }
-  }, [processDefaultlanguage_id, languages]);
+  // useEffect(() => {
+  //   if (processDefaultlanguage_id && languages.length > 0) {
+  //     const currentLang = languages.find(l => l.id === processDefaultlanguage_id);
+  //     if (currentLang?.code) {
+  //       const rtl = isRTLLanguage(currentLang.code);
+  //       const dir = getDirection(currentLang.code);
+  //       setIsRTL(rtl);
+  //       setDirection(dir);
+  //     }
+  //   }
+  // }, [processDefaultlanguage_id, languages]);
 
   // Listen for language switcher changes
-  useEffect(() => {
-    const handleLanguageChange = () => {
-      const savedLangId = localStorage.getItem("selectedLanguageId");
-      if (savedLangId && languages.length > 0) {
-        const currentLang = languages.find(l => l.id === parseInt(savedLangId));
-        if (currentLang?.code) {
-          const rtl = isRTLLanguage(currentLang.code);
-          const dir = getDirection(currentLang.code);
-          setIsRTL(rtl);
-          setDirection(dir);
-        }
-      }
-    };
+  // useEffect(() => {
+  //   const handleLanguageChange = () => {
+  //     const savedLangId = localStorage.getItem("selectedLanguageId");
+  //     if (savedLangId && languages.length > 0) {
+  //       const currentLang = languages.find(l => l.id === parseInt(savedLangId));
+  //       if (currentLang?.code) {
+  //         const rtl = isRTLLanguage(currentLang.code);
+  //         const dir = getDirection(currentLang.code);
+  //         setIsRTL(rtl);
+  //         setDirection(dir);
+  //       }
+  //     }
+  //   };
 
-    window.addEventListener('languageChanged', handleLanguageChange);
-    return () => window.removeEventListener('languageChanged', handleLanguageChange);
-  }, [languages]);
+  //   window.addEventListener('languageChanged', handleLanguageChange);
+  //   return () => window.removeEventListener('languageChanged', handleLanguageChange);
+  // }, [languages]);
 
   useCheckFavorite({ id: processId, nodes, setIsFavorite });
 
@@ -348,6 +373,7 @@ const MapLevel = () => {
         title={title}
         onSave={() => handlers.handleSaveNodes("draft")}
         onPublish={() => handleSavePublish()}
+        // onPublish={() => handlers.handleSaveNodes("Published")}
         addNode={(type) => handlers.addNode(type, { x: 200, y: 200 })}
         handleBackdata={handlers.handleBack}
         iconNames={{}}
@@ -368,10 +394,10 @@ const MapLevel = () => {
         supportedLanguages={supportedLanguages}
         selectedLanguage={processDefaultlanguage_id}
         OriginalDefaultlanguge_id={OriginalDefaultlanguge_id}
-        /* New Props for Approval Flow */
-        // revisionresponse={revisionresponse}
-        onApproveProcess={handlers.approveProcess}
-        onRequestChange={handlers.requestChange}
+      /* New Props for Approval Flow */
+      // revisionresponse={revisionresponse}
+      // onApproveProcess={handlers.approveProcess}
+      // onRequestChange={handlers.requestChange}
       />
       <ReactFlowProvider>
         <div className="app-container" style={{ display: "flex", flexDirection: "column", height: safeRemainingHeight, backgroundColor: "#f8f9fa" }}>
@@ -399,6 +425,12 @@ const MapLevel = () => {
               >
                 <Background variant={BackgroundVariant.Lines} gap={20} size={1} color="rgba(0,0,0,0.15)" />
               </ReactFlow>
+              {isLoading && (
+                <div className="loading-overlay">
+                  <div className="spinner"></div>
+                  <div>Loading...</div>
+                </div>
+              )}
               <CustomContextMenu
                 showContextMenu={showContextMenu}
                 contextMenuPosition={contextMenuPosition}

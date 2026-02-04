@@ -18,6 +18,9 @@ const cardStyle = (anchor) => ({
   transform: anchor ? "translate(0, 0)" : "none",
   minWidth: 400,
   maxWidth: 480,
+  maxHeight: "60vh",
+  display: "flex",
+  flexDirection: "column",
   background: "#fff",
   borderRadius: 0,
   border: "1px solid #011f60",
@@ -132,25 +135,27 @@ export default function TranslationPopup({
         </div>
 
         {/* 🔤 Dynamic Language Fields */}
-        {supportedLanguages.map((langId, index) => {
-          const langKey = langMap[langId] || `lang_${langId}`;
-          const labelName = langKey.toUpperCase();
-          return (
-            <div key={langKey} style={rowStyle}>
-              <label style={{ fontSize: 12, fontWeight: 600 }}>
-                {labelName}
-              </label>
-              <input
-                ref={index === 0 ? firstInputRef : null}
-                type="text"
-                value={values[langKey] || ""}
-                onChange={(e) => handleChange(langKey, e.target.value)}
-                placeholder={`Enter ${labelName} translation`}
-                style={inputStyle}
-              />
-            </div>
-          );
-        })}
+        <div style={{ overflowY: "auto", flex: 1, paddingRight: 5 }}>
+          {supportedLanguages.map((langId, index) => {
+            const langKey = langMap[langId] || `lang_${langId}`;
+            const labelName = langKey.toUpperCase();
+            return (
+              <div key={langKey} style={rowStyle}>
+                <label style={{ fontSize: 12, fontWeight: 600 }}>
+                  {labelName}
+                </label>
+                <input
+                  ref={index === 0 ? firstInputRef : null}
+                  type="text"
+                  value={values[langKey] || ""}
+                  onChange={(e) => handleChange(langKey, e.target.value)}
+                  placeholder={`Enter ${labelName} translation`}
+                  style={inputStyle}
+                />
+              </div>
+            );
+          })}
+        </div>
 
         {/* Footer Buttons */}
         <div

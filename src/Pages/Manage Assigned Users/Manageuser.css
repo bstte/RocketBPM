@@ -165,7 +165,9 @@ button.ss_add_use_btn {
 }
 
 :focus-visible {
-    outline: -webkit-focus-ring-color auto 0px !important;
+    /* outline: -webkit-focus-ring-color auto 0px !important; */
+
+     outline: 0 !important;
 }
 .ss_label_per label {
     margin-top: 0 !important;

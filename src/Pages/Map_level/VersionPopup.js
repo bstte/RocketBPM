@@ -77,7 +77,7 @@ const VersionPopup = ({
       const revisionData = versionPopupPayload.revision_info;
       if (typeof revisionData === "object") {
         setTranslations(revisionData);
-        const langKey = langMap[selectedLanguage] || "en";
+        const langKey = langMap[selectedLanguage] || "EN";
         setRevisionText(revisionData[langKey]?.content || "");
       } else {
         setRevisionText(revisionData || "");
@@ -185,6 +185,7 @@ const VersionPopup = ({
       const payload = {
         process_id: processId,
         level: levelParam,
+        parent_id: currentParentId,
         contact_info: selectedUsers,
         revision_info: translations,
       };
@@ -428,7 +429,7 @@ const VersionPopup = ({
                   value={revisionText}
                   onChange={(value) => {
                     setRevisionText(value);
-                    const langKey = langMap[selectedLanguage] || "en";
+                    const langKey = langMap[selectedLanguage] || "EN";
                     setTranslations((prev) => ({
                       ...prev,
                       [langKey]: {
@@ -610,7 +611,7 @@ const VersionPopup = ({
             defaultValues={translations}
             onSubmit={(values) => {
               setTranslations(values);
-              const langKey = langMap[selectedLanguage] || "en";
+              const langKey = langMap[selectedLanguage] || "EN";
               setRevisionText(values[langKey]?.content || "");
               setShowTranslationPopup(false);
             }}

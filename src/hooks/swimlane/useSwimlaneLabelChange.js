@@ -13,7 +13,7 @@ export const useSwimlaneLabelChange = ({
         nds.map((node) => {
           if (node.id === nodeId) {
             const currentLangId = processLangRef.current;
-            const langKey = langMapRef.current[Number(currentLangId)] || "en";
+            const langKey = langMapRef.current[Number(currentLangId)] || "EN";
 
             return {
               ...node,
@@ -21,22 +21,22 @@ export const useSwimlaneLabelChange = ({
                 ...node.data,
                 ...(node.type === "StickyNote"
                   ? {
-                      label: newLabel,
-                      translations: {
-                        ...(node.data.translations || {}),
-                        [langKey]: newLabel,
-                      },
-                    }
+                    label: newLabel,
+                    translations: {
+                      ...(node.data.translations || {}),
+                      [langKey]: newLabel,
+                    },
+                  }
                   : {
-                      details: {
-                        ...node.data.details,
-                        title: newLabel,
-                      },
-                      translations: {
-                        ...(node.data.translations || {}),
-                        [langKey]: newLabel,
-                      },
-                    }),
+                    details: {
+                      ...node.data.details,
+                      title: newLabel,
+                    },
+                    translations: {
+                      ...(node.data.translations || {}),
+                      [langKey]: newLabel,
+                    },
+                  }),
               },
             };
           }

@@ -2,18 +2,31 @@
 
 import React, { memo } from "react";
 import { useTranslation } from "../hooks/useTranslation";
+const NO_LABEL_BY_LANG = {
+  1: "No",       // English
+  2: "Nein",     // German
+  3: "No",       // Spanish
+  4: "Non",      // French
+  5: "No",       // Italian
+  6: "Nie",      // Polish
+  7: "Nee",      // Dutch
+  10: "Não",     // Brazilian Portuguese
+  11: "不",       // Chinese
+};
+const NoNode = ({ data, processDefaultlanguage_id }) => {
+  const langId = Number(processDefaultlanguage_id);
 
-const NoNode = ({ data,processDefaultlanguage_id }) => {
-   const langId = Number(processDefaultlanguage_id);
+  // let label = "no";
+  // if (langId === 2) {
+  //   label = "nein"; // German
+  // } else if (langId === 3) {
+  //   label = "no"; // Spanish
+  // } else {
+  //   label = "no"; // English (default)
+  // }
 
-  let label = "no";
-  if (langId === 2) {
-    label = "nein"; // German
-  } else if (langId === 3) {
-    label = "no"; // Spanish
-  } else {
-    label = "no"; // English (default)
-  }
+  const label = NO_LABEL_BY_LANG[langId] || "No"; // default English
+
   return (
     <div
       style={{
@@ -54,7 +67,7 @@ const styles = {
   },
 
   text: {
-    color:"#002060",
+    color: "#002060",
     cursor: "pointer",
     padding: "5px",
     display: "flex",

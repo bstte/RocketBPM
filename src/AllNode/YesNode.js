@@ -1,16 +1,30 @@
 import React, { memo } from "react";
+const YES_LABEL_BY_LANG = {
+  1: "Yes",      // English
+  2: "Ja",       // German
+  3: "Sí",       // Spanish
+  4: "Oui",      // French
+  5: "Sì",       // Italian
+  6: "Tak",      // Polish
+  7: "Ja",       // Dutch
+  10: "Sim",     // Brazilian Portuguese
+  11: "是",       // Chinese
+};
 
-const YesNode = ({ data,processDefaultlanguage_id }) => {
+const YesNode = ({ data, processDefaultlanguage_id }) => {
   const langId = Number(processDefaultlanguage_id);
 
-  let label = "yes";
-  if (langId === 2) {
-    label = "ja"; // German
-  } else if (langId === 3) {
-    label = "sí"; // Spanish
-  } else {
-    label = "yes"; // English (default)
-  }
+  // let label = "yes";
+  // if (langId === 2) {
+  //   label = "ja"; // German
+  // } else if (langId === 3) {
+  //   label = "sí"; // Spanish
+  // } else {
+  //   label = "yes"; // English (default)
+  // }
+
+  const label = YES_LABEL_BY_LANG[langId] || "Yes"; // default English
+
   return (
     <div
       style={{
@@ -52,7 +66,7 @@ const styles = {
 
   text: {
     cursor: "pointer",
-    color:"#002060",
+    color: "#002060",
     padding: "5px",
     display: "flex",
     alignItems: "center",

@@ -242,7 +242,7 @@ const Setting = () => {
                     setProcessData((prev) => {
                       // Determine default language key
                       const langKey =
-                        langMap[prev.language_id || defaultLanguage] || "en";
+                        langMap[prev.language_id || defaultLanguage] || "EN";
 
                       // Copy existing translations or empty object
                       const updatedTranslations = {
@@ -320,7 +320,7 @@ const Setting = () => {
           </div>
 
 
-          <div style={styles.sectionBox}>
+          {/* <div style={styles.sectionBox}>
             <h4>Allowed Domains</h4>
 
             <input
@@ -348,7 +348,7 @@ const Setting = () => {
                 </span>
               ))}
             </div>
-          </div>
+          </div> */}
         </div>
 
         <div className="ss_sett_delete">

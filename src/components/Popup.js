@@ -15,7 +15,7 @@ const Popup = ({
   moveNode,
 }) => {
   const t = useTranslation();
-  
+
   const container = document.querySelector(".flow-container");
   const rect = container?.getBoundingClientRect();
 

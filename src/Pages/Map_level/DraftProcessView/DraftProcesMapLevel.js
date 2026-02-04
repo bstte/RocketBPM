@@ -155,7 +155,7 @@ const DraftProcesMapLevel = () => {
                     };
                     const res = await contentapproveProcess(payload);
                     if (res.status) {
-                        CustomAlert.success("Approved", "Process approved and published successfully.");
+                        await CustomAlert.success("Approved", "Process approved and published successfully.");
                         window.location.reload();
                     } else {
                         CustomAlert.error("Error", res.message);
@@ -197,7 +197,7 @@ const DraftProcesMapLevel = () => {
                     };
                     const res = await contectCancelPublishing(payload);
                     if (res.status) {
-                        CustomAlert.success("Cancelled", "Publishing cancelled.");
+                        await CustomAlert.success("Cancelled", "Publishing cancelled.");
                         setEditScheduledModalOpen(false);
                         window.location.reload();
                     } else {
@@ -229,8 +229,9 @@ const DraftProcesMapLevel = () => {
             };
             const res = await contentreschedulePublishing(payload);
             if (res.status) {
-                CustomAlert.success("Rescheduled", "Publishing rescheduled.");
                 setEditScheduledModalOpen(false);
+                await CustomAlert.success("Rescheduled", "Publishing rescheduled.");
+
                 window.location.reload();
             } else {
                 CustomAlert.error("Error", res.message);
@@ -260,7 +261,7 @@ const DraftProcesMapLevel = () => {
             // Call the correct API for "Request Change" (Rejection)
             const res = await contentRequestChange(payload);
             if (res.status) {
-                CustomAlert.success("Requested", "Change request sent successfully.");
+                await CustomAlert.success("Requested", "Change request sent successfully.");
                 setRequestChangeModalOpen(false);
                 window.location.reload();
             } else {

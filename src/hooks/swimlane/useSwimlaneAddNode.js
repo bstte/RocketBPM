@@ -69,7 +69,7 @@ export const useSwimlaneAddNode = ({
                     translations:
                         type === "FreeText"
                             ? existingNodeData?.translations || {
-                                [langMapRef.current[Number(processLangRef.current)] || "en"]:
+                                [langMapRef.current[Number(processLangRef.current)] || "EN"]:
                                     label,
                             }
                             : {},

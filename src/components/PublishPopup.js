@@ -42,7 +42,7 @@ const PublishPopup = ({
     }
 
     // Ab revisionData OBJECT hai 🟢
-    const langKey = langMap[selectedLanguage] || "en";
+    const langKey = langMap[selectedLanguage] || "EN";
     setRevisionText(revisionData?.[langKey]?.content || "");
 
   }, [revisionresponse, selectedLanguage]);

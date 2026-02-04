@@ -45,7 +45,7 @@ const DetailsPopup = ({ isOpen, onClose, onSave, Details, supportedLanguages, se
       setTranslations(allTranslations);
 
 
-      const langKey = langMap[selectedLanguage] || "en";
+      const langKey = langMap[selectedLanguage] || "EN";
       setContent(allTranslations[langKey]?.content || "");
     }
 
@@ -67,7 +67,7 @@ const DetailsPopup = ({ isOpen, onClose, onSave, Details, supportedLanguages, se
     setContent(value);
 
     setTranslations((prev) => {
-      const langKey = langMap[selectedLanguage] || "en";
+      const langKey = langMap[selectedLanguage] || "EN";
       return {
         ...prev,
         [langKey]: { ...prev[langKey], content: value },
@@ -215,7 +215,7 @@ const DetailsPopup = ({ isOpen, onClose, onSave, Details, supportedLanguages, se
             setTranslations(values);
 
             // get the current language key
-            const langKey = langMap[selectedLanguage] || "en";
+            const langKey = langMap[selectedLanguage] || "EN";
 
             // update the visible content immediately
             setContent(values[langKey]?.content || "");

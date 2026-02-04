@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
     Box,
     Typography,
@@ -15,10 +15,14 @@ import {
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import { useNavigate } from "react-router-dom";
-import { getManagedProcesses } from "../../../API/api";
+import { getManagedProcesses, checkRecordWithGetLinkDraftData, checkPublishRecord } from "../../../API/api";
+import { useTranslation } from "../../../hooks/useTranslation";
+import { useProcessNavigation } from "../../../hooks/useProcessNavigation";
 
 // Material UI Icon for Approval (Red Arrow)
 import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
+import { BreadcrumbsContext } from "../../../context/BreadcrumbsContext";
+import { buildBreadcrumbs } from "../../../utils/buildBreadcrumbs";
 
 // Helper for formatting dates "Feb 20, 2025"
 const formatDate = (dateString) => {
@@ -32,12 +36,15 @@ const formatDate = (dateString) => {
 };
 
 const ManagedProcessesWidget = ({ userId }) => {
+    const t = useTranslation();
     const [processes, setProcesses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [order, setOrder] = useState("asc");
-    const [orderBy, setOrderBy] = useState("process_name");
+    const [orderBy, setOrderBy] = useState("process_world"); // Default sort by Node Name (Process column)
     const [filterText, setFilterText] = useState("");
-    const navigate = useNavigate();
+    const { goToProcess } = useProcessNavigation();
+
+    const { addBreadcrumb } = useContext(BreadcrumbsContext);
 
     useEffect(() => {
         if (userId) {
@@ -48,6 +55,7 @@ const ManagedProcessesWidget = ({ userId }) => {
     const fetchData = async () => {
         try {
             const response = await getManagedProcesses({ user_id: userId });
+            console.log("managed weight data", response.data);
             if (response.status) {
                 setProcesses(response.data);
             }
@@ -69,7 +77,8 @@ const ManagedProcessesWidget = ({ userId }) => {
     };
 
     const filteredProcesses = processes.filter((row) =>
-        row.process_name.toLowerCase().includes(filterText.toLowerCase())
+        (row.process_world || "").toLowerCase().includes(filterText.toLowerCase()) ||
+        (row.process_name || "").toLowerCase().includes(filterText.toLowerCase())
     );
 
     const sortedProcesses = filteredProcesses.sort((a, b) => {
@@ -82,6 +91,96 @@ const ManagedProcessesWidget = ({ userId }) => {
             return aValue > bValue ? -1 : 1;
         }
     });
+
+    // Navigation Logic matching Dashboard 
+    const handleRowClick = async (row) => {
+        try {
+            const Process_id = row.id;
+            const user_id = userId;
+            const parentNodeId = row.target_node_id; // 👈 parent_id from backend
+
+            const user = { id: user_id, type: "managed_process_click" };
+
+            // 🧠 Level calculate (same as dashboard)
+            // const newLevel = parentNodeId ? 1 : 0;
+
+            const newLevel = parentNodeId?.match(/^level(\d+)/)?.[1]
+                ? parseInt(parentNodeId.match(/^level(\d+)/)[1], 10) + 1
+                : 0;
+            // Level param construction (node based)
+            // const levelParam = newLevel === 0
+            //     ? "level0"
+            //     : `level${newLevel}_${parentNodeId}`;
+
+      const levelParam = `level${newLevel}${parentNodeId ? `_${parentNodeId}` : ""}`;
+            console.log("Navigate:", levelParam, Process_id, parentNodeId);
+
+            const [nodeData, publishdata] = await Promise.all([
+                checkRecordWithGetLinkDraftData(
+                    levelParam,
+                    parseInt(user_id),
+                    Process_id,
+                    parentNodeId
+                ),
+                checkPublishRecord(levelParam, Process_id),
+            ]);
+
+            if (!nodeData?.status) {
+                alert("First create next model of this existing model");
+                return;
+            }
+
+            const processTitle = nodeData.processTitle?.process_title;
+            const TitleTranslation = JSON.parse(
+                nodeData.processTitle?.translations || "{}"
+            );
+
+            // 🌱 Root breadcrumb
+            const state = { Process_id, processTitle, TitleTranslation };
+            const basePath = publishdata.status
+                ? `/published/map/${Process_id}`
+                : `/draft/map/${Process_id}`;
+
+            addBreadcrumb(processTitle, basePath, state);
+
+            // 🌳 Child breadcrumbs (same logic as dashboard)
+            const breadcrumbs = buildBreadcrumbs(
+                nodeData.allNodes,
+                nodeData.ids,
+                Process_id,
+                publishdata.status ? "Publish" : "draft"
+            );
+
+            breadcrumbs.forEach(({ label, path, state }) => {
+                addBreadcrumb(label, path, state);
+            });
+
+            // 🚀 Navigation
+            const mode = publishdata.status ? "published" : "draft";
+            const view =
+                nodeData.Page_Title === "Swimlane" ? "swimlane" : "map";
+
+            if (newLevel === 0) {
+                goToProcess({
+                    mode,
+                    view,
+                    processId: Process_id,
+                });
+            } else {
+                goToProcess({
+                    mode,
+                    view,
+                    processId: Process_id,
+                    level: newLevel,
+                    parentId: parentNodeId,
+                });
+            }
+
+        } catch (error) {
+            console.error("Managed Process Navigation Error:", error);
+        }
+    };
+
 
     return (
         <Box
@@ -113,7 +212,7 @@ const ManagedProcessesWidget = ({ userId }) => {
                         fontSize: "1rem",
                     }}
                 >
-                    <span style={{ fontSize: "1.2rem" }}>★</span> My managed Processes
+                    <span style={{ fontSize: "1.2rem" }}>★</span> {t("my_process_world") || "My managed Processes"}
                 </Typography>
 
                 <TextField
@@ -138,8 +237,8 @@ const ManagedProcessesWidget = ({ userId }) => {
                     <TableHead>
                         <TableRow>
                             {[
-                                { id: "process_name", label: "Process" },
-                                { id: "process_world", label: "Process World" },
+                                { id: "process_world", label: t("Process") || "Process" }, // Node Label in Process Column
+                                { id: "process_name", label: t("process_world") || "Process World" }, // Root Name in PW Column
                                 { id: "roles", label: "My BPM Roles" },
                                 { id: "draft_date", label: "Draft" },
                                 { id: "to_be_published_on", label: "To be published on" },
@@ -182,7 +281,7 @@ const ManagedProcessesWidget = ({ userId }) => {
                         ) : (
                             sortedProcesses.map((row) => (
                                 <TableRow
-                                    key={row.id}
+                                    key={row.unique_key || row.id}
                                     hover
                                     sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
                                 >
@@ -194,11 +293,11 @@ const ManagedProcessesWidget = ({ userId }) => {
                                             cursor: "pointer",
                                             fontWeight: 500,
                                         }}
-                                        onClick={() => navigate(`/process/${row.id}/${row.target_level || 'Level0'}`)}
+                                        onClick={() => handleRowClick(row)}
                                     >
-                                        {row.process_name}
+                                        {row.process_world}
                                     </TableCell>
-                                    <TableCell>{row.process_world}</TableCell>
+                                    <TableCell>{row.process_name}</TableCell>
                                     <TableCell>{row.roles.join(", ")}</TableCell>
                                     <TableCell>{formatDate(row.draft_date)}</TableCell>
                                     <TableCell>{formatDate(row.to_be_published_on)}</TableCell>
@@ -207,7 +306,7 @@ const ManagedProcessesWidget = ({ userId }) => {
                                         {row.todo === "Approval" && (
                                             <Box
                                                 component="span"
-                                                onClick={() => navigate(`/process/${row.id}/${row.target_level || 'Level0'}`)}
+                                                onClick={() => handleRowClick(row)}
                                                 sx={{
                                                     display: "inline-flex",
                                                     alignItems: "center",

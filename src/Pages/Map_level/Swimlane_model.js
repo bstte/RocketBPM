@@ -589,7 +589,7 @@ const SwimlaneModel = () => {
   };
 
   const saveDetails = (details) => {
-    const langKey = langMap[processDefaultlanguage_id] || "en";
+    const langKey = langMap[processDefaultlanguage_id] || "EN";
 
     setChiledNodes((nodes) =>
       nodes.map((node) =>
@@ -1053,7 +1053,7 @@ const SwimlaneModel = () => {
     setHasUnsavedChanges(true);
 
     const currentLangId = processLangRef.current;
-    const langKey = langMapRef.current[Number(currentLangId)] || "en";
+    const langKey = langMapRef.current[Number(currentLangId)] || "EN";
 
     if (selectedNodefreetextId) {
       // Update existing node
@@ -1340,7 +1340,7 @@ const SwimlaneModel = () => {
     data: JSON.parse(item.data), // Parse the data field
   }));
 
-  const langKey = langMap[processDefaultlanguage_id] || "en";
+  const langKey = langMap[processDefaultlanguage_id] || "EN";
 
   const translatedData = parsedData.map((item) => {
     const { translations = {}, label = "" } = item.data || {};
@@ -1427,7 +1427,7 @@ const SwimlaneModel = () => {
       nds.map((node) => {
         if (node.id !== nodeId) return node;
 
-        const langKey = langMap[processDefaultlanguage_id] || "en";
+        const langKey = langMap[processDefaultlanguage_id] || "EN";
         const newLabel =
           translations[langKey] || node.data.label || node.data?.details?.title;
 
@@ -1672,7 +1672,8 @@ const SwimlaneModel = () => {
         savefav={handleFav}
         title={headerTitle}
         onSave={handleSaveNodes}
-        onPublish={handleSavePublish}
+        // onPublish={handleSavePublish}
+        onPublish={() => handleSaveNodes("Published")}
         addNode={addNode}
         handleBackdata={handleExitBack}
         iconNames={iconNames}

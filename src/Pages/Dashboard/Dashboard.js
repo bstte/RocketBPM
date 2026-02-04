@@ -720,7 +720,7 @@ const Dashboard = () => {
               <img src="../../../img/two-fingers.svg" alt="" /> {t("Welcome")},{" "}
               {user?.first_name}!
             </h4>
-            <button
+            {/* <button
               onClick={async () => {
                 try {
                   const res = await contectCronPublish();
@@ -747,7 +747,7 @@ const Dashboard = () => {
               }}
             >
               TEST CRON PUBLISH
-            </button>
+            </button> */}
             <div className="ss_dash_sec_2_img">
               <iframe
                 className="video"
@@ -780,7 +780,7 @@ const Dashboard = () => {
 
                     let translatedLabel = null;
 
-                    const langKey = langMap[item.process.language_id] || "en";
+                    const langKey = langMap[item.process.language_id] || "EN";
                     // console.log("langKey", langKey)
                     if (item.process && item.node) {
                       try {
@@ -837,7 +837,7 @@ const Dashboard = () => {
 
         </div>
         {/* Managed Processes Widget */}
-        {user?.id && <ManagedProcessesWidget userId={user.id} />}
+         {/* {user?.id && <ManagedProcessesWidget userId={user.id} />} */}
       </div>
     </div>
   );

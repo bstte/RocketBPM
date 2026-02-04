@@ -10,7 +10,7 @@ export const useLabelChange = (setNodes, setHasUnsavedChanges = null, processLan
           // ⚡ For Edit Mode (multi-language)
           if (processLangRef && langMapRef) {
             const currentLangId = processLangRef.current;
-            const langKey = langMapRef.current[Number(currentLangId)] || "en";
+            const langKey = langMapRef.current[Number(currentLangId)] || "EN";
 
             return {
               ...node,

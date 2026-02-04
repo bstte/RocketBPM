@@ -211,7 +211,7 @@ const MoveNodePopup = ({ isOpen, onClose, onMove, ProcessId, userId, currentPare
         data: typeof item.data === 'string' ? JSON.parse(item.data) : item.data,
     }));
 
-    const langKey = langMap[processDefaultlanguage_id] || "en";
+    const langKey = langMap[processDefaultlanguage_id] || "EN";
 
     const translatedData = parsedData.map((item) => {
         const { translations = {}, label = "" } = item.data || {};

@@ -43,7 +43,7 @@ export default function TranslationTextAreaPopup({
   const langMap = useLangMap(); // same hook used in first component
   const [values, setValues] = useState({});
   const firstInputRef = useRef(null);
- const t = useTranslation();
+  const t = useTranslation();
   // create default structure dynamically
   useEffect(() => {
     if (isOpen) {
@@ -88,7 +88,7 @@ export default function TranslationTextAreaPopup({
 
   return (
     <div style={overlayStyle} onMouseDown={handleOverlayClick} className="translate_popup_swimlane">
-      <div className="global_popup_modal" role="dialog" aria-modal="true" aria-label={title}>
+      <div className="global_popup_modal" role="dialog" aria-modal="true" aria-label={title} style={{ maxHeight: "60vh", overflowY: "auto" }}>
         {/* Header */}
         <div
           style={{
@@ -143,7 +143,7 @@ export default function TranslationTextAreaPopup({
           }}
         >
           <button onClick={onClose} className="global-btn">
-           {t("Cancel")}
+            {t("Cancel")}
           </button>
           <button onClick={handleSubmit} className="global-btn">
             {t("Save")}
