@@ -52,6 +52,13 @@ const PublishPopup = ({
   // 👉 NEXT button disabled logic
   const isNextDisabled = !classificationChange && !editorialChange;
 
+  const isQuillEmpty = (value) => {
+    if (!value) return true;
+    const text = value.replace(/<(.|\n)*?>/g, "").trim();
+    return text.length === 0;
+  };
+
+
   return (
     <Modal modalStyle={{ width: "500px" }} >
 
@@ -77,7 +84,7 @@ const PublishPopup = ({
 
       <h3 style={styles.subheading}>Classification of Changes:</h3>
       <div style={styles.checkboxGroup}>
-        <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
+        {/* <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
           <input
             type="radio"
             name="changeType"
@@ -88,7 +95,7 @@ const PublishPopup = ({
             }}
           />
           Content Change
-        </label>
+        </label> */}
 
         <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
           <input
@@ -113,19 +120,26 @@ const PublishPopup = ({
         <button
           className="popup-button save"
           style={{
-            background: isNextDisabled ? "#c4c4c4" : "#007bff",
+            // background: isNextDisabled ? "#c4c4c4" : "#007bff",
             cursor: isNextDisabled ? "not-allowed" : "pointer"
           }}
           disabled={isNextDisabled}
-          onClick={() =>
+
+
+          onClick={() => {
+            if (isQuillEmpty(revisionText)) {
+              alert("Revision info is required");
+              return;
+            }
+
             onNext({
               revisionText,
               classificationChange,
               editorialChange
-            })
-          }
+            });
+          }}
         >
-          Next →
+          Next
         </button>
       </div>
 

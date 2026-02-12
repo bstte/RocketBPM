@@ -686,7 +686,7 @@ const SwimlaneModel = () => {
   };
 
   const handleNodeRightClick = (event, node) => {
-    // console.log("node id", node);
+    console.log("node id", node);
     setSelectedEdge(null);
     if (node.page_title === "Swimlane") {
       setOptions([]);
@@ -749,7 +749,7 @@ const SwimlaneModel = () => {
 
       // Add "Add Role Group" if vertical header
       if (col === 0 && row < 6) {
-        setOptions(prev => [...prev, { label: "Add Role Group", value: "Add Role Group" }]);
+        // setOptions(prev => [...prev, { label: "Add Role Group", value: "Add Role Group" }]);
       }
     }
   };
@@ -759,7 +759,8 @@ const SwimlaneModel = () => {
 
     // Check if we are editing an existing node
     const isEditing = selectedNode?.data?.isRoleGroup;
-
+    console.log("selectedNodeId", selectedNodeId)
+    console.log("selectedNode", selectedNode)
     const newNodeData = {
       label: data.groupName,
       isRoleGroup: true,
@@ -771,17 +772,17 @@ const SwimlaneModel = () => {
       }
     };
 
-    if (isEditing) {
-      setChiledNodes((nds) =>
-        nds.map((node) =>
-          node.id === selectedNode.id ? { ...node, data: { ...node.data, ...newNodeData } } : node
-        )
-      );
-      setHasUnsavedChanges(true);
-      CustomAlert.success("Updated", "Role Group updated successfully.");
-    } else {
-      addNode("SwimlineRightsideBox", "", "", newNodeData);
-    }
+    // if (isEditing) {
+    //   setChiledNodes((nds) =>
+    //     nds.map((node) =>
+    //       node.id === selectedNode.id ? { ...node, data: { ...node.data, ...newNodeData } } : node
+    //     )
+    //   );
+    //   setHasUnsavedChanges(true);
+    //   CustomAlert.success("Updated", "Role Group updated successfully.");
+    // } else {
+    //   addNode("SwimlineRightsideBox", "", "", newNodeData);
+    // }
   };
 
   const switchNodeType = (type) => {
@@ -1215,11 +1216,11 @@ const SwimlaneModel = () => {
 
     ...(detailschecking?.type === "SwimlineRightsideBox"
       ? [
-        {
-          label: "Assign Role Owner",
-          action: () => handleAssignOwnerAction(detailschecking),
-          borderBottom: true,
-        },
+        // {
+        //   label: "Assign Role Owner",
+        //   action: () => handleAssignOwnerAction(detailschecking),
+        //   borderBottom: true,
+        // },
         ...(detailschecking?.data?.isRoleGroup ? [
           {
             label: "Manage Role Group",
@@ -1552,6 +1553,15 @@ const SwimlaneModel = () => {
   });
 
   const handleSavePublish = async () => {
+    try {
+      const response = await filter_draft(ParentPageGroupId);
+      if (response.data === true) {
+        alert("Publish all parent models first");
+        return false;
+      }
+    } catch (error) {
+      console.error("filter draft error", error);
+    }
     const latestData = await refetch();
     const contact = latestData?.contact_info;
     // console.log("responseData", revisionresponse)
@@ -1672,8 +1682,8 @@ const SwimlaneModel = () => {
         savefav={handleFav}
         title={headerTitle}
         onSave={handleSaveNodes}
-        // onPublish={handleSavePublish}
-        onPublish={() => handleSaveNodes("Published")}
+        onPublish={handleSavePublish}
+        // onPublish={() => handleSaveNodes("Published")}
         addNode={addNode}
         handleBackdata={handleExitBack}
         iconNames={iconNames}

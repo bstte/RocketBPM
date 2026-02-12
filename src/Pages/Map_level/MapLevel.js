@@ -357,6 +357,15 @@ const MapLevel = () => {
   });
 
   const handleSavePublish = async () => {
+    try {
+      const response = await filter_draft(state.ParentPageGroupId);
+      if (response.data === true) {
+        alert("Publish all parent models first");
+        return false;
+      }
+    } catch (error) {
+      console.error("filter draft error", error);
+    }
     const latestData = await refetch();
     const contact = latestData?.contact_info;
     if (!contact || Object.values(contact).every(list => !list || list.length === 0)) {

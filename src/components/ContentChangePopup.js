@@ -74,7 +74,7 @@ const ContentChangePopup = ({
     };
 
 
-    // MATCH actual user details from assigned_users
+    // MATCH actual user  from assigned_users
     const processOwnerId =
         revisionresponse?.contact_info?.domain_owner?.[0] ||
         revisionresponse?.contact_info?.owner?.[0] ||

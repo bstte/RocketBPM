@@ -13,7 +13,7 @@ const ManageRoleGroupModal = ({ isOpen, onClose, onSave, initialData, supportedL
     const [translationTarget, setTranslationTarget] = useState(null); // 'group' or { roleId: ... }
 
     const langKey = langMap[selectedLanguage] || "EN";
-    console.log("node initialData 123", initialData);
+    // console.log("node initialData 123", initialData);
     const isRoleSelected = (role) => {
         const roleId = role.node_id || role.id;
         return selectedRoles.some(r => r.id === roleId);

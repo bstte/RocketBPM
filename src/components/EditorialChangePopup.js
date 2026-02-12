@@ -112,7 +112,7 @@ const EditorialChangePopup = ({ isOpen, onBack, onPublish }) => {
                 <button
                     className="popup-button save"
                     style={{
-                        background: selectedOption ? "#28a745" : "#c4c4c4",
+                        // background: selectedOption ? "#28a745" : "#c4c4c4",
                         cursor: selectedOption ? "pointer" : "not-allowed",
                     }}
                     disabled={!selectedOption}
