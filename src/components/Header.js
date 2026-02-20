@@ -168,9 +168,9 @@ const Header = ({
   }, []);
   const languageKey = langMap[selectedLanguage] || "loading...";
   const ORIGlanguageKey = langMap[OriginalDefaultlanguge_id] || "loading...";
-  console.log("languageKey", languageKey);
-  console.log("ORIGlanguageKey", ORIGlanguageKey);
-  console.log("header breadcrumbs", breadcrumbs);
+  // console.log("languageKey", languageKey);
+  // console.log("ORIGlanguageKey", ORIGlanguageKey);
+  // console.log("header breadcrumbs", breadcrumbs);
 
   return (
     <>

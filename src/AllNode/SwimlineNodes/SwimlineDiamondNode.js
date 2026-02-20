@@ -21,25 +21,25 @@ const SwimlineDiamondNode = ({ data }) => {
   //   }
   // }, [autoFocus]);
 
-   useEffect(() => {
-      if (autoFocus && titleRef.current) {
-        setTimeout(() => {
-          const el = titleRef.current;
-          el.focus();
-  
-          // Move caret to the end of the content
-          const range = document.createRange();
-          range.selectNodeContents(el);
-          range.collapse(false);
-          const selection = window.getSelection();
-          selection.removeAllRanges();
-          selection.addRange(range);
-  
-          setAutoFocus(false);
-        }, 0);
-      }
-    }, [autoFocus]);
-  
+  useEffect(() => {
+    if (autoFocus && titleRef.current) {
+      setTimeout(() => {
+        const el = titleRef.current;
+        el.focus();
+
+        // Move caret to the end of the content
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        range.collapse(false);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        setAutoFocus(false);
+      }, 0);
+    }
+  }, [autoFocus]);
+
 
   const handleChange = (e) => {
     setTitle(e.target.value);
@@ -50,32 +50,29 @@ const SwimlineDiamondNode = ({ data }) => {
 
 
 
-   const handleBoxClick = () => {
-    if (titleRef.current) {
-      setTimeout(() => {
-        const el = titleRef.current;
-        el.focus();
+  const handleBoxClick = (e) => {
+    // If the click is already on the ContentEditable, don't do anything
+    if (e.target.classList.contains("nodrag")) {
+      return;
+    }
 
-        const range = document.createRange();
-        range.selectNodeContents(el);
-        range.collapse(false); // Move caret to end
-        const selection = window.getSelection();
-        selection.removeAllRanges();
-        selection.addRange(range);
-      }, 0);
+    if (titleRef.current && document.activeElement !== titleRef.current) {
+      titleRef.current.focus();
+
+      // Only move to end if we are explicitly focusing via click on the DIAMOND (not text)
+      const el = titleRef.current;
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      range.collapse(false);
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
     }
   };
 
   const handleFocus = (e) => {
-    const selection = window.getSelection();
-    const range = document.createRange();
-
-    if (e.target.firstChild) {
-      range.setStart(e.target.firstChild, e.target.selectionStart || 0);
-      range.collapse(true);
-      selection.removeAllRanges();
-      selection.addRange(range);
-    }
+    // Prevent focus event from bubbling up and triggering parent handlers unnecessarily
+    e.stopPropagation();
   };
 
   const handleBlur = () => { };
@@ -89,7 +86,7 @@ const SwimlineDiamondNode = ({ data }) => {
     >
       {/* Diamond Shape */}
       <div style={styles.diamondWrapper} className="diamond_Wrapper">
-        <div style={{ ...styles.diamond, width: nodebgheights-10, height: nodebgheights-10}} className="diamond_header">
+        <div style={{ ...styles.diamond, width: nodebgheights - 10, height: nodebgheights - 10 }} className="diamond_header">
           <ContentEditable
             innerRef={titleRef}
             html={title}
@@ -100,28 +97,30 @@ const SwimlineDiamondNode = ({ data }) => {
             }
             placeholder="Type title here..."
             style={styles.title}
+            className="nodrag"
+            onClick={(e) => e.stopPropagation()}
           />
-          
+
         </div>
-        <Handle className="topdot_edit" type="target" position={Position.Top} id="top-target" style={isHovered ? styles.hoverhandle : {...styles.handle}} />
-          <Handle className="topdot_edit" type="source" position={Position.Top} id="top-source" style={isHovered ? styles.hoverhandle : {...styles.handle}} />
+        <Handle className="topdot_edit" type="target" position={Position.Top} id="top-target" style={isHovered ? styles.hoverhandle : { ...styles.handle }} />
+        <Handle className="topdot_edit" type="source" position={Position.Top} id="top-source" style={isHovered ? styles.hoverhandle : { ...styles.handle }} />
 
-          <Handle className="bottomdot_edit" type="target" position={Position.Bottom} id="bottom-target" style={isHovered ? styles.hoverhandle :  {...styles.handle}} />
-          <Handle className="bottomdot_edit" type="source" position={Position.Bottom} id="bottom-source" style={isHovered ? styles.hoverhandle :  {...styles.handle}} />
+        <Handle className="bottomdot_edit" type="target" position={Position.Bottom} id="bottom-target" style={isHovered ? styles.hoverhandle : { ...styles.handle }} />
+        <Handle className="bottomdot_edit" type="source" position={Position.Bottom} id="bottom-source" style={isHovered ? styles.hoverhandle : { ...styles.handle }} />
 
-          <Handle className="leftdot_edit" type="target" position={Position.Left} id="left-target"
-            style={isHovered ? { ...styles.hoverhandle } : { ...styles.handle }}
-          />
-          <Handle className="leftdot_edit" type="source" position={Position.Left} id="left-source" style={isHovered ? { ...styles.hoverhandle } : { ...styles.handle }} />
+        <Handle className="leftdot_edit" type="target" position={Position.Left} id="left-target"
+          style={isHovered ? { ...styles.hoverhandle } : { ...styles.handle }}
+        />
+        <Handle className="leftdot_edit" type="source" position={Position.Left} id="left-source" style={isHovered ? { ...styles.hoverhandle } : { ...styles.handle }} />
 
-          <Handle className="rightdot_edit" type="target" position={Position.Right} id="right-target"
-            style={isHovered ? { ...styles.hoverhandle } : { ...styles.handle }}
-          />
-          <Handle className="rightdot_edit" type="source" position={Position.Right} id="right-source" style={isHovered ? { ...styles.hoverhandle } : { ...styles.handle }} />
+        <Handle className="rightdot_edit" type="target" position={Position.Right} id="right-target"
+          style={isHovered ? { ...styles.hoverhandle } : { ...styles.handle }}
+        />
+        <Handle className="rightdot_edit" type="source" position={Position.Right} id="right-source" style={isHovered ? { ...styles.hoverhandle } : { ...styles.handle }} />
       </div>
 
 
-      
+
     </div>
   );
 };
@@ -157,6 +156,8 @@ const styles = {
     transform: "rotate(-45deg)",
     fontSize: "1rem",
     fontFamily: "'Poppins', sans-serif",
+    lineHeight: "1.1",
+    wordBreak: "break-word",
     textAlign: "center",
     background: "transparent",
     border: "none",

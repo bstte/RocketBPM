@@ -14,7 +14,7 @@ const SwimlineDiamondNode = ({ data }) => {
   // const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   const [popupSize, setPopupSize] = useState({ width: 600, height: 450 });
   const titleRef = useRef(null);
- const t = useTranslation();
+  const t = useTranslation();
   const handleBoxClick = () => {
     if (titleRef.current) {
       // const { top, left } = titleRef.current.getBoundingClientRect();
@@ -47,7 +47,7 @@ const SwimlineDiamondNode = ({ data }) => {
 
 
   const renderPopup = () => (
-    <Draggable   handle=".popupHeader"
+    <Draggable handle=".popupHeader"
       bounds=".scrollbar_wrapper"
       cancel=".popupContent_content">
       <ResizableBox
@@ -56,12 +56,12 @@ const SwimlineDiamondNode = ({ data }) => {
         minConstraints={[300, 200]}
         maxConstraints={[800, 600]}
         onResizeStop={(e, { size }) => setPopupSize(size)}
-     style={{
+        style={{
           position: "absolute",
           top: "12%",
           left: "30%",
           right: "0",
-   
+
           transform: "translate(-50%, 0)",
           backgroundColor: "#ffffff",
           border: "1px solid #011f60",
@@ -76,9 +76,9 @@ const SwimlineDiamondNode = ({ data }) => {
               {/* {data.details.title} */}
               {data.details.title?.replace(/<br\s*\/?>/gi, " ").replace(/&nbsp;/g, " ") || ""}
 
-              </h3>
+            </h3>
             <button style={styles.closeButton} onClick={handleClosePopup}>
-             {t("CLOSE")}  
+              {t("CLOSE")}
             </button>
           </div>
           <div
@@ -103,9 +103,9 @@ const SwimlineDiamondNode = ({ data }) => {
       >
         {/* Diamond Shape */}
         <div style={styles.diamondWrapper} className="diamond_Wrapper">
-          <div style={{ ...styles.diamond, width: nodebgheights-10, height: nodebgheights-10 }} className="diamond_header">
+          <div style={{ ...styles.diamond, width: nodebgheights - 10, height: nodebgheights - 10 }} className="diamond_header">
             <div ref={titleRef} style={styles.title}>
-            {data.details.title?.replace(/<br\s*\/?>/gi, " ").replace(/&nbsp;/g, " ") || ""}
+              {data.details.title?.replace(/<br\s*\/?>/gi, " ").replace(/&nbsp;/g, " ") || ""}
             </div>
           </div>
           <Handle className="topdot" type="target" position={Position.Top} id="top-target" style={styles.handle} />
@@ -126,10 +126,10 @@ const SwimlineDiamondNode = ({ data }) => {
         data.details.title &&
         ReactDOM.createPortal(renderPopup(), document.body)} */}
 
-          {isPopupVisible &&
-                data.details.title &&
-                container &&
-                ReactDOM.createPortal(renderPopup(), container)}
+      {isPopupVisible &&
+        data.details.title &&
+        container &&
+        ReactDOM.createPortal(renderPopup(), container)}
     </>
   );
 };
@@ -160,12 +160,14 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    
+
   },
   title: {
     transform: "rotate(-45deg)",
     fontSize: "1rem",
     fontFamily: "'Poppins', sans-serif",
+    lineHeight: "1.1",
+    wordBreak: "break-word",
     textAlign: "center",
     background: "transparent",
     padding: "0",

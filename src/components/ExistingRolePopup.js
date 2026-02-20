@@ -1,3 +1,5 @@
+import React, { useEffect, useRef } from 'react';
+
 const ExistingRolePopup = ({
   isOpen,
   t,
@@ -10,6 +12,16 @@ const ExistingRolePopup = ({
   onSelect,
   onSave,
 }) => {
+  const searchInputRef = useRef(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      setTimeout(() => {
+        searchInputRef.current?.focus();
+      }, 100);
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
@@ -20,6 +32,7 @@ const ExistingRolePopup = ({
 
       <input
         type="text"
+        ref={searchInputRef}
         style={styles.searchInput}
         placeholder={t("search")}
         value={searchQuery}
@@ -44,8 +57,8 @@ const ExistingRolePopup = ({
                 (e.currentTarget.style.backgroundColor = "#e6f7ff")
               }
               onMouseLeave={(e) =>
-                (e.currentTarget.style.backgroundColor =
-                  isSelected ? "#f0f8ff" : "transparent")
+              (e.currentTarget.style.backgroundColor =
+                isSelected ? "#f0f8ff" : "transparent")
               }
             >
               {title}

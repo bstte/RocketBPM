@@ -12,31 +12,31 @@ const SwimlineRightsideBox = ({ data, processDefaultlanguage_id, langMap }) => {
     setTitle(data.details?.title || data.label || "");
   }, [data.details?.title, data.label]);
 
- useEffect(() => {
-  if (!autoFocus) return;
-
-  const el = contentEditableRef.current;
-  if (!el) return;
-
-  requestAnimationFrame(() => {
-    if (!contentEditableRef.current) return;
+  useEffect(() => {
+    if (!autoFocus) return;
 
     const el = contentEditableRef.current;
-    el.focus();
+    if (!el) return;
 
-    const range = document.createRange();
-    range.selectNodeContents(el);
-    range.collapse(false);
+    requestAnimationFrame(() => {
+      if (!contentEditableRef.current) return;
 
-    const selection = window.getSelection();
-    if (selection) {
-      selection.removeAllRanges();
-      selection.addRange(range);
-    }
+      const el = contentEditableRef.current;
+      el.focus();
 
-    setAutoFocus(false);
-  });
-}, [autoFocus]);
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      range.collapse(false);
+
+      const selection = window.getSelection();
+      if (selection) {
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }
+
+      setAutoFocus(false);
+    });
+  }, [autoFocus]);
 
 
   const handleChange = (e) => {
@@ -47,46 +47,34 @@ const SwimlineRightsideBox = ({ data, processDefaultlanguage_id, langMap }) => {
   };
 
 
-const handleBoxClick = () => {
-  requestAnimationFrame(() => {
-    const el = contentEditableRef.current;
-    if (!el) return;
+  const handleBoxClick = (e) => {
+    // If the click is already on the ContentEditable, don't do anything
+    if (e.target.classList.contains("nodrag")) {
+      return;
+    }
 
-    el.focus();
+    if (contentEditableRef.current && document.activeElement !== contentEditableRef.current) {
+      contentEditableRef.current.focus();
 
-    const range = document.createRange();
-    range.selectNodeContents(el);
-    range.collapse(false);
-
-    const selection = window.getSelection();
-    if (selection) {
+      // Only move to end if we are explicitly focusing via click on the BOX (not text)
+      const el = contentEditableRef.current;
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      range.collapse(false);
+      const selection = window.getSelection();
       selection.removeAllRanges();
       selection.addRange(range);
     }
-  });
-};
-
-
-  const handleBlur = () => {
-    // if (data.onLabelChange) {
-    //   data.onLabelChange(title);
-    // }
   };
 
-const handleFocus = () => {
-  const el = contentEditableRef.current;
-  if (!el) return;
+  const handleFocus = (e) => {
+    // Prevent focus event from bubbling up and triggering parent handlers unnecessarily
+    e.stopPropagation();
+  };
 
-  const range = document.createRange();
-  range.selectNodeContents(el);
-  range.collapse(false);
-
-  const selection = window.getSelection();
-  if (selection) {
-    selection.removeAllRanges();
-    selection.addRange(range);
-  }
-};
+  const handleBlur = () => {
+    // No-op for now
+  };
 
   return (
     <div
@@ -107,9 +95,11 @@ const handleFocus = () => {
           html={title}
           onFocus={handleFocus}
           onChange={(e) => handleChange({ target: { value: e.target.value } })}
-             onBlur={handleBlur}
+          onBlur={handleBlur}
           placeholder="Type ..."
           style={styles.contentEditable}
+          className="nodrag"
+          onClick={(e) => e.stopPropagation()}
         />
       </div>
       {data.isRoleGroup && isHovered && data.roles && (
@@ -150,6 +140,7 @@ const styles = {
     border: 'none',
     color: 'white',
     fontSize: '12px',
+    lineHeight: '1.1',
     width: '100%',
     outline: 'none',
     textAlign: 'center',
@@ -158,7 +149,7 @@ const styles = {
     fontFamily: "'Poppins', sans-serif",
     minHeight: '20px',
   },
- 
+
 };
 
 const BoxNodeWithPlaceholder = (props) => (

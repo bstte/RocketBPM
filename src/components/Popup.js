@@ -110,7 +110,7 @@ const Popup = ({
           </button>
 
           <button onClick={moveNode} style={styles.popupButton}>
-            {t("move model to another process map")}
+            {t("move_model_to_another_process_map")}
           </button>
 
           <button onClick={deleteNode} style={styles.popupButton}>

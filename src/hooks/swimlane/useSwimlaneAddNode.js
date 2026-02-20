@@ -100,6 +100,7 @@ export const useSwimlaneAddNode = ({
                 type: type,
                 position: position,
                 draggable: true,
+                zIndex: 10,
                 isNew: true,
                 animated: true,
                 page_title: "Swimlane",

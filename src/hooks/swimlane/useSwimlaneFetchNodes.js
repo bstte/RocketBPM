@@ -49,8 +49,8 @@ export const useSwimlaneFetchNodes = ({
             language_id,
             mode === "edit" ? "Editmode" : undefined,
         ]);
-       
 
+        console.log("swimlne data", data)
         if (Process_id && data?.nodes?.[0]?.page_group_id) {
             const dates = await getProcessDates(Process_id, data?.nodes[0].page_group_id);
             setgetPublishedDate?.(dates.publishedDate);
@@ -88,7 +88,7 @@ export const useSwimlaneFetchNodes = ({
                 handleLabelChange,
                 getLevelKey
             });
-             console.log("edit result", result)
+            console.log("edit result", result)
         } else if (mode === "publish") {
             result = await processPublishNodes({
                 data,
@@ -106,7 +106,7 @@ export const useSwimlaneFetchNodes = ({
                 getLevelKey
             });
 
-             console.log("draft result", result)
+            console.log("draft result", result)
         }
         setChiledNodes(result.parsedNodes);
         setEdges(result.parsedEdges);

@@ -32,35 +32,32 @@ const BoxNode = ({ data }) => {
     }
   }, [autoFocus]);
 
-  const handleBoxClick = () => {
-    if (boxRef.current) {
-      setTimeout(() => {
-        const el = boxRef.current;
-        el.focus();
-
-        const range = document.createRange();
-        range.selectNodeContents(el);
-        range.collapse(false); // Move caret to end
-        const selection = window.getSelection();
-        selection.removeAllRanges();
-        selection.addRange(range);
-      }, 0);
+  const handleBoxClick = (e) => {
+    // If the click is already on the ContentEditable, don't do anything
+    if (e.target.classList.contains("nodrag")) {
+      return;
     }
-  };
 
-  const handleFocus = (e) => {
-    const selection = window.getSelection();
-    const range = document.createRange();
+    if (boxRef.current && document.activeElement !== boxRef.current) {
+      boxRef.current.focus();
 
-    if (e.target.firstChild) {
-      range.setStart(e.target.firstChild, e.target.selectionStart || 0);
-      range.collapse(true);
+      // Only move to end if we are explicitly focusing via click on the BOX (not text)
+      const el = boxRef.current;
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      range.collapse(false);
+      const selection = window.getSelection();
       selection.removeAllRanges();
       selection.addRange(range);
     }
   };
 
-  const handleBlur = () => {};
+  const handleFocus = (e) => {
+    // Prevent focus event from bubbling up and triggering parent handlers unnecessarily
+    e.stopPropagation();
+  };
+
+  const handleBlur = () => { };
 
   const handleChange = (e) => {
     setTitle(e.target.value);
@@ -86,6 +83,8 @@ const BoxNode = ({ data }) => {
           onChange={(e) => handleChange({ target: { value: e.target.value } })}
           placeholder="Type title here..."
           style={styles.label}
+          className="nodrag"
+          onClick={(e) => e.stopPropagation()}
         />
       </div>
 
@@ -128,10 +127,10 @@ const BoxNode = ({ data }) => {
             style={
               isHovered
                 ? {
-                    ...styles.hoverhandle,
-                    bottom: "0px",
-                    left: `${leftOffset}%`,
-                  }
+                  ...styles.hoverhandle,
+                  bottom: "0px",
+                  left: `${leftOffset}%`,
+                }
                 : { ...styles.handle, bottom: "0px", left: `${leftOffset}%` }
             }
           />
@@ -144,10 +143,10 @@ const BoxNode = ({ data }) => {
             style={
               isHovered
                 ? {
-                    ...styles.hoverhandle,
-                    bottom: "0px",
-                    left: `${leftOffset}%`,
-                  }
+                  ...styles.hoverhandle,
+                  bottom: "0px",
+                  left: `${leftOffset}%`,
+                }
                 : { ...styles.handle, bottom: "0px", left: `${leftOffset}%` }
             }
           />
@@ -219,6 +218,9 @@ const styles = {
   label: {
     fontSize: "12px",
     fontFamily: "'Poppins', sans-serif",
+    lineHeight: "1.1",
+    padding: "2px",
+    wordBreak: "break-word",
     background: "transparent",
     border: "none",
     outline: "none",

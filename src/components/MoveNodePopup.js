@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from "../API/api";
 import { useLangMap } from '../hooks/useLangMap';
+import { useTranslation } from '../hooks/useTranslation';
 
 const TreeNode = ({ node, level, onToggle, selectedId }) => {
     const isSelected = selectedId === node.node_id;
@@ -123,14 +124,16 @@ const MoveNodePopup = ({ isOpen, onClose, onMove, ProcessId, userId, currentPare
     const [loading, setLoading] = useState(false);
     const [selectedTarget, setSelectedTarget] = useState(null);
     const [searchQuery, setSearchQuery] = useState("");
+    const [processDetails, setProcessDetails] = useState(null);
     const langMap = useLangMap();
-
+    const t = useTranslation();
     // Fetch process maps on open
     useEffect(() => {
         if (isOpen) {
             fetchProcessMaps();
             setSearchQuery("");
             setSelectedTarget(null);
+            setProcessDetails(null);
         }
     }, [isOpen]);
 
@@ -141,6 +144,9 @@ const MoveNodePopup = ({ isOpen, onClose, onMove, ProcessId, userId, currentPare
                 parseInt(userId),
                 ProcessId
             );
+
+            // Store process details for the Root label
+            setProcessDetails(data.process_details);
 
             let candidates = data.nodes.filter(
                 (node) => node.type !== "StickyNote" && node.node_id !== currentParentId
@@ -192,11 +198,15 @@ const MoveNodePopup = ({ isOpen, onClose, onMove, ProcessId, userId, currentPare
     const handleMoveClick = () => {
         if (!selectedTarget) return;
 
-        const targetLevelStr = selectedTarget.level || 'level0';
-        const match = targetLevelStr.match(/level(\d+)/);
-        const currentDepth = match ? parseInt(match[1], 10) : 0;
-        const nextDepth = currentDepth + 1;
-        const nextLevelKey = `level${nextDepth}_${selectedTarget.node_id}`;
+        let nextLevelKey = 'level0';
+        // If not root, calculate the subprocess levelKey
+        if (!selectedTarget.isRoot) {
+            const targetLevelStr = selectedTarget.level || 'level0';
+            const match = targetLevelStr.match(/level(\d+)/);
+            const currentDepth = match ? parseInt(match[1], 10) : 0;
+            const nextDepth = currentDepth + 1;
+            nextLevelKey = `level${nextDepth}_${selectedTarget.node_id}`;
+        }
 
         const movePayload = {
             processId: selectedTarget.process_id,
@@ -206,12 +216,12 @@ const MoveNodePopup = ({ isOpen, onClose, onMove, ProcessId, userId, currentPare
         onMove(movePayload);
     };
 
+    const langKey = langMap[processDefaultlanguage_id] || "EN";
+
     const parsedData = processes.map((item) => ({
         ...item,
         data: typeof item.data === 'string' ? JSON.parse(item.data) : item.data,
     }));
-
-    const langKey = langMap[processDefaultlanguage_id] || "EN";
 
     const translatedData = parsedData.map((item) => {
         const { translations = {}, label = "" } = item.data || {};
@@ -231,32 +241,71 @@ const MoveNodePopup = ({ isOpen, onClose, onMove, ProcessId, userId, currentPare
         item.data.label && item.data.label.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    // Build Tree
+    // Build tree including the Process Root
     const buildTree = (nodes) => {
         const nodeMap = {};
         const roots = [];
 
-        // Initialize map
+        // 1. Create the virtual Process Root map (Always show it as a target)
+        let rootLabel = "Root Map";
+        let processInternalId = ProcessId;
+
+        if (processDetails) {
+            rootLabel = processDetails.process_title || "Root Map";
+            processInternalId = processDetails.id;
+            try {
+                const translations = typeof processDetails.translations === 'string'
+                    ? JSON.parse(processDetails.translations)
+                    : processDetails.translations;
+                if (translations && translations[langKey]) {
+                    rootLabel = translations[langKey];
+                }
+            } catch (e) {
+                console.error("Error parsing process translations", e);
+            }
+        }
+
+        const rootNode = {
+            node_id: `root_${processInternalId}`,
+            isRoot: true,
+            process_id: parseFloat(processInternalId),
+            data: { label: rootLabel },
+            children: []
+        };
+        roots.push(rootNode);
+
+        // Initialize node map
         nodes.forEach(node => {
-            node.children = [];
-            nodeMap[node.node_id] = node;
+            const clonedNode = { ...node, children: [] };
+            nodeMap[node.node_id] = clonedNode;
         });
 
+        // 2. Nest nodes
         nodes.forEach(node => {
+            const currentMappedNode = nodeMap[node.node_id];
             const levelStr = node.level || "";
-            // Regex to extract everything after the first underscore: level{N}_{ParentID}
+            // match[1] contains the Parent ID for levelN_ParentID
             const match = levelStr.match(/^level\d+_(.+)$/);
 
             let parentId = null;
             if (match) {
-                // match[1] contains the Parent ID
                 parentId = match[1];
             }
 
             if (parentId && nodeMap[parentId]) {
-                nodeMap[parentId].children.push(node);
+                nodeMap[parentId].children.push(currentMappedNode);
+            } else if (levelStr === 'level0' || !parentId || levelStr === "") {
+                // Nodes on level0 OR nodes with no parent prefix (usually level0) go under Process Root
+                if (roots.length > 0) {
+                    roots[0].children.push(currentMappedNode);
+                } else {
+                    roots.push(currentMappedNode);
+                }
             } else {
-                roots.push(node);
+                // Fallback for any other nodes that didn't find a parent in the current set
+                if (!roots.includes(currentMappedNode)) {
+                    roots.push(currentMappedNode);
+                }
             }
         });
 
@@ -291,7 +340,7 @@ const MoveNodePopup = ({ isOpen, onClose, onMove, ProcessId, userId, currentPare
                 flexDirection: 'column'
             }}>
                 <div className="popup-header" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
-                    <h3 style={{ margin: 0 }}>Move Model to Another Process Map</h3>
+                    <h3 style={{ margin: 0 }}>{t("move_model_to_another_process_map")}</h3>
                     <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer' }}>×</button>
                 </div>
 
@@ -326,20 +375,20 @@ const MoveNodePopup = ({ isOpen, onClose, onMove, ProcessId, userId, currentPare
                                     />
                                 ))
                             ) : (
-                                <div style={{ padding: '10px', color: '#666' }}>No process maps found.</div>
+                                <div style={{ padding: '10px', color: '#666' }}> {t("no_process_maps_found")}</div>
                             )}
                         </div>
                     )}
                 </div>
 
                 <div className="popup-footer" style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                    <button onClick={onClose} className="global-btn cancel">Cancel</button>
+                    <button onClick={onClose} className="global-btn cancel">{t("Cancel")}</button>
                     <button
                         onClick={handleMoveClick}
                         className="global-btn save"
                         disabled={!selectedTarget}
                     >
-                        Move
+                        {t("move")}
                     </button>
                 </div>
             </div>

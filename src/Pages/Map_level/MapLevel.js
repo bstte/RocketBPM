@@ -207,10 +207,17 @@ const MapLevel = () => {
         target_process_id: target.processId,
         target_level: target.levelKey,
         target_parent_id: null,
+        position: { x: 0, y: 0 },
       });
 
       // Clear cache for current level so the moved node disappears
       handlers.invalidateCache();
+
+      // Clear cache for target level if target exists
+      if (target.targetProcess) {
+        const targetLevelKey = getLevelKey(target.targetLevel, target.targetParentId);
+        handlers.invalidateCache(target.targetProcess, targetLevelKey);
+      }
 
       setShowMovePopup(false);
       CustomAlert.success("Success", "Node moved successfully");

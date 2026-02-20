@@ -18,7 +18,7 @@ const ArrowBoxNode = ({ data }) => {
   const navigate = useNavigate();
   const { goToProcess } = useProcessNavigation();
   const handleLinkClick = async () => {
-    // console.log(data.processlink);
+    console.log(data.processlink);
     if (data.processlink) {
       try {
         const response = await getdataByNodeId(data.processlink, "draft");

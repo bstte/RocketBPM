@@ -13,7 +13,7 @@ import api, {
 import CustomAlert from "../../../components/CustomAlert";
 import { buildProcessPath } from "../../../routes/buildProcessPath";
 import { useDispatch } from "react-redux";
-import { invalidateCacheForLevel } from "../../../redux/mapDataSlice";
+import { invalidateCacheForLevel, invalidateCacheForProcess } from "../../../redux/mapDataSlice";
 import { getLevelKey } from "../../../utils/getLevel";
 
 export const useMapLevelHandlers = ({
@@ -33,12 +33,20 @@ export const useMapLevelHandlers = ({
     langMap,
 }) => {
     const dispatch = useDispatch();
-    const invalidateCache = () => {
-        const levelParam = getLevelKey(currentLevel, currentParentId);
-        // Pattern: `${Process_id}_${levelParam}` matches all languages/modes for this level
-        const levelPattern = `${processId}_${levelParam}`;
-
-        dispatch(invalidateCacheForLevel({ levelPattern }));
+    const invalidateCache = (targetProcessId = null, targetLevelParam = null) => {
+        if (targetProcessId && targetLevelParam) {
+            // Target specific level in specific process
+            const levelPattern = `${targetProcessId}_${targetLevelParam}`;
+            dispatch(invalidateCacheForLevel({ levelPattern }));
+        } else if (targetProcessId) {
+            // Target entire process
+            dispatch(invalidateCacheForProcess({ processId: targetProcessId }));
+        } else {
+            // Default: Invalidate current level in current process
+            const levelParam = getLevelKey(currentLevel, currentParentId);
+            const levelPattern = `${processId}_${levelParam}`;
+            dispatch(invalidateCacheForLevel({ levelPattern }));
+        }
     };
     const {
         setSelectedNodeId,

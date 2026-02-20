@@ -749,7 +749,7 @@ const SwimlaneModel = () => {
 
       // Add "Add Role Group" if vertical header
       if (col === 0 && row < 6) {
-        // setOptions(prev => [...prev, { label: "Add Role Group", value: "Add Role Group" }]);
+        setOptions(prev => [...prev, { label: "Add Role Group", value: "Add Role Group" }]);
       }
     }
   };
@@ -759,8 +759,8 @@ const SwimlaneModel = () => {
 
     // Check if we are editing an existing node
     const isEditing = selectedNode?.data?.isRoleGroup;
-    console.log("selectedNodeId", selectedNodeId)
-    console.log("selectedNode", selectedNode)
+    // console.log("selectedNodeId", selectedNodeId)
+    // console.log("selectedNode", selectedNode)
     const newNodeData = {
       label: data.groupName,
       isRoleGroup: true,
@@ -772,17 +772,17 @@ const SwimlaneModel = () => {
       }
     };
 
-    // if (isEditing) {
-    //   setChiledNodes((nds) =>
-    //     nds.map((node) =>
-    //       node.id === selectedNode.id ? { ...node, data: { ...node.data, ...newNodeData } } : node
-    //     )
-    //   );
-    //   setHasUnsavedChanges(true);
-    //   CustomAlert.success("Updated", "Role Group updated successfully.");
-    // } else {
-    //   addNode("SwimlineRightsideBox", "", "", newNodeData);
-    // }
+    if (isEditing) {
+      setChiledNodes((nds) =>
+        nds.map((node) =>
+          node.id === selectedNode.id ? { ...node, data: { ...node.data, ...newNodeData } } : node
+        )
+      );
+      setHasUnsavedChanges(true);
+      CustomAlert.success("Updated", "Role Group updated successfully.");
+    } else {
+      addNode("SwimlineRightsideBox", "", "", newNodeData);
+    }
   };
 
   const switchNodeType = (type) => {
@@ -1216,11 +1216,11 @@ const SwimlaneModel = () => {
 
     ...(detailschecking?.type === "SwimlineRightsideBox"
       ? [
-        // {
-        //   label: "Assign Role Owner",
-        //   action: () => handleAssignOwnerAction(detailschecking),
-        //   borderBottom: true,
-        // },
+        {
+          label: "Assign Role Owner",
+          action: () => handleAssignOwnerAction(detailschecking),
+          borderBottom: true,
+        },
         ...(detailschecking?.data?.isRoleGroup ? [
           {
             label: "Manage Role Group",

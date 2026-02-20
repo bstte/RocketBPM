@@ -125,6 +125,7 @@ const ExistingModelPopup = ({
 }) => {
     const [displayNodes, setDisplayNodes] = useState([]);
     const [loading, setLoading] = useState(false);
+    const searchInputRef = useRef(null);
 
     // Create a stable key from filteredData IDs to avoid unnecessary re-runs
     const dataFingerprint = filteredData ? filteredData.map(n => n.node_id).join(',') : '';
@@ -134,6 +135,14 @@ const ExistingModelPopup = ({
             filterValidNodes();
         }
     }, [isOpen, dataFingerprint]); // Changed dependency from filteredData to dataFingerprint
+
+    useEffect(() => {
+        if (isOpen) {
+            setTimeout(() => {
+                searchInputRef.current?.focus();
+            }, 100);
+        }
+    }, [isOpen]);
 
     const filterValidNodes = async () => {
         setLoading(true);
@@ -222,6 +231,7 @@ const ExistingModelPopup = ({
 
             <input
                 type="text"
+                ref={searchInputRef}
                 style={{ ...styles.searchInput, marginTop: '10px' }}
                 placeholder="Search..."
                 value={searchQuery}

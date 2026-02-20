@@ -23,7 +23,7 @@ import NoNode from "../../AllNode/NoNode";
 
 const SwimlaneMapVersion = () => {
   const { height, appHeaderHeight, remainingHeight } = useDynamicHeight();
-const safeRemainingHeight = Math.min(Math.max(remainingHeight, 588), 588);
+  const safeRemainingHeight = Math.min(Math.max(remainingHeight, 588), 588);
   const [windowSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
@@ -77,7 +77,7 @@ const safeRemainingHeight = Math.min(Math.max(remainingHeight, 588), 588);
           currentParentId
         );
 
-        const { nodes, edges, title,processDefaultlanguage_id } = response;
+        const { nodes, edges, title, processDefaultlanguage_id } = response;
         SetcurrentModeltitle(title);
         setprocessDefaultlanguage_id(processDefaultlanguage_id)
         SetTitle(nodes[0]?.version);
@@ -122,18 +122,18 @@ const safeRemainingHeight = Math.min(Math.max(remainingHeight, 588), 588);
           // Parent node positioning
           const nodeStyle =
             node.type === "Yes" ||
-            node.type === "No" ||
-            node.type === "FreeText"
+              node.type === "No" ||
+              node.type === "FreeText"
               ? {} // No styles applied for these node types
               : {
-                  width: groupWidth,
-                  height: groupHeight,
-                  childWidth: childWidth,
-                  childHeight: childHeight,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                };
+                width: groupWidth,
+                height: groupHeight,
+                childWidth: childWidth,
+                childHeight: childHeight,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              };
 
           return {
             ...node,
@@ -198,35 +198,35 @@ const safeRemainingHeight = Math.min(Math.max(remainingHeight, 588), 588);
     fetchVersionData();
   }, [processId, level, version, pageTitle]);
 
-  
-   const memoizedNodeTypes = useMemo(
-     () => ({
-       ...nodeTypes,
-       Yes: (props) => (
-         <YesNode
-           {...props}
-           processDefaultlanguage_id={processDefaultlanguage_id}
-         />
-       ),
-       No: (props) => (
-         <NoNode
-           {...props}
-           processDefaultlanguage_id={processDefaultlanguage_id}
-         />
-       ),
-     }),
-     [processDefaultlanguage_id]
-   );
+
+  const memoizedNodeTypes = useMemo(
+    () => ({
+      ...nodeTypes,
+      Yes: (props) => (
+        <YesNode
+          {...props}
+          processDefaultlanguage_id={processDefaultlanguage_id}
+        />
+      ),
+      No: (props) => (
+        <NoNode
+          {...props}
+          processDefaultlanguage_id={processDefaultlanguage_id}
+        />
+      ),
+    }),
+    [processDefaultlanguage_id]
+  );
   const memoizedEdgeTypes = useMemo(() => edgeTypes, [edgeTypes]);
 
   return (
     <div>
       <Header
-  title={`${currentModeltitle} (Version: ${Title})`}
+        title={`${currentModeltitle} (Version: ${Title})`}
         Page={"ViewProcessmapVersion"}
         iconNames={{}}
-        onSave={() => {}}
-        onPublish={() => {}}
+        onSave={() => { }}
+        onPublish={() => { }}
         handleBackdata={() => {
           navigate(-1);
         }}

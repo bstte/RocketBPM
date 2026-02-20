@@ -24,9 +24,18 @@ const mapDataSlice = createSlice({
                     delete state.cache[key];
                 }
             });
+        },
+        invalidateCacheForProcess: (state, action) => {
+            const { processId } = action.payload;
+            const pattern = `${processId}_`;
+            Object.keys(state.cache).forEach(key => {
+                if (key.startsWith(pattern)) {
+                    delete state.cache[key];
+                }
+            });
         }
     },
 });
 
-export const { setMapData, removeMapData, clearMapCache, invalidateCacheForLevel } = mapDataSlice.actions;
+export const { setMapData, removeMapData, clearMapCache, invalidateCacheForLevel, invalidateCacheForProcess } = mapDataSlice.actions;
 export default mapDataSlice.reducer;

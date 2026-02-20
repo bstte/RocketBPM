@@ -226,22 +226,25 @@ const VersionPopup = ({
     );
   };
 
-
   const filteredUsers =
     searchQuery.trim() === ""
       ? []
       : assignedUsers
         .filter((u) => {
           if (currentRole === "modeler") {
-            return u.role_id === 1;        // ⭐ केवल Process Modeler के लिए
+            const isModeler = u.role_id === 1;
+            const isSuperAdmin = u.status === "self";
+
+            return isModeler || isSuperAdmin;   // ⭐ sirf Modeler + Super Admin
           }
-          return true;                    // ⭐ बाकी roles में कोई filter नहीं
+          return true;
         })
         .filter((u) =>
           `${u.user.first_name} ${u.user.last_name} ${u.user.email}`
             .toLowerCase()
             .includes(searchQuery.toLowerCase())
         );
+
 
 
   // Roles config (different for map vs swimlane)

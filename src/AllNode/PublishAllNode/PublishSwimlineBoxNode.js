@@ -120,6 +120,7 @@ const BoxNode = ({ data }) => {
             style={{
               fontSize: "12px",
               fontFamily: "'Poppins', sans-serif",
+              lineHeight: "1.1",
               color: "#002060",
               background: "transparent",
               border: "none",

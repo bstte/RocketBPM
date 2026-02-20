@@ -25,9 +25,7 @@ const SwimlineRightsideBox = ({ data, processDefaultlanguage_id, langMap }) => {
       onMouseLeave={() => setIsHovered(false)}
     >
       <div className="borderBox" style={styles.box}>
-        <div>
-          <button style={styles.withoutlinkButton}>{title}</button>
-        </div>
+        <button style={styles.withoutlinkButton}>{title}</button>
       </div>
       {data.isRoleGroup && isHovered && data.roles && (
         <RoleGroupTooltip
@@ -77,10 +75,16 @@ const styles = {
   },
   withoutlinkButton: {
     fontSize: "12px",
+    fontFamily: "'Poppins', sans-serif",
+    lineHeight: "1.1",
+    wordBreak: "break-word",
     color: "white",
     background: "none",
     border: "none",
     cursor: "pointer",
+    width: "100%",
+    padding: "2px",
+    margin: "0",
   },
 };
 
