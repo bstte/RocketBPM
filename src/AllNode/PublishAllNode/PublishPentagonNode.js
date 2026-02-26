@@ -16,7 +16,7 @@ const PublishPentagonNode = ({ data }) => {
 
   return (
     <div
-    className="pentagon_box"
+      className="pentagon_box"
 
       style={{
         ...styles.wrapper,
@@ -27,7 +27,7 @@ const PublishPentagonNode = ({ data }) => {
     >
       {/* Pentagon Box */}
       <div
-      className="pentagon_box_inner"
+        className="pentagon_box_inner"
         style={{
           ...styles.pentagonBox,
           width: `${width}px`,
@@ -36,11 +36,12 @@ const PublishPentagonNode = ({ data }) => {
         }}
       >
         <div
-className="pentagon_textbox"
+          className="pentagon_textbox"
 
           style={{
             cursor: "pointer",
-            fontSize: "1rem",
+            fontSize: "12px",
+            lineHeight: "1.1",
             fontFamily: "'Poppins', sans-serif",
             color: "white",
             textAlign: "center",

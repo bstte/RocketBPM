@@ -154,7 +154,7 @@ const styles = {
   },
   title: {
     transform: "rotate(-45deg)",
-    fontSize: "1rem",
+    fontSize: "12px",
     fontFamily: "'Poppins', sans-serif",
     lineHeight: "1.1",
     wordBreak: "break-word",

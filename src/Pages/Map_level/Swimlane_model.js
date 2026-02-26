@@ -35,6 +35,7 @@ import api, {
   saveProcessInfo,
   editorialPublishAPI,
   contentChangeRequest,
+  createRole,
 } from "../../API/api";
 import CustomContextPopup from "../../components/CustomContextPopup";
 import DetailsPopup from "../../components/DetailsPopup";
@@ -180,6 +181,7 @@ const SwimlaneModel = () => {
   const [showRoleGroupModal, setShowRoleGroupModal] = useState(false);
   const [showAssignOwnerModal, setShowAssignOwnerModal] = useState(false);
   const [activeRoleForOwner, setActiveRoleForOwner] = useState(null);
+  const [selectedEdgeInfoForFreeText, setSelectedEdgeInfoForFreeText] = useState(null);
   const langMap = useLangMap();
   const menuWidth = 180;
   const menuHeight = 160;
@@ -267,7 +269,7 @@ const SwimlaneModel = () => {
 
   // Update RTL based on process language (not profile language)
   const { languages } = useLanguages();
-
+  console.log("ChildNodes", ChildNodes)
   useEffect(() => {
     if (processDefaultlanguage_id && languages.length > 0) {
       const currentLang = languages.find(l => l.id === processDefaultlanguage_id);
@@ -310,21 +312,29 @@ const SwimlaneModel = () => {
     } else {
       fetchNodes(processDefaultlanguage_id); // default
     }
-    // Proactively fetch existing roles for Role Groups
-    const fetchExistingRoles = async () => {
-      try {
-        const levelParam = "level0";
-        const user_id = user ? user.id : LoginUser?.id;
-        const Process_id = id;
-        const data = await api.getexistingrole(levelParam, parseInt(user_id), Process_id);
-        const filteredNodes = data.AllexistingRole.filter((node) => node.node_id !== currentParentId);
-        setLinkexistingRole(filteredNodes);
-      } catch (error) {
-        console.error("Proactive role fetch error:", error);
-      }
-    };
+
     if (LoginUser?.id) fetchExistingRoles();
   }, [id, LoginUser, currentParentId]);
+
+  // Proactively fetch existing roles for Role Groups
+  const fetchExistingRoles = async () => {
+    try {
+      const levelParam = "level0";
+      const user_id = user ? user.id : LoginUser?.id;
+      const Process_id = id;
+      const data = await api.getexistingrole(levelParam, parseInt(user_id), Process_id);
+      const filteredNodes = data.AllexistingRole.filter((node) => node.node_id !== currentParentId);
+      setLinkexistingRole(filteredNodes);
+    } catch (error) {
+      console.error("Proactive role fetch error:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (showRoleGroupModal) {
+      fetchExistingRoles();
+    }
+  }, [showRoleGroupModal]);
 
   const onNodesChange = useCallback(
     (changes) => setChiledNodes((nds) => applyNodeChanges(changes, nds)),
@@ -332,8 +342,77 @@ const SwimlaneModel = () => {
   );
 
   const onEdgesChange = useCallback(
-    (changes) => setEdges((eds) => applyEdgeChanges(changes, eds)),
-    [setEdges]
+    (changes) => {
+      setEdges((eds) => {
+        const remainingEdges = applyEdgeChanges(changes, eds);
+
+        // Check for removed edges
+        const removedEdges = changes
+          .filter((change) => change.type === "remove")
+          .map((change) => {
+            const edge = eds.find((e) => String(e.id) === String(change.id));
+            return edge ? { id: edge.id, source: edge.source, target: edge.target, sourceHandle: edge.sourceHandle, targetHandle: edge.targetHandle } : null;
+          })
+          .filter(Boolean);
+
+        if (removedEdges.length > 0) {
+          setChiledNodes((prevNodes) =>
+            prevNodes.filter((node) => {
+              if (!node.data?.edgeId && !node.data?.sourceNodeId) return true;
+              return !removedEdges.some((edge) =>
+                String(edge.id) === String(node.data.edgeId) ||
+                (String(edge.source) === String(node.data.sourceNodeId) &&
+                  String(edge.target) === String(node.data.targetNodeId) &&
+                  String(edge.sourceHandle || "") === String(node.data.sourceHandle || "") &&
+                  String(edge.targetHandle || "") === String(node.data.targetHandle || ""))
+              );
+            })
+          );
+        }
+
+        return remainingEdges;
+      });
+    },
+    [setEdges, setChiledNodes]
+  );
+
+  const onNodesDelete = useCallback(
+    (deletedNodes) => {
+      const removedEdgeIds = new Set();
+      const removedEdgeDetails = [];
+
+      deletedNodes.forEach((node) => {
+        edges.forEach((edge) => {
+          if (String(edge.source) === String(node.id) || String(edge.target) === String(node.id)) {
+            removedEdgeIds.add(String(edge.id));
+            removedEdgeDetails.push({
+              source: edge.source,
+              target: edge.target,
+              sourceHandle: edge.sourceHandle,
+              targetHandle: edge.targetHandle
+            });
+          }
+        });
+      });
+
+      if (removedEdgeDetails.length > 0 || removedEdgeIds.size > 0) {
+        setChiledNodes((prevNodes) =>
+          prevNodes.filter((node) => {
+            if (!node.data?.edgeId && !node.data?.sourceNodeId) return true;
+            return !(
+              removedEdgeIds.has(String(node.data.edgeId)) ||
+              removedEdgeDetails.some((edge) =>
+                String(edge.source) === String(node.data.sourceNodeId) &&
+                String(edge.target) === String(node.data.targetNodeId) &&
+                String(edge.sourceHandle || "") === String(node.data.sourceHandle || "") &&
+                String(edge.targetHandle || "") === String(node.data.targetHandle || "")
+              )
+            );
+          })
+        );
+      }
+    },
+    [edges, setChiledNodes]
   );
 
   const onConnect = useCallback(
@@ -373,6 +452,11 @@ const SwimlaneModel = () => {
       setIsexistingroleCheckboxPopupOpen(false);
       setSelectedNodeId(node.id);
       handleClosePopup();
+
+      // Since handleClosePopup no longer clears these, we do it here
+      setSelectedNode(null);
+      setdetailschecking(null);
+
       setOptions([]);
       setIsModalOpen(false);
       setIsCheckboxPopupOpen(false);
@@ -384,7 +468,7 @@ const SwimlaneModel = () => {
 
   useEffect(() => {
     const checkpublishfunction = async () => {
-      if (currentLevel !== 0) {
+      if (currentLevel !== 0 && ParentPageGroupId) {
         try {
           const response = await filter_draft(ParentPageGroupId);
           // console.log("inside first map", response)
@@ -476,7 +560,7 @@ const SwimlaneModel = () => {
 
   const handleSaveNodes = async (savetype) => {
     console.log("chiils node", ChildNodes);
-    if (savetype === "Published" && currentLevel !== 0) {
+    if (savetype === "Published" && currentLevel !== 0 && ParentPageGroupId) {
       try {
         const response = await filter_draft(ParentPageGroupId);
 
@@ -622,8 +706,10 @@ const SwimlaneModel = () => {
   const handleClosePopup = () => {
     setContextMenu(null);
     setMenuVisible(false);
-    setSelectedNode(null);
-    setdetailschecking(null);
+    // 🔥 Do not clear selectedNode and detailschecking here
+    // as they are needed by modals opened from the context menu
+    // setSelectedNode(null);
+    // setdetailschecking(null);
   };
 
   const translation = () => {
@@ -672,13 +758,34 @@ const SwimlaneModel = () => {
           console.error("delete existiong role time error:", error);
         }
       }
+      const nodeToRemoveId = selectedNode.id;
+
+      // Identify all edges connected to the node being deleted
+      const edgesToDelete = edges.filter(
+        (edge) => String(edge.source) === String(nodeToRemoveId) || String(edge.target) === String(nodeToRemoveId)
+      );
+
+      // Identify all character nodes (labels) linked to these edges
+      const labelIdsToRemove = ChildNodes.filter((node) => {
+        if (!node.data?.edgeId && !node.data?.sourceNodeId) return false;
+        return edgesToDelete.some((edge) =>
+          String(edge.id) === String(node.data.edgeId) ||
+          (String(edge.source) === String(node.data.sourceNodeId) &&
+            String(edge.target) === String(node.data.targetNodeId) &&
+            String(edge.sourceHandle || "") === String(node.data.sourceHandle || "") &&
+            String(edge.targetHandle || "") === String(node.data.targetHandle || ""))
+        );
+      }).map(node => node.id);
+
       setChiledNodes((nodes) =>
-        nodes.filter((node) => node.id !== selectedNode.id)
+        nodes.filter((node) =>
+          String(node.id) !== String(nodeToRemoveId) && !labelIdsToRemove.includes(node.id)
+        )
       );
       setEdges((eds) =>
         eds.filter(
           (edge) =>
-            edge.source !== selectedNode.id && edge.target !== selectedNode.id
+            String(edge.source) !== String(nodeToRemoveId) && String(edge.target) !== String(nodeToRemoveId)
         )
       );
       setHasUnsavedChanges(true);
@@ -747,6 +854,10 @@ const SwimlaneModel = () => {
       setSelectedGroupId(node.id);
       setSelectedNode(node);
 
+      // 🔥 Reset role group edit data when right-clicking grid cells
+      setRoleGroupEditData(null);
+      setSelectedNodeId(null);
+
       // Add "Add Role Group" if vertical header
       if (col === 0 && row < 6) {
         setOptions(prev => [...prev, { label: "Add Role Group", value: "Add Role Group" }]);
@@ -760,7 +871,7 @@ const SwimlaneModel = () => {
     // Check if we are editing an existing node
     const isEditing = selectedNode?.data?.isRoleGroup;
     // console.log("selectedNodeId", selectedNodeId)
-    // console.log("selectedNode", selectedNode)
+    console.log("isEditing", isEditing)
     const newNodeData = {
       label: data.groupName,
       isRoleGroup: true,
@@ -779,10 +890,42 @@ const SwimlaneModel = () => {
         )
       );
       setHasUnsavedChanges(true);
-      CustomAlert.success("Updated", "Role Group updated successfully.");
+      // CustomAlert.success("Updated", "Role Group updated successfully.");
     } else {
       addNode("SwimlineRightsideBox", "", "", newNodeData);
     }
+
+    // Propagate changes from inside Group back to standalone roles on the board
+    const langKey = langMap[processDefaultlanguage_id] || "EN";
+    setChiledNodes((nds) => {
+      let updatedNodes = [...nds];
+      data.roles.forEach((updatedRole) => {
+        updatedNodes = updatedNodes.map((node) => {
+          // Check if node is a standalone role matching the updated role ID (or linked role)
+          const isMatch = node.id === updatedRole.id || node.data?.link === updatedRole.id;
+          if (isMatch && node.type === "SwimlineRightsideBox" && !node.data?.isRoleGroup) {
+            const newTitle = updatedRole.translations?.[langKey] || node.data?.details?.title;
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                owner: updatedRole.owner,
+                translations: {
+                  ...(node.data.translations || {}),
+                  ...(updatedRole.translations || {})
+                },
+                details: {
+                  ...(node.data.details || {}),
+                  title: newTitle
+                }
+              }
+            };
+          }
+          return node;
+        });
+      });
+      return updatedNodes;
+    });
   };
 
   const switchNodeType = (type) => {
@@ -1083,12 +1226,22 @@ const SwimlaneModel = () => {
     } else {
       // Create new FreeText node with translations
       const translations = { [langKey]: enteredText };
+      const edgeData = selectedEdgeInfoForFreeText ? {
+        edgeId: selectedEdgeInfoForFreeText.edgeId,
+        sourceNodeId: selectedEdgeInfoForFreeText.source,
+        targetNodeId: selectedEdgeInfoForFreeText.target,
+        sourceHandle: selectedEdgeInfoForFreeText.sourceHandle,
+        targetHandle: selectedEdgeInfoForFreeText.targetHandle
+      } : {};
+
       addNode(
         "FreeText",
         { x: modalPosition.x, y: modalPosition.y - 20 },
         enteredText,
-        { translations }
+        { ...edgeData, translations },
+        selectedEdgeInfoForFreeText?.edgeId
       );
+      setSelectedEdgeInfoForFreeText(null);
     }
   };
 
@@ -1105,15 +1258,24 @@ const SwimlaneModel = () => {
     // console.log("contextMenu", contextMenu);
     // console.log("fixedPos",fixedPos);
 
-    const edgeId = contextMenu.edgeId;
+    const { edgeId, source, target, sourceHandle, targetHandle } = contextMenu;
+    const edgeData = {
+      edgeId,
+      sourceNodeId: source,
+      targetNodeId: target,
+      sourceHandle,
+      targetHandle
+    };
+
     if (action === "Yes") {
-      addNode("Yes", { x: x, y: y - 20 }, edgeId);
+      addNode("Yes", { x: x, y: y - 20 }, "", edgeData, edgeId);
     } else if (action === "No") {
-      addNode("No", { x: x, y: y - 20 }, edgeId);
+      addNode("No", { x: x, y: y - 20 }, "", edgeData, edgeId);
     } else if (action === "addFreeText") {
       setIsModalOpen(true);
       setModalText("");
       setModalPosition({ x, y });
+      setSelectedEdgeInfoForFreeText(contextMenu);
     } else if (action === "addDetails") {
       openPopup();
     } else if (action === "Add Role Group") {
@@ -1241,7 +1403,22 @@ const SwimlaneModel = () => {
   const iconNames = {};
 
   const deleteEdge = () => {
-    setEdges((eds) => eds.filter((e) => e.id !== selectedEdge.id));
+    const edgeToDelete = selectedEdge;
+    const edgeIdToDelete = edgeToDelete.id;
+
+    setEdges((eds) => eds.filter((e) => e.id !== edgeIdToDelete));
+    setChiledNodes((prevNodes) =>
+      prevNodes.filter((node) => {
+        if (!node.data?.edgeId && !node.data?.sourceNodeId) return true;
+        return !(
+          String(node.data.edgeId) === String(edgeIdToDelete) ||
+          (String(node.data.sourceNodeId) === String(edgeToDelete.source) &&
+            String(node.data.targetNodeId) === String(edgeToDelete.target) &&
+            String(node.data.sourceHandle || "") === String(edgeToDelete.sourceHandle || "") &&
+            String(node.data.targetHandle || "") === String(edgeToDelete.targetHandle || ""))
+        );
+      })
+    );
     setSelectedEdge(null);
     setHasUnsavedChanges(true);
   };
@@ -1262,6 +1439,10 @@ const SwimlaneModel = () => {
       x: event.clientX,
       y: event.clientY,
       edgeId: edge.id,
+      source: edge.source,
+      target: edge.target,
+      sourceHandle: edge.sourceHandle,
+      targetHandle: edge.targetHandle,
     });
   }, []);
 
@@ -1424,36 +1605,56 @@ const SwimlaneModel = () => {
   };
 
   const updateNodeTranslations = (nodeId, translations) => {
+    const nodeToUpdate = ChildNodes.find(n => n.id === nodeId);
+    if (!nodeToUpdate) return;
+
+    const baseId = nodeToUpdate.data?.link || nodeToUpdate.id;
+    const langKey = langMap[processDefaultlanguage_id] || "EN";
+
     setChiledNodes((nds) =>
       nds.map((node) => {
-        if (node.id !== nodeId) return node;
+        // Find all instances of this role (standalone or linked) OR update Role Group if it contains this role
+        const isMatch = node.id === baseId || node.data?.link === baseId || node.id === nodeId;
 
-        const langKey = langMap[processDefaultlanguage_id] || "EN";
-        const newLabel =
-          translations[langKey] || node.data.label || node.data?.details?.title;
-
-        if (node.type === "StickyNote" || node.type === "FreeText") {
+        // 1. Update matching standalone/linked role nodes
+        if (isMatch && node.type === "SwimlineRightsideBox" && !node.data?.isRoleGroup) {
+          const newTitle = translations[langKey] || node.data?.details?.title;
           return {
             ...node,
             data: {
               ...node.data,
-              translations,
-              label: newLabel,
+              translations: { ...(node.data.translations || {}), ...translations },
+              details: { ...(node.data.details || {}), title: newTitle },
             },
           };
         }
 
-        return {
-          ...node,
-          data: {
-            ...node.data,
-            translations,
-            details: {
-              ...node.data.details,
-              title: newLabel,
-            },
-          },
-        };
+        // 2. Update matching StickyNote or FreeText
+        if (node.id === nodeId && (node.type === "StickyNote" || node.type === "FreeText")) {
+          const newLabel = translations[langKey] || node.data.label;
+          return {
+            ...node,
+            data: { ...node.data, translations, label: newLabel },
+          };
+        }
+
+        // 3. Update this role inside any Role Groups
+        if (node.data?.isRoleGroup && node.data?.roles) {
+          const updatedRoles = node.data.roles.map(r => {
+            if (r.id === baseId) {
+              const newName = translations[langKey] || r.name;
+              return {
+                ...r,
+                name: newName,
+                translations: { ...(r.translations || {}), ...translations }
+              };
+            }
+            return r;
+          });
+          return { ...node, data: { ...node.data, roles: updatedRoles } };
+        }
+
+        return node;
       })
     );
     setHasUnsavedChanges(true);
@@ -1554,10 +1755,12 @@ const SwimlaneModel = () => {
 
   const handleSavePublish = async () => {
     try {
-      const response = await filter_draft(ParentPageGroupId);
-      if (response.data === true) {
-        alert("Publish all parent models first");
-        return false;
+      if (ParentPageGroupId) {
+        const response = await filter_draft(ParentPageGroupId);
+        if (response.data === true) {
+          alert("Publish all parent models first");
+          return false;
+        }
       }
     } catch (error) {
       console.error("filter draft error", error);
@@ -1676,6 +1879,28 @@ const SwimlaneModel = () => {
     }
   };
 
+  const handleCreateRole = async (name, translations) => {
+    try {
+      const response = await api.createRole({
+        Process_id: id,
+        user_id: LoginUser?.id,
+        name: name,
+        translations: translations,
+        login_user_id: LoginUser?.id
+      });
+
+      if (response.status) {
+        // Refresh existing roles list
+        const rolesData = await api.getexistingrole(null, LoginUser?.id, id);
+        const parsedData = Array.isArray(rolesData.AllexistingRole) ? rolesData.AllexistingRole : [];
+        setLinkexistingRole(parsedData); // 🔥 Fixed setter name
+        CustomAlert.success("Success", "Role created successfully.");
+      }
+    } catch (error) {
+      CustomAlert.error("Error", "Failed to create role.");
+    }
+  };
+
   return (
     <div dir="ltr">
       <Header
@@ -1716,6 +1941,7 @@ const SwimlaneModel = () => {
               edges={edges}
               onNodesChange={onNodesChange}
               onEdgesChange={onEdgesChange}
+              onNodesDelete={onNodesDelete}
               onConnect={onConnect}
               onNodeClick={handleNodeClick}
               onNodeContextMenu={handleNodeRightClick}
@@ -1896,23 +2122,76 @@ const SwimlaneModel = () => {
                 setShowRoleGroupModal(false);
                 setRoleGroupEditData(null);
               }}
-              onSav
               onSave={handleSaveRoleGroup}
               initialData={roleGroupEditData}
               supportedLanguages={supportedLanguages}
               langMap={langMap}
-              existingRoles={parsedDataExistingrole}
+              existingRoles={parsedDataExistingrole.map(exRole => {
+                const baseId = exRole.node_id || exRole.id;
+                const liveRole = ChildNodes.find(cn => (cn.id === baseId || cn.data?.link === baseId) && !cn.data?.isRoleGroup);
+                if (liveRole) {
+                  return {
+                    ...exRole,
+                    data: {
+                      ...exRole.data,
+                      owner: liveRole.data?.owner || exRole.data?.owner,
+                      translations: { ...(exRole.data?.translations || {}), ...(liveRole.data?.translations || {}) },
+                      details: { ...(exRole.data?.details || {}), title: liveRole.data?.details?.title || exRole.data?.details?.title }
+                    }
+                  };
+                }
+                return exRole;
+              })}
               allUsers={assignedUsers}
               selectedLanguage={processDefaultlanguage_id}
+              onUpdateRoleTranslations={(roleId, values) => updateNodeTranslations(roleId, values)}
+              onUpdateRoleOwner={(roleId, ownerUser) => {
+                const activeRole = ChildNodes.find(n => n.id === roleId || n.data?.link === roleId);
+                if (activeRole) {
+                  const baseId = activeRole.data?.link || activeRole.id;
+                  setChiledNodes(prev => prev.map(n => {
+                    const isMatch = n.id === baseId || n.data?.link === baseId || n.id === roleId;
+                    if (isMatch && n.type === "SwimlineRightsideBox" && !n.data?.isRoleGroup) {
+                      return { ...n, data: { ...n.data, owner: ownerUser } };
+                    }
+                    if (n.data?.isRoleGroup && n.data?.roles) {
+                      const updatedRoles = n.data.roles.map(r =>
+                        r.id === baseId ? { ...r, owner: ownerUser } : r
+                      );
+                      return { ...n, data: { ...n.data, roles: updatedRoles } };
+                    }
+                    return n;
+                  }));
+                  setHasUnsavedChanges(true);
+                }
+              }}
+              onCreateRole={handleCreateRole}
             />
 
             <AssignRoleOwnerModal
               isOpen={showAssignOwnerModal}
               onClose={() => setShowAssignOwnerModal(false)}
               onAssign={(user) => {
-                setChiledNodes(prev => prev.map(n =>
-                  n.id === activeRoleForOwner.id ? { ...n, data: { ...n.data, owner: user } } : n
-                ));
+                if (!activeRoleForOwner) return;
+                const baseId = activeRoleForOwner.data?.link || activeRoleForOwner.id;
+                setChiledNodes(prev => prev.map(n => {
+                  // 1. Update standalone/linked roles
+                  const isMatch = n.id === baseId || n.data?.link === baseId || n.id === activeRoleForOwner.id;
+                  if (isMatch && n.type === "SwimlineRightsideBox" && !n.data?.isRoleGroup) {
+                    return { ...n, data: { ...n.data, owner: user } };
+                  }
+
+                  // 2. Update inside Role Groups
+                  if (n.data?.isRoleGroup && n.data?.roles) {
+                    const updatedRoles = n.data.roles.map(r =>
+                      r.id === baseId ? { ...r, owner: user } : r
+                    );
+                    return { ...n, data: { ...n.data, roles: updatedRoles } };
+                  }
+
+                  return n;
+                }));
+                setHasUnsavedChanges(true);
               }}
               initialOwner={activeRoleForOwner?.data?.owner}
               users={assignedUsers}

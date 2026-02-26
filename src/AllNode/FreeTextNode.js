@@ -4,12 +4,9 @@ const FreeTextNode = ({ data }) => {
   return (
     <div style={styles.wrapper}>
       <div style={styles.labelBox}>
-        <span className="freetext" style={styles.text}>{data.label.split("\n").map((line, index) => (
-          <React.Fragment key={index}>
-            {line}
-            <br />
-          </React.Fragment>
-        ))}</span>
+        <div style={styles.text}>
+          {data.label}
+        </div>
       </div>
     </div>
   );
@@ -20,7 +17,12 @@ const styles = {
   labelBox: {},
   text: {
     fontSize: "12px",
-    whiteSpace: "pre-line", // Ensures line breaks are respected
+    fontFamily: "'Poppins', sans-serif", // MUST match
+    lineHeight: "1.1",
+    whiteSpace: "pre-wrap",
+    padding: "2px",          // same as swimlane
+    margin: 0,               // prevent default spacing
+    display: "inline-block", // tighter line box
   },
 };
 

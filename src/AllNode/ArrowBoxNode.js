@@ -3,49 +3,55 @@ import { NodeResizer } from "@xyflow/react";
 
 const ArrowBoxNode = ({ data, id, selectedNodeId, isRTL }) => {
   const [label, setLabel] = useState(data.label || "");
-  const isClickable = selectedNodeId === id;
-  const arrowRef = useRef(null);
-  // const [autoFocus, setAutoFocus] = useState(data.autoFocus);
+  const isSelected = selectedNodeId === id;
+
+  const textareaRef = useRef(null);
+  const cursorPosRef = useRef(null);
 
   const [width, setWidth] = useState(data.width_height?.width || 326);
   const [height, setHeight] = useState(data.width_height?.height || 90);
 
+  // 🔹 sync label from parent
   useEffect(() => {
-    if (data.width_height?.width && data.width_height?.height) {
+    setLabel(data.label || "");
+  }, [data.label]);
+
+  // 🔹 sync size from parent
+  useEffect(() => {
+    if (data.width_height) {
       setWidth(data.width_height.width);
       setHeight(data.width_height.height);
     }
   }, [data.width_height]);
 
+  // 🔹 focus WITHOUT overriding cursor
   useEffect(() => {
-    setLabel(data.label || "");
-  }, [data]);
+    if (isSelected && textareaRef.current) {
+      textareaRef.current.focus();
 
-  useEffect(() => {
-    if (isClickable && arrowRef.current) {
-      setTimeout(() => {
-        const textarea = arrowRef.current;
-        textarea.focus();
-
-        // Move cursor to the end of text if user didn’t click inside manually
-        const len = textarea.value.length;
-        textarea.setSelectionRange(len, len);
-      }, 0);
+      if (cursorPosRef.current !== null) {
+        textareaRef.current.setSelectionRange(
+          cursorPosRef.current,
+          cursorPosRef.current
+        );
+      }
     }
-  }, [isClickable]);
-
+  }, [isSelected]);
 
   const handleChange = (e) => {
     setLabel(e.target.value);
-    if (data.onLabelChange) {
-      data.onLabelChange(e.target.value);
-    }
+    data.onLabelChange?.(e.target.value);
   };
 
+  // 🔹 store cursor position
+  const storeCursor = (e) => {
+    cursorPosRef.current = e.target.selectionStart;
+  };
+
+  // 🔹 clip path
   const clipPath = useMemo(() => {
     const arrowWidth = 24;
 
-    // RTL: Flip the arrow to point right
     if (isRTL) {
       return `polygon(
         ${width - 20}px ${height / 2}px,
@@ -57,7 +63,6 @@ const ArrowBoxNode = ({ data, id, selectedNodeId, isRTL }) => {
       )`;
     }
 
-    // LTR: Arrow points left (original)
     return `polygon(
       20px ${height / 2}px,
       0 0,
@@ -68,134 +73,96 @@ const ArrowBoxNode = ({ data, id, selectedNodeId, isRTL }) => {
     )`;
   }, [width, height, isRTL]);
 
-  const GRID_SIZE = 20;
-  const snap = (v) => Math.round(v / GRID_SIZE) * GRID_SIZE;
+  // 🔹 resize
+  const GRID = 20;
+  const snap = (v) => Math.round(v / GRID) * GRID;
 
+  const handleResize = (_, size) => {
+    if (!size) return;
 
-  const handleResize = (event, size) => {
-    if (
-      !size ||
-      typeof size.width === "undefined" ||
-      typeof size.height === "undefined"
-    ) {
-      console.warn("Size is undefined", size);
-      return;
-    }
-    const snappedWidth = snap(size.width);
-    const snappedHeight = snap(size.height);
+    const w = snap(size.width);
+    const h = snap(size.height);
 
-    setWidth(snappedWidth);
-    setHeight(snappedHeight);
+    setWidth(w);
+    setHeight(h);
 
-    if (data.updateWidthHeight) {
-      data.updateWidthHeight(id, { width: snappedWidth, height: snappedHeight });
-    }
+    data.updateWidthHeight?.(id, { width: w, height: h });
   };
 
-  const adjustHeight = (e) => {
-    const element = e.target;
-    if (!element) return;
-
-    element.style.height = "auto";
-    element.style.height = element.scrollHeight + "px";
-
-    const wrapper = element.parentElement;
-    if (wrapper) {
-      wrapper.style.height = element.scrollHeight + "px";
-    }
+  // 🔹 auto height textarea
+  const autoResize = (e) => {
+    const el = e.target;
+    el.style.height = "auto";
+    el.style.height = el.scrollHeight + "px";
   };
 
-  // Adjust textarea height dynamically
   useEffect(() => {
-    if (arrowRef.current) {
-      arrowRef.current.style.height = "auto";
-      arrowRef.current.style.height = arrowRef.current.scrollHeight + "px";
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height =
+        textareaRef.current.scrollHeight + "px";
     }
-  }, [label, width, height, selectedNodeId]);
+  }, [label, width, height]);
 
   return (
     <div
       style={{
-        ...styles.wrapper,
+        position: "relative",
         filter: data.hasNextLevel
           ? "drop-shadow(0px 0px 10px #0000004f)"
           : "none",
       }}
     >
       <div
-        className="borderBox"
         style={{
-          ...styles.arrowBox,
-          width: `${width}px`,
-          height: `${height}px`,
-          clipPath: clipPath,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          width,
+          height,
+          clipPath,
+          background: "red",
+          padding: "10px",
+          boxSizing: "border-box",
         }}
       >
-        <div style={styles.textareaWrapper}>
-          <textarea
-            ref={arrowRef}
-            value={label}
-            onChange={handleChange}
-            onInput={adjustHeight}
-            placeholder=""
-            style={styles.textarea}
-            rows={1}
-            maxLength={200}
-            className="mapleveltextarea"
-          />
-        </div>
+        <textarea
+          ref={textareaRef}
+          value={label}
+          onChange={handleChange}
+          onInput={autoResize}
+          onClick={(e) => e.stopPropagation()}
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            storeCursor(e);
+          }}
+          onKeyUp={storeCursor}
+          onSelect={storeCursor}
+          rows={1}
+          maxLength={200}
+          style={{
+            width: "100%",
+            background: "transparent",
+            border: "none",
+            outline: "none",
+            resize: "none",
+            color: "white",
+            textAlign: "center",
+            fontSize: "12px",
+            lineHeight: "1.1",
+            overflowWrap: "break-word",
+            whiteSpace: "pre-wrap",
+            fontFamily: "Poppins, sans-serif",
+          }}
+        />
       </div>
 
-      {isClickable && (
+      {isSelected && (
         <NodeResizer minWidth={120} minHeight={80} onResize={handleResize} handleClassName="customHandle"
           lineClassName="customLine" />
       )}
     </div>
   );
-};
-
-const styles = {
-  wrapper: {
-    position: "relative",
-    // width: "100%",
-    // height: "100%",
-  },
-  arrowBox: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    position: "relative",
-    textAlign: "center",
-    backgroundColor: "red",
-    color: "#002060",
-    padding: "10px",
-    boxSizing: "border-box",
-    overflow: "hidden",
-    border: "none",
-    transition: "width 0.2s ease, height 0.2s ease",
-  },
-  textareaWrapper: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    width: "100%",
-    height: "100%",
-    overflow: "hidden",
-  },
-  textarea: {
-    background: "transparent",
-    border: "none",
-    color: "white",
-    fontSize: "1rem",
-    width: "100%",
-    minHeight: "20px",
-    resize: "none",
-    outline: "none",
-    textAlign: "center",
-    overflowWrap: "break-word",
-    whiteSpace: "pre-wrap",
-    fontFamily: "'Poppins', sans-serif",
-  },
 };
 
 export default memo(ArrowBoxNode);

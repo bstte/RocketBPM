@@ -205,6 +205,7 @@ const styles = {
   },
   label: {
     fontSize: "12px",
+    lineHeight: "1.1",
     fontFamily: "'Poppins', sans-serif",
     color: "white",
     background: "transparent",
@@ -215,6 +216,7 @@ const styles = {
   },
   textView: {
     fontSize: "12px",
+    lineHeight: "1.1",
     fontFamily: "'Poppins', sans-serif",
     color: "white",
     textAlign: "center",

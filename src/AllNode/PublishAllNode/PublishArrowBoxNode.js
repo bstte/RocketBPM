@@ -45,7 +45,7 @@ const PublishArrowBoxNode = ({ data, isRTL }) => {
         }}
       >
         <div style={{ cursor: 'pointer' }}>
-          <span style={{ fontSize: "1rem", fontFamily: "'Poppins', sans-serif", color: "white" }}> {data.label}</span>
+          <span style={{ fontSize: "12px", lineHeight: "1.1", fontFamily: "'Poppins', sans-serif", color: "white" }}> {data.label}</span>
         </div>
       </div>
 

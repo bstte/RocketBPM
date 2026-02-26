@@ -5,6 +5,12 @@ const AssignRoleOwnerModal = ({ isOpen, onClose, onAssign, initialOwner, users =
     const [search, setSearch] = useState("");
     const [selectedUser, setSelectedUser] = useState(initialOwner || null);
 
+    React.useEffect(() => {
+        if (isOpen) {
+            setSelectedUser(initialOwner || null);
+        }
+    }, [isOpen, initialOwner]);
+
     const filteredUsers = users.filter((u) => {
         const fullName = `${u.user?.first_name || ""} ${u.user?.last_name || ""}`.toLowerCase();
         const email = (u.user?.email || "").toLowerCase();

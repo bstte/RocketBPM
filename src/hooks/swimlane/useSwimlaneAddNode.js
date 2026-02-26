@@ -19,7 +19,8 @@ export const useSwimlaneAddNode = ({
         type,
         position,
         label = "",
-        existingNodeData = null
+        existingNodeData = null,
+        edgeId = null
     ) => {
         let PageGroupId;
         const Page_Title = "Swimlane";
@@ -56,6 +57,8 @@ export const useSwimlaneAddNode = ({
 
                 data: {
                     label: type === "FreeText" || type === "StickyNote" ? label : "",
+                    edgeId: edgeId || existingNodeData?.edgeId || null,
+                    ...(existingNodeData || {}),
                     shape: type,
                     onLabelChange: (newLabel) =>
                         handleLabelChange(

@@ -2,7 +2,20 @@ import React, { useState } from "react";
 import AssignRoleOwnerModal from "./AssignRoleOwnerModal";
 import TranslationPopup from "../../../hooks/TranslationPopup";
 
-const ManageRoleGroupModal = ({ isOpen, onClose, onSave, initialData, supportedLanguages, langMap, existingRoles = [], allUsers = [], selectedLanguage }) => {
+const ManageRoleGroupModal = ({
+    isOpen,
+    onClose,
+    onSave,
+    initialData,
+    supportedLanguages,
+    langMap,
+    existingRoles = [],
+    allUsers = [],
+    selectedLanguage,
+    onUpdateRoleTranslations,
+    onUpdateRoleOwner,
+    onCreateRole // 🔥 Prop to call API from parent
+}) => {
     const [groupName, setGroupName] = useState(initialData?.groupName || initialData?.label || initialData?.details?.title || "");
     const [translations, setTranslations] = useState(initialData?.translations || {});
     const [selectedRoles, setSelectedRoles] = useState(initialData?.roles || []);
@@ -11,6 +24,11 @@ const ManageRoleGroupModal = ({ isOpen, onClose, onSave, initialData, supportedL
     const [showTranslationPopup, setShowTranslationPopup] = useState(false);
     const [translationDefaults, setTranslationDefaults] = useState({});
     const [translationTarget, setTranslationTarget] = useState(null); // 'group' or { roleId: ... }
+
+    // State for creating a new role
+    const [newRoleName, setNewRoleName] = useState("");
+    const [newRoleTranslations, setNewRoleTranslations] = useState({});
+    const [isCreatingRole, setIsCreatingRole] = useState(false);
 
     const langKey = langMap[selectedLanguage] || "EN";
     // console.log("node initialData 123", initialData);
@@ -21,13 +39,14 @@ const ManageRoleGroupModal = ({ isOpen, onClose, onSave, initialData, supportedL
 
     React.useEffect(() => {
         if (isOpen) {
+            // console.log("Modal opened, resetting state from initialData");
             // Handle both new data (groupName) and saved data (label or details.title)
             const name = initialData?.groupName || initialData?.label || initialData?.details?.title || "";
             setGroupName(name);
             setTranslations(initialData?.translations || {});
             setSelectedRoles(initialData?.roles || []);
         }
-    }, [isOpen, initialData]);
+    }, [isOpen]); // 🔥 Removed initialData from dependencies to prevent reset during updates
 
     const addRoleToGroup = (role) => {
         // Handle data structure from parsedDataExistingrole
@@ -38,7 +57,7 @@ const ManageRoleGroupModal = ({ isOpen, onClose, onSave, initialData, supportedL
             setSelectedRoles([...selectedRoles, {
                 id: roleId,
                 name: roleName,
-                owner: null,
+                owner: role.data?.owner || null,
                 data: role.data,
                 translations: role.data?.translations || {}
             }]);
@@ -50,15 +69,31 @@ const ManageRoleGroupModal = ({ isOpen, onClose, onSave, initialData, supportedL
     };
 
     const handleAssignOwner = (user) => {
+        const roleId = activeRoleForOwner.id;
+        // Update local state
         setSelectedRoles(prev => prev.map(r =>
-            r.id === activeRoleForOwner.id ? { ...r, owner: user } : r
+            r.id === roleId ? { ...r, owner: user } : r
         ));
+
+        // 🔥 Push update to Parent/Global state immediately
+        if (onUpdateRoleOwner) {
+            onUpdateRoleOwner(roleId, user);
+        }
     };
 
     const openTranslation = (target, existingTranslations) => {
+        // For roles, always prefer translations from existingRoles (One Source of Truth)
+        let translationsToUse = existingTranslations;
+        if (target?.roleId) {
+            const masterRole = existingRoles.find(er => (er.node_id || er.id) === target.roleId);
+            if (masterRole?.data?.translations) {
+                translationsToUse = masterRole.data.translations;
+            }
+        }
+
         const defaults = supportedLanguages.reduce((acc, langId) => {
             const langKey = langMap[langId] || `lang_${langId}`;
-            acc[langKey] = existingTranslations?.[langKey] || "";
+            acc[langKey] = translationsToUse?.[langKey] || "";
             return acc;
         }, {});
         setTranslationDefaults(defaults);
@@ -77,21 +112,46 @@ const ManageRoleGroupModal = ({ isOpen, onClose, onSave, initialData, supportedL
                 setGroupName(values[langKey]);
             }
         }
+        else if (translationTarget === "new_role") {
+            setNewRoleTranslations(values);
+            if (values[langKey]) {
+                setNewRoleName(values[langKey]);
+            }
+        }
         else if (translationTarget?.roleId) {
+            const roleId = translationTarget.roleId;
+
+            // Update local state
             setSelectedRoles(prev =>
                 prev.map(r =>
-                    r.id === translationTarget.roleId
-                        ? { ...r, translations: values }
+                    r.id === roleId
+                        ? { ...r, translations: values, name: values[langKey] || r.name } // 🔥 Update name locally for immediate feedback
                         : r
                 )
             );
+
+            // 🔥 Push update to Parent/Global state immediately
+            if (onUpdateRoleTranslations) {
+                onUpdateRoleTranslations(roleId, values);
+            }
         }
 
         setShowTranslationPopup(false);
     };
 
-    if (!isOpen) return null;
+    const handleInternalRoleCreate = async () => {
+        if (!newRoleName.trim()) return;
+        setIsCreatingRole(true);
+        try {
+            await onCreateRole(newRoleName, newRoleTranslations);
+            setNewRoleName("");
+            setNewRoleTranslations({});
+        } finally {
+            setIsCreatingRole(false);
+        }
+    };
 
+    if (!isOpen) return null;
     return (
         <div className="role-modal-overlay">
             <div className="role-modal-content wide">
@@ -139,7 +199,7 @@ const ManageRoleGroupModal = ({ isOpen, onClose, onSave, initialData, supportedL
                                                 checked={selected}
                                                 readOnly
                                             />
-                                            <span>{role.data?.details?.title || role.name}</span>
+                                            <span>{role.data?.translations?.[langKey] || role.data?.details?.title || role.name}</span>
                                         </div>
                                         {selected ? <span>✓</span> : <span>+</span>}
                                     </div>
@@ -147,7 +207,33 @@ const ManageRoleGroupModal = ({ isOpen, onClose, onSave, initialData, supportedL
                             })}
 
                             {existingRoles.length === 0 && <div style={{ padding: 10 }}>No roles found</div>}
-                            <button className="add-new-role-btn" onClick={() => alert("Create new role feature coming soon")}>+ Create New Role</button>
+                        </div>
+
+                        {/* 🔥 Create New Role Section */}
+                        <div className="create-new-role-box" style={{ marginTop: '15px', padding: '10px', borderTop: '1px solid #eee' }}>
+                            <h5 style={{ marginBottom: '8px' }}>Create New Role</h5>
+                            <div className="input-with-icon" style={{ display: 'flex', gap: '8px' }}>
+                                <input
+                                    type="text"
+                                    value={newRoleName}
+                                    placeholder="Enter role name..."
+                                    style={{ flex: 1, padding: '5px' }}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        setNewRoleName(val);
+                                        setNewRoleTranslations(prev => ({ ...prev, [langKey]: val }));
+                                    }}
+                                />
+                                <button className="icon-btn" onClick={() => openTranslation("new_role", newRoleTranslations)} title="Translate">🌐</button>
+                                <button
+                                    onClick={handleInternalRoleCreate}
+                                    disabled={!newRoleName.trim() || isCreatingRole}
+                                    className="add-btn"
+                                    style={{ padding: '5px 10px', backgroundColor: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                                >
+                                    {isCreatingRole ? "..." : "Create"}
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -162,17 +248,26 @@ const ManageRoleGroupModal = ({ isOpen, onClose, onSave, initialData, supportedL
                                 </tr>
                             </thead>
                             <tbody>
-                                {selectedRoles.map(role => (
-                                    <tr key={role.id}>
-                                        <td>{role.name}</td>
-                                        <td>{role.owner ? `${role.owner.first_name} ${role.owner.last_name}` : "Unassigned"}</td>
-                                        <td className="actions">
-                                            <button onClick={() => { setActiveRoleForOwner(role); setShowOwnerModal(true); }}>Assign Owner</button>
-                                            <button onClick={() => openTranslation({ roleId: role.id }, role.translations)}>Translate</button>
-                                            <button onClick={() => removeRoleFromGroup(role.id)} className="remove-btn">Remove</button>
-                                        </td>
-                                    </tr>
-                                ))}
+                                {selectedRoles.map(role => {
+                                    // Resolve live name and owner from existingRoles master list
+                                    const masterRole = existingRoles.find(er => (er.node_id || er.id) === role.id);
+
+                                    // 🔥 Prioritize local translations first so UI updates immediately after TranslationPopup submit
+                                    const displayName = role.translations?.[langKey] || masterRole?.data?.translations?.[langKey] || masterRole?.data?.details?.title || masterRole?.name || role.name;
+                                    const displayOwner = masterRole?.data?.owner || role.owner;
+
+                                    return (
+                                        <tr key={role.id}>
+                                            <td>{displayName}</td>
+                                            <td>{displayOwner ? `${displayOwner.first_name} ${displayOwner.last_name}` : "Unassigned"}</td>
+                                            <td className="actions">
+                                                <button onClick={() => { setActiveRoleForOwner({ ...role, owner: displayOwner }); setShowOwnerModal(true); }}>Assign Owner</button>
+                                                <button onClick={() => openTranslation({ roleId: role.id }, masterRole?.data?.translations || role.translations)}>Translate</button>
+                                                <button onClick={() => removeRoleFromGroup(role.id)} className="remove-btn">Remove</button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
                             </tbody>
                         </table>
                         {selectedRoles.length === 0 && <div style={{ padding: 20, textAlign: 'center', color: '#666' }}>No roles selected</div>}

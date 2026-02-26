@@ -788,6 +788,16 @@ export const moveNode = async (payload) => {
     }
 };
 
+export const publishMovedNode = async (payload) => {
+    try {
+        const response = await api.post('/nodes/publish-moved', payload);
+        return response.data;
+    } catch (error) {
+        console.error('Error publishing moved node:', error);
+        throw error;
+    }
+};
+
 export const contectCancelPublishing = async (payload) => {
     try {
         const response = await api.post('/process/cancel-publishing', payload);
@@ -841,6 +851,16 @@ export const getManagedProcesses = async (data) => {
     }
 };
 
-const apiExports = { saveNodes, getallpublishObject_Tolinkexistingmodel, getexistingrole, getNodes, checkPublishRecord, GetPublishedDate, checkRecord, Login, saveProcessTitle, defaultApi, filter_draft, getPublishedNodes, getdataByNodeId, duplicateNode, moveNode, getManagedProcesses };
+export const createRole = async (data) => {
+    try {
+        const response = await api.post('/roles/create', data);
+        return response.data;
+    } catch (error) {
+        console.error('Error creating role:', error);
+        throw error;
+    }
+};
+
+const apiExports = { createRole, saveNodes, getallpublishObject_Tolinkexistingmodel, getexistingrole, getNodes, checkPublishRecord, GetPublishedDate, checkRecord, Login, saveProcessTitle, defaultApi, filter_draft, getPublishedNodes, getdataByNodeId, duplicateNode, moveNode, getManagedProcesses };
 
 export default apiExports;

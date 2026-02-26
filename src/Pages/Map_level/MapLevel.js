@@ -18,7 +18,7 @@ import CustomAlert from "../../components/CustomAlert";
 import ArrowBoxNode from "../../AllNode/ArrowBoxNode";
 import PentagonNode from "../../AllNode/PentagonNode";
 import { getLevelKey } from "../../utils/getLevel";
-import { filter_draft, moveNode, contectApprovalStatus } from "../../API/api";
+import { filter_draft, moveNode, publishMovedNode, contectApprovalStatus } from "../../API/api";
 import { BreadcrumbsContext } from "../../context/BreadcrumbsContext";
 import CustomContextMenu from "../../components/CustomContextMenu";
 import { useSelector } from "react-redux";
@@ -202,7 +202,7 @@ const MapLevel = () => {
 
   const handleMoveConfirm = async (target) => {
     try {
-      await moveNode({
+      const response = await moveNode({
         node_id: selectedNode,
         target_process_id: target.processId,
         target_level: target.levelKey,
@@ -214,13 +214,47 @@ const MapLevel = () => {
       handlers.invalidateCache();
 
       // Clear cache for target level if target exists
-      if (target.targetProcess) {
-        const targetLevelKey = getLevelKey(target.targetLevel, target.targetParentId);
-        handlers.invalidateCache(target.targetProcess, targetLevelKey);
+      if (target.processId && target.levelKey) {
+        handlers.invalidateCache(target.processId, target.levelKey);
       }
 
       setShowMovePopup(false);
-      CustomAlert.success("Success", "Node moved successfully");
+
+      // If the node was published, ask if they want to publish it in the new location
+      if (response && response.was_published) {
+        CustomAlert.confirmAction({
+          title: "Object Was Published",
+          text: "The object you moved was published. Do you want to publish it here too?",
+          confirmBtnText: "Yes, Publish",
+          cancelBtnText: "No, Keep as Draft",
+          confirmCallback: async () => {
+            try {
+              setIsLoading(true);
+              await publishMovedNode({
+                node_id: response.node_id,
+                process_id: target.processId,
+                level: target.levelKey
+              });
+
+              // Clear cache for target level AGAIN after publishing
+              handlers.invalidateCache(target.processId, target.levelKey);
+
+              CustomAlert.success("Success", "Node moved and published successfully");
+              await fetchNodes(processDefaultlanguage_id);
+            } catch (err) {
+              console.error("Failed to publish moved node", err);
+              CustomAlert.error("Error", "Failed to publish moved node");
+            } finally {
+              setIsLoading(false);
+            }
+          },
+          cancelCallback: () => {
+            CustomAlert.success("Success", "Node moved successfully as Draft");
+          }
+        });
+      } else {
+        CustomAlert.success("Success", "Node moved successfully");
+      }
 
       // Refetch to update UI
       setIsLoading(true);
@@ -247,54 +281,7 @@ const MapLevel = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentLevel]);
 
-  // Separate effect for RTL/Language updates based on loaded data
-  // useEffect(() => {
-  //   const savedLang = localStorage.getItem("selectedLanguageId");
-  //   if (languages.length > 0) {
-  //     const langId = savedLang ? parseInt(savedLang) : processDefaultlanguage_id;
-  //     if (langId) {
-  //       const currentLang = languages.find(l => l.id === langId);
-  //       if (currentLang?.code) {
-  //         const rtl = isRTLLanguage(currentLang.code);
-  //         const dir = getDirection(currentLang.code);
-  //         setIsRTL(rtl);
-  //         setDirection(dir);
-  //       }
-  //     }
-  //   }
-  // }, [languages, processDefaultlanguage_id]);
 
-  // Update RTL based on process language
-  // useEffect(() => {
-  //   if (processDefaultlanguage_id && languages.length > 0) {
-  //     const currentLang = languages.find(l => l.id === processDefaultlanguage_id);
-  //     if (currentLang?.code) {
-  //       const rtl = isRTLLanguage(currentLang.code);
-  //       const dir = getDirection(currentLang.code);
-  //       setIsRTL(rtl);
-  //       setDirection(dir);
-  //     }
-  //   }
-  // }, [processDefaultlanguage_id, languages]);
-
-  // Listen for language switcher changes
-  // useEffect(() => {
-  //   const handleLanguageChange = () => {
-  //     const savedLangId = localStorage.getItem("selectedLanguageId");
-  //     if (savedLangId && languages.length > 0) {
-  //       const currentLang = languages.find(l => l.id === parseInt(savedLangId));
-  //       if (currentLang?.code) {
-  //         const rtl = isRTLLanguage(currentLang.code);
-  //         const dir = getDirection(currentLang.code);
-  //         setIsRTL(rtl);
-  //         setDirection(dir);
-  //       }
-  //     }
-  //   };
-
-  //   window.addEventListener('languageChanged', handleLanguageChange);
-  //   return () => window.removeEventListener('languageChanged', handleLanguageChange);
-  // }, [languages]);
 
   useCheckFavorite({ id: processId, nodes, setIsFavorite });
 
