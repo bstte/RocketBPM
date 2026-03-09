@@ -1,7 +1,7 @@
 import React, { memo, useState, useEffect, useRef } from "react";
 import { NodeResizer } from "@xyflow/react";
 
-const StickyNote = ({ data, id, selectedNodeId, editable }) => {
+const StickyNote = ({ data, id, selected, editable }) => {
   const [label, setLabel] = useState(data.label || "");
   const [width, setWidth] = useState(data.width_height?.width || 240);
   const [height, setHeight] = useState(data.width_height?.height || 180);
@@ -9,7 +9,7 @@ const StickyNote = ({ data, id, selectedNodeId, editable }) => {
   const textareaRef = useRef(null);
   const cursorPosRef = useRef(null);
 
-  const isSelected = selectedNodeId === id;
+  const isSelected = selected;
 
   // 🔹 sync size
   useEffect(() => {
@@ -27,14 +27,17 @@ const StickyNote = ({ data, id, selectedNodeId, editable }) => {
   // 🔹 focus without cursor jump
   useEffect(() => {
     if (isSelected && textareaRef.current && editable) {
-      textareaRef.current.focus();
+      const timeout = setTimeout(() => {
+        textareaRef.current?.focus();
 
-      if (cursorPosRef.current !== null) {
-        textareaRef.current.setSelectionRange(
-          cursorPosRef.current,
-          cursorPosRef.current
-        );
-      }
+        if (cursorPosRef.current !== null) {
+          textareaRef.current.setSelectionRange(
+            cursorPosRef.current,
+            cursorPosRef.current
+          );
+        }
+      }, 50);
+      return () => clearTimeout(timeout);
     }
   }, [isSelected, editable]);
 
@@ -132,9 +135,9 @@ const StickyNote = ({ data, id, selectedNodeId, editable }) => {
       </div>
 
       {isSelected && (
-       
-         <NodeResizer minWidth={120} minHeight={80} onResize={handleResize} handleClassName="customHandle"
-                  lineClassName="customLine" />
+
+        <NodeResizer minWidth={120} minHeight={80} onResize={handleResize} handleClassName="customHandle"
+          lineClassName="customLine" />
       )}
     </div>
   );

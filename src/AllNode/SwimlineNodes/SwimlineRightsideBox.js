@@ -18,7 +18,8 @@ const SwimlineRightsideBox = ({ data, processDefaultlanguage_id, langMap }) => {
     const el = contentEditableRef.current;
     if (!el) return;
 
-    requestAnimationFrame(() => {
+    // Use setTimeout for more reliable focus across browsers
+    setTimeout(() => {
       if (!contentEditableRef.current) return;
 
       const el = contentEditableRef.current;
@@ -35,7 +36,7 @@ const SwimlineRightsideBox = ({ data, processDefaultlanguage_id, langMap }) => {
       }
 
       setAutoFocus(false);
-    });
+    }, 0);
   }, [autoFocus]);
 
 
@@ -88,7 +89,9 @@ const SwimlineRightsideBox = ({ data, processDefaultlanguage_id, langMap }) => {
     >
       <div className="borderBox" style={{
         ...styles.box,
-
+        // Only add shadow if it's a role group
+        filter: data.isRoleGroup ? 'drop-shadow(0px 0px 10px #0000004f)' : 'none',
+        // border: data.isRoleGroup ? 'none' : '1px solid #002060',
       }}>
         <ContentEditable
           innerRef={contentEditableRef}
@@ -102,12 +105,18 @@ const SwimlineRightsideBox = ({ data, processDefaultlanguage_id, langMap }) => {
           onClick={(e) => e.stopPropagation()}
         />
       </div>
-      {data.isRoleGroup && isHovered && data.roles && (
-        <RoleGroupTooltip
-          roles={data.roles}
-          langMap={langMap}
-          processDefaultlanguage_id={processDefaultlanguage_id}
-        />
+      {data.isRoleGroup && (isHovered || data.forceShowTooltip) && data.roles && (
+        <div
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          style={{ position: 'absolute', left: '100%', top: '50%', transform: 'translateY(-50%)', zIndex: 1000000 }}
+        >
+          <RoleGroupTooltip
+            roles={data.roles}
+            langMap={langMap}
+            processDefaultlanguage_id={processDefaultlanguage_id}
+          />
+        </div>
       )}
 
     </div>
@@ -134,6 +143,7 @@ const styles = {
     height: '100%',
     boxSizing: 'border-box',
     overflow: 'hidden',
+    // filter: 'drop-shadow(0px 0px 10px #0000004f)',
   },
   contentEditable: {
     background: 'transparent',

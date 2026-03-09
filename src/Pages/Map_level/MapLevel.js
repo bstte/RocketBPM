@@ -42,10 +42,12 @@ import { isRTLLanguage, getDirection } from "../../utils/rtlUtils";
 import { useLanguages } from "../../hooks/useLanguages";
 import MoveNodePopup from "../../components/MoveNodePopup";
 import { useApprovalStatus } from "../../hooks/useApprovalStatus";
+import { useTranslation } from "../../hooks/useTranslation";
 
 // Custom Hooks
 import { useMapLevelState } from "./hooks/useMapLevelState";
 import { useMapLevelHandlers } from "./hooks/useMapLevelHandlers";
+import { useReconstructBreadcrumbs } from "../../hooks/useReconstructBreadcrumbs";
 
 const MapLevel = () => {
   const state = useMapLevelState();
@@ -88,11 +90,15 @@ const MapLevel = () => {
   const location = useLocation();
   const LoginUser = useSelector((state) => state.user.user);
   const langMap = useLangMap();
+  const t = useTranslation();
   const { goToProcess } = useProcessNavigation();
   const currentLevel = level ? parseInt(level, 10) : 0;
   const currentParentId = parentId || null;
   const { addBreadcrumb, removeBreadcrumbsAfter, breadcrumbs } = useContext(BreadcrumbsContext);
   const { mode } = useParams();
+
+  // Reconstruct breadcrumbs for direct links
+  useReconstructBreadcrumbs("draft");
 
   // Use custom hook for approval status
   const { pendingApproval } = useApprovalStatus({
@@ -138,10 +144,10 @@ const MapLevel = () => {
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
   const memoizedNodeTypes = useMemo(() => ({
-    progressArrow: (props) => <ArrowBoxNode {...props} selectedNodeId={selectedNodeId} isRTL={isRTL} />,
-    pentagon: (props) => <PentagonNode {...props} selectedNodeId={selectedNodeId} isRTL={isRTL} />,
-    StickyNote: (props) => <StickyNote {...props} selectedNodeId={selectedNodeId} editable={true} />,
-  }), [selectedNodeId]);
+    progressArrow: (props) => <ArrowBoxNode {...props} isRTL={isRTL} />,
+    pentagon: (props) => <PentagonNode {...props} isRTL={isRTL} />,
+    StickyNote: (props) => <StickyNote {...props} editable={true} />,
+  }), [isRTL]);
 
   const memoizedEdgeTypes = useMemo(() => ({
     smoothstep: SmoothStepEdge,
@@ -198,6 +204,7 @@ const MapLevel = () => {
     goToProcess,
     addBreadcrumb,
     langMap,
+    t
   });
 
   const handleMoveConfirm = async (target) => {
@@ -354,7 +361,7 @@ const MapLevel = () => {
     try {
       const response = await filter_draft(state.ParentPageGroupId);
       if (response.data === true) {
-        alert("Publish all parent models first");
+        CustomAlert.warning(t("Warning"), t("Publish all parent models first"));
         return false;
       }
     } catch (error) {
@@ -363,7 +370,7 @@ const MapLevel = () => {
     const latestData = await refetch();
     const contact = latestData?.contact_info;
     if (!contact || Object.values(contact).every(list => !list || list.length === 0)) {
-      alert("Please assign Process Owner / Process Domain Owner and Process Modeler to publish the model.");
+      CustomAlert.info(t("Information"), t("Please assign Process Owner / Process Domain Owner and Process Modeler to publish the model."));
       return;
     }
     setShowPublishPopup(true);

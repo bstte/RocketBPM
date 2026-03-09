@@ -84,7 +84,7 @@ const VersionPopup = ({
       }
     }
     setLoading(false)
-  }, [versionPopupPayload, selectedLanguage]);
+  }, [versionPopupPayload, selectedLanguage,langMap]);
 
   useEffect(() => {
     if (!responseData || !langMap || Object.keys(langMap).length === 0)
@@ -245,7 +245,7 @@ const VersionPopup = ({
             .includes(searchQuery.toLowerCase())
         );
 
-
+  console.log("assignedUsers", assignedUsers)
 
   // Roles config (different for map vs swimlane)
   const roleBlocks =

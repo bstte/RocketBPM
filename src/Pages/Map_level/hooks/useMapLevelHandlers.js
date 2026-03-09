@@ -31,6 +31,7 @@ export const useMapLevelHandlers = ({
     goToProcess,
     addBreadcrumb,
     langMap,
+    t
 }) => {
     const dispatch = useDispatch();
     const invalidateCache = (targetProcessId = null, targetLevelParam = null) => {
@@ -147,9 +148,10 @@ export const useMapLevelHandlers = ({
             animated: true,
             page_title: "ProcessMap",
             page_group_id: PageGroupId,
+            selected: true,
         };
 
-        setNodes((nds) => nds.concat(newNode));
+        setNodes((nds) => nds.map(n => ({ ...n, selected: false })).concat(newNode));
         setHasUnsavedChanges(true);
         setSelectedNodeId(newNode.id);
         setTimeout(() => {
@@ -167,21 +169,21 @@ export const useMapLevelHandlers = ({
 
             if (selectedNodeData?.data?.LinkToStatus === true) {
                 CustomAlert.warning(
-                    "Cannot Delete",
-                    "This node is already linked. You cannot delete a linked node."
+                    t("cannot_delete"),
+                    t("this_node_is_already_linked_you_cannot_delete_a_linked_node")
                 );
                 return;
             }
             if (state.checkRecord?.status === true) {
                 CustomAlert.warning(
-                    "Cannot Delete",
-                    "This node has objects inside. Please delete them first."
+                    t("cannot_delete"),
+                    t("this_node_has_objects_inside_please_delete_them_first")
                 );
                 return;
             }
             CustomAlert.confirm(
-                "Delete Node",
-                "Are you sure you want to delete this node?",
+                t("delete_node"),
+                t("are_you_sure_you_want_to_delete_this_node"),
                 () => {
                     setNodes((nds) => nds.filter((node) => node.id !== state.selectedNode));
                     setEdges((eds) =>
@@ -203,7 +205,7 @@ export const useMapLevelHandlers = ({
             try {
                 const response = await filter_draft(state.ParentPageGroupId);
                 if (response.data === true) {
-                    alert("Publish all parent models first");
+                    alert(t("publish_all_parent_models_first"));
                     return false;
                 }
             } catch (error) {
@@ -241,7 +243,7 @@ export const useMapLevelHandlers = ({
                 })),
             });
 
-            CustomAlert.success("Success", "Nodes saved successfully");
+            CustomAlert.toast(t("nodes_saved_successfully"));
             setHasUnsavedChanges(false);
             invalidateCache();
         } catch (error) {
@@ -259,7 +261,14 @@ export const useMapLevelHandlers = ({
                     resolve(true);
                 },
                 () => resolve(true),
-                () => resolve(false)
+                () => resolve(false),
+                {
+                    title: t("you_have_unsaved_changes"),
+                    text: t("do_you_want_to_save_before_exiting"),
+                    confirmButtonText: t("exit_save_exit"),
+                    denyButtonText: t("exit_without_saving"),
+                    cancelButtonText: t("cancel")
+                }
             );
         });
     }, [state.hasUnsavedChanges, handleSaveNodes]);
@@ -373,6 +382,11 @@ export const useMapLevelHandlers = ({
                 () => {
                     // Cancel
                     resolve(false);
+                },
+                {
+                    title: t("save_changes_before_switching_language"),
+                    confirmButtonText: t("yes_save_switch"),
+                    cancelButtonText: t("no_discard_changes")
                 }
             );
         });
@@ -490,8 +504,10 @@ export const useMapLevelHandlers = ({
         };
         await editorialPublishAPI(payload);
 
-        await CustomAlert.success("Success", "Editorial Change submitted successfully");
-
+        await CustomAlert.success(
+            t("success"),
+            t("editorial_change_submitted_successfully")
+        );
         await handleBack();
 
         goToProcess({
@@ -506,7 +522,7 @@ export const useMapLevelHandlers = ({
 
     const handleContentSubmit = useCallback(async (data) => {
         if (state.revisionData?.revisionText === "") {
-            alert("revision text is required");
+            alert(t("revision_text_is_required"));
             return false;
         }
         setShowContentPopup(false);
@@ -535,8 +551,10 @@ export const useMapLevelHandlers = ({
         };
         await contentChangeRequest(payload);
 
-        await CustomAlert.success("Success", "Content submitted successfully");
-
+        await CustomAlert.success(
+            t("success"),
+            t("content_submitted_successfully")
+        );
         await handleBack();
 
         goToProcess({
@@ -552,7 +570,9 @@ export const useMapLevelHandlers = ({
     const handleDuplicateNode = useCallback(async () => {
         if (!state.selectedNode) return;
 
-        const ConfirmDuplicate = window.confirm("Are you sure you want to duplicate this node and all its sub-levels?");
+        const ConfirmDuplicate = window.confirm(
+            t("are_you_sure_you_want_to_duplicate_this_node_and_all_its_sub_levels")
+        );
         if (!ConfirmDuplicate) return;
 
         setShowPopup(false);
@@ -564,7 +584,7 @@ export const useMapLevelHandlers = ({
                 level: `level${currentLevel}${currentParentId ? `_${currentParentId}` : ""}`, // Ensure correct level string format
                 user_id: LoginUser?.id
             });
-            CustomAlert.success("Success", "Node duplicated successfully");
+            CustomAlert.toast(t("node_duplicated_successfully"));
 
             // Refresh nodes to show the new duplicate
             // We use the same fetch implementation as initial load

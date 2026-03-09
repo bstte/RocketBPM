@@ -15,14 +15,22 @@ import StickyNote from "../../AllNode/StickyNote";
 import Header from "../../components/Header";
 import { getVersionViewData } from "../../API/api";
 import { useDynamicHeight } from "../../hooks/useDynamicHeight";
+import VersionPopupView from "../../components/VersionPopupView";
+import { useSelector } from "react-redux";
 
 const DraftProcessMapVersion = () => {
+  const user = useSelector((state) => state.user.user);
   const { processId, level, version, pageTitle, user_id, currentParentId } =
     useParams();
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
   const [Title, SetTitle] = useState("");
   const [currentModeltitle, SetcurrentModeltitle] = useState("");
+
+  const [showVersionPopup, setShowVersionPopup] = useState(false);
+  const [contactInfo, setContactInfo] = useState(null);
+  const [revisionInfo, setRevisionInfo] = useState(null);
+  const [assignedUsers, setAssignedUsers] = useState([]);
 
   // const windowHeight = window.innerHeight;
   // const totalHeight = 0;
@@ -51,51 +59,97 @@ const DraftProcessMapVersion = () => {
     }),
     []
   );
+  const [supportedLanguages, setSupportedLanguages] = useState([]);
+  const [selectedLanguage, setSelectedLanguage] = useState(() => {
+    const savedLang = localStorage.getItem("selectedLanguageId");
+    return savedLang ? parseInt(savedLang) : null;
+  });
+  const [originalDefaultLanguageId, setOriginalDefaultLanguageId] = useState(null);
+
+  const fetchVersionData = async (language_id = null) => {
+    try {
+      const response = await getVersionViewData(
+        processId,
+        level,
+        version,
+        pageTitle,
+        user_id,
+        currentParentId,
+        language_id
+      );
+      const {
+        nodes,
+        edges,
+        title,
+        processDefaultlanguage_id,
+        supportedLanguages,
+        OriginalDefaultlanguge_id,
+        contact_info,
+        revision_info,
+        assigned_users
+      } = response;
+      SetcurrentModeltitle(title);
+      SetTitle(nodes[0]?.version);
+      setSupportedLanguages(supportedLanguages || []);
+      setSelectedLanguage(processDefaultlanguage_id);
+      setOriginalDefaultLanguageId(OriginalDefaultlanguge_id);
+
+      setContactInfo(contact_info);
+      setRevisionInfo(revision_info);
+      setAssignedUsers(assigned_users || []);
+
+      const parsedNodes = nodes.map((node) => ({
+        ...node,
+        data: {
+          ...JSON.parse(node.data),
+          width_height: JSON.parse(node.measured),
+        },
+        id: node.node_id,
+        position: JSON.parse(node.position),
+        draggable: false,
+      }));
+
+      const parsedEdges = edges.map((edge) => ({
+        ...edge,
+        id: edge.edge_id,
+        source: edge.source,
+        target: edge.target,
+        animated: edge.animated,
+        style: { stroke: "#002060", strokeWidth: 2 },
+        type: "step",
+      }));
+      console.log("parsedNodes", parsedNodes)
+
+
+      setNodes(parsedNodes);
+      setEdges(parsedEdges);
+    } catch (error) {
+      console.error("Error fetching version data:", error);
+      alert("Error fetching versioned data");
+    }
+  };
+
   useEffect(() => {
-    const fetchVersionData = async () => {
-      try {
-        const response = await getVersionViewData(
-          processId,
-          level,
-          version,
-          pageTitle,
-          user_id,
-          currentParentId
-        );
-        const { nodes, edges, title } = response;
-        SetcurrentModeltitle(title);
-        SetTitle(nodes[0]?.version);
-        const parsedNodes = nodes.map((node) => ({
-          ...node,
-          data: {
-            ...JSON.parse(node.data),
-            width_height: JSON.parse(node.measured),
-          },
-          id: node.node_id,
-          position: JSON.parse(node.position),
-          draggable: false,
-        }));
-
-        const parsedEdges = edges.map((edge) => ({
-          ...edge,
-          id: edge.edge_id,
-          source: edge.source,
-          target: edge.target,
-          animated: edge.animated,
-          style: { stroke: "#002060", strokeWidth: 2 },
-          type: "step",
-        }));
-
-        setNodes(parsedNodes);
-        setEdges(parsedEdges);
-      } catch (error) {
-        console.error("Error fetching version data:", error);
-        alert("Error fetching versioned data");
-      }
-    };
-
     fetchVersionData();
   }, [processId, level, version, pageTitle]);
+
+  const handleLanguageSwitch = (langId) => {
+    localStorage.setItem("selectedLanguageId", langId);
+    setSelectedLanguage(langId);
+    console.log("langId", langId);
+    fetchVersionData(langId);
+  };
+
+  const onShowVersion = () => {
+    setShowVersionPopup(true);
+  };
+
+  const viewVersion = (pid, lvl, v) => {
+    navigate(
+      `/process/view/${pid}/${lvl}/${v}/${pageTitle}/${user_id}/${currentParentId}`
+    );
+    setShowVersionPopup(false);
+  };
 
   const styles = {
     appContainer: {
@@ -126,15 +180,40 @@ const DraftProcessMapVersion = () => {
 
   return (
     <div>
+      {showVersionPopup && (
+        <VersionPopupView
+          processId={processId}
+          currentLevel={level}
+          currentParentId={currentParentId}
+          onClose={() => setShowVersionPopup(false)}
+          viewVersion={viewVersion}
+          LoginUser={user}
+          title={currentModeltitle}
+          // Pass overridden data from API
+          type={pageTitle === "Swimlane" ? "Swimlane" : "ProcessMaps"}
+          selectedLanguage={selectedLanguage}
+          OriginalDefaultlanguge_id={originalDefaultLanguageId}
+          contact_info={contactInfo}
+          revision_info={revisionInfo}
+          assigned_users={assignedUsers}
+          status="Published"
+          hideVersionTab={true}
+        />
+      )}
       <Header
-  title={`${currentModeltitle} (Version: ${Title})`}
+        title={`${currentModeltitle} (Version: ${Title})`}
         Page={"ViewProcessmapVersion"}
         iconNames={{}} // ✅ prevent crash if Header uses Object.keys
-        onSave={() => {}} // optional stub functions
-        onPublish={() => {}}
+        onSave={() => { }} // optional stub functions
+        onPublish={() => { }}
+        onShowVersion={onShowVersion}
         handleBackdata={() => {
           navigate(-1);
         }}
+        supportedLanguages={supportedLanguages}
+        selectedLanguage={selectedLanguage}
+        OriginalDefaultlanguge_id={originalDefaultLanguageId}
+        handleSupportViewlangugeId={handleLanguageSwitch}
       />
       <ReactFlowProvider>
         <div

@@ -29,6 +29,7 @@ import { useLanguages } from "../../../hooks/useLanguages";
 // Custom Hooks
 import { useMapLevelViewState } from "../hooks/useMapLevelViewState";
 import { useMapLevelViewHandlers } from "../hooks/useMapLevelViewHandlers";
+import { useReconstructBreadcrumbs } from "../../../hooks/useReconstructBreadcrumbs";
 
 const PublishedMapLevel = () => {
   const state = useMapLevelViewState();
@@ -55,6 +56,9 @@ const PublishedMapLevel = () => {
   const currentLevel = level ? parseInt(level, 10) : 0;
   const currentParentId = parentId || null;
   const { addBreadcrumb, removeBreadcrumbsAfter, breadcrumbs, setBreadcrumbs } = useContext(BreadcrumbsContext);
+
+  // Reconstruct breadcrumbs for direct links
+  useReconstructBreadcrumbs("publish");
 
   // Local RTL state based on process language
   const [isRTL, setIsRTL] = useState(false);

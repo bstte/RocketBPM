@@ -1,9 +1,9 @@
 import { memo, useState, useEffect, useRef, useMemo } from "react";
 import { NodeResizer } from "@xyflow/react";
 
-const ArrowBoxNode = ({ data, id, selectedNodeId, isRTL }) => {
+const ArrowBoxNode = ({ data, id, selected, isRTL }) => {
   const [label, setLabel] = useState(data.label || "");
-  const isSelected = selectedNodeId === id;
+  const isSelected = selected;
 
   const textareaRef = useRef(null);
   const cursorPosRef = useRef(null);
@@ -27,14 +27,17 @@ const ArrowBoxNode = ({ data, id, selectedNodeId, isRTL }) => {
   // 🔹 focus WITHOUT overriding cursor
   useEffect(() => {
     if (isSelected && textareaRef.current) {
-      textareaRef.current.focus();
+      const timeout = setTimeout(() => {
+        textareaRef.current?.focus();
 
-      if (cursorPosRef.current !== null) {
-        textareaRef.current.setSelectionRange(
-          cursorPosRef.current,
-          cursorPosRef.current
-        );
-      }
+        if (cursorPosRef.current !== null) {
+          textareaRef.current.setSelectionRange(
+            cursorPosRef.current,
+            cursorPosRef.current
+          );
+        }
+      }, 50);
+      return () => clearTimeout(timeout);
     }
   }, [isSelected]);
 

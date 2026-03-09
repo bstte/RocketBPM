@@ -276,25 +276,25 @@ const Header = ({
 
         <div style={styles.mhcolright} className="ss_header_new_right">
           <div style={styles.loginuserbox} className="ss_hed_rit_user_secnew">
-            {Page !== "ViewProcessmapVersion" && (
-              <LanguageDropdown
-                supportedLanguages={supportedLanguages}
-                selectedLanguage={selectedLanguage}
-                onSelect={(langId) => handleSupportViewlangugeId(langId)}
-              />
-            )}
+            <LanguageDropdown
+              supportedLanguages={supportedLanguages}
+              selectedLanguage={selectedLanguage}
+              onSelect={(langId) => handleSupportViewlangugeId(langId)}
+            />
 
-            {(Page === "Published" || Page === "ViewPublishswimlane") && (
+            {(Page === "Published" || Page === "ViewPublishswimlane" || Page === "ViewProcessmapVersion") && (
               <>
-                <button
-                  onClick={() => onSave("draft")}
-                  style={{
-                    ...styles.saveButton,
-                    backgroundColor: "#002060",
-                  }}
-                >
-                  {t("View_draft")}
-                </button>
+                {Page !== "ViewProcessmapVersion" && (
+                  <button
+                    onClick={() => onSave("draft")}
+                    style={{
+                      ...styles.saveButton,
+                      backgroundColor: "#002060",
+                    }}
+                  >
+                    {t("View_draft")}
+                  </button>
+                )}
                 <div
                   onClick={onShowVersion}
                   title="Version Info"
@@ -327,32 +327,36 @@ const Header = ({
                     </g>
                   </svg>
                 </div>
-                {isFavorite ? (
-                  <div className="headericons active">
-                    <img
-                      src={`${process.env.PUBLIC_URL}/img/star-solid.svg`}
-                      alt="Star"
-                      onClick={savefav}
-                    />
-                  </div>
-                ) : (
+                {Page !== "ViewProcessmapVersion" && (
                   <>
-                    <div className="headericons">
-                      <img
-                        src={`${process.env.PUBLIC_URL}/img/star-regular.svg`}
-                        alt="Star"
-                        onClick={savefav}
-                      />
-                    </div>
+                    {isFavorite ? (
+                      <div className="headericons active">
+                        <img
+                          src={`${process.env.PUBLIC_URL}/img/star-solid.svg`}
+                          alt="Star"
+                          onClick={savefav}
+                        />
+                      </div>
+                    ) : (
+                      <>
+                        <div className="headericons">
+                          <img
+                            src={`${process.env.PUBLIC_URL}/img/star-regular.svg`}
+                            alt="Star"
+                            onClick={savefav}
+                          />
+                        </div>
+                      </>
+                    )}
+
+                    <ShareDropdown
+                      processId={processId}
+                      processName={title}
+                      t={t}
+                      iconClass="headericons_1"
+                    />
                   </>
                 )}
-
-                <ShareDropdown
-                  processId={processId}
-                  processName={title}
-                  t={t}
-                  iconClass="headericons_1"
-                />
               </>
             )}
 
@@ -391,35 +395,31 @@ const Header = ({
                 )}
 
                 {canShowEdit && (
-                  <div>
-                    <button
-                      onClick={() => onSave("editdraft")}
-                      style={{
-                        ...styles.saveButton,
-                        backgroundColor: "#002060",
-                      }}
-                    >
-                      {Page === "ViewDraftmodel"
-                        ? `${t("EDIT_MODEL")}`
-                        : `${t("EDIT_SWIMLANE_MODEL")}`}
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => onSave("editdraft")}
+                    style={{
+                      ...styles.saveButton,
+                      backgroundColor: "#002060",
+                    }}
+                  >
+                    {Page === "ViewDraftmodel"
+                      ? `${t("EDIT_MODEL")}`
+                      : `${t("EDIT_SWIMLANE_MODEL")}`}
+                  </button>
                 )}
 
 
 
                 {checkpublish && (
-                  <div>
-                    <button
-                      onClick={() => onSave("published")}
-                      style={{
-                        ...styles.saveButton,
-                        backgroundColor: "#002060",
-                      }}
-                    >
-                      {t("View_published")}
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => onSave("published")}
+                    style={{
+                      ...styles.saveButton,
+                      backgroundColor: "#002060",
+                    }}
+                  >
+                    {t("View_published")}
+                  </button>
                 )}
 
                 <div
@@ -775,13 +775,14 @@ const styles = {
     transition: "transform 0.3s ease",
   },
   saveButton: {
-    padding: "10px 20px",
+    padding: "6px 16px",
     backgroundColor: "#28a745", // Green color for visibility
     color: "#fff",
     border: "none",
     borderRadius: "5px",
     cursor: "pointer",
-    fontSize: "16px",
+    fontSize: "14px",
+    whiteSpace: "nowrap",
     transition: "background-color 0.3s ease",
   },
   mainheader: {

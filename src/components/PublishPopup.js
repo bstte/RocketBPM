@@ -4,6 +4,7 @@ import "react-quill/dist/quill.snow.css";
 import Modal from "./Modal";
 import { versionlist } from "../API/api";
 import { useLangMap } from "../hooks/useLangMap";
+import { useTranslation } from "../hooks/useTranslation";
 
 const PublishPopup = ({
   isOpen,
@@ -19,7 +20,7 @@ const PublishPopup = ({
 
   const langMap = useLangMap();
 
-
+  const t = useTranslation();
 
 
   useEffect(() => {
@@ -62,29 +63,29 @@ const PublishPopup = ({
   return (
     <Modal modalStyle={{ width: "500px" }} >
 
-      <h2 style={styles.heading}>Publish Process</h2>
+      <h2 style={styles.heading}>{t("publish_process")}</h2>
 
       <hr />
 
-      <h3 style={styles.subheading}>Classify Change</h3>
+      <h3 style={styles.subheading}>{t("classify_change")}</h3>
 
       <hr />
 
-      <label style={styles.label}>Revision Info:</label>
+      <label style={styles.label}>{t("revision_info")}:</label>
 
-      {/* ==== ReactQuill Added Here ==== */}
-      <ReactQuill
-        value={revisionText}
-        onChange={(value) => setRevisionText(value)}
-        style={{ height: "120px", marginBottom: "20px" }}
-      />
-      {/* ================================= */}
+      <div style={{ height: "180px", marginBottom: "50px" }}>
+        <ReactQuill
+          value={revisionText}
+          onChange={(value) => setRevisionText(value)}
+          style={{ height: "100%" }}
+        />
+      </div>
 
       <hr />
 
-      <h3 style={styles.subheading}>Classification of Changes:</h3>
+      <h3 style={styles.subheading}>{t("classification_of_changes")}:</h3>
       <div style={styles.checkboxGroup}>
-        {/* <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
+        <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
           <input
             type="radio"
             name="changeType"
@@ -94,8 +95,8 @@ const PublishPopup = ({
               setEditorialChange(false);
             }}
           />
-          Content Change
-        </label> */}
+          {t("content_change")}
+        </label>
 
         <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
           <input
@@ -107,14 +108,14 @@ const PublishPopup = ({
               setClassificationChange(false);
             }}
           />
-          Editorial Change
+          {t("editorial_change")}
         </label>
       </div>
 
 
       <div style={styles.footer}>
         <button className="popup-button cancel" onClick={onClose}>
-          Cancel
+          {t("Cancel")}
         </button>
 
         <button
@@ -139,7 +140,7 @@ const PublishPopup = ({
             });
           }}
         >
-          Next
+          {t("next")}
         </button>
       </div>
 

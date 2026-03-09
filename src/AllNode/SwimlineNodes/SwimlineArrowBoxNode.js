@@ -19,24 +19,23 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
 
   const navigate = useNavigate();
 
-  const handleBoxClick = () => {
-    setIsEditing(true);
-    setTimeout(() => {
-      contentEditableRef.current?.focus();
-    }, 0);
+  const handleBoxClick = (e) => {
+    // If the click is already on the ContentEditable, don't do anything
+    if (e.target.classList.contains("nodrag")) {
+      return;
+    }
 
-    if (contentEditableRef.current) {
-      setTimeout(() => {
-        const el = contentEditableRef.current;
-        el.focus();
+    if (contentEditableRef.current && document.activeElement !== contentEditableRef.current) {
+      contentEditableRef.current.focus();
 
-        const range = document.createRange();
-        range.selectNodeContents(el);
-        range.collapse(false); // Move caret to end
-        const selection = window.getSelection();
-        selection.removeAllRanges();
-        selection.addRange(range);
-      }, 0);
+      // Only move to end if we are explicitly focusing via click on the BOX (not text)
+      const el = contentEditableRef.current;
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      range.collapse(false);
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
     }
   };
 
@@ -48,15 +47,8 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
   };
 
   const handleFocus = (e) => {
-    const selection = window.getSelection();
-    const range = document.createRange();
-
-    if (e.target.firstChild) {
-      range.setStart(e.target.firstChild, e.target.selectionStart || 0);
-      range.collapse(true);
-      selection.removeAllRanges();
-      selection.addRange(range);
-    }
+    // Prevent focus event from bubbling up and triggering parent handlers unnecessarily
+    e.stopPropagation();
   };
 
   const handleBlur = () => {
@@ -98,7 +90,7 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
             ? "drop-shadow(rgba(0, 0, 0, 0.31) 0px 0px 10px)"
             : "none",
       }}
-      onClick={!isEditing ? handleBoxClick : undefined}
+      onClick={handleBoxClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -109,49 +101,16 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
           ...styles.arrowBox,
         }}
       >
-        {/* {!isEditing && data.link ? (
-          <div style={styles.textView}>
-            {data.link && (
-              <div>
-                <button style={styles.linkButton} onClick={handleLinkClick}>
-                  {data.details?.title}
-                </button>
-              </div>
-            )}
-          </div>
-        ) : (
-          <ContentEditable
-            innerRef={contentEditableRef}
-            html={title}
-            onFocus={handleFocus}
-            onChange={(e) =>
-              handleChange({ target: { value: e.target.value } })
-            }
-            onBlur={handleBlur}
-            placeholder="Type title here..."
-            style={styles.label}
-          />
-        )} */}
-
-        {/* {data.processlink ? (
-          <div style={styles.textView}>
-            {data.processlink && (
-              <div>
-                <button style={styles.linkButton} >
-                  {data.details?.title}
-                </button>
-              </div>
-            )}
-          </div>
-        ) : ( */}
         <ContentEditable
           innerRef={contentEditableRef}
           html={title}
           onFocus={handleFocus}
           onChange={(e) => handleChange({ target: { value: e.target.value } })}
           onBlur={handleBlur}
-          placeholder="Type title here..."
+          placeholder=""
           style={styles.label}
+          className="nodrag"
+          onClick={(e) => e.stopPropagation()}
         />
         {/* )} */}
       </div>

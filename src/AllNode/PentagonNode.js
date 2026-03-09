@@ -1,7 +1,7 @@
 import { memo, useState, useEffect, useRef } from "react";
 import { NodeResizer } from "@xyflow/react";
 
-const PentagonNode = ({ data, id, selectedNodeId }) => {
+const PentagonNode = ({ data, id, selected }) => {
   const [label, setLabel] = useState(data.label || "");
   const [width, setWidth] = useState(data.width_height?.width || 150);
   const [height, setHeight] = useState(data.width_height?.height || 150);
@@ -9,7 +9,7 @@ const PentagonNode = ({ data, id, selectedNodeId }) => {
   const textareaRef = useRef(null);
   const cursorPosRef = useRef(null);
 
-  const isSelected = selectedNodeId === id;
+  const isSelected = selected;
 
   useEffect(() => {
     setLabel(data.label || "");
@@ -24,14 +24,17 @@ const PentagonNode = ({ data, id, selectedNodeId }) => {
 
   useEffect(() => {
     if (isSelected && textareaRef.current) {
-      textareaRef.current.focus();
+      const timeout = setTimeout(() => {
+        textareaRef.current?.focus();
 
-      if (cursorPosRef.current !== null) {
-        textareaRef.current.setSelectionRange(
-          cursorPosRef.current,
-          cursorPosRef.current
-        );
-      }
+        if (cursorPosRef.current !== null) {
+          textareaRef.current.setSelectionRange(
+            cursorPosRef.current,
+            cursorPosRef.current
+          );
+        }
+      }, 50);
+      return () => clearTimeout(timeout);
     }
   }, [isSelected]);
 
@@ -76,7 +79,7 @@ const PentagonNode = ({ data, id, selectedNodeId }) => {
   return (
     <div
       style={{
-        ...styles.wrapper,
+        position: "relative",
         filter: data.hasNextLevel
           ? "drop-shadow(0px 0px 10px #0000004f)"
           : "none",
@@ -85,8 +88,8 @@ const PentagonNode = ({ data, id, selectedNodeId }) => {
       <div
         style={{
           ...styles.pentagonBox,
-          width: `${width}px`,
-          height: `${height}px`,
+          width,
+          height,
           clipPath: "polygon(50% 0%, 100% 30%, 100% 100%, 0% 100%, 0% 30%)",
         }}
       >
@@ -102,25 +105,21 @@ const PentagonNode = ({ data, id, selectedNodeId }) => {
           }}
           onKeyUp={storeCursor}
           onSelect={storeCursor}
-          placeholder="Type title here..."
+          placeholder=""
           style={styles.label}
           rows={1}
         />
       </div>
 
       {isSelected && (
-        <NodeResizer minWidth={100} minHeight={50} onResize={handleResize} />
+        <NodeResizer minWidth={120} minHeight={80} onResize={handleResize} handleClassName="customHandle"
+          lineClassName="customLine" />
       )}
     </div>
   );
 };
 
 const styles = {
-  wrapper: {
-    position: "relative",
-    width: "100%",
-    height: "100%",
-  },
   pentagonBox: {
     display: "flex",
     alignItems: "center",
@@ -132,8 +131,6 @@ const styles = {
     boxSizing: "border-box",
     overflow: "hidden",
     border: "none",
-    boxShadow: "0 2px 5px rgba(0, 0, 0, 0.3)",
-    transition: "width 0.2s ease, height 0.2s ease",
     wordBreak: "break-word",
   },
   label: {

@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import CustomAlert from "../../../components/CustomAlert";
+import { useTranslation } from "../../../hooks/useTranslation";
 
 const AssignRoleOwnerModal = ({ isOpen, onClose, onAssign, initialOwner, users = [] }) => {
     const [search, setSearch] = useState("");
     const [selectedUser, setSelectedUser] = useState(initialOwner || null);
+    const t = useTranslation();
 
     React.useEffect(() => {
         if (isOpen) {
@@ -23,10 +25,10 @@ const AssignRoleOwnerModal = ({ isOpen, onClose, onAssign, initialOwner, users =
     return (
         <div className="role-modal-overlay">
             <div className="role-modal-content">
-                <h3>Assign Role Owner</h3>
+                <h3>{t("assign_role_owner")}</h3>
                 <input
                     type="text"
-                    placeholder="Search user..."
+                    placeholder={t("search")}
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     className="search-input"
@@ -41,22 +43,22 @@ const AssignRoleOwnerModal = ({ isOpen, onClose, onAssign, initialOwner, users =
                             <span>{u.user.first_name} {u.user.last_name} ({u.user.email})</span>
                         </div>
                     ))}
-                    {filteredUsers.length === 0 && <div style={{ padding: 10, textAlign: 'center' }}>No users found</div>}
+                    {filteredUsers.length === 0 && <div style={{ padding: 10, textAlign: 'center' }}> {t("no_users_found")}</div>}
                 </div>
                 <div className="modal-actions">
-                    <button onClick={onClose} className="cancel-btn">Cancel</button>
+                    <button onClick={onClose} className="cancel-btn">{t("Cancel")}</button>
                     <button
                         onClick={() => {
                             if (selectedUser) {
                                 onAssign(selectedUser);
                                 onClose();
                             } else {
-                                CustomAlert.warning("No selection", "Please select a user.");
+                                CustomAlert.warning(t("no_selection"), t("please_select_a_user"));
                             }
                         }}
                         className="save-btn"
                     >
-                        Assign
+                        {t("assign")}
                     </button>
                 </div>
             </div>

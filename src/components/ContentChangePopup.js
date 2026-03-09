@@ -4,6 +4,7 @@ import DateTimePickerModal from "./DateTimePickerModal";
 import { toLocalISO } from "../helpers/dateHelper";
 import { ImageBaseUrl } from "../API/api";
 import { DefaultemailIcon, DefaultUserIcon } from "./Icon";
+import { useTranslation } from "../hooks/useTranslation";
 
 const ContentChangePopup = ({
     isOpen,
@@ -23,6 +24,7 @@ const ContentChangePopup = ({
 
     const [personalMessage, setPersonalMessage] = useState("");
 
+    const t = useTranslation();
     // ==========================
     // DEFAULT DATE = NEXT MONTH 1st, 08:00
     // ==========================
@@ -86,13 +88,13 @@ const ContentChangePopup = ({
     return (
         <Modal modalStyle={{ width: "550px" }}>
 
-            <h2 style={styles.heading}>Publish Process</h2>
+            <h2 style={styles.heading}>{t("publish_process")}</h2>
             <hr />
 
-            <h3 style={styles.subheading}>Request Process Approval</h3>
+            <h3 style={styles.subheading}> {t("request_process_approval")}</h3>
             <hr />
 
-            <p>Please review details and add personal message.</p>
+            <p>{t("please_review_details_and_add_personal_message")}.</p>
 
             {/* =======================
           PROCESS OWNER DISPLAY
@@ -145,7 +147,7 @@ const ContentChangePopup = ({
             </div>
 
 
-            <h3 style={styles.subheading}>Inform (cc) the following roles:</h3>
+            <h3 style={styles.subheading}> {t("inform_cc_the_following_roles")}:</h3>
 
             {/* Process Architect(s) */}
             {revisionresponse?.contact_info?.architecture?.length > 0 && (
@@ -178,7 +180,7 @@ const ContentChangePopup = ({
             {/* =======================
           PLANNED PUBLISHING DATE
       ========================== */}
-            <h3 style={styles.subheading}>Planned publishing date:</h3>
+            <h3 style={styles.subheading}>  {t("planned_publishing_date")}:</h3>
 
             <div>
                 {formattedDisplay}
@@ -190,7 +192,7 @@ const ContentChangePopup = ({
                         setShowCalendar(true);
                     }}
                 >
-                    Edit
+                    {t("edit")}
                 </button>
             </div>
 
@@ -209,7 +211,7 @@ const ContentChangePopup = ({
           PERSONAL MESSAGE
       ========================== */}
             <h3 style={styles.subheading}>
-                Personal message to recipients (optional):
+                {t("personal_message_to_recipients_optional")}:
             </h3>
 
             <textarea
@@ -224,7 +226,7 @@ const ContentChangePopup = ({
       ========================== */}
             <div style={styles.footer}>
                 <button className="popup-button cancel" onClick={onBack}>
-                    ← Back
+                    ← {t("back")}
                 </button>
 
                 <button
@@ -239,7 +241,7 @@ const ContentChangePopup = ({
                         })
                     }
                 >
-                    Start Approval →
+                    {t("start_approval")} →
                 </button>
             </div>
         </Modal>

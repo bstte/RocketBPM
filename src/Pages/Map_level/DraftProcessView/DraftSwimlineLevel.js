@@ -527,10 +527,10 @@ const DraftSwimlineLevel = () => {
 
   const handleApproveProcess = async () => {
     CustomAlert.confirmAction({
-      title: "Approve Process",
-      text: "Do you want to approve the process and inform the modeler to publish it?",
-      confirmBtnText: "Yes",
-      cancelBtnText: "No",
+      title: t("approve_process"),
+      text: t("do_you_want_to_approve_the_process_and_inform_the_modeler_to_publish_it"),
+      confirmBtnText: t("yes"),
+      cancelBtnText: t("no"),
       confirmCallback: async () => {
         const processPath = buildProcessPath({
           mode: "draft",
@@ -552,7 +552,7 @@ const DraftSwimlineLevel = () => {
           };
           const res = await contentapproveProcess(payload);
           if (res.status) {
-            CustomAlert.success("Approved", "Process approved and published successfully.");
+            await CustomAlert.success(t("approved"), t("process_approved_and_published_successfully"));
             window.location.reload();
           } else {
             CustomAlert.error("Error", res.message);
@@ -567,10 +567,10 @@ const DraftSwimlineLevel = () => {
 
   const handleCancelPublishing = async () => {
     CustomAlert.confirmAction({
-      title: "Cancel Publishing",
-      text: "Do you really want to cancel publishing?",
-      confirmBtnText: "Yes",
-      cancelBtnText: "No",
+      title: t("cancel_publishing"),
+      text: t("do_you_really_want_to_cancel_publishing"),
+      confirmBtnText: t("yes"),
+      cancelBtnText: t("no"),
       confirmCallback: async () => {
         const processPath = buildProcessPath({
           mode: "draft",
@@ -591,7 +591,7 @@ const DraftSwimlineLevel = () => {
           };
           const res = await contectCancelPublishing(payload);
           if (res.status) {
-            CustomAlert.success("Cancelled", "Publishing cancelled.");
+            await CustomAlert.success(t("cancelled"), t("publishing_cancelled"));
             setEditScheduledModalOpen(false);
             window.location.reload();
           } else {
@@ -623,7 +623,7 @@ const DraftSwimlineLevel = () => {
       };
       const res = await contentreschedulePublishing(payload);
       if (res.status) {
-        CustomAlert.success("Rescheduled", "Publishing rescheduled.");
+        await CustomAlert.success(t("rescheduled"), t("publishing_rescheduled"));
         setEditScheduledModalOpen(false);
         window.location.reload();
       } else {
@@ -654,7 +654,7 @@ const DraftSwimlineLevel = () => {
       // Call the correct API for "Request Change" (Rejection)
       const res = await contentRequestChange(payload);
       if (res.status) {
-        CustomAlert.success("Requested", "Change request sent successfully.");
+        await CustomAlert.success(t("requested"), t("change_request_sent_successfully"));
         setRequestChangeModalOpen(false);
         window.location.reload();
       } else {

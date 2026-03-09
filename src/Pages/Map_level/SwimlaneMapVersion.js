@@ -20,8 +20,11 @@ import PublishNodeType from "./PublishedProcess/PublishNodeType";
 import { getVersionViewData } from "../../API/api";
 import YesNode from "../../AllNode/YesNode";
 import NoNode from "../../AllNode/NoNode";
+import VersionPopupView from "../../components/VersionPopupView";
+import { useSelector } from "react-redux";
 
 const SwimlaneMapVersion = () => {
+  const user = useSelector((state) => state.user.user);
   const { height, appHeaderHeight, remainingHeight } = useDynamicHeight();
   const safeRemainingHeight = Math.min(Math.max(remainingHeight, 588), 588);
   const [windowSize] = useState({
@@ -32,6 +35,11 @@ const SwimlaneMapVersion = () => {
     useParams();
   const [Title, SetTitle] = useState("");
   const [currentModeltitle, SetcurrentModeltitle] = useState("");
+
+  const [showVersionPopup, setShowVersionPopup] = useState(false);
+  const [contactInfo, setContactInfo] = useState(null);
+  const [revisionInfo, setRevisionInfo] = useState(null);
+  const [assignedUsers, setAssignedUsers] = useState([]);
 
   const { nodes: initialNodes } = useMemo(
     () =>
@@ -65,139 +73,174 @@ const SwimlaneMapVersion = () => {
     []
   );
 
-  useEffect(() => {
-    const fetchVersionData = async () => {
-      try {
-        const response = await getVersionViewData(
-          processId,
-          level,
-          version,
-          pageTitle,
-          user_id,
-          currentParentId
+  const [supportedLanguages, setSupportedLanguages] = useState([]);
+  const [originalDefaultLanguageId, setOriginalDefaultLanguageId] = useState(null);
+
+  const fetchVersionData = async (language_id = null) => {
+    try {
+      const response = await getVersionViewData(
+        processId,
+        level,
+        version,
+        pageTitle,
+        user_id,
+        currentParentId,
+        language_id
+      );
+
+      const {
+        nodes,
+        edges,
+        title,
+        processDefaultlanguage_id,
+        supportedLanguages,
+        OriginalDefaultlanguge_id,
+        contact_info,
+        revision_info,
+        assigned_users
+      } = response;
+      SetcurrentModeltitle(title);
+      setprocessDefaultlanguage_id(processDefaultlanguage_id);
+      setSupportedLanguages(supportedLanguages || []);
+      setOriginalDefaultLanguageId(OriginalDefaultlanguge_id);
+      SetTitle(nodes[0]?.version);
+
+      setContactInfo(contact_info);
+      setRevisionInfo(revision_info);
+      setAssignedUsers(assigned_users || []);
+
+      const nodebgwidth = document.querySelector(".react-flow__node");
+      const nodebgwidths = nodebgwidth
+        ? nodebgwidth.getBoundingClientRect().width
+        : 0;
+
+      const nodebgheight = document.querySelector(".react-flow__node");
+      const nodebgheights = nodebgheight
+        ? nodebgheight.getBoundingClientRect().height
+        : 0;
+
+      const groupWidth = nodebgwidths;
+      const groupHeight = nodebgheights;
+      const childWidth = groupWidth * 0.9;
+      const childHeight = groupHeight * 0.9;
+
+      const parsedNodes = nodes.map((node) => {
+        const parsedData = JSON.parse(node.data || "{}");
+        const parsedPosition = JSON.parse(node.position || '{"x":0,"y":0}');
+        const parsedMeasured = JSON.parse(
+          node.measured || '{"width":40,"height":40}'
         );
 
-        const { nodes, edges, title, processDefaultlanguage_id } = response;
-        SetcurrentModeltitle(title);
-        setprocessDefaultlanguage_id(processDefaultlanguage_id)
-        SetTitle(nodes[0]?.version);
-        const nodebgwidth = document.querySelector(".react-flow__node");
-        const nodebgwidths = nodebgwidth
-          ? nodebgwidth.getBoundingClientRect().width
-          : 0;
+        let centeredPosition = parsedPosition;
 
-        const nodebgheight = document.querySelector(".react-flow__node");
-        const nodebgheights = nodebgheight
-          ? nodebgheight.getBoundingClientRect().height
-          : 0;
+        if (node.parentId) {
+          const parentNode = nodes.find((n) => n.node_id === node.parentId);
+          if (parentNode && parentNode.position) {
+            const parentPos = JSON.parse(parentNode.position);
+            const parentWidth = groupWidth;
+            const parentHeight = groupHeight;
 
-        const groupWidth = nodebgwidths;
-        const groupHeight = nodebgheights;
-        const childWidth = groupWidth * 0.9;
-        const childHeight = groupHeight * 0.9;
-
-        const parsedNodes = nodes.map((node) => {
-          const parsedData = JSON.parse(node.data || "{}");
-          const parsedPosition = JSON.parse(node.position || '{"x":0,"y":0}');
-          const parsedMeasured = JSON.parse(
-            node.measured || '{"width":40,"height":40}'
-          );
-
-          let centeredPosition = parsedPosition;
-
-          if (node.parentId) {
-            const parentNode = nodes.find((n) => n.node_id === node.parentId);
-            if (parentNode && parentNode.position) {
-              const parentPos = JSON.parse(parentNode.position);
-              const parentWidth = groupWidth;
-              const parentHeight = groupHeight;
-
-              centeredPosition = {
-                x: parentPos.x + parentWidth / 2 - childWidth / 2,
-                y: parentPos.y + parentHeight / 2 - childHeight / 2,
-              };
-            }
+            centeredPosition = {
+              x: parentPos.x + parentWidth / 2 - childWidth / 2,
+              y: parentPos.y + parentHeight / 2 - childHeight / 2,
+            };
           }
+        }
 
-          // Parent node positioning
-          const nodeStyle =
-            node.type === "Yes" ||
-              node.type === "No" ||
-              node.type === "FreeText"
-              ? {} // No styles applied for these node types
-              : {
-                width: groupWidth,
-                height: groupHeight,
-                childWidth: childWidth,
-                childHeight: childHeight,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              };
+        // Parent node positioning
+        const nodeStyle =
+          node.type === "Yes" ||
+            node.type === "No" ||
+            node.type === "FreeText"
+            ? {} // No styles applied for these node types
+            : {
+              width: groupWidth,
+              height: groupHeight,
+              childWidth: childWidth,
+              childHeight: childHeight,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            };
 
-          return {
-            ...node,
-            data: {
-              ...parsedData,
-              width_height: parsedMeasured,
-              defaultwidt: "40px",
-              defaultheight: "40px",
-              nodeResize: false,
-            },
-            type: node.type,
-            id: node.node_id,
-            parentId: node.parentId,
-            extent: "parent",
-            measured: parsedMeasured,
-            position: centeredPosition,
-            draggable: Boolean(node.draggable),
-            animated: Boolean(node.animated),
-            style: nodeStyle,
-          };
-        });
+        return {
+          ...node,
+          data: {
+            ...parsedData,
+            width_height: parsedMeasured,
+            defaultwidt: "40px",
+            defaultheight: "40px",
+            nodeResize: false,
+          },
+          type: node.type,
+          id: node.node_id,
+          parentId: node.parentId,
+          extent: "parent",
+          measured: parsedMeasured,
+          position: centeredPosition,
+          draggable: Boolean(node.draggable),
+          animated: Boolean(node.animated),
+          style: nodeStyle,
+        };
+      });
 
-        const parsedEdges = edges.map((edge) => {
-          const sourceNode = nodes.find((node) => node.node_id === edge.source);
-          const targetNode = nodes.find((node) => node.node_id === edge.target);
+      const parsedEdges = edges.map((edge) => {
+        const sourceNode = nodes.find((node) => node.node_id === edge.source);
+        const targetNode = nodes.find((node) => node.node_id === edge.target);
 
-          const sourcePosition = sourceNode
-            ? JSON.parse(sourceNode.position || '{"x":0,"y":0}')
-            : { x: 0, y: 0 };
-          const targetPosition = targetNode
-            ? JSON.parse(targetNode.position || '{"x":0,"y":0}')
-            : { x: 0, y: 0 };
-          // Check if in same row or same column
-          const isSameRow = Math.abs(sourcePosition.y - targetPosition.y) < 10; // 10px tolerance
-          const isSameColumn =
-            Math.abs(sourcePosition.x - targetPosition.x) < 10;
+        const sourcePosition = sourceNode
+          ? JSON.parse(sourceNode.position || '{"x":0,"y":0}')
+          : { x: 0, y: 0 };
+        const targetPosition = targetNode
+          ? JSON.parse(targetNode.position || '{"x":0,"y":0}')
+          : { x: 0, y: 0 };
+        // Check if in same row or same column
+        const isSameRow = Math.abs(sourcePosition.y - targetPosition.y) < 10; // 10px tolerance
+        const isSameColumn =
+          Math.abs(sourcePosition.x - targetPosition.x) < 10;
 
-          const edgeType = isSameRow || isSameColumn ? "default" : "step";
+        const edgeType = isSameRow || isSameColumn ? "default" : "step";
 
-          return {
-            ...edge,
-            animated: Boolean(edge.animated),
-            markerEnd: {
-              type: MarkerType.ArrowClosed,
-              color: "#002060",
-              width: 12,
-              height: 12,
-            },
-            style: { stroke: "#002060", strokeWidth: 2 },
-            type: edgeType,
-          };
-        });
+        return {
+          ...edge,
+          animated: Boolean(edge.animated),
+          markerEnd: {
+            type: MarkerType.ArrowClosed,
+            color: "#002060",
+            width: 12,
+            height: 12,
+          },
+          style: { stroke: "#002060", strokeWidth: 2 },
+          type: edgeType,
+        };
+      });
 
-        setChiledNodes(parsedNodes);
-        setEdges(parsedEdges);
-      } catch (error) {
-        console.error("Error fetching version data:", error);
-        alert("Error fetching versioned data");
-      }
-    };
+      setChiledNodes(parsedNodes);
+      setEdges(parsedEdges);
+    } catch (error) {
+      console.error("Error fetching version data:", error);
+      alert("Error fetching versioned data");
+    }
+  };
 
+  useEffect(() => {
     fetchVersionData();
   }, [processId, level, version, pageTitle]);
 
+  const handleLanguageSwitch = (langId) => {
+    fetchVersionData(langId);
+  };
+
+  const onShowVersion = () => {
+    setShowVersionPopup(true);
+  };
+
+  const viewVersion = (pid, lvl, v) => {
+    navigate(
+      `/process/view/${pid}/${lvl}/${v}/${pageTitle}/${user_id}/${currentParentId}`
+    );
+    setShowVersionPopup(false);
+  };
 
   const memoizedNodeTypes = useMemo(
     () => ({
@@ -221,15 +264,39 @@ const SwimlaneMapVersion = () => {
 
   return (
     <div>
+      {showVersionPopup && (
+        <VersionPopupView
+          processId={processId}
+          currentLevel={level}
+          currentParentId={currentParentId}
+          onClose={() => setShowVersionPopup(false)}
+          viewVersion={viewVersion}
+          LoginUser={user}
+          title={currentModeltitle}
+          type={pageTitle === "Swimlane" ? "Swimlane" : "ProcessMaps"}
+          selectedLanguage={processDefaultlanguage_id}
+          OriginalDefaultlanguge_id={originalDefaultLanguageId}
+          contact_info={contactInfo}
+          revision_info={revisionInfo}
+          assigned_users={assignedUsers}
+          status="Published"
+          hideVersionTab={true}
+        />
+      )}
       <Header
         title={`${currentModeltitle} (Version: ${Title})`}
         Page={"ViewProcessmapVersion"}
         iconNames={{}}
         onSave={() => { }}
         onPublish={() => { }}
+        onShowVersion={onShowVersion}
         handleBackdata={() => {
           navigate(-1);
         }}
+        supportedLanguages={supportedLanguages}
+        selectedLanguage={processDefaultlanguage_id}
+        OriginalDefaultlanguge_id={originalDefaultLanguageId}
+        handleSupportViewlangugeId={handleLanguageSwitch}
       />
       <div
         class="maincontainer"

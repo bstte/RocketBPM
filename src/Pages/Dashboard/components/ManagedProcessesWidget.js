@@ -112,7 +112,7 @@ const ManagedProcessesWidget = ({ userId }) => {
             //     ? "level0"
             //     : `level${newLevel}_${parentNodeId}`;
 
-      const levelParam = `level${newLevel}${parentNodeId ? `_${parentNodeId}` : ""}`;
+            const levelParam = `level${newLevel}${parentNodeId ? `_${parentNodeId}` : ""}`;
             console.log("Navigate:", levelParam, Process_id, parentNodeId);
 
             const [nodeData, publishdata] = await Promise.all([
@@ -239,11 +239,11 @@ const ManagedProcessesWidget = ({ userId }) => {
                             {[
                                 { id: "process_world", label: t("Process") || "Process" }, // Node Label in Process Column
                                 { id: "process_name", label: t("process_world") || "Process World" }, // Root Name in PW Column
-                                { id: "roles", label: "My BPM Roles" },
-                                { id: "draft_date", label: "Draft" },
-                                { id: "to_be_published_on", label: "To be published on" },
-                                { id: "published_date", label: "Published" },
-                                { id: "todo", label: "To-do" },
+                                { id: "roles", label: t("my_bpm_roles") || "My BPM Roles" },
+                                { id: "draft_date", label: t("draft") },
+                                { id: "to_be_published_on", label: t("to_be_published_on") },
+                                { id: "published_date", label: t("Published") },
+                                { id: "todo", label: t("todo") },
                             ].map((headCell) => (
                                 <TableCell
                                     key={headCell.id}
@@ -275,7 +275,7 @@ const ManagedProcessesWidget = ({ userId }) => {
                         ) : sortedProcesses.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={7} align="center">
-                                    No managed processes found.
+                                    {t("no_managed_processes_found") || "No managed processes found."}
                                 </TableCell>
                             </TableRow>
                         ) : (
@@ -318,7 +318,7 @@ const ManagedProcessesWidget = ({ userId }) => {
                                                 }}
                                             >
                                                 <ArrowCircleRightIcon sx={{ color: "#ff364a", fontSize: "1.2rem" }} />
-                                                Approval
+                                                {t("approval") || "Approval"}
                                             </Box>
                                         )}
                                     </TableCell>

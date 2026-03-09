@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useTransition } from "react";
 import Modal from "react-modal";
+import { useTranslation } from "../hooks/useTranslation";
 
 const RequestChangeModal = ({ isOpen, onClose, onSubmit }) => {
     const [comment, setComment] = useState("");
-
+    const t = useTranslation();
     const handleSubmit = () => {
         onSubmit(comment);
         setComment("");
@@ -25,28 +26,28 @@ const RequestChangeModal = ({ isOpen, onClose, onSubmit }) => {
         >
             <div style={styles.container}>
                 <div style={styles.header}>
-                    <h2 style={styles.title}>Request change</h2>
+                    <h2 style={styles.title}>{t("request_change")}</h2>
                 </div>
 
                 <div style={styles.body}>
                     <p style={styles.description}>
-                        Describe the requested process change to be send to the process modeler:
+                        {t("describe_the_requested_process_change_to_be_send_to_the_process_modeler")}:
                     </p>
 
                     <textarea
                         style={styles.textarea}
                         value={comment}
                         onChange={(e) => setComment(e.target.value)}
-                        placeholder="The user can add a message to the process modeler."
+                        placeholder={t("the_user_can_add_a_message_to_the_process_modeler")}
                     />
                 </div>
 
                 <div style={styles.footer}>
                     <button style={styles.cancelButton} onClick={handleClose}>
-                        CANCEL
+                        {t("cancel")}
                     </button>
                     <button style={styles.submitButton} onClick={handleSubmit}>
-                        REQUEST CHANGE
+                        {t("request_change")}
                     </button>
                 </div>
             </div>

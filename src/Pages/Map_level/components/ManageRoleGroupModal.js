@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import AssignRoleOwnerModal from "./AssignRoleOwnerModal";
 import TranslationPopup from "../../../hooks/TranslationPopup";
+import { useTranslation } from "../../../hooks/useTranslation";
 
 const ManageRoleGroupModal = ({
     isOpen,
@@ -151,14 +152,15 @@ const ManageRoleGroupModal = ({
         }
     };
 
+    const t = useTranslation();
     if (!isOpen) return null;
     return (
         <div className="role-modal-overlay">
             <div className="role-modal-content wide">
-                <h3>Manage Role Group</h3>
+                <h3>{t("manage_role_group")}</h3>
 
                 <div className="form-group">
-                    <label>Role Group Name</label>
+                    <label>{t("role_group_name")}</label>
                     <div style={{ display: 'flex', gap: '10px' }}>
                         <input
                             type="text"
@@ -172,16 +174,16 @@ const ManageRoleGroupModal = ({
                                     [langKey]: value   // 🔥 sync with current language
                                 }));
                             }}
-                            placeholder="Enter group name"
+                            placeholder={t("enter_group_name")}
                             style={{ flex: 1 }}
                         />
-                        <button className="icon-btn" onClick={() => openTranslation("group", translations)}>🌐 Translate</button>
+                        <button className="icon-btn" onClick={() => openTranslation("group", translations)}>🌐 {t("translate")}</button>
                     </div>
                 </div>
 
                 <div className="role-selection-area">
                     <div className="existing-roles">
-                        <h4>Available Roles</h4>
+                        <h4>{t("available_roles")}</h4>
                         <div className="list">
                             {existingRoles.map(role => {
                                 const roleId = role.node_id || role.id;
@@ -206,17 +208,17 @@ const ManageRoleGroupModal = ({
                                 );
                             })}
 
-                            {existingRoles.length === 0 && <div style={{ padding: 10 }}>No roles found</div>}
+                            {existingRoles.length === 0 && <div style={{ padding: 10 }}> {t("no_roles_found")}</div>}
                         </div>
 
                         {/* 🔥 Create New Role Section */}
                         <div className="create-new-role-box" style={{ marginTop: '15px', padding: '10px', borderTop: '1px solid #eee' }}>
-                            <h5 style={{ marginBottom: '8px' }}>Create New Role</h5>
+                            <h5 style={{ marginBottom: '8px' }}>{t("create_new_role")}</h5>
                             <div className="input-with-icon" style={{ display: 'flex', gap: '8px' }}>
                                 <input
                                     type="text"
                                     value={newRoleName}
-                                    placeholder="Enter role name..."
+                                    placeholder={t("enter_role_name")}
                                     style={{ flex: 1, padding: '5px' }}
                                     onChange={(e) => {
                                         const val = e.target.value;
@@ -224,27 +226,27 @@ const ManageRoleGroupModal = ({
                                         setNewRoleTranslations(prev => ({ ...prev, [langKey]: val }));
                                     }}
                                 />
-                                <button className="icon-btn" onClick={() => openTranslation("new_role", newRoleTranslations)} title="Translate">🌐</button>
+                                <button className="icon-btn" onClick={() => openTranslation("new_role", newRoleTranslations)} title={t("translate")}>🌐</button>
                                 <button
                                     onClick={handleInternalRoleCreate}
                                     disabled={!newRoleName.trim() || isCreatingRole}
                                     className="add-btn"
-                                    style={{ padding: '5px 10px', backgroundColor: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                                    style={{ padding: '5px 10px', backgroundColor: '#002060', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
                                 >
-                                    {isCreatingRole ? "..." : "Create"}
+                                    {isCreatingRole ? "..." : t("create")}
                                 </button>
                             </div>
                         </div>
                     </div>
 
                     <div className="selected-roles">
-                        <h4>Selected Roles in Group</h4>
+                        <h4>{t("selected_roles_in_group")}</h4>
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Role Name</th>
-                                    <th>Owner</th>
-                                    <th>Actions</th>
+                                    <th>{t("role_name")}</th>
+                                    <th>{t("owner")}</th>
+                                    <th>{t("Action")}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -261,26 +263,26 @@ const ManageRoleGroupModal = ({
                                             <td>{displayName}</td>
                                             <td>{displayOwner ? `${displayOwner.first_name} ${displayOwner.last_name}` : "Unassigned"}</td>
                                             <td className="actions">
-                                                <button onClick={() => { setActiveRoleForOwner({ ...role, owner: displayOwner }); setShowOwnerModal(true); }}>Assign Owner</button>
-                                                <button onClick={() => openTranslation({ roleId: role.id }, masterRole?.data?.translations || role.translations)}>Translate</button>
-                                                <button onClick={() => removeRoleFromGroup(role.id)} className="remove-btn">Remove</button>
+                                                <button onClick={() => { setActiveRoleForOwner({ ...role, owner: displayOwner }); setShowOwnerModal(true); }}>{t("assign_owner")}</button>
+                                                <button onClick={() => openTranslation({ roleId: role.id }, masterRole?.data?.translations || role.translations)}>{t("translate")}</button>
+                                                <button onClick={() => removeRoleFromGroup(role.id)} className="remove-btn">{t("REMOVE")}</button>
                                             </td>
                                         </tr>
                                     );
                                 })}
                             </tbody>
                         </table>
-                        {selectedRoles.length === 0 && <div style={{ padding: 20, textAlign: 'center', color: '#666' }}>No roles selected</div>}
+                        {selectedRoles.length === 0 && <div style={{ padding: 20, textAlign: 'center', color: '#666' }}>{t("no_roles_selected")}</div>}
                     </div>
                 </div>
 
                 <div className="modal-actions">
-                    <button onClick={onClose} className="cancel-btn">Cancel</button>
+                    <button onClick={onClose} className="cancel-btn">{t("cancel")}</button>
                     <button
                         onClick={() => onSave({ groupName, translations, roles: selectedRoles })}
                         className="save-btn"
                     >
-                        Save Role Group
+                        {t("save_role_group")}
                     </button>
                 </div>
 
@@ -298,7 +300,7 @@ const ManageRoleGroupModal = ({
                     onSubmit={handleTranslationSubmit}
                     defaultValues={translationDefaults}
                     supportedLanguages={supportedLanguages}
-                    title={translationTarget === "group" ? "Translate Group Name" : "Translate Role Name"}
+                    title={translationTarget === "group" ? t("translate_group_name") : t("translate_role_name")}
                 />
             </div>
             <style>{`
@@ -324,7 +326,7 @@ const ManageRoleGroupModal = ({
           background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 10000;
           font-family: 'Poppins', sans-serif;
         }
-        .role-modal-content.wide { width: 800px; max-width: 95%; background: white; padding: 25px; border-radius: 8px;   max-height: 90vh;  overflow-y: auto;  }
+        .role-modal-content.wide { width: 900px; max-width: 95%; background: white; padding: 25px; border-radius: 8px;   max-height: 90vh;  overflow-y: auto;  }
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; margin-bottom: 5px; font-weight: 500; }
         .form-group input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }

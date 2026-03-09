@@ -45,13 +45,13 @@
     width: 8px !important;
     height: 8px !important;
     border: 2px solid #007bff !important;
-    background: "#007bff" !important;
+    background: #007bff !important;
     border-radius: 4px !important;
     cursor: nwse-resize !important;
 }
 
 .customLine {
-    border-color: rgba(0, 0, 0, 0.3) !important;
+    border-color: #007bff !important;
 }
 
 .loading-overlay {

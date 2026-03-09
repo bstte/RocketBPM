@@ -4,6 +4,7 @@ import DateTimePickerModal from "./DateTimePickerModal";
 // 👉 IMPORTANT helper
 import { toLocalISO } from "../helpers/dateHelper";
 import Modal from "./Modal";
+import { useTranslation } from "../hooks/useTranslation";
 
 const EditorialChangePopup = ({ isOpen, onBack, onPublish }) => {
     const [selectedOption, setSelectedOption] = useState(null);
@@ -11,6 +12,7 @@ const EditorialChangePopup = ({ isOpen, onBack, onPublish }) => {
     const [tempDate, setTempDate] = useState("");
     const [showCalendar, setShowCalendar] = useState(false);
 
+    const t = useTranslation();
     // 👉 Default = Next month 1st date at 08:00 (no timezone issue)
     useEffect(() => {
         const now = new Date();
@@ -51,11 +53,11 @@ const EditorialChangePopup = ({ isOpen, onBack, onPublish }) => {
     };
 
     return (
-        <Modal modalStyle={{width:"500px"}}>
-            <h2 style={styles.heading}>Publish Process</h2>
+        <Modal modalStyle={{ width: "500px" }}>
+            <h2 style={styles.heading}> {t("publish_process")} </h2>
             <hr />
 
-            <h3 style={styles.subheading}>Schedule Publishing</h3>
+            <h3 style={styles.subheading}> {t("schedule_publishing")}  </h3>
             <hr />
 
             {/* Immediately */}
@@ -70,7 +72,7 @@ const EditorialChangePopup = ({ isOpen, onBack, onPublish }) => {
                         setShowCalendar(false);
                     }}
                 />
-                <span>Immediately</span>
+                <span> {t("immediately")}  </span>
             </label>
 
             {/* Custom date time */}
@@ -92,7 +94,7 @@ const EditorialChangePopup = ({ isOpen, onBack, onPublish }) => {
                             setShowCalendar(true);
                         }}
                     >
-                        Edit
+                        {t("edit")}
                     </button>
                 </span>
             </label>
@@ -106,7 +108,7 @@ const EditorialChangePopup = ({ isOpen, onBack, onPublish }) => {
 
             <div style={styles.footer}>
                 <button className="popup-button cancel" onClick={onBack}>
-                    ← Back
+                    ← {t("back")}
                 </button>
 
                 <button
@@ -126,7 +128,7 @@ const EditorialChangePopup = ({ isOpen, onBack, onPublish }) => {
                         })
                     }
                 >
-                    Publish
+                    {t("Publish")}
                 </button>
             </div>
         </Modal>

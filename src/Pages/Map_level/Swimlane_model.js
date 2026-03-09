@@ -565,7 +565,7 @@ const SwimlaneModel = () => {
         const response = await filter_draft(ParentPageGroupId);
 
         if (response.data === true) {
-          alert("Publish all parent models first");
+          CustomAlert.warning(t("Warning"), t("publish_all_parent_models_first"));
           return false;
         }
       } catch (error) {
@@ -649,7 +649,7 @@ const SwimlaneModel = () => {
           })
         ),
       });
-      CustomAlert.success("Success", response.message);
+      CustomAlert.toast(t("nodes_saved_successfully"));
 
       setHasUnsavedChanges(false);
     } catch (error) {
@@ -729,66 +729,66 @@ const SwimlaneModel = () => {
 
   const handleDeleteNode = async () => {
     if (selectedNode) {
-      const confirmDeletion = window.confirm(
-        "Are you sure you want to delete this nodes?"
-      );
-      if (!confirmDeletion) return;
-      if (
-        selectedNode.type === "SwimlineRightsideBox" &&
-        selectedNode.data?.link
-      ) {
+      CustomAlert.confirm(
+        t("delete_node"),
+        t("are_you_sure_you_want_to_delete_this_node"),
+        async () => {
+          if (
+            selectedNode.type === "SwimlineRightsideBox" &&
+            selectedNode.data?.link
+          ) {
+            try {
+              const Process_id = selectedNode?.process_id;
+              const PageGroupId = selectedNode?.page_group_id;
+              const parentId = selectedNode?.parentId;
+              const link = selectedNode.data?.link;
 
-        try {
-          const Process_id = selectedNode?.process_id;
-          const PageGroupId = selectedNode?.page_group_id;
-          const parentId = selectedNode?.parentId;
-          const link = selectedNode.data?.link;
-
-          const deleteresponse = await deleteExistingRole(
-            Process_id,
-            PageGroupId,
-            parentId,
-            link
-          );
-          // console.log("deleteresponse", deleteresponse)
-          if (deleteresponse.status) {
-            CustomAlert.success("Success", deleteresponse.message);
+              const deleteresponse = await deleteExistingRole(
+                Process_id,
+                PageGroupId,
+                parentId,
+                link
+              );
+              if (deleteresponse.status) {
+                CustomAlert.toast(t(deleteresponse.message));
+              }
+            } catch (error) {
+              console.error("delete existiong role time error:", error);
+            }
           }
-        } catch (error) {
-          console.error("delete existiong role time error:", error);
+          const nodeToRemoveId = selectedNode.id;
+
+          // Identify all edges connected to the node being deleted
+          const edgesToDelete = edges.filter(
+            (edge) => String(edge.source) === String(nodeToRemoveId) || String(edge.target) === String(nodeToRemoveId)
+          );
+
+          // Identify all character nodes (labels) linked to these edges
+          const labelIdsToRemove = ChildNodes.filter((node) => {
+            if (!node.data?.edgeId && !node.data?.sourceNodeId) return false;
+            return edgesToDelete.some((edge) =>
+              String(edge.id) === String(node.data.edgeId) ||
+              (String(edge.source) === String(node.data.sourceNodeId) &&
+                String(edge.target) === String(node.data.targetNodeId) &&
+                String(edge.sourceHandle || "") === String(node.data.sourceHandle || "") &&
+                String(edge.targetHandle || "") === String(node.data.targetHandle || ""))
+            );
+          }).map(node => node.id);
+
+          setChiledNodes((nodes) =>
+            nodes.filter((node) =>
+              String(node.id) !== String(nodeToRemoveId) && !labelIdsToRemove.includes(node.id)
+            )
+          );
+          setEdges((eds) =>
+            eds.filter(
+              (edge) =>
+                String(edge.source) !== String(nodeToRemoveId) && String(edge.target) !== String(nodeToRemoveId)
+            )
+          );
+          setHasUnsavedChanges(true);
         }
-      }
-      const nodeToRemoveId = selectedNode.id;
-
-      // Identify all edges connected to the node being deleted
-      const edgesToDelete = edges.filter(
-        (edge) => String(edge.source) === String(nodeToRemoveId) || String(edge.target) === String(nodeToRemoveId)
       );
-
-      // Identify all character nodes (labels) linked to these edges
-      const labelIdsToRemove = ChildNodes.filter((node) => {
-        if (!node.data?.edgeId && !node.data?.sourceNodeId) return false;
-        return edgesToDelete.some((edge) =>
-          String(edge.id) === String(node.data.edgeId) ||
-          (String(edge.source) === String(node.data.sourceNodeId) &&
-            String(edge.target) === String(node.data.targetNodeId) &&
-            String(edge.sourceHandle || "") === String(node.data.sourceHandle || "") &&
-            String(edge.targetHandle || "") === String(node.data.targetHandle || ""))
-        );
-      }).map(node => node.id);
-
-      setChiledNodes((nodes) =>
-        nodes.filter((node) =>
-          String(node.id) !== String(nodeToRemoveId) && !labelIdsToRemove.includes(node.id)
-        )
-      );
-      setEdges((eds) =>
-        eds.filter(
-          (edge) =>
-            String(edge.source) !== String(nodeToRemoveId) && String(edge.target) !== String(nodeToRemoveId)
-        )
-      );
-      setHasUnsavedChanges(true);
     }
   };
 
@@ -1072,15 +1072,15 @@ const SwimlaneModel = () => {
       setIsCheckboxPopupOpen(false);
       setHasUnsavedChanges(true);
     } else {
-      alert("Please select a node before saving.");
+      alert(t("please_select_a_node_before_saving"));
     }
   };
   const removeExistingLink = () => {
     if (!selectedNodeId) return;
 
     CustomAlert.confirm(
-      "Are you sure?",
-      "This will remove the link.",
+      t("are_you_sure"),
+      t("this_will_remove_the_link"),
       () => {
         setChiledNodes((nds) =>
           nds.map((node) => {
@@ -1107,12 +1107,12 @@ const SwimlaneModel = () => {
         setHasUnsavedChanges(true);
 
         CustomAlert.success(
-          "Link Removed",
-          "Link and title have been removed from the selected node and its child nodes."
+          t("link_removed"),
+          t("link_and_title_have_been_removed_from_the_selected_node_and_its_child_nodes")
         );
       },
       () => {
-        CustomAlert.info("Cancelled", "No changes were made.");
+        CustomAlert.info(t("cancelled"), t("no_changes_were_made"));
       }
     );
   };
@@ -1177,7 +1177,7 @@ const SwimlaneModel = () => {
                 parentId: nodelink,
               });
             } else {
-              alert("First create next model of this existing model");
+              alert(t("first_create_next_model_of_this_existing_model"));
             }
           } else {
             console.error("No data found in response.data");
@@ -1379,13 +1379,13 @@ const SwimlaneModel = () => {
     ...(detailschecking?.type === "SwimlineRightsideBox"
       ? [
         {
-          label: "Assign Role Owner",
+          label: t("assign_role_owner"),
           action: () => handleAssignOwnerAction(detailschecking),
           borderBottom: true,
         },
         ...(detailschecking?.data?.isRoleGroup ? [
           {
-            label: "Manage Role Group",
+            label: t("manage_role_group"),
             action: () => setShowRoleGroupModal(true),
             borderBottom: true,
           }
@@ -1431,7 +1431,6 @@ const SwimlaneModel = () => {
   const onEdgeClick = useCallback((event, edge) => {
     const { clientX, clientY } = event;
     setPosition({ x: clientX, y: clientY });
-    console.log("asdf", event);
     setMenuVisible(false);
     setOptions([]);
     setSelectedEdge(edge);
@@ -1492,6 +1491,13 @@ const SwimlaneModel = () => {
         () => {
           // Cancel
           resolve(false);
+        },
+        {
+          title: t("you_have_unsaved_changes"),
+          text: t("do_you_want_to_save_before_exiting"),
+          confirmButtonText: t("exit_save_exit"),
+          denyButtonText: t("exit_without_saving"),
+          cancelButtonText: t("cancel")
         }
       );
     });
@@ -1691,8 +1697,10 @@ const SwimlaneModel = () => {
     };
     await editorialPublishAPI(payload);
 
-    await CustomAlert.success("Success", "Editorial Change submitted successfully");
-
+    await CustomAlert.success(
+      t("success"),
+      t("editorial_change_submitted_successfully")
+    );
     await handleExitBack();
 
     goToProcess({
@@ -1732,7 +1740,10 @@ const SwimlaneModel = () => {
     };
     await contentChangeRequest(payload);
 
-    await CustomAlert.success("Success", "Content submitted successfully");
+    await CustomAlert.success(
+      t("success"),
+      t("content_submitted_successfully")
+    );
 
     await handleExitBack();
 
@@ -1758,7 +1769,7 @@ const SwimlaneModel = () => {
       if (ParentPageGroupId) {
         const response = await filter_draft(ParentPageGroupId);
         if (response.data === true) {
-          alert("Publish all parent models first");
+          CustomAlert.warning(t("warning"), t("publish_all_parent_models_first"));
           return false;
         }
       }
@@ -1770,7 +1781,6 @@ const SwimlaneModel = () => {
     // console.log("responseData", revisionresponse)
     // contact_info missing ya empty object
     if (!contact || Object.keys(contact).length === 0) {
-      alert("Please assign Process Owner / Process Modeler to publish the model.");
       return;
     }
 
@@ -1780,7 +1790,7 @@ const SwimlaneModel = () => {
     );
 
     if (allEmpty) {
-      alert("Please assign Process Owner /  Process Modeler to publish the model.");
+      CustomAlert.info(t("information"), t("Please assign Process Owner / Process Modeler to publish the model."));
       return;
     }
 
@@ -1837,6 +1847,11 @@ const SwimlaneModel = () => {
         () => {
           // ❌ Cancel
           resolve(false);
+        },
+        {
+          title: t("save_changes_before_switching_language"),
+          confirmButtonText: t("yes_save_switch"),
+          cancelButtonText: t("no_discard_changes")
         }
       );
     });
@@ -1847,20 +1862,24 @@ const SwimlaneModel = () => {
   };
 
   const approveProcess = async () => {
-    if (window.confirm("Do you want to approve the process and inform the modeler to publish it?")) {
-      try {
-        await api.approveProcessAPI({
-          process_id: id,
-          level: `level${currentLevel}${currentParentId ? `_${currentParentId}` : ""}`,
-          user_id: LoginUser?.id
-        });
-        CustomAlert.success("Success", "Process approved successfully.");
-        window.location.reload();
-      } catch (e) {
-        console.error(e);
-        CustomAlert.error("Error", "Failed to approve process.");
+    CustomAlert.confirm(
+      t("confirmation"),
+      t("do_you_want_to_approve_the_process_and_inform_the_modeler_to_publish_it"),
+      async () => {
+        try {
+          await api.approveProcessAPI({
+            process_id: id,
+            level: `level${currentLevel}${currentParentId ? `_${currentParentId}` : ""}`,
+            user_id: LoginUser?.id
+          });
+          CustomAlert.toast(t("process_approved_successfully"));
+          window.location.reload();
+        } catch (e) {
+          console.error(e);
+          CustomAlert.error(t("Error"), t("Failed to approve process."));
+        }
       }
-    }
+    );
   };
 
   const requestChange = async (reason) => {
@@ -1871,11 +1890,11 @@ const SwimlaneModel = () => {
         user_id: LoginUser?.id,
         reason: reason
       });
-      CustomAlert.success("Success", "Change requested successfully.");
+      CustomAlert.toast(t("change_requested_successfully"));
       window.location.reload();
     } catch (e) {
       console.error(e);
-      CustomAlert.error("Error", "Failed to request change.");
+      CustomAlert.error(t("Error"), t("Failed to request change."));
     }
   };
 
@@ -1894,10 +1913,10 @@ const SwimlaneModel = () => {
         const rolesData = await api.getexistingrole(null, LoginUser?.id, id);
         const parsedData = Array.isArray(rolesData.AllexistingRole) ? rolesData.AllexistingRole : [];
         setLinkexistingRole(parsedData); // 🔥 Fixed setter name
-        CustomAlert.success("Success", "Role created successfully.");
+        CustomAlert.toast(t("role_created_successfully"));
       }
     } catch (error) {
-      CustomAlert.error("Error", "Failed to create role.");
+      CustomAlert.error(t("Error"), t("Failed to create role."));
     }
   };
 

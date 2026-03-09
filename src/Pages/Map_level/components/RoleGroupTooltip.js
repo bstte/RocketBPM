@@ -24,11 +24,6 @@ const RoleGroupTooltip = ({
                                 <li key={idx} style={styles.roleItem}>
                                     <span style={styles.roleName}>{displayName}</span>
 
-                                    {role.owner && (
-                                        <span style={styles.roleOwner}>
-                                            Owner: {role.owner.first_name} {role.owner.last_name}
-                                        </span>
-                                    )}
                                 </li>
                             );
                         })}
@@ -46,16 +41,12 @@ const RoleGroupTooltip = ({
 /* ✅ Tooltip-specific styles yahin rahenge */
 const styles = {
     tooltip: {
-        position: "absolute",
-        top: "50%",
-        left: "calc(100% + 15px)",
-        transform: "translateY(-50%)",
         backgroundColor: "#ffffff",
         color: "#002060",
         minWidth: "240px",
         maxWidth: "300px",
         borderRadius: "8px",
-        zIndex: 1000000,
+        zIndex: 2000000,
         boxShadow:
             "0 12px 30px rgba(0,32,96,0.2), 0 0 1px rgba(0,0,0,0.1)",
         border: "1px solid #e1e8f5",

@@ -95,7 +95,7 @@ const SwimlineDiamondNode = ({ data }) => {
             onChange={(e) =>
               handleChange({ target: { value: e.target.value } })
             }
-            placeholder="Type title here..."
+            placeholder=""
             style={styles.title}
             className="nodrag"
             onClick={(e) => e.stopPropagation()}

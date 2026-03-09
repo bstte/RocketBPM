@@ -24,6 +24,7 @@ export const useMapLevelViewHandlers = ({
 
     const handleSupportViewlangugeId = useCallback((langId) => {
         localStorage.setItem("selectedLanguageId", langId);
+        console.log("langId", langId);
         fetchNodes(langId);
 
         // Dispatch custom event for RTL update

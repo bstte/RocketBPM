@@ -184,3 +184,8 @@
 [dir="rtl"] .ss_process_title {
     flex-direction: row-reverse;
 }
+
+/* Bring hovered node to front to fix tooltip z-index issues */
+.react-flow__node:hover {
+    z-index: 10000 !important;
+}

@@ -19,7 +19,11 @@ const VersionPopupView = ({
   status,
   type,
   selectedLanguage,
-  OriginalDefaultlanguge_id
+  OriginalDefaultlanguge_id,
+  contact_info: propContactInfo,
+  revision_info: propRevisionInfo,
+  assigned_users: propAssignedUsers,
+  hideVersionTab = false
 }) => {
   const [activeTab, setActiveTab] = useState("contact");
   const [versions, setVersions] = useState([]);
@@ -44,31 +48,66 @@ const VersionPopupView = ({
     LoginUser,
     status,
   });
+
   useEffect(() => {
-    if (!responseData) return;
-    if (!langMap || Object.keys(langMap).length === 0) return;
-    setLoading(false)
+    // Debug log to see what data we're getting from props vs API
+    // console.log("VersionPopupView props data:", {
+    //   propContactInfo,
+    //   propRevisionInfo,
+    //   propAssignedUsers,
+    //   responseDataStatus: !!responseData
+    // });
 
-    setVersions(responseData.versions || []);
-    console.log("versions", responseData);
-    setAssignedUsers(responseData.assigned_users || []);
-
-    setSelectedUsers(
-      responseData.contact_info || {
-        owner: [],
-        architecture: [],
-        manager: [],
-        domain_owner: [],
-        modeler: [],
+    // Determine the source of data: either from props (Version view) or API response (Draft view)
+    const dataToUse = (propContactInfo || propRevisionInfo)
+      ? {
+        contact_info: propContactInfo,
+        revision_info: propRevisionInfo,
+        assigned_users: propAssignedUsers,
+        versions: responseData?.versions || []
       }
-    );
+      : responseData;
+
+    if (!dataToUse) {
+      console.log("VersionPopupView: No data available yet (waiting for responseData or props)");
+      return;
+    }
+
+    if (!langMap || Object.keys(langMap).length === 0) {
+      console.log("VersionPopupView: langMap is still empty");
+      return;
+    }
+
+    console.log("VersionPopupView: Using data source", dataToUse);
+    setLoading(false);
+
+    setVersions(dataToUse.versions || []);
+    setAssignedUsers(dataToUse.assigned_users || []);
+
+    let contactData = {};
+    try {
+      contactData =
+        typeof dataToUse.contact_info === "string"
+          ? JSON.parse(dataToUse.contact_info)
+          : dataToUse.contact_info || {};
+    } catch (e) {
+      console.error("Failed to parse contact_info", e);
+    }
+
+    setSelectedUsers({
+      owner: contactData.owner || [],
+      architecture: contactData.architecture || [],
+      manager: contactData.manager || [],
+      domain_owner: contactData.domain_owner || [],
+      modeler: contactData.modeler || [],
+    });
 
     let revisionData = {};
     try {
       revisionData =
-        typeof responseData.revision_info === "string"
-          ? JSON.parse(responseData.revision_info)
-          : responseData.revision_info || {};
+        typeof dataToUse.revision_info === "string"
+          ? JSON.parse(dataToUse.revision_info)
+          : dataToUse.revision_info || {};
     } catch (e) {
       console.error("Failed to parse revision_info", e);
     }
@@ -80,7 +119,7 @@ const VersionPopupView = ({
       revisionData[ORIGlanguageKey]?.content ??
       ""
     );
-  }, [responseData, langMap, selectedLanguage]);
+  }, [responseData, langMap, selectedLanguage, propContactInfo, propRevisionInfo, propAssignedUsers]);
   // ✅ Roles config
 
   return (
@@ -108,12 +147,14 @@ const VersionPopupView = ({
           >
             {t("revision_info")}
           </button>
-          <button
-            onClick={() => setActiveTab("version")}
-            className={activeTab === "version" ? "active" : ""}
-          >
-            {t("version")}
-          </button>
+          {!hideVersionTab && (
+            <button
+              onClick={() => setActiveTab("version")}
+              className={activeTab === "version" ? "active" : ""}
+            >
+              {t("version")}
+            </button>
+          )}
         </div>
 
         {/* Tab Content */}
@@ -135,9 +176,11 @@ const VersionPopupView = ({
                 // Filter roles jisme at least ek user assigned ho
                 const roleBlocksWithUsers = roleBlocks
                   .map((role) => {
-                    const roleUsers = assignedUsers.filter((user) =>
-                      (selectedUsers[role] || []).includes(user.user?.id)
-                    );
+                    const roleUsers = assignedUsers.filter((user) => {
+                      const userRoleId = Number(user.user?.id);
+                      const currentSelectedRoleIds = (selectedUsers[role] || []).map(id => Number(id));
+                      return currentSelectedRoleIds.includes(userRoleId);
+                    });
                     return { role, roleUsers };
                   })
                   .filter((block) => block.roleUsers.length > 0);

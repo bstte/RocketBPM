@@ -76,16 +76,16 @@ const CustomAlert = {
     });
   },
 
-  confirmExit: (saveCallback, exitWithoutSaveCallback, cancelCallback) => {
+  confirmExit: (saveCallback, exitWithoutSaveCallback, cancelCallback, texts = {}) => {
     Swal.fire({
       icon: "warning",
-      title: "You have unsaved changes",
-      text: "Do you want to save before exiting?",
+      title: texts.title || "You have unsaved changes",
+      text: texts.text || "Do you want to save before exiting?",
       showDenyButton: true,
       showCancelButton: true,
-      confirmButtonText: "Exit (Save & Exit)",
-      denyButtonText: "Exit without saving",
-      cancelButtonText: "Cancel",
+      confirmButtonText: texts.confirmButtonText || "Exit (Save & Exit)",
+      denyButtonText: texts.denyButtonText || "Exit without saving",
+      cancelButtonText: texts.cancelButtonText || "Cancel",
       confirmButtonColor: "#3085d6",
       denyButtonColor: "#f39c12",
       cancelButtonColor: "#aaa",
@@ -101,13 +101,13 @@ const CustomAlert = {
   },
 
 
-  confirmLanguageSwitch: (saveCallback, dontSaveCallback) => {
+  confirmLanguageSwitch: (saveCallback, dontSaveCallback, texts = {}) => {
     Swal.fire({
       icon: "question",
-      title: "Save changes before switching language?",
+      title: texts.title || "Save changes before switching language?",
       showCancelButton: true,
-      confirmButtonText: "Yes, save & switch",
-      cancelButtonText: "No, discard changes",
+      confirmButtonText: texts.confirmButtonText || "Yes, save & switch",
+      cancelButtonText: texts.cancelButtonText || "No, discard changes",
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
     }).then((result) => {
@@ -116,6 +116,24 @@ const CustomAlert = {
       } else if (result.dismiss === Swal.DismissReason.cancel && dontSaveCallback) {
         dontSaveCallback(); // User chose not to save
       }
+    });
+  },
+
+  toast: (title, icon = "success") => {
+    const Toast = Swal.mixin({
+      toast: true,
+      position: "top-end",
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true,
+      // didOpen: (toast) => {
+      //   toast.onmouseenter = Swal.stopTimer;
+      //   toast.onmouseleave = Swal.resumeTimer;
+      // }
+    });
+    Toast.fire({
+      icon: icon,
+      title: title
     });
   },
 

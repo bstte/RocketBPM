@@ -837,7 +837,7 @@ const Dashboard = () => {
 
         </div>
         {/* Managed Processes Widget */}
-         {/* {user?.id && <ManagedProcessesWidget userId={user.id} />} */}
+         {user?.id && <ManagedProcessesWidget userId={user.id} />}
       </div>
     </div>
   );

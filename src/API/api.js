@@ -704,11 +704,12 @@ export const ReplaceVersion = async (level, processId, version) => {
 };
 
 
-export const getVersionViewData = async (processId, level, version, pageTitle, user_id, currentParentId) => {
+export const getVersionViewData = async (processId, level, version, pageTitle, user_id, currentParentId, language_id = null) => {
     try {
         const response = await api.get(`/process/view/${processId}/${level}/${version}/${pageTitle}/${user_id}`, {
             params: {
-                currentParentId: currentParentId
+                currentParentId: currentParentId,
+                language_id: language_id
             }
         });
         return response.data;

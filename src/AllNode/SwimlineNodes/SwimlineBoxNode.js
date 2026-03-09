@@ -81,7 +81,7 @@ const BoxNode = ({ data }) => {
           onFocus={handleFocus}
           onBlur={handleBlur}
           onChange={(e) => handleChange({ target: { value: e.target.value } })}
-          placeholder="Type title here..."
+          placeholder=""
           style={styles.label}
           className="nodrag"
           onClick={(e) => e.stopPropagation()}
