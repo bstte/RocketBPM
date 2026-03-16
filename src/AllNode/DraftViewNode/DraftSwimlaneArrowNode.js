@@ -119,6 +119,7 @@ const ArrowBoxNode = ({ data }) => {
         <div
           style={{
             fontSize: "12px",
+            lineHeight: "1.1",
             fontFamily: "'Poppins', sans-serif",
             color: "white",
             textAlign: "center",
@@ -208,15 +209,13 @@ const styles = {
     backgroundColor: "red",
     clipPath:
       "polygon(10px 50%, 0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%)",
-    paddingTop: "2px",
-    paddingBottom: "2px",
-    paddingLeft: "2px",
-    paddingRight: "2px",
+    padding: "10px",
     boxSizing: "border-box",
     overflow: "hidden",
   },
   label: {
     fontSize: "12px",
+    lineHeight: "1.1",
     fontFamily: "'Poppins', sans-serif",
     color: "white",
     background: "transparent",
@@ -227,6 +226,7 @@ const styles = {
   },
   textView: {
     fontSize: "12px",
+    lineHeight: "1.1",
     fontFamily: "'Poppins', sans-serif",
     color: "white",
     textAlign: "center",

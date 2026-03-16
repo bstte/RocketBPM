@@ -32,7 +32,10 @@ import { useProcessNavigation } from "../../../hooks/useProcessNavigation";
 import { isRTLLanguage, getDirection } from "../../../utils/rtlUtils";
 import { useLanguages } from "../../../hooks/useLanguages";
 
+import { useReconstructBreadcrumbs } from "../../../hooks/useReconstructBreadcrumbs";
+
 const PublishedSwimlaneModel = () => {
+  useReconstructBreadcrumbs("publish");
   const { height, appHeaderHeight, remainingHeight } = useDynamicHeight();
   const safeRemainingHeight = Math.min(Math.max(remainingHeight, 588), 588);
   const [windowSize] = useState({

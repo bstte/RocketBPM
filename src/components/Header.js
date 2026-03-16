@@ -37,10 +37,19 @@ const Header = ({
   pendingApproval,
   onEditScheduled,
   onApproveProcess,
-  onRequestChange
+  onRequestChange,
+  onCancelApproval
 }) => {
   const user = useSelector((state) => state.user.user);
   const [imageSrc, setImageSrc] = useState(null);
+
+  const handleCancelApprovalClick = () => {
+    if (window.confirm(t("do_you_really_want_to_cancel_the_ongoing_approval"))) {
+      if (onCancelApproval) {
+        onCancelApproval();
+      }
+    }
+  };
   const [isLoading, setIsLoading] = useState(true);
 
   const [hoveredIcon, setHoveredIcon] = useState(null);
@@ -55,10 +64,23 @@ const Header = ({
   const { breadcrumbs, removeBreadcrumbsAfter } =
     useContext(BreadcrumbsContext);
 
+  const [showSaveMsg, setShowSaveMsg] = useState(false);
+  const [saveMessage, setSaveMessage] = useState("");
+
+  useEffect(() => {
+    const handleModelSaved = (e) => {
+      setSaveMessage(e.detail?.message || "Model saved");
+      setShowSaveMsg(true);
+      setTimeout(() => setShowSaveMsg(false), 2000);
+    };
+    window.addEventListener('modelSaved', handleModelSaved);
+    return () => window.removeEventListener('modelSaved', handleModelSaved);
+  }, []);
+
   const approval = pendingApproval?.approval;
   const publishRequest = pendingApproval?.publish_request;
 
-  console.log("approval", approval);
+
 
 
   const isPending = approval?.status === 0;
@@ -115,7 +137,7 @@ const Header = ({
   }, [Process_img]);
 
   const handleLogout = () => {
-    const isConfirmed = window.confirm("Are you sure you want to logout?");
+    const isConfirmed = window.confirm(t('are_you_sure_you_want_to_logout'));
     if (isConfirmed) {
       dispatch(logoutUser());
       navigate("/login");
@@ -166,8 +188,8 @@ const Header = ({
       document.removeEventListener("click", handleClickOutside);
     };
   }, []);
-  const languageKey = langMap[selectedLanguage] || "loading...";
-  const ORIGlanguageKey = langMap[OriginalDefaultlanguge_id] || "loading...";
+  const languageKey = langMap[selectedLanguage] || t("loading");
+  const ORIGlanguageKey = langMap[OriginalDefaultlanguge_id] || t("loading");
   // console.log("languageKey", languageKey);
   // console.log("ORIGlanguageKey", ORIGlanguageKey);
   // console.log("header breadcrumbs", breadcrumbs);
@@ -223,7 +245,7 @@ const Header = ({
                                   ? crumb.state.TitleTranslation[ORIGlanguageKey?.toUpperCase()]
                                   : crumb?.state?.TitleTranslation?.[ORIGlanguageKey?.toLowerCase()]
                                     ? crumb.state.TitleTranslation[ORIGlanguageKey?.toLowerCase()]
-                                    : "Loading..."
+                                    : t("loading")
                       }
 
                     </span>
@@ -276,6 +298,59 @@ const Header = ({
 
         <div style={styles.mhcolright} className="ss_header_new_right">
           <div style={styles.loginuserbox} className="ss_hed_rit_user_secnew">
+            {showSaveMsg && (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  color: "#002060",
+                  fontFamily: "Poppins, sans-serif",
+                  fontWeight: "400",
+                  marginRight: "15px",
+                  animation: "fadeInOut 2s ease-in-out",
+                  whiteSpace: "nowrap"
+                }}
+              >
+                {/* Rounded Icon */}
+                <div
+                  style={{
+                    width: "22px",
+                    height: "22px",
+                    borderRadius: "50%",
+                    backgroundColor: "#002060",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0
+                  }}
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"
+                      fill="#ffffff"
+                    />
+                  </svg>
+                </div>
+
+                {/* Message */}
+                <span>{typeof saveMessage === "string" ? saveMessage.trim() : saveMessage}</span>
+              </div>
+            )}
+
+            <style>{`
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateY(-5px); }
+  10% { opacity: 1; transform: translateY(0); }
+  90% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-5px); }
+}
+`}</style>
             <LanguageDropdown
               supportedLanguages={supportedLanguages}
               selectedLanguage={selectedLanguage}
@@ -405,6 +480,18 @@ const Header = ({
                     {Page === "ViewDraftmodel"
                       ? `${t("EDIT_MODEL")}`
                       : `${t("EDIT_SWIMLANE_MODEL")}`}
+                  </button>
+                )}
+
+                {!canShowEdit && isPending && isRequester && (
+                  <button
+                    onClick={handleCancelApprovalClick}
+                    style={{
+                      ...styles.saveButton,
+                      backgroundColor: "#dc3545",
+                    }}
+                  >
+                    {t("cancel_ongoing_approval")}
                   </button>
                 )}
 
@@ -679,7 +766,7 @@ const Header = ({
               </div>
               <div style={styles.mhcolleft} className="ss_box_hed_right_img">
                 {isLoading ? (
-                  <p>Image Loading...</p>
+                  <p>{t("image_loading")}</p>
                 ) : (
                   <img src={imageSrc} alt="RocketBPM" style={styles.mainlogo} />
                 )}
@@ -698,7 +785,7 @@ const Header = ({
               </div>
               <div style={styles.mhcolleft} className="ss_box_hed_right_1_img">
                 {isLoading ? (
-                  <p>Image Loading...</p>
+                  <p>{t("image_loading")}</p>
                 ) : (
                   <img src={imageSrc} alt="RocketBPM" style={styles.mainlogo} />
                 )}
@@ -717,7 +804,7 @@ const Header = ({
               </div>
               <div style={styles.mhcolleft} className="ss_box_hed_right_img">
                 {isLoading ? (
-                  <p>Image Loading...</p>
+                  <p>{t("image_loading")}</p>
                 ) : (
                   <img src={imageSrc} alt="RocketBPM" style={styles.mainlogo} />
                 )}

@@ -5,7 +5,11 @@ export const useTranslation = () => {
   const translations = useSelector((state) => state.user.translations);
 
   const t = (key) => {
-    return translations[key] || key; // fallback to key
+    // Return translation if exists, otherwise return the key itself
+    if (translations && translations[key]) {
+      return translations[key];
+    }
+    return key;
   };
 
   return t;

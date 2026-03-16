@@ -9,6 +9,22 @@ import { useLangMap } from "../hooks/useLangMap";
 import { useTranslation } from "../hooks/useTranslation";
 
 const DetailsPopup = ({ isOpen, onClose, onSave, Details, supportedLanguages, selectedLanguage }) => {
+  // 🔹 Helper to strip HTML tags and convert <br>, <div> to newlines
+  const stripHtml = (html) => {
+    if (!html) return "";
+    let doc = new DOMParser().parseFromString(html, 'text/html');
+    return doc.body.innerText || "";
+  };
+
+  // 🔹 Helper to convert newlines back to HTML for storage (using <div> and <br> as react-contenteditable does)
+  const textToHtml = (text) => {
+    if (!text) return "";
+    return text.split("\n").map((line, i) => {
+      if (i === 0) return line;
+      return `<div>${line || "<br>"}</div>`;
+    }).join("");
+  };
+
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [popupSize, setPopupSize] = useState({ width: 600, height: 450 });
@@ -32,9 +48,7 @@ const DetailsPopup = ({ isOpen, onClose, onSave, Details, supportedLanguages, se
   useEffect(() => {
 
     if (isOpen && Details) {
-      setTitle(
-        Details.data.details.title?.replace(/<br\s*\/?>/gi, " ").replace(/&nbsp;/g, " ") || ""
-      );
+      setTitle(stripHtml(Details.data.details.title));
       const allTranslations =
         Details.data.details.translations || {
           en: { title: "", content: "" },
@@ -77,7 +91,7 @@ const DetailsPopup = ({ isOpen, onClose, onSave, Details, supportedLanguages, se
 
   const handleSave = () => {
     if (onSave) {
-      onSave({ title, content, translations });
+      onSave({ title: textToHtml(title), content, translations });
     }
     setContent("");
     setTitle("");

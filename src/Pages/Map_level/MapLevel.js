@@ -18,7 +18,7 @@ import CustomAlert from "../../components/CustomAlert";
 import ArrowBoxNode from "../../AllNode/ArrowBoxNode";
 import PentagonNode from "../../AllNode/PentagonNode";
 import { getLevelKey } from "../../utils/getLevel";
-import { filter_draft, moveNode, publishMovedNode, contectApprovalStatus } from "../../API/api";
+import { filter_draft, moveNode, publishMovedNode, contectApprovalStatus, checkParentPublishRecords } from "../../API/api";
 import { BreadcrumbsContext } from "../../context/BreadcrumbsContext";
 import CustomContextMenu from "../../components/CustomContextMenu";
 import { useSelector } from "react-redux";
@@ -314,17 +314,21 @@ const MapLevel = () => {
 
   useEffect(() => {
     const checkpublishfunction = async () => {
-      if (currentLevel !== 0 && ParentPageGroupId) {
+      if (currentLevel !== 0 && currentParentId) {
         try {
-          const response = await filter_draft(ParentPageGroupId);
-          Setcheckpublish(!response?.data);
+          const response = await checkParentPublishRecords(
+            currentParentId,
+            processId);
+          Setcheckpublish(response?.status === true);
         } catch (error) {
           console.error("filter draft error", error);
         }
+      } else if (currentLevel === 0) {
+        Setcheckpublish(true);
       }
     };
     checkpublishfunction();
-  }, [ParentPageGroupId, currentLevel]);
+  }, [currentParentId, currentLevel, processId]);
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -357,20 +361,28 @@ const MapLevel = () => {
     processId, currentLevel, currentParentId, LoginUser, status: "draft"
   });
 
+
+
+
   const handleSavePublish = async () => {
-    try {
-      const response = await filter_draft(state.ParentPageGroupId);
-      if (response.data === true) {
-        CustomAlert.warning(t("Warning"), t("Publish all parent models first"));
-        return false;
+    if (currentLevel !== 0) {
+      try {
+        const response = await checkParentPublishRecords(
+          currentParentId,
+          processId);
+        console.log("respne", response)
+        if (response?.status === false) {
+          CustomAlert.warning(t("warning"), t("publish_all_parent_models_first"));
+          return false;
+        }
+      } catch (error) {
+        console.error("filter draft error", error);
       }
-    } catch (error) {
-      console.error("filter draft error", error);
     }
     const latestData = await refetch();
     const contact = latestData?.contact_info;
     if (!contact || Object.values(contact).every(list => !list || list.length === 0)) {
-      CustomAlert.info(t("Information"), t("Please assign Process Owner / Process Domain Owner and Process Modeler to publish the model."));
+      CustomAlert.info(t("information"), t("please_assign_process_owner_process_domain_owner_and_process_modeler_to_publish_the_model"));
       return;
     }
     setShowPublishPopup(true);
@@ -438,7 +450,7 @@ const MapLevel = () => {
               {isLoading && (
                 <div className="loading-overlay">
                   <div className="spinner"></div>
-                  <div>Loading...</div>
+                  <div>{t("loading")}</div>
                 </div>
               )}
               <CustomContextMenu
@@ -505,9 +517,9 @@ const MapLevel = () => {
             viewVersion={(pid, lvl, v) => window.location.href = `/process-version/${pid}/${lvl}/${v}/ProcessMap/${LoginUser?.id}/${currentParentId}`}
             LoginUser={LoginUser}
             title={title}
+            type="ProcessMaps"
             handleSaveVersionDetails={(p) => { setversionPopupPayload(p); setShowVersionPopup(false); }}
             status={"draft"}
-            type={"ProcessMaps"}
             versionPopupPayload={versionPopupPayload}
             supportedLanguages={supportedLanguages}
             selectedLanguage={processDefaultlanguage_id}

@@ -16,7 +16,7 @@ const ArrowBoxNode = ({ data }) => {
   const { addBreadcrumb, removeBreadcrumbsAfter } =
     useContext(BreadcrumbsContext);
   // const navigate = useNavigate();
- const { goToProcess } = useProcessNavigation();
+  const { goToProcess } = useProcessNavigation();
   const handleLinkClick = async () => {
     // console.log(data.processlink)
     if (data.processlink) {
@@ -107,27 +107,27 @@ const ArrowBoxNode = ({ data }) => {
       onClick={handleLinkClick}
     >
       {/* Arrow Box */}
-      <div className="borderBox" style={styles.arrowBox}>
-        <div style={styles.textView}>
-          {data.processlink ? (
-            <div>
-              <button
-                style={styles.linkButton}
-                dangerouslySetInnerHTML={{ __html: title }}
-              // onClick={handleLinkClick}
-              ></button>
-            </div>
-          ) : (
-            <>
-              <div>
-                <button
-                  style={styles.withoutlinkButton}
-                  dangerouslySetInnerHTML={{ __html: title }}
-                />
-              </div>
-            </>
-          )}
-        </div>
+      <div
+        className="borderBox"
+        style={{
+          ...styles.arrowBox,
+          // filter: data.processlink ? "drop-shadow(0px 0px 10px #0000004f)" : "none",
+        }}
+      // onClick={handleLinkClick}
+      >
+        <div
+          style={{
+            fontSize: "12px",
+            lineHeight: "1.1",
+            fontFamily: "'Poppins', sans-serif",
+            color: "white",
+            textAlign: "center",
+            wordBreak: "break-word",
+            cursor: "pointer",
+            width: "100%",
+          }}
+          dangerouslySetInnerHTML={{ __html: title }}
+        />
       </div>
 
       {/* Border overlay as a separate div */}
@@ -186,6 +186,7 @@ const ArrowBoxNode = ({ data }) => {
   );
 };
 
+
 const styles = {
   wrapper: {
     position: "relative",
@@ -208,15 +209,13 @@ const styles = {
     backgroundColor: "red",
     clipPath:
       "polygon(10px 50%, 0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%)",
-    paddingTop: "2px",
-    paddingBottom: "2px",
-    paddingLeft: "2px",
-    paddingRight: "2px",
+    padding: "10px",
     boxSizing: "border-box",
     overflow: "hidden",
   },
   label: {
     fontSize: "12px",
+    lineHeight: "1.1",
     fontFamily: "'Poppins', sans-serif",
     color: "white",
     background: "transparent",
@@ -227,6 +226,7 @@ const styles = {
   },
   textView: {
     fontSize: "12px",
+    lineHeight: "1.1",
     fontFamily: "'Poppins', sans-serif",
     color: "white",
     textAlign: "center",
@@ -275,5 +275,4 @@ const styles = {
     cursor: "pointer",
   },
 };
-
 export default memo(ArrowBoxNode);

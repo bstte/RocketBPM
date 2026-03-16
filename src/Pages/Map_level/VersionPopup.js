@@ -84,7 +84,7 @@ const VersionPopup = ({
       }
     }
     setLoading(false)
-  }, [versionPopupPayload, selectedLanguage,langMap]);
+  }, [versionPopupPayload, selectedLanguage, langMap]);
 
   useEffect(() => {
     if (!responseData || !langMap || Object.keys(langMap).length === 0)
@@ -219,10 +219,12 @@ const VersionPopup = ({
 
   const handleReplaceClick = (level, processId, version) => {
     CustomAlert.confirm(
-      "Are you sure?",
-      "This will replace the version. This action cannot be undone!",
+      `${t("are_you_sure")}?`,
+      `${t("this_will_replace_the_version_this_action_cannot_be_undone")}`,
       () => ReplaceVersionpage(level, processId, version),
-      () => { }
+      () => { },
+      t("yes_confirm"),
+      t("Cancel")
     );
   };
 
@@ -456,7 +458,7 @@ const VersionPopup = ({
                 style={{ maxHeight: "300px", overflow: "auto" }}
               >
                 {loading ? (
-                  <p>Loading...</p>
+                  <p>{t("loading")}</p>
                 ) : versions.length === 0 ? (
                   <p>{t("no_version_history_found")}</p>
                 ) : (
@@ -574,7 +576,7 @@ const VersionPopup = ({
 
                 <input
                   type="text"
-                  placeholder="Search user..."
+                  placeholder={t("search_user")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="email-search-box"
@@ -597,7 +599,7 @@ const VersionPopup = ({
                     </div>
                   ))}
 
-                  {filteredUsers.length === 0 && <p>No users found</p>}
+                  {filteredUsers.length === 0 && <p> {t("no_users_found")}</p>}
                 </div>
               </div>
             </div>

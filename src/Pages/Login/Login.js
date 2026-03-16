@@ -2,12 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './Login.css'; // Import the CSS file for styling
-import { loginUser, setTranslations, setUser } from '../../redux/userSlice';
+import { loginUser, setTranslations, setTranslationsTemp, setUser, completeLoginTransition } from '../../redux/userSlice';
 import { CurrentUser, googleOAuth, microsoftOAuth } from '../../API/api';
 import { GoogleLogin } from '@react-oauth/google';
 import { useMsal } from '@azure/msal-react';
 import { loginRequest } from '../../hooks/msalConfig';
 import { FaEye, FaEyeSlash } from 'react-icons/fa'; // 👁️ Import eye icons
+import { useTranslation } from '../../hooks/useTranslation';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -19,6 +20,7 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { instance } = useMsal();
+  const t = useTranslation();
 
   const from = location.state?.from?.pathname
     ? location.state.from.pathname + (location.state.from.search || '')
@@ -52,9 +54,10 @@ const Login = () => {
       localStorage.setItem('token', response.access_token);
       dispatch(setUser(response.user));
       if (response.translations) {
-        dispatch(setTranslations(response.translations));
+        dispatch(setTranslationsTemp(response.translations));
       }
       navigate(from, { replace: true });
+      dispatch(completeLoginTransition());
 
     } catch (error) {
       console.error("Microsoft login failed", error);
@@ -70,9 +73,10 @@ const Login = () => {
       localStorage.setItem('token', data.access_token);
       dispatch(setUser(data.user));
       if (data.translations) {
-        dispatch(setTranslations(data.translations));
+        dispatch(setTranslationsTemp(data.translations));
       }
       navigate(from, { replace: true });
+      dispatch(completeLoginTransition());
     } catch (err) {
       console.error(err);
       setError(err.message || 'Google Sign-In Failed');
@@ -99,12 +103,13 @@ const Login = () => {
       // Navigate to dashboard after setting user
       setTimeout(() => {
         navigate(from, { replace: true }); // ⬅️ Go to original path
+        dispatch(completeLoginTransition()); // 🔄 Now safe to switch language
       }, 500);
 
 
     } catch (err) {
       console.error("lgon error", err)
-      setError('Invalid credentials', err);
+      setError(t('invalid_credentials'));
     }
   };
 
@@ -119,13 +124,13 @@ const Login = () => {
             className="login-logo"
           />
         </div>
-        <h2>Log in to your account</h2>
+        <h2>{t('log_in_to_your_account')}</h2>
         <form onSubmit={handleLogin} className="login-form">
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email"
+            placeholder={t('Email')}
             className="login-input"
           />
           <div className="password-container">
@@ -133,7 +138,7 @@ const Login = () => {
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password"
+              placeholder={t('password')}
               className="login-input password-input"
             />
             <button
@@ -145,14 +150,14 @@ const Login = () => {
             </button>
           </div>
           {error && <p className="error-message">{error}</p>}
-          <button type="submit" className="login-button">SIGN IN</button>
-          <p>Not a member?<button className="btn_form" type='button' onClick={() => navigate('/signup-form')}>Sign up</button></p>
-          <button className="btn_form" type='button' onClick={() => navigate('/forgot-password')}>Forgot your password?</button>
+          <button type="submit" className="login-button">{t('sign_in')}</button>
+          <p>{t('not_a_member')}<button className="btn_form" type='button' onClick={() => navigate('/signup-form')}>{t('sign_up')}</button></p>
+          <button className="btn_form" type='button' onClick={() => navigate('/forgot-password')}>{t('forgot_your_password')}</button>
         </form>
 
         <div className="or-separator">
           <span className="line"></span>
-          <span className="or-text">OR</span>
+          <span className="or-text">{t('or')}</span>
           <span className="line"></span>
         </div>
 
@@ -168,7 +173,7 @@ const Login = () => {
 
         <div className="microsoft-login">
           <button className="btn_form" type="button" onClick={handleMicrosoftLogin}>
-            Continue with Microsoft 365
+            {t('continue_with_microsoft_365')}
           </button>
         </div>
       </div>

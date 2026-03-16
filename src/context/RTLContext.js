@@ -1,7 +1,9 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { isRTLLanguage, getDirection, getLanguageCode } from '../utils/rtlUtils';
 import { useLanguages } from '../hooks/useLanguages';
+import { setTranslations } from '../redux/userSlice';
+import { getPublicTranslations } from '../API/api';
 
 // Create RTL Context
 // NOTE: This context is kept for future use but currently NOT setting global dir attribute
@@ -19,42 +21,63 @@ export const RTLProvider = ({ children }) => {
     const [isRTL, setIsRTL] = useState(false);
     const [direction, setDirection] = useState('ltr');
     const [languageCode, setLanguageCode] = useState('en');
+    const [isLoaded, setIsLoaded] = useState(false);
+
+    const dispatch = useDispatch();
 
     useEffect(() => {
-        // Get language from user settings or localStorage
-        const savedLangId = localStorage.getItem('selectedLanguageId');
-        const userLangId = user?.language_id;
-        const currentLangId = savedLangId ? parseInt(savedLangId) : userLangId;
+        const initialize = async () => {
+            // Get language from user settings or localStorage
+            const savedLangId = localStorage.getItem('selectedLanguageId');
+            const userLangId = user?.language_id;
+            const currentLangId = savedLangId ? parseInt(savedLangId) : userLangId;
 
-        if (currentLangId && languages.length > 0) {
-            // Find language code from ID
-            const code = getLanguageCode(currentLangId, languages);
+            if (currentLangId && languages.length > 0) {
+                // Find language code from ID
+                const code = getLanguageCode(currentLangId, languages);
 
-            if (code) {
-                const rtl = isRTLLanguage(code);
-                const dir = getDirection(code);
+                if (code) {
+                    const rtl = isRTLLanguage(code);
+                    const dir = getDirection(code);
+
+                    setIsRTL(rtl);
+                    setDirection(dir);
+                    setLanguageCode(code);
+
+                    document.documentElement.setAttribute('dir', dir);
+                    document.body.setAttribute('dir', dir);
+                    localStorage.setItem('appDirection', dir);
+                }
+                setIsLoaded(true);
+            } else {
+                // Default to browser language if no language is set
+                const browserLang = navigator.language.split('-')[0];
+                const rtl = isRTLLanguage(browserLang);
+                const dir = getDirection(browserLang);
 
                 setIsRTL(rtl);
                 setDirection(dir);
-                setLanguageCode(code);
-
-                // Set global dir attribute for non-process pages
-                // Process pages (Map/Swimlane) manage their own local RTL
+                setLanguageCode(browserLang);
                 document.documentElement.setAttribute('dir', dir);
                 document.body.setAttribute('dir', dir);
-
-                // Store in localStorage for persistence
                 localStorage.setItem('appDirection', dir);
+
+                // ✅ Fetch public translations from backend
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    try {
+                        const trans = await getPublicTranslations(browserLang);
+                        dispatch(setTranslations(trans));
+                    } catch (error) {
+                        console.error("Failed to fetch public translations:", error);
+                    }
+                }
+                setIsLoaded(true);
             }
-        } else {
-            // Default to LTR if no language is set
-            setIsRTL(false);
-            setDirection('ltr');
-            setLanguageCode('en');
-            document.documentElement.setAttribute('dir', 'ltr');
-            document.body.setAttribute('dir', 'ltr');
-        }
-    }, [user?.language_id, languages]);
+        };
+
+        initialize();
+    }, [user?.language_id, languages, dispatch]);
 
     // Also listen to localStorage changes (for language switching)
     useEffect(() => {
@@ -87,6 +110,8 @@ export const RTLProvider = ({ children }) => {
         direction,
         languageCode,
     };
+
+    if (!isLoaded) return null; // 🚀 Prevent flash of keys
 
     return <RTLContext.Provider value={value}>{children}</RTLContext.Provider>;
 };

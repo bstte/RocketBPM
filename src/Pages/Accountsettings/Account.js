@@ -62,8 +62,8 @@ const Account = () => {
 
   const deactivateUserFunction = async () => {
     CustomAlert.confirm(
-      "Deactivate Account",
-      "Are you sure you want to deactivate your account?",
+      t('deactivate_account'),
+      t('are_you_sure_you_want_to_deactivate_your_account'),
       async () => {
         const token = localStorage.getItem("token");
         if (!token) {
@@ -72,7 +72,7 @@ const Account = () => {
         }
         try {
           const response = await deactivateUser(token);
-          alert("Your account has been deactivated.");
+          alert(t('your_account_has_been_deactivated'));
           localStorage.removeItem("token"); // Clear invalid token
           navigate("/login"); // Redirect to login page
         } catch (error) {
@@ -91,14 +91,15 @@ const Account = () => {
     }
     if (currentPassword && newPassword && currentPassword === newPassword) {
       CustomAlert.warning(
-        "Warning",
-        "New password cannot be the same as current password."
+        t('warning'),
+        t('new_password_cannot_be_the_same_as_current_password')
       );
       return;
     }
 
     if (newPassword && newPassword !== repeatNewPassword) {
-      CustomAlert.warning("Warning", "New passwords do not match.");
+      CustomAlert.warning(t('warning'), t('new_passwords_do_not_match'));
+
       return;
     }
 
@@ -128,7 +129,7 @@ const Account = () => {
     try {
       const response = await updateprofile(token, formData); // ✅ Pass formData
       // alert("Profile updated successfully!");
-      CustomAlert.success("Success", "Profile updated successfully!");
+      CustomAlert.success(t('success'), t("profile_updated_successfully"));
 
       dispatch(setUser(response.user));
       dispatch(setTranslations(response.translations)); // ✅ agar helper bana ho toh
@@ -158,8 +159,8 @@ const Account = () => {
 
   const handleRemoveImage = async () => {
     CustomAlert.confirm(
-      "Remove Profile Image",
-      "Are you sure you want to remove your profile image?",
+      t('remove_profile_image'),
+      t('are_you_sure_you_want_to_remove_your_profile_image'),
       async () => {
         if (selectedImage) {
           setSelectedImage(null);
@@ -176,7 +177,7 @@ const Account = () => {
 
             if (response.status === 200) {
               // Check status code
-              alert("Profile image removed successfully!");
+              alert(t('profile_image_removed_successfully'));
               setSelectedImage(null); // Update UI
               dispatch(setUser({ ...user, Profile_image: null })); // Update Redux state
             } else {

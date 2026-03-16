@@ -212,7 +212,7 @@ const ManagedProcessesWidget = ({ userId }) => {
                         fontSize: "1rem",
                     }}
                 >
-                    <span style={{ fontSize: "1.2rem" }}>★</span> {t("my_process_world") || "My managed Processes"}
+                    <span style={{ fontSize: "1.2rem" }}>★</span> {t("my_managed_processes") || "My managed Processes"}
                 </Typography>
 
                 <TextField
@@ -240,7 +240,7 @@ const ManagedProcessesWidget = ({ userId }) => {
                                 { id: "process_world", label: t("Process") || "Process" }, // Node Label in Process Column
                                 { id: "process_name", label: t("process_world") || "Process World" }, // Root Name in PW Column
                                 { id: "roles", label: t("my_bpm_roles") || "My BPM Roles" },
-                                { id: "draft_date", label: t("draft") },
+                                { id: "draft_date", label: t("Draft") },
                                 { id: "to_be_published_on", label: t("to_be_published_on") },
                                 { id: "published_date", label: t("Published") },
                                 { id: "todo", label: t("todo") },
@@ -269,7 +269,7 @@ const ManagedProcessesWidget = ({ userId }) => {
                         {loading ? (
                             <TableRow>
                                 <TableCell colSpan={7} align="center">
-                                    Loading...
+                                    {t("loading")}
                                 </TableCell>
                             </TableRow>
                         ) : sortedProcesses.length === 0 ? (

@@ -8,31 +8,37 @@ const RoleGroupTooltip = ({
     const langKey = langMap?.[processDefaultlanguage_id] || "EN";
 
     return (
-        <div style={styles.tooltip}>
-            <div style={styles.tooltipHeader}>
-                <span style={{ fontWeight: "700" }}>Role Group Breakdown</span>
-            </div>
+        <div style={styles.container}>
+            <div style={styles.tooltip}>
+                <div style={styles.tooltipHeader}>
+                    <span style={{ fontWeight: "700" }}>Role Group Breakdown</span>
+                </div>
 
-            <div style={styles.tooltipBody}>
-                {roles.length > 0 ? (
-                    <ul style={styles.roleList}>
-                        {roles.map((role, idx) => {
-                            const displayName =
-                                role.translations?.[langKey] || role.name;
+                <div
+                    className="nowheel nopan"
+                    style={styles.tooltipBody}
+                    onWheel={(e) => e.stopPropagation()}
+                >
+                    {roles.length > 0 ? (
+                        <ul style={styles.roleList}>
+                            {roles.map((role, idx) => {
+                                const displayName =
+                                    role.translations?.[langKey] || role.name;
 
-                            return (
-                                <li key={idx} style={styles.roleItem}>
-                                    <span style={styles.roleName}>{displayName}</span>
+                                return (
+                                    <li key={idx} style={styles.roleItem}>
+                                        <span style={styles.roleName}>{displayName}</span>
 
-                                </li>
-                            );
-                        })}
-                    </ul>
-                ) : (
-                    <div style={styles.emptyText}>
-                        No roles assigned to this group
-                    </div>
-                )}
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    ) : (
+                        <div style={styles.emptyText}>
+                            No roles assigned to this group
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );
@@ -40,6 +46,12 @@ const RoleGroupTooltip = ({
 
 /* ✅ Tooltip-specific styles yahin rahenge */
 const styles = {
+    container: {
+        paddingLeft: "20px", // Bridging the gap between box and tooltip
+        marginLeft: "-20px",
+        display: "inline-block",
+        pointerEvents: "auto",
+    },
     tooltip: {
         backgroundColor: "#ffffff",
         color: "#002060",

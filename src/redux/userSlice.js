@@ -22,7 +22,7 @@ export const loginUser = createAsyncThunk(
 
       return { user, translations };
     } catch (error) {
-      CustomAlert.warning("War!", error.response.data.message);
+      CustomAlert.warning("", error.response.data.message);
       return rejectWithValue(error.response?.data || "An error occurred");
     }
   }
@@ -69,6 +69,7 @@ export const userSlice = createSlice({
     direction: savedDirection, // ✅ RTL/LTR direction
     isRTL: savedDirection === "rtl", // ✅ RTL flag
 
+    selectedTranslations: null, // 🔄 Temporary storage during login transition
     loading: false,
     error: null,
   },
@@ -78,7 +79,18 @@ export const userSlice = createSlice({
     },
     setTranslations: (state, action) => {
       state.translations = action.payload;
+      state.selectedTranslations = null; // Clear temp if set directly
       localStorage.setItem("translations", JSON.stringify(action.payload)); // ✅ update bhi karo
+    },
+    setTranslationsTemp: (state, action) => {
+      state.selectedTranslations = action.payload;
+    },
+    completeLoginTransition: (state) => {
+      if (state.selectedTranslations) {
+        state.translations = state.selectedTranslations;
+        localStorage.setItem("translations", JSON.stringify(state.selectedTranslations));
+        state.selectedTranslations = null;
+      }
     },
     setDirection: (state, action) => {
       state.direction = action.payload;
@@ -103,11 +115,7 @@ export const userSlice = createSlice({
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload.user;
-        state.translations = action.payload.translations || {}; // ✅ Save translations
-        localStorage.setItem(
-          "translations",
-          JSON.stringify(state.translations)
-        );
+        state.selectedTranslations = action.payload.translations || {}; // ✅ Store temporarily
         localStorage.setItem("user", JSON.stringify(action.payload.user)); // ✅ Save user to localStorage
       })
       .addCase(loginUser.rejected, (state, action) => {
@@ -123,6 +131,6 @@ export const userSlice = createSlice({
   },
 });
 
-export const { setUser, setTranslations, setDirection, logout } = userSlice.actions;
+export const { setUser, setTranslations, setTranslationsTemp, completeLoginTransition, setDirection, logout } = userSlice.actions;
 
 export default userSlice.reducer;

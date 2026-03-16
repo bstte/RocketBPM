@@ -20,17 +20,22 @@ export const useReconstructBreadcrumbs = (mode = "draft") => {
             // Logic: If Home is missing, or if we are at a deep level and intermediate breadcrumbs are missing
             const hasHome = breadcrumbs.some(b => b.path === "/dashboard");
 
-            // If we only have Home (length 1) and we are at Level 1 or deeper, we definitely need reconstruction.
-            // If breadcrumbs are completely empty, we need reconstruction.
-            const needsReconstruction = !hasHome || (currentLevel > 0 && breadcrumbs.length <= 2);
+            // Check if the current breadcrumbs belong to the current process
+            // Use string comparison to be safe with IDs
+            const processBreadcrumb = breadcrumbs.find(b => String(b.state?.Process_id || b.state?.id || b.state?.processId) === String(processId));
+            const isWrongProcess = breadcrumbs.length > 1 && !processBreadcrumb;
+
+            // If we only have Home (length 1) and we are at Level 1 or deeper, we definitely need reconstruction
+            const needsReconstruction = !hasHome || isWrongProcess || (currentLevel > 0 && breadcrumbs.length <= 2);
 
             if (needsReconstruction) {
-                console.log("Reconstructing breadcrumbs for direct link...");
+                console.log(`Reconstructing breadcrumbs for process ${processId} at level ${currentLevel}...`);
 
                 try {
                     const apiMode = mode === "publish" ? "Publish" : "draft";
-                    const levelParam = parentId || `level${currentLevel}`;
                     const finalLevelParam = parentId ? `level${currentLevel}_${parentId}` : `level${currentLevel}`;
+
+                    console.log(`Calling API with levelParam: ${finalLevelParam}, user_id: ${user?.id}, processId: ${processId}`);
 
                     const apiCall = mode === "publish" ? checkRecordWithGetLinkPublishData : checkRecordWithGetLinkDraftData;
 
@@ -47,10 +52,12 @@ export const useReconstructBreadcrumbs = (mode = "draft") => {
                         const processTitle = nodeData.processTitle?.process_title || "Untitled Process";
                         const TitleTranslation = JSON.parse(nodeData.processTitle?.translations || "{}");
                         const basePath = mode === "publish" ? `/published/map/${processId}` : `/draft/map/${processId}`;
+                        
+                        // Use Process_id and processTitle to match Dashboard state structure
                         newBreadcrumbs.push({
                             label: processTitle,
                             path: basePath,
-                            state: { id: processId, title: processTitle, TitleTranslation }
+                            state: { Process_id: processId, processTitle, TitleTranslation }
                         });
 
                         // 3. Add Intermediate sub-levels if any
@@ -69,8 +76,14 @@ export const useReconstructBreadcrumbs = (mode = "draft") => {
                             });
                         }
 
-                        // Update context
-                        setBreadcrumbs(newBreadcrumbs);
+                        console.log("New constructed breadcrumbs:", newBreadcrumbs);
+
+                        // Update context if breadcrumbs have actually changed to avoid infinite loops
+                        if (JSON.stringify(newBreadcrumbs) !== JSON.stringify(breadcrumbs)) {
+                            setBreadcrumbs(newBreadcrumbs);
+                        }
+                    } else {
+                        console.warn("API returned status false for tree reconstruction:", nodeData.message);
                     }
                 } catch (error) {
                     console.error("Failed to reconstruct breadcrumbs:", error);
@@ -85,5 +98,5 @@ export const useReconstructBreadcrumbs = (mode = "draft") => {
         if (processId && user?.id) {
             reconstruct();
         }
-    }, [processId, level, parentId, user?.id, mode, setBreadcrumbs]);
+    }, [processId, level, parentId, user?.id, mode, setBreadcrumbs, breadcrumbs]);
 };

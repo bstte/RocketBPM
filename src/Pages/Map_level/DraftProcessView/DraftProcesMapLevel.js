@@ -11,7 +11,7 @@ import {
 import "@xyflow/react/dist/style.css";
 import { useParams } from "react-router-dom";
 import Header from "../../../components/Header";
-import apiExports, { contectApprovalStatus, contectCancelPublishing, contentapproveProcess, contentChangeRequest, contentreschedulePublishing, contentRequestChange } from "../../../API/api";
+import apiExports, { contectApprovalStatus, contectCancelPublishing, contentapproveProcess, contentChangeRequest, contentreschedulePublishing, contentRequestChange, cancelPublishingAPI } from "../../../API/api";
 import { BreadcrumbsContext } from "../../../context/BreadcrumbsContext";
 import PublishArrowBoxNode from "../../../AllNode/PublishAllNode/PublishArrowBoxNode";
 import PublishPentagonNode from "../../../AllNode/PublishAllNode/PublishPentagonNode";
@@ -125,7 +125,7 @@ const DraftProcesMapLevel = () => {
 
 
     // ✅ Check for pending approval using custom hook (replacement for local state/effect)
-    const { pendingApproval, loading: approvalLoading } = useApprovalStatus({
+    const { pendingApproval, loading: approvalLoading, refetch: refetchApprovalStatus } = useApprovalStatus({
         processId,
         currentLevel,
         currentParentId
@@ -357,6 +357,23 @@ const DraftProcesMapLevel = () => {
                 onRequestChange={() => setRequestChangeModalOpen(true)}
                 pendingApproval={pendingApproval}
                 onEditScheduled={() => setEditScheduledModalOpen(true)}
+                onCancelApproval={async () => {
+                    try {
+                        const levelKey = getLevelKey(currentLevel, currentParentId);
+                        await cancelPublishingAPI({
+                            process_id: processId,
+                            level: levelKey,
+                            user_id: LoginUser?.id,
+                            process_title: title,
+                            process_link: window.location.href,
+                        });
+                        CustomAlert.success(t("success"), t("approval_cancelled_successfully"));
+                        if (refetchApprovalStatus) refetchApprovalStatus();
+                    } catch (error) {
+                        console.error("Cancel approval error:", error);
+                        CustomAlert.error(t("error"), t("Failed to cancel approval"));
+                    }
+                }}
             />
             <EditScheduledPublishingModal
                 isOpen={editScheduledModalOpen}

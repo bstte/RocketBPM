@@ -35,7 +35,8 @@ import apiExports, {
   contentChangeRequest,
   contentreschedulePublishing,
   contectCancelPublishing,
-  contentRequestChange
+  contentRequestChange,
+  cancelPublishingAPI
 } from "../../../API/api";
 import VersionPopupView from "../../../components/VersionPopupView";
 import { useDynamicHeight } from "../../../hooks/useDynamicHeight";
@@ -55,7 +56,10 @@ import RequestChangeModal from "../../../components/RequestChangeModal";
 import EditScheduledPublishingModal from "../../../components/EditScheduledPublishingModal";
 import { buildProcessPath } from "../../../routes/buildProcessPath";
 
+import { useReconstructBreadcrumbs } from "../../../hooks/useReconstructBreadcrumbs";
+
 const DraftSwimlineLevel = () => {
+  useReconstructBreadcrumbs("draft");
   const [windowSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
@@ -80,7 +84,7 @@ const DraftSwimlineLevel = () => {
   const [editScheduledModalOpen, setEditScheduledModalOpen] = useState(false);
   const [requestChangeModalOpen, setRequestChangeModalOpen] = useState(false);
 
-  const { pendingApproval } = useApprovalStatus({
+  const { pendingApproval, refetch: refetchApprovalStatus } = useApprovalStatus({
     processId: id,
     currentLevel,
     currentParentId
@@ -691,6 +695,23 @@ const DraftSwimlineLevel = () => {
         onRequestChange={() => setRequestChangeModalOpen(true)}
         pendingApproval={pendingApproval}
         onEditScheduled={() => setEditScheduledModalOpen(true)}
+        onCancelApproval={async () => {
+          try {
+            const levelKey = getLevelKey(currentLevel, currentParentId);
+            await cancelPublishingAPI({
+              process_id: id,
+              level: levelKey,
+              user_id: LoginUser?.id,
+              process_title: title,
+              process_link: window.location.href,
+            });
+            CustomAlert.success(t("success"), t("approval_cancelled_successfully"));
+            if (refetchApprovalStatus) refetchApprovalStatus();
+          } catch (error) {
+            console.error("Cancel approval error:", error);
+            CustomAlert.error(t("error"), t("Failed to cancel approval"));
+          }
+        }}
       />
       <EditScheduledPublishingModal
         isOpen={editScheduledModalOpen}

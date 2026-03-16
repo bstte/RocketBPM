@@ -91,13 +91,13 @@ const EditScheduledPublishingModal = ({
                     onClick={onClose}
                     style={{ backgroundColor: '#002060', color: 'white', border: 'none', padding: '8px 20px', borderRadius: '5px', cursor: 'pointer' }}
                 >
-                    {t("exit")}
+                    {t("Exit")}
                 </button>
                 <button
                     onClick={handleRescheduleClick}
                     style={{ backgroundColor: '#002060', color: 'white', border: 'none', padding: '8px 20px', borderRadius: '5px', cursor: 'pointer' }}
                 >
-                    {t("reschedule")}
+                    {t("rescheduled")}
                 </button>
             </div>
         </Modal>

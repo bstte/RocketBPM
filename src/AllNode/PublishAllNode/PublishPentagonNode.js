@@ -46,7 +46,7 @@ const PublishPentagonNode = ({ data }) => {
             color: "white",
             textAlign: "center",
             whiteSpace: "pre-wrap",
-            wordBreak: "break-word",
+            overflowWrap: "break-word",
           }}
           dangerouslySetInnerHTML={{ __html: data.label }}
         />

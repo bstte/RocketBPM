@@ -7,10 +7,12 @@ import CustomAlert from '../../components/CustomAlert';
 import { CurrentUser, signup } from '../../API/api';
 import { setUser } from '../../redux/userSlice';
 import { useDispatch } from 'react-redux';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const Signup = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const t = useTranslation();
 
 
   const [formData, setFormData] = useState({
@@ -46,19 +48,19 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.firstName) {
-      CustomAlert.error("Required Field", "First Name is required!");
+      CustomAlert.error(t('required_field'), t('first_name_is_required'));
       return;
     }
     if (!formData.lastName) {
-      CustomAlert.error("Required Field", "Last Name is required!");
+      CustomAlert.error(t('required_field'), t('last_name_is_required'));
       return;
     }
     if (!formData.password) {
-      CustomAlert.error("Required Field", "Password is required!");
+      CustomAlert.error(t('required_field'), t('password_is_required'));
       return;
     }
     if (formData.password !== formData.confirmPassword) {
-      CustomAlert.error("Error", "Passwords do not match!");
+      CustomAlert.error(t('required_field'), t('passwords_do_not_match'));
       return;
     }
 
@@ -84,13 +86,13 @@ const Signup = () => {
       dispatch(setUser(userResponse)); // store in redux
 
       // ✅ Success
-      CustomAlert.success("Success", response.message);
+      CustomAlert.success(t('success'), response.message);
 
       // ✅ Go to dashboard directly
       navigate('/dashboard', { replace: true });
 
     } catch (error) {
-      CustomAlert.error("Error", error.response.data.message);
+      CustomAlert.error("Error", error.response?.data?.message || t('signup_failed'));
       console.error("Signup error:", error);
     }
   };
@@ -101,14 +103,14 @@ const Signup = () => {
         <div className="login-image">
           <img src="/img/RocketBPM_rocket_logo.png" alt='' style={{ width: "15vw" }} />
         </div>
-        <h2>Join RocketBPM.com</h2>
+        <h2>{t('join_rocketbpmcom')}</h2>
         <form className="login-form" onSubmit={handleSubmit}>
           <input
             type="text"
             name="firstName"
             value={formData.firstName}
             onChange={handleChange}
-            placeholder="First Name"
+            placeholder={t('First_Name')}
             className="login-input"
           />
           <input
@@ -116,7 +118,7 @@ const Signup = () => {
             name="lastName"
             value={formData.lastName}
             onChange={handleChange}
-            placeholder="Last Name"
+            placeholder={t('Last_Name')}
             className="login-input"
           />
           <input
@@ -124,7 +126,7 @@ const Signup = () => {
             name="email"
             value={formData.email}
             onChange={handleChange}
-            placeholder="Email"
+            placeholder={t('Email')}
             className="login-input"
             disabled // Email change na ho
           />
@@ -134,7 +136,7 @@ const Signup = () => {
             name="password"
             value={formData.password}
             onChange={handleChange}
-            placeholder="Password"
+            placeholder={t('password')}
             className="login-input"
           />
           <input
@@ -142,12 +144,12 @@ const Signup = () => {
             name="confirmPassword"
             value={formData.confirmPassword}
             onChange={handleChange}
-            placeholder="Confirm Password"
+            placeholder={t('confirm_password')}
             className="login-input"
           />
 
-          <button type="submit" className="login-button">SIGN UP</button>
-          <p>Already a member?<button className="btn_form" type='button' onClick={() => navigate('/login')}>Sign in</button></p>
+          <button type="submit" className="login-button">{t('sign_up')}</button>
+          <p>{t('already_a_member')}<button className="btn_form" type='button' onClick={() => navigate('/login')}>{t('sign_in')}</button></p>
         </form>
       </div>
     </div>

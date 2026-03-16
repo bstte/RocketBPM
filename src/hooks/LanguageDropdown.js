@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useLangMap } from "../hooks/useLangMap"; // adjust path
 import { useLanguages } from "../hooks/useLanguages";
+import { useTranslation } from "./useTranslation";
 
 const LanguageDropdown = ({
   supportedLanguages = [],
@@ -23,11 +24,12 @@ const LanguageDropdown = ({
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
+  const t = useTranslation();
   const handleSelect = (langId) => {
     onSelect?.(langId);
     setIsOpen(false);
   };
-  const currentLangName = langMap[selectedLanguage] || "loading...";
+  const currentLangName = langMap[selectedLanguage] || t("loading");
   const currentLangObj = languages.find(l => l.id == selectedLanguage);
   const currentFlag = currentLangObj?.flag || "https://flagcdn.com/w20/un.png";
   return (

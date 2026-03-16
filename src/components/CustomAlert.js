@@ -33,7 +33,7 @@ const CustomAlert = {
     });
   },
 
-  confirm: (title, text, confirmCallback, cancelCallback) => {
+  confirm: (title, text, confirmCallback, cancelCallback, confirmButtonText, cancelButtonText) => {
     Swal.fire({
       icon: "warning",
       title: title || "Are you sure?",
@@ -41,7 +41,8 @@ const CustomAlert = {
       showCancelButton: true,
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, confirm!",
+      confirmButtonText: confirmButtonText || "Yes, confirm!",
+      cancelButtonText: cancelButtonText || "Cancel",
     }).then((result) => {
       if (result.isConfirmed && confirmCallback) {
         confirmCallback();
@@ -77,18 +78,89 @@ const CustomAlert = {
   },
 
   confirmExit: (saveCallback, exitWithoutSaveCallback, cancelCallback, texts = {}) => {
+    if (!document.getElementById('sweetalert-custom-exit-styles')) {
+      const style = document.createElement('style');
+      style.id = 'sweetalert-custom-exit-styles';
+      style.innerHTML = `
+        .swal-exit-popup.swal2-popup {
+          border: 1px solid #002060 !important;
+          border-radius: 2px !important;
+          padding: 24px 30px !important;
+          width: 550px !important;
+          background-color: #fff !important;
+        }
+        .swal-exit-title.swal2-title {
+          text-align: left !important;
+          color: #002060 !important;
+          font-family: 'Poppins', sans-serif !important;
+          font-size: 20px !important;
+          font-weight: 500 !important;
+          padding: 0 !important;
+          margin: 0 0 15px 0 !important;
+        }
+        .swal-exit-content.swal2-html-container {
+          text-align: left !important;
+          color: #002060 !important;
+          font-family: 'Poppins', sans-serif !important;
+          font-size: 16px !important;
+          margin: 0 0 30px 0 !important;
+          padding: 0 !important;
+        }
+        .swal-exit-actions.swal2-actions {
+          width: 100% !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          justify-content: flex-end !important;
+          display: flex !important;
+        }
+        .swal-exit-cancel {
+          margin-right: auto !important;
+          order: 1 !important;
+          background-color: #002060 !important;
+          color: #fff !important;
+          font-family: 'Poppins', sans-serif !important;
+          border-radius: 4px !important;
+        }
+        .swal-exit-deny {
+          order: 2 !important;
+          margin: 0 10px 0 0 !important;
+          background-color: #ee4f55 !important;
+          color: #fff !important;
+          font-family: 'Poppins', sans-serif !important;
+          border-radius: 4px !important;
+        }
+        .swal-exit-confirm {
+          order: 3 !important;
+          background-color: #002060 !important;
+          margin: 0 !important;
+          color: #fff !important;
+          font-family: 'Poppins', sans-serif !important;
+          border-radius: 4px !important;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
     Swal.fire({
-      icon: "warning",
       title: texts.title || "You have unsaved changes",
       text: texts.text || "Do you want to save before exiting?",
       showDenyButton: true,
       showCancelButton: true,
-      confirmButtonText: texts.confirmButtonText || "Exit (Save & Exit)",
+      confirmButtonText: texts.confirmButtonText || "Save & Exit",
       denyButtonText: texts.denyButtonText || "Exit without saving",
       cancelButtonText: texts.cancelButtonText || "Cancel",
-      confirmButtonColor: "#3085d6",
-      denyButtonColor: "#f39c12",
-      cancelButtonColor: "#aaa",
+      confirmButtonColor: "#002060",
+      denyButtonColor: "#ee4f55",
+      cancelButtonColor: "#002060",
+      customClass: {
+        popup: 'swal-exit-popup',
+        title: 'swal-exit-title',
+        htmlContainer: 'swal-exit-content',
+        actions: 'swal-exit-actions',
+        cancelButton: 'swal-exit-cancel',
+        denyButton: 'swal-exit-deny',
+        confirmButton: 'swal-exit-confirm'
+      }
     }).then((result) => {
       if (result.isConfirmed && saveCallback) {
         saveCallback(); // Save & Exit

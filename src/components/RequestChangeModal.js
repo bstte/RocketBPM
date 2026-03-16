@@ -44,7 +44,7 @@ const RequestChangeModal = ({ isOpen, onClose, onSubmit }) => {
 
                 <div style={styles.footer}>
                     <button style={styles.cancelButton} onClick={handleClose}>
-                        {t("cancel")}
+                        {t("Cancel")}
                     </button>
                     <button style={styles.submitButton} onClick={handleSubmit}>
                         {t("request_change")}

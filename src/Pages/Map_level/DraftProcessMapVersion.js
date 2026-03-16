@@ -190,7 +190,7 @@ const DraftProcessMapVersion = () => {
           LoginUser={user}
           title={currentModeltitle}
           // Pass overridden data from API
-          type={pageTitle === "Swimlane" ? "Swimlane" : "ProcessMaps"}
+          type={pageTitle?.toLowerCase() === "swimlane" ? "Swimlane" : "ProcessMaps"}
           selectedLanguage={selectedLanguage}
           OriginalDefaultlanguge_id={originalDefaultLanguageId}
           contact_info={contactInfo}

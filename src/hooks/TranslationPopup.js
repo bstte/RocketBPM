@@ -49,14 +49,29 @@ export default function TranslationPopup({
   const [values, setValues] = useState(defaultValues);
   const firstInputRef = useRef(null);
   const langMap = useLangMap();
+  // 🔹 Helper to strip HTML tags and convert <br>, <div> to newlines
+  const stripHtml = (html) => {
+    if (!html) return "";
+    let doc = new DOMParser().parseFromString(html, 'text/html');
+    return doc.body.innerText || "";
+  };
+
+  // 🔹 Helper to convert newlines back to HTML for storage (using <div> and <br> as react-contenteditable does)
+  const textToHtml = (text) => {
+    if (!text) return "";
+    return text.split("\n").map((line, i) => {
+      if (i === 0) return line;
+      return `<div>${line || "<br>"}</div>`;
+    }).join("");
+  };
+
   // Set initial values when popup opens
   useEffect(() => {
     if (isOpen) {
       // Build dynamic default values
-
       const dynamicDefaults = supportedLanguages.reduce((acc, langId) => {
         const langKey = langMap[langId] || `lang_${langId}`;
-        acc[langKey] = defaultValues?.[langKey] || "";
+        acc[langKey] = stripHtml(defaultValues?.[langKey]);
         return acc;
       }, {});
 
@@ -79,7 +94,11 @@ export default function TranslationPopup({
   };
 
   const handleSubmit = () => {
-    onSubmit?.(values);
+    const formattedValues = Object.keys(values).reduce((acc, key) => {
+      acc[key] = textToHtml(values[key]);
+      return acc;
+    }, {});
+    onSubmit?.(formattedValues);
   };
 
   const handleOverlayClick = (e) => {

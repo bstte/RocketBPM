@@ -112,8 +112,8 @@ const VersionPopupView = ({
       console.error("Failed to parse revision_info", e);
     }
 
-    const langKey = langMap[selectedLanguage] || "loading...";
-    const ORIGlanguageKey = langMap[OriginalDefaultlanguge_id] || "loading...";
+    const langKey = langMap[selectedLanguage] || t("loading");
+    const ORIGlanguageKey = langMap[OriginalDefaultlanguge_id] || t("loading");
     setRevisionText(
       revisionData[langKey]?.content ??
       revisionData[ORIGlanguageKey]?.content ??
@@ -268,7 +268,7 @@ const VersionPopupView = ({
               }}
             >
               {loading ? (
-                <p>Loading...</p>
+                <p>{t("loading")}</p>
               ) : versions.length === 0 ? (
                 <p>{t("no_version_history_found")}</p>
               ) : (

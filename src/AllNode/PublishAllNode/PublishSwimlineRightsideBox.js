@@ -24,15 +24,26 @@ const SwimlineRightsideBox = ({ data, processDefaultlanguage_id, langMap }) => {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="borderBox" style={styles.box}>
-        <button style={styles.withoutlinkButton}>{title}</button>
+      <div className="borderBox" style={{
+        ...styles.box,
+        // Only add shadow if it's a role group
+        filter: data.isRoleGroup ? 'drop-shadow(0px 0px 10px #0000004f)' : 'none',
+        // border: data.isRoleGroup ? 'none' : '1px solid #002060',
+      }}>
+        <div style={styles.label} dangerouslySetInnerHTML={{ __html: title }} />
       </div>
-      {data.isRoleGroup && isHovered && data.roles && (
-        <RoleGroupTooltip
-          roles={data.roles}
-          langMap={langMap}
-          processDefaultlanguage_id={processDefaultlanguage_id}
-        />
+      {data.isRoleGroup && (isHovered || data.forceShowTooltip) && data.roles && (
+        <div
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          style={{ position: 'absolute', left: '100%', top: '50%', transform: 'translateY(-50%)', zIndex: 1000000 }}
+        >
+          <RoleGroupTooltip
+            roles={data.roles}
+            langMap={langMap}
+            processDefaultlanguage_id={processDefaultlanguage_id}
+          />
+        </div>
       )}
 
     </div>
@@ -73,17 +84,16 @@ const styles = {
     fontFamily: "'Poppins', sans-serif",
     minHeight: "20px",
   },
-  withoutlinkButton: {
+  label: {
     fontSize: "12px",
     fontFamily: "'Poppins', sans-serif",
     lineHeight: "1.1",
-    wordBreak: "break-word",
+    overflowWrap: "break-word",
+    whiteSpace: "pre-wrap",
     color: "white",
-    background: "none",
-    border: "none",
     cursor: "pointer",
     width: "100%",
-    padding: "2px",
+    textAlign: "center",
     margin: "0",
   },
 };

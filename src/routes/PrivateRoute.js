@@ -2,10 +2,12 @@
 import React, { useEffect, useState } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { CurrentUser } from "../API/api";
+import { useTranslation } from "../hooks/useTranslation";
 
 const PrivateRoute = () => {
   const token = localStorage.getItem("token");
   const location = useLocation();
+  const t = useTranslation();
 
   const [isChecking, setIsChecking] = useState(true);
   const [isValid, setIsValid] = useState(false);
@@ -38,7 +40,7 @@ const PrivateRoute = () => {
 
   // Show loader while checking token
   if (isChecking) {
-    return <div style={{ padding: "50px", textAlign: "center" }}>Validating session...</div>;
+    return <div style={{ padding: "50px", textAlign: "center" }}>{t("validating_session")}</div>;
   }
 
   // Token missing OR invalid

@@ -416,26 +416,24 @@ const SwimlaneModel = () => {
     []
   );
 
-
   useEffect(() => {
     const checkpublishfunction = async () => {
-      if (currentLevel !== 0 && ParentPageGroupId) {
+      if (currentLevel !== 0 && currentParentId) {
         try {
-          const response = await filter_draft(ParentPageGroupId);
-          // console.log("inside first map", response)
-
-          if (response?.data === true) {
-            Setcheckpublish(false);
-          } else {
-            Setcheckpublish(true);
-          }
+          const response = await checkParentPublishRecords(
+            currentParentId,
+            processId);
+          Setcheckpublish(response?.status === true);
         } catch (error) {
           console.error("filter draft error", error);
         }
+      } else if (currentLevel === 0) {
+        Setcheckpublish(true);
       }
     };
     checkpublishfunction();
-  }, [ParentPageGroupId, currentLevel]);
+  }, [currentParentId, currentLevel, processId]);
+
 
   // Hook for adding nodes
   const { addNode } = useSwimlaneAddNode({

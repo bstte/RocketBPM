@@ -96,6 +96,16 @@ export const contentRequestChange = async (payload) => {
     }
 };
 
+export const cancelPublishingAPI = async (payload) => {
+    try {
+        const response = await api.post('/process/cancel-publishing', payload);
+        return response.data;
+    } catch (error) {
+        console.error('Error in Cancel Publishing:', error);
+        throw error;
+    }
+};
+
 export const contentrequestChange = async (payload) => {
     try {
         const response = await api.post('/process/request-change', payload);
@@ -238,6 +248,22 @@ export const checkPublishRecord = async (level = null, Process_id = null) => {
         throw error;
     }
 };
+
+export const checkParentPublishRecords = async (node_id = null, Process_id = null) => {
+    try {
+        const response = await api.get('/checkParentPublishRecords', {
+            params: {
+                node_id,
+                Process_id
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching nodes:', error);
+        throw error;
+    }
+};
+
 
 
 export const GetPublishedDate = async (Process_id = null, status = null, PageGroupId = null) => {
@@ -762,6 +788,16 @@ export const getLanguages = async () => {
         return response;
     } catch (error) {
         console.error('Error fetching process titles:', error);
+        throw error;
+    }
+};
+
+export const getPublicTranslations = async (lang) => {
+    try {
+        const response = await defaultApi.get(`/public-translations/${lang}`);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching public translations:', error);
         throw error;
     }
 };

@@ -12,13 +12,13 @@ const CustomHeader = ({ title }) => {
   const dispatch = useDispatch();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
- const t = useTranslation();
+  const t = useTranslation();
   const handleBack = () => {
     navigate(-1); // Go back to the previous page
   };
 
   const handleLogout = () => {
-    const isConfirmed = window.confirm("Are you sure you want to logout?");
+    const isConfirmed = window.confirm(t('are_you_sure_you_want_to_logout'));
     if (isConfirmed) {
       dispatch(logoutUser());
       navigate("/login");
@@ -52,32 +52,32 @@ const CustomHeader = ({ title }) => {
         </div>
 
         <div className="ss_profile_rit_div" style={{ flexDirection: "row" }}>
-         
+
 
           {/* Dropdown Button */}
           <div className='ss_header_new_right' ref={dropdownRef} style={{ position: "relative" }}>
-            <div id="dropdownBtn" onClick={toggleDropdown}> 
-            { user?.profile_image ? (
-            <img src={
-              user?.profile_image.startsWith('http')
-                ? user.profile_image // ✅ Google ka full URL
-                : `${ImageBaseUrl}uploads/profile_images/${user.profile_image}` // ✅ Local image
-            } alt="Profile" className="profile-image"  />
-          ) : (
-            <img src="../../../img/user-circle-solid.svg" alt="" />
-          )} 
+            <div id="dropdownBtn" onClick={toggleDropdown}>
+              {user?.profile_image ? (
+                <img src={
+                  user?.profile_image.startsWith('http')
+                    ? user.profile_image // ✅ Google ka full URL
+                    : `${ImageBaseUrl}uploads/profile_images/${user.profile_image}` // ✅ Local image
+                } alt="Profile" className="profile-image" />
+              ) : (
+                <img src="../../../img/user-circle-solid.svg" alt="" />
+              )}
             </div>
             {dropdownOpen && (
-            <div className="dropdown-content">
-            <button onClick={() => navigate('/account/settings')} className="dropdown-link">{t('Edit_Profile')}</button>
-            <button onClick={() => handleLogout()} className="dropdown-link">{t("Log_out")}</button>
-          </div>
-          
+              <div className="dropdown-content">
+                <button onClick={() => navigate('/account/settings')} className="dropdown-link">{t('Edit_Profile')}</button>
+                <button onClick={() => handleLogout()} className="dropdown-link">{t("Log_out")}</button>
+              </div>
+
             )}
           </div>
         </div>
       </div>
-      <Toolbar  className='boxHead' >
+      <Toolbar className='boxHead' >
         <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
           <IconButton edge="start" color="inherit" aria-label="back" onClick={handleBack}>
             {/* <ArrowBackIcon fontSize="large" /> */}
@@ -85,7 +85,7 @@ const CustomHeader = ({ title }) => {
           </IconButton>
 
           <Typography variant="h6" sx={{ marginLeft: 'auto' }}>
-            <div className="ss_process_title"><img src="../../img/globe-solid.svg" alt='' /> {title}</div> 
+            <div className="ss_process_title"><img src="../../img/globe-solid.svg" alt='' /> {title}</div>
           </Typography>
         </Box>
       </Toolbar>

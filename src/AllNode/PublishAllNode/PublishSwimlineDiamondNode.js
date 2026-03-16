@@ -72,11 +72,7 @@ const SwimlineDiamondNode = ({ data }) => {
       >
         <div style={{ ...styles.popup, width: "100%", height: "100%" }}>
           <div className="popupHeader" style={styles.popupHeader}>
-            <h3 style={styles.popupTitle}>
-              {/* {data.details.title} */}
-              {data.details.title?.replace(/<br\s*\/?>/gi, " ").replace(/&nbsp;/g, " ") || ""}
-
-            </h3>
+            <h3 style={styles.popupTitle} dangerouslySetInnerHTML={{ __html: data.details.title }} />
             <button style={styles.closeButton} onClick={handleClosePopup}>
               {t("CLOSE")}
             </button>
@@ -104,9 +100,7 @@ const SwimlineDiamondNode = ({ data }) => {
         {/* Diamond Shape */}
         <div style={styles.diamondWrapper} className="diamond_Wrapper">
           <div style={{ ...styles.diamond, width: nodebgheights - 10, height: nodebgheights - 10 }} className="diamond_header">
-            <div ref={titleRef} style={styles.title}>
-              {data.details.title?.replace(/<br\s*\/?>/gi, " ").replace(/&nbsp;/g, " ") || ""}
-            </div>
+            <div ref={titleRef} style={styles.title} dangerouslySetInnerHTML={{ __html: data.details.title }} />
           </div>
           <Handle className="topdot" type="target" position={Position.Top} id="top-target" style={styles.handle} />
           <Handle className="topdot" type="source" position={Position.Top} id="top-source" style={styles.handle} />
@@ -137,8 +131,8 @@ const SwimlineDiamondNode = ({ data }) => {
 const styles = {
   wrapper: {
     position: "relative",
-    width: "90%",
-    height: "90%",
+    width: "80%",
+    height: "72%",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -156,7 +150,7 @@ const styles = {
     backgroundColor: "#ffffff",
     color: "#002060",
     border: "1.6px solid #002060",
-    transform: "rotate(45deg) scale(0.6)",
+    transform: "rotate(45deg) scale(0.628)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -164,10 +158,11 @@ const styles = {
   },
   title: {
     transform: "rotate(-45deg)",
-    fontSize: "1rem",
+    fontSize: "12px",
     fontFamily: "'Poppins', sans-serif",
     lineHeight: "1.1",
-    wordBreak: "break-word",
+    overflowWrap: "break-word",
+    whiteSpace: "pre-wrap",
     textAlign: "center",
     background: "transparent",
     padding: "0",

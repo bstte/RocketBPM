@@ -1,21 +1,23 @@
 import React, { useState } from 'react';
-import {  useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
-import './Signup.css'; 
+import './Signup.css';
 
 import CustomAlert from '../../components/CustomAlert';
 import { submitSignupForm } from '../../API/api';
 import { FaEye, FaEyeSlash } from 'react-icons/fa'; // 👁️ Import eye icons
+import { useTranslation } from '../../hooks/useTranslation';
 
 const SignupForm = () => {
   const navigate = useNavigate();
-const [showPassword, setShowPassword] = useState(false); // 👁️ toggle for password
+  const t = useTranslation();
+  const [showPassword, setShowPassword] = useState(false); // 👁️ toggle for password
   const [showConfirmPassword, setShowConfirmPassword] = useState(false); // 👁️ toggle for confirm password
 
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
-    email: '', 
+    email: '',
     password: '',
     confirmPassword: '',
   });
@@ -29,27 +31,27 @@ const [showPassword, setShowPassword] = useState(false); // 👁️ toggle for p
 
     // Basic validations
     if (!formData.firstName) {
-      CustomAlert.error("Required Field", "First Name is required!");
+      CustomAlert.error(t('required_field'), t('first_name_is_required'));
       return;
     }
     if (!formData.lastName) {
-      CustomAlert.error("Required Field", "Last Name is required!");
+      CustomAlert.error(t('required_field'), t('last_name_is_required'));
       return;
     }
     if (!formData.email) {
-      CustomAlert.error("Required Field", "Email is required!");
+      CustomAlert.error(t('required_field'), t('email_is_required'));
       return;
     }
     if (!formData.password) {
-      CustomAlert.error("Required Field", "Password is required!");
+      CustomAlert.error(t('required_field'), t('password_is_required'));
       return;
     }
     if (!formData.confirmPassword) {
-      CustomAlert.error("Required Field", "Confirm Password is required!");
+      CustomAlert.error(t('required_field'), t('confirm_password_is_required'));
       return;
     }
     if (formData.password !== formData.confirmPassword) {
-      CustomAlert.error("Password Mismatch", "Passwords do not match!");
+      CustomAlert.error(t('required_field'), t('passwords_do_not_match'));
       return;
     }
 
@@ -60,12 +62,12 @@ const [showPassword, setShowPassword] = useState(false); // 👁️ toggle for p
         email: formData.email,
         password: formData.password,
       });
-console.log("reposdf",response)
-      CustomAlert.success("Success", response.message);
+      console.log("reposdf", response)
+      CustomAlert.success(t('signup_success'), response.message);
       navigate('/login', { replace: true });
 
     } catch (error) {
-      CustomAlert.error("Error", error?.response?.data?.message || "Signup failed.");
+      CustomAlert.error("Error", error?.response?.data?.message || t('signup_failed'));
       console.error("Signup error:", error);
     }
   };
@@ -74,16 +76,16 @@ console.log("reposdf",response)
     <div className="login-container">
       <div className="login-wrapper">
         <div className="login-image">
-        <img src="/img/RocketBPM_rocket_logo.png" alt='' style={{ width: "15vw"}}/>
+          <img src="/img/RocketBPM_rocket_logo.png" alt='' style={{ width: "15vw" }} />
         </div>
-        <h2>Join RocketBPM.com</h2>
+        <h2>{t('join_rocketbpmcom')}</h2>
         <form className="login-form" onSubmit={handleSubmit}>
           <input
             type="text"
             name="firstName"
             value={formData.firstName}
             onChange={handleChange}
-            placeholder="First Name"
+            placeholder={t('First_Name')}
             className="login-input"
           />
           <input
@@ -91,7 +93,7 @@ console.log("reposdf",response)
             name="lastName"
             value={formData.lastName}
             onChange={handleChange}
-            placeholder="Last Name"
+            placeholder={t('Last_Name')}
             className="login-input"
           />
           <input
@@ -99,17 +101,17 @@ console.log("reposdf",response)
             name="email"
             value={formData.email}
             onChange={handleChange}
-            placeholder="Email"
+            placeholder={t('Email')}
             className="login-input"
           />
-         {/* 👁️ Password input with eye toggle */}
+          {/* 👁️ Password input with eye toggle */}
           <div className="password-container">
             <input
               type={showPassword ? 'text' : 'password'}
               name="password"
               value={formData.password}
               onChange={handleChange}
-              placeholder="Password"
+              placeholder={t('password')}
               className="login-input password-input"
             />
             <button
@@ -128,7 +130,7 @@ console.log("reposdf",response)
               name="confirmPassword"
               value={formData.confirmPassword}
               onChange={handleChange}
-              placeholder="Confirm Password"
+              placeholder={t('confirm_password')}
               className="login-input password-input"
             />
             <button
@@ -140,9 +142,9 @@ console.log("reposdf",response)
             </button>
           </div>
 
-          <button type="submit" className="login-button">SIGN UP</button>
-          <p>Already a member?
-            <button className="btn_form" type='button' onClick={() => navigate('/login')}>Sign in</button>
+          <button type="submit" className="login-button">{t('sign_up')}</button>
+          <p>{t('already_a_member')}
+            <button className="btn_form" type='button' onClick={() => navigate('/login')}>{t('sign_in')}</button>
           </p>
         </form>
       </div>

@@ -196,7 +196,7 @@ const Setting = () => {
           <h4>{t("Edit_Properties")}</h4>
           <div className="ss_logo_lft_div">
             {loading ? (
-              <p>Loading...</p>
+              <p>{t("loading")}</p>
             ) : selectedImage ? (
               <img
                 src={selectedImage}

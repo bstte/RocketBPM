@@ -6,9 +6,11 @@ import api, {
     saveProcessInfo,
     editorialPublishAPI,
     contentChangeRequest,
-    filter_draft,
+    check_process_publish,
     getNextPageGroupId,
     duplicateNode,
+    checkPublishRecord,
+    checkParentPublishRecords,
 } from "../../../API/api";
 import CustomAlert from "../../../components/CustomAlert";
 import { buildProcessPath } from "../../../routes/buildProcessPath";
@@ -201,17 +203,33 @@ export const useMapLevelHandlers = ({
     }, [state.selectedNode, state.checkRecord, nodes, setNodes, setEdges, setSelectedNode, setShowPopup, setHasUnsavedChanges]);
 
     const handleSaveNodes = useCallback(async (savetype) => {
-        if (savetype === "Published" && currentLevel !== 0) {
-            try {
-                const response = await filter_draft(state.ParentPageGroupId);
-                if (response.data === true) {
-                    alert(t("publish_all_parent_models_first"));
-                    return false;
-                }
-            } catch (error) {
-                console.error("filter draft error", error);
-            }
-        }
+        // if (savetype === "Published" && currentLevel !== 0) {
+        //     try {
+        //         // If the check_process_publish response is true (or data has value that means draft), show alert
+        //         // The parent object needs to be checked
+        //         const levelParam = currentParentId;
+        //         const response = await checkParentPublishRecords(
+        //             levelParam,
+        //             processId
+        //         );
+        //         console.log("levelParam", levelParam)
+        //         console.log("response", response)
+
+        //         // If response indicates we cannot publish (e.g. parent draft)
+        //         if (response.status === 400 || response.data === true) {
+        //             alert(response.message || t("publish_all_parent_models_first"));
+        //             return false;
+        //         }
+        //     } catch (error) {
+        //         console.error("check_process_publish error", error);
+
+        //         // If error from backend sends 400 about draft parent:
+        //         if (error?.response?.status === 400) {
+        //             alert(error.response.data.message || t("publish_all_parent_models_first"));
+        //             return false;
+        //         }
+        //     }
+        // }
 
         const payload = {
             savetype,
@@ -243,7 +261,9 @@ export const useMapLevelHandlers = ({
                 })),
             });
 
-            CustomAlert.toast(t("nodes_saved_successfully"));
+            const msgT = t("nodes_saved_successfully");
+            const event = new CustomEvent('modelSaved', { detail: { message: msgT || "Model saved" } });
+            window.dispatchEvent(event);
             setHasUnsavedChanges(false);
             invalidateCache();
         } catch (error) {
@@ -267,7 +287,7 @@ export const useMapLevelHandlers = ({
                     text: t("do_you_want_to_save_before_exiting"),
                     confirmButtonText: t("exit_save_exit"),
                     denyButtonText: t("exit_without_saving"),
-                    cancelButtonText: t("cancel")
+                    cancelButtonText: t("Cancel")
                 }
             );
         });

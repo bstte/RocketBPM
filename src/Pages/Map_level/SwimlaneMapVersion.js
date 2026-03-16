@@ -273,7 +273,7 @@ const SwimlaneMapVersion = () => {
           viewVersion={viewVersion}
           LoginUser={user}
           title={currentModeltitle}
-          type={pageTitle === "Swimlane" ? "Swimlane" : "ProcessMaps"}
+          type={pageTitle?.toLowerCase() === "swimlane" ? "Swimlane" : "ProcessMaps"}
           selectedLanguage={processDefaultlanguage_id}
           OriginalDefaultlanguge_id={originalDefaultLanguageId}
           contact_info={contactInfo}

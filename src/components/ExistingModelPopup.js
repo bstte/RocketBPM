@@ -254,7 +254,7 @@ const ExistingModelPopup = ({
                         <style>{`
                             @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
                          `}</style>
-                        <span>Loading...</span>
+                        <span>{t("loading")}</span>
                     </div>
                 ) : (
                     treeData.length > 0 ? (

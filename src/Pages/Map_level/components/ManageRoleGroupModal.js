@@ -277,7 +277,7 @@ const ManageRoleGroupModal = ({
                 </div>
 
                 <div className="modal-actions">
-                    <button onClick={onClose} className="cancel-btn">{t("cancel")}</button>
+                    <button onClick={onClose} className="cancel-btn">{t("Cancel")}</button>
                     <button
                         onClick={() => onSave({ groupName, translations, roles: selectedRoles })}
                         className="save-btn"

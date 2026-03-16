@@ -44,9 +44,20 @@ const PublishArrowBoxNode = ({ data, isRTL }) => {
 
         }}
       >
-        <div style={{ cursor: 'pointer' }}>
-          <span style={{ fontSize: "12px", lineHeight: "1.1", fontFamily: "'Poppins', sans-serif", color: "white" }}> {data.label}</span>
-        </div>
+        <div
+          style={{
+            cursor: 'pointer',
+            fontSize: "12px",
+            lineHeight: "1.1",
+            fontFamily: "'Poppins', sans-serif",
+            color: "white",
+            textAlign: "center",
+            width: "100%",
+            whiteSpace: "pre-wrap",
+            overflowWrap: "break-word"
+          }}
+          dangerouslySetInnerHTML={{ __html: data.label }}
+        />
       </div>
 
 

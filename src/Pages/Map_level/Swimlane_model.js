@@ -36,6 +36,7 @@ import api, {
   editorialPublishAPI,
   contentChangeRequest,
   createRole,
+  checkParentPublishRecords,
 } from "../../API/api";
 import CustomContextPopup from "../../components/CustomContextPopup";
 import DetailsPopup from "../../components/DetailsPopup";
@@ -82,7 +83,10 @@ import { useSwimlaneAddNode } from "../../hooks/swimlane/useSwimlaneAddNode";
 import { isRTLLanguage, getDirection } from "../../utils/rtlUtils";
 import { useLanguages } from "../../hooks/useLanguages";
 
+import { useReconstructBreadcrumbs } from "../../hooks/useReconstructBreadcrumbs";
+
 const SwimlaneModel = () => {
+  useReconstructBreadcrumbs("draft");
   const [windowSize, setWindowSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
@@ -468,23 +472,21 @@ const SwimlaneModel = () => {
 
   useEffect(() => {
     const checkpublishfunction = async () => {
-      if (currentLevel !== 0 && ParentPageGroupId) {
+      if (currentLevel !== 0 && currentParentId) {
         try {
-          const response = await filter_draft(ParentPageGroupId);
-          // console.log("inside first map", response)
-
-          if (response?.data === true) {
-            Setcheckpublish(false);
-          } else {
-            Setcheckpublish(true);
-          }
+          const response = await checkParentPublishRecords(
+            currentParentId,
+            processId);
+          Setcheckpublish(response?.status === true);
         } catch (error) {
           console.error("filter draft error", error);
         }
+      } else if (currentLevel === 0) {
+        Setcheckpublish(true);
       }
     };
     checkpublishfunction();
-  }, [ParentPageGroupId, currentLevel]);
+  }, [currentParentId, currentLevel, processId]);
 
   // Hook for adding nodes
   const { addNode } = useSwimlaneAddNode({
@@ -560,20 +562,20 @@ const SwimlaneModel = () => {
 
   const handleSaveNodes = async (savetype) => {
     console.log("chiils node", ChildNodes);
-    if (savetype === "Published" && currentLevel !== 0 && ParentPageGroupId) {
-      try {
-        const response = await filter_draft(ParentPageGroupId);
+    // if (savetype === "Published" && currentLevel !== 0 && ParentPageGroupId) {
+    //   try {
+    //     const response = await filter_draft(ParentPageGroupId);
 
-        if (response.data === true) {
-          CustomAlert.warning(t("Warning"), t("publish_all_parent_models_first"));
-          return false;
-        }
-      } catch (error) {
-        // console.log("inside ParentPageGroupId", ParentPageGroupId)
+    //     if (response.data === true) {
+    //       CustomAlert.warning(t("Warning"), t("publish_all_parent_models_first"));
+    //       return false;
+    //     }
+    //   } catch (error) {
+    //     // console.log("inside ParentPageGroupId", ParentPageGroupId)
 
-        console.error("filter draft error", error);
-      }
-    }
+    //     console.error("filter draft error", error);
+    //   }
+    // }
 
     const payload = {
       savetype,
@@ -649,9 +651,15 @@ const SwimlaneModel = () => {
           })
         ),
       });
-      CustomAlert.toast(t("nodes_saved_successfully"));
+      // CustomAlert.toast(t("nodes_saved_successfully"));
 
+      // setHasUnsavedChanges(false);
+
+      const msgT = t("nodes_saved_successfully");
+      const event = new CustomEvent('modelSaved', { detail: { message: msgT || "Model saved" } });
+      window.dispatchEvent(event);
       setHasUnsavedChanges(false);
+      // invalidateCach();
     } catch (error) {
       console.error("Error saving nodes:", error);
       if (error.response && error.response.data) {
@@ -1497,7 +1505,7 @@ const SwimlaneModel = () => {
           text: t("do_you_want_to_save_before_exiting"),
           confirmButtonText: t("exit_save_exit"),
           denyButtonText: t("exit_without_saving"),
-          cancelButtonText: t("cancel")
+          cancelButtonText: t("Cancel")
         }
       );
     });
@@ -1765,32 +1773,25 @@ const SwimlaneModel = () => {
   });
 
   const handleSavePublish = async () => {
-    try {
-      if (ParentPageGroupId) {
-        const response = await filter_draft(ParentPageGroupId);
-        if (response.data === true) {
+    if (currentLevel !== 0) {
+      try {
+        const response = await checkParentPublishRecords(
+          currentParentId,
+          processId);
+
+        if (response?.status === false) {
           CustomAlert.warning(t("warning"), t("publish_all_parent_models_first"));
           return false;
         }
+      } catch (error) {
+        console.error("filter draft error", error);
       }
-    } catch (error) {
-      console.error("filter draft error", error);
     }
     const latestData = await refetch();
     const contact = latestData?.contact_info;
-    // console.log("responseData", revisionresponse)
-    // contact_info missing ya empty object
-    if (!contact || Object.keys(contact).length === 0) {
-      return;
-    }
 
-    // contact_info ke sare keys empty array hon?
-    const allEmpty = Object.values(contact).every(
-      (list) => !list || list.length === 0
-    );
-
-    if (allEmpty) {
-      CustomAlert.info(t("information"), t("Please assign Process Owner / Process Modeler to publish the model."));
+    if (!contact || Object.values(contact).every(list => !list || list.length === 0)) {
+      CustomAlert.info(t("information"), t("please_assign_process_owner_process_domain_owner_and_process_modeler_to_publish_the_model"));
       return;
     }
 
@@ -2131,6 +2132,7 @@ const SwimlaneModel = () => {
                 status={"draft"}
                 versionPopupPayload={versionPopupPayload}
                 supportedLanguages={supportedLanguages}
+                type="Swimlane"
                 selectedLanguage={processDefaultlanguage_id}
               />
             )}
