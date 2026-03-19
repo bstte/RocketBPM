@@ -40,6 +40,7 @@ const SwimlineRightsideBox = ({ data, processDefaultlanguage_id, langMap }) => {
         >
           <RoleGroupTooltip
             roles={data.roles}
+            groupName={title}
             langMap={langMap}
             processDefaultlanguage_id={processDefaultlanguage_id}
           />

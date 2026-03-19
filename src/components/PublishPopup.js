@@ -5,6 +5,7 @@ import Modal from "./Modal";
 import { versionlist } from "../API/api";
 import { useLangMap } from "../hooks/useLangMap";
 import { useTranslation } from "../hooks/useTranslation";
+import TranslationTextAreaPopup from "../hooks/TranslationTextAreaPopup"; // 👈 new
 
 const PublishPopup = ({
   isOpen,
@@ -12,11 +13,14 @@ const PublishPopup = ({
   onNext,
   revisionresponse,
   selectedLanguage,
+  supportedLanguages = [], // 👈 new
 }) => {
 
   const [revisionText, setRevisionText] = useState("");
   const [classificationChange, setClassificationChange] = useState(false);
   const [editorialChange, setEditorialChange] = useState(false);
+  const [showTranslationPopup, setShowTranslationPopup] = useState(false); // 👈 new
+  const [translations, setTranslations] = useState({}); // 👈 new
 
   const langMap = useLangMap();
 
@@ -45,6 +49,7 @@ const PublishPopup = ({
     // Ab revisionData OBJECT hai 🟢
     const langKey = langMap[selectedLanguage] || "EN";
     setRevisionText(revisionData?.[langKey]?.content || "");
+    setTranslations(revisionData || {}); // 👈 new
 
   }, [revisionresponse, selectedLanguage]);
 
@@ -71,12 +76,31 @@ const PublishPopup = ({
 
       <hr />
 
-      <label style={styles.label}>{t("revision_info")}:</label>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "5px" }}>
+        <label style={styles.label}>{t("revision_info")}:</label>
+        <button
+          className="popup-button"
+          style={{ backgroundColor: "#d9d9d9", color: "#000", padding: "4px 8px", fontSize: "12px" }}
+          onClick={() => setShowTranslationPopup(true)}
+        >
+          {t("translation")}
+        </button>
+      </div>
 
       <div style={{ height: "180px", marginBottom: "50px" }}>
         <ReactQuill
           value={revisionText}
-          onChange={(value) => setRevisionText(value)}
+          onChange={(value) => {
+            setRevisionText(value);
+            const langKey = langMap[selectedLanguage] || "EN";
+            setTranslations((prev) => ({
+              ...prev,
+              [langKey]: {
+                ...(typeof prev[langKey] === "object" ? prev[langKey] : {}),
+                content: value,
+              },
+            }));
+          }}
           style={{ height: "100%" }}
         />
       </div>
@@ -136,13 +160,30 @@ const PublishPopup = ({
             onNext({
               revisionText,
               classificationChange,
-              editorialChange
+              editorialChange,
+              translations,
+              selectedLanguage
             });
           }}
         >
           {t("next")}
         </button>
       </div>
+
+      {showTranslationPopup && (
+        <TranslationTextAreaPopup
+          isOpen={showTranslationPopup}
+          onClose={() => setShowTranslationPopup(false)}
+          defaultValues={translations}
+          onSubmit={(values) => {
+            setTranslations(values);
+            const langKey = langMap[selectedLanguage] || "EN";
+            setRevisionText(values[langKey]?.content || "");
+            setShowTranslationPopup(false);
+          }}
+          supportedLanguages={supportedLanguages}
+        />
+      )}
 
     </Modal>
   );

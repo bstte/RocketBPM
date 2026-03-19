@@ -48,7 +48,12 @@ const SwimlineDiamondNode = ({ data }) => {
     }
   };
 
-
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      document.execCommand("insertLineBreak");
+    }
+  };
 
   const handleBoxClick = (e) => {
     // If the click is already on the ContentEditable, don't do anything
@@ -95,6 +100,7 @@ const SwimlineDiamondNode = ({ data }) => {
             onChange={(e) =>
               handleChange({ target: { value: e.target.value } })
             }
+            onKeyDown={handleKeyDown}
             placeholder=""
             style={styles.title}
             className="nodrag"
@@ -158,6 +164,7 @@ const styles = {
     fontFamily: "'Poppins', sans-serif",
     lineHeight: "1.1",
     wordBreak: "break-word",
+    whiteSpace: "pre-wrap",
     textAlign: "center",
     background: "transparent",
     border: "none",

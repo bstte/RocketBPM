@@ -17,6 +17,7 @@ import { getVersionViewData } from "../../API/api";
 import { useDynamicHeight } from "../../hooks/useDynamicHeight";
 import VersionPopupView from "../../components/VersionPopupView";
 import { useSelector } from "react-redux";
+import { usePageGroupIdViewer } from "../../hooks/usePageGroupIdViewer";
 
 const DraftProcessMapVersion = () => {
   const user = useSelector((state) => state.user.user);
@@ -242,7 +243,9 @@ const DraftProcessMapVersion = () => {
                 style={styles.reactFlowStyle}
               ></ReactFlow>
             </div>
+            {usePageGroupIdViewer(nodes)}
           </div>
+
         </div>
       </ReactFlowProvider>
     </div>

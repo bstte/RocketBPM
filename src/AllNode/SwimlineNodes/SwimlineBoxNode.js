@@ -66,6 +66,13 @@ const BoxNode = ({ data }) => {
     }
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      document.execCommand("insertLineBreak");
+    }
+  };
+
   return (
     <div
       className="swimboxnode_1"
@@ -81,6 +88,7 @@ const BoxNode = ({ data }) => {
           onFocus={handleFocus}
           onBlur={handleBlur}
           onChange={(e) => handleChange({ target: { value: e.target.value } })}
+          onKeyDown={handleKeyDown}
           placeholder=""
           style={styles.label}
           className="nodrag"
@@ -221,6 +229,7 @@ const styles = {
     lineHeight: "1.1",
     padding: "2px",
     wordBreak: "break-word",
+    whiteSpace: "pre-wrap",
     background: "transparent",
     border: "none",
     outline: "none",

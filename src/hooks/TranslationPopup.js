@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useLangMap } from "./useLangMap";
+import { useTranslation } from "./useTranslation";
 
 const overlayStyle = {
   position: "fixed",
@@ -22,10 +23,13 @@ const cardStyle = (anchor) => ({
   display: "flex",
   flexDirection: "column",
   background: "#fff",
-  borderRadius: 0,
-  border: "1px solid #011f60",
-  boxShadow: "rgba(1, 31, 96, 0.28) 0px 0px 10px",
+  borderRadius: "4px",
+  border: "1px solid #002060",
+  boxShadow: "0 4px 15px rgba(0,32,96,0.15)",
   padding: 25,
+  fontFamily: "'Poppins', sans-serif",
+  fontWeight: "300",
+  color: "#002060"
 });
 
 const rowStyle = {
@@ -56,6 +60,7 @@ export default function TranslationPopup({
     return doc.body.innerText || "";
   };
 
+  const t = useTranslation();
   // 🔹 Helper to convert newlines back to HTML for storage (using <div> and <br> as react-contenteditable does)
   const textToHtml = (text) => {
     if (!text) return "";
@@ -118,20 +123,22 @@ export default function TranslationPopup({
         aria-modal="true"
         aria-label={title}
       >
-        {/* Header */}
         <div
           style={{
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            marginBottom: 8,
+            marginBottom: 15,
+            paddingBottom: 10,
+            borderBottom: "1px solid #e1e8f5"
           }}
         >
           <h3
             style={{
               margin: 0,
-              fontSize: 18,
-              fontWeight: 600,
+              fontSize: 14,
+              fontWeight: "bold",
+              textTransform: "uppercase",
               display: "flex",
               alignSelf: "center",
             }}
@@ -147,6 +154,7 @@ export default function TranslationPopup({
               fontSize: 20,
               lineHeight: 1,
               cursor: "pointer",
+              color: "#002060"
             }}
           >
             ×
@@ -160,7 +168,7 @@ export default function TranslationPopup({
             const labelName = langKey.toUpperCase();
             return (
               <div key={langKey} style={rowStyle}>
-                <label style={{ fontSize: 12, fontWeight: 600 }}>
+                <label style={{ fontSize: 11, fontWeight: "bold", marginBottom: 4 }}>
                   {labelName}
                 </label>
                 <input
@@ -182,14 +190,16 @@ export default function TranslationPopup({
             display: "flex",
             gap: 8,
             justifyContent: "flex-end",
-            marginTop: 8,
+            marginTop: 15,
+            paddingTop: 12,
+            borderTop: "1px solid #e1e8f5"
           }}
         >
-          <button onClick={onClose} className="global-btn">
-            Cancel
+          <button onClick={onClose} style={btnSecondary}>
+            {t('Cancel')}
           </button>
-          <button onClick={handleSubmit} className="global-btn">
-            Save
+          <button onClick={handleSubmit} style={btnPrimary}>
+            {t('Save')}
           </button>
         </div>
       </div>
@@ -200,29 +210,34 @@ export default function TranslationPopup({
 // 🎨 Simple Inline Styles
 const inputStyle = {
   width: "100%",
-  padding: "10px 12px",
-  borderRadius: 0,
+  padding: "8px 12px",
+  borderRadius: "4px",
   border: "1px solid #002060",
   outline: "none",
-  fontSize: 14,
+  fontSize: 12,
+  fontFamily: "'Poppins', sans-serif",
+  fontWeight: "300",
+  color: "#002060"
 };
 
-// const btnPrimary = {
-//   padding: "8px 30px",
-//   borderRadius: 0,
-//   border: "none",
-//   background: "#002060",
-//   color: "#fff",
-//   cursor: "pointer",
-//   fontWeight: 600,
-// };
+const btnPrimary = {
+  padding: "8px 24px",
+  borderRadius: "4px",
+  border: "none",
+  background: "#002060",
+  color: "#fff",
+  cursor: "pointer",
+  fontWeight: "bold",
+  fontSize: "12px",
+};
 
-// const btnSecondary = {
-//   padding: "8px 30px",
-//   borderRadius: 0,
-//   border: "none",
-//   background: "#002060",
-//   color: "#fff",
-//   cursor: "pointer",
-//   fontWeight: 600,
-// };
+const btnSecondary = {
+  padding: "8px 24px",
+  borderRadius: "4px",
+  border: "none",
+  background: "#E9EEF5",
+  color: "#002060",
+  cursor: "pointer",
+  fontWeight: "bold",
+  fontSize: "12px",
+};

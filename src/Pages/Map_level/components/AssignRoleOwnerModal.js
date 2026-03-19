@@ -31,19 +31,33 @@ const AssignRoleOwnerModal = ({ isOpen, onClose, onAssign, initialOwner, users =
                     placeholder={t("search")}
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="search-input"
+                    className="blue-input"
                 />
-                <div className="user-list">
-                    {filteredUsers.map((u) => (
-                        <div
-                            key={u.user.id}
-                            className={`user-item ${selectedUser?.id === u.user.id ? "selected" : ""}`}
-                            onClick={() => setSelectedUser(u.user)}
-                        >
-                            <span>{u.user.first_name} {u.user.last_name} ({u.user.email})</span>
-                        </div>
-                    ))}
-                    {filteredUsers.length === 0 && <div style={{ padding: 10, textAlign: 'center' }}> {t("no_users_found")}</div>}
+                <div className="table-scroll-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>{t("Name")}</th>
+                                <th>{t("E-Mail")}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {filteredUsers.map((u) => {
+                                const isSelected = selectedUser?.id === u.user.id;
+                                return (
+                                    <tr
+                                        key={u.user.id}
+                                        className={`user-item ${isSelected ? "selected" : ""}`}
+                                        onClick={() => setSelectedUser(u.user)}
+                                    >
+                                        <td style={{ fontWeight: isSelected ? 'bold' : '300' }}>{u.user.first_name} {u.user.last_name}</td>
+                                        <td>{u.user.email}</td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                    {filteredUsers.length === 0 && <div style={{ padding: 10, textAlign: 'center', color: '#666' }}> {t("no_users_found")}</div>}
                 </div>
                 <div className="modal-actions">
                     <button onClick={onClose} className="cancel-btn">{t("Cancel")}</button>
@@ -64,27 +78,39 @@ const AssignRoleOwnerModal = ({ isOpen, onClose, onAssign, initialOwner, users =
             </div>
             <style>{`
         .role-modal-overlay {
-          position: fixed;
-          top: 0; left: 0; right: 0; bottom: 0;
-          background: rgba(0,0,0,0.5);
-          display: flex; justify-content: center; align-items: center;
-          z-index: 10000;
-          font-family: 'Poppins', sans-serif;
+          position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+          background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 10000;
+          font-family: 'Poppins', sans-serif; font-weight: 300; color: #002060;
         }
         .role-modal-content {
-          background: white; padding: 20px; border-radius: 8px; width: 400px;
-          max-height: 80vh; overflow-y: auto;
+          background: white; padding: 20px; border-radius: 8px; width: 500px;
+          max-height: 80vh; overflow-y: hidden; display: flex; flex-direction: column;
+          box-shadow: 0 4px 15px rgba(0,32,96,0.15);
         }
-        .search-input {
-          width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px;
+        .role-modal-content h3 {
+          font-weight: bold; font-size: 14px; margin-top: 0; margin-bottom: 15px; color: #002060; text-transform: uppercase;
         }
-        .user-list { border: 1px solid #eee; max-height: 200px; overflow-y: auto; margin-bottom: 15px; }
-        .user-item { padding: 8px; cursor: pointer; border-bottom: 1px solid #f9f9f9; }
-        .user-item:hover { background: #f0f4ff; }
-        .user-item.selected { background: #002060; color: white; }
-        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
-        .cancel-btn { padding: 8px 16px; border: none; background: #eee; cursor: pointer; }
-        .save-btn { padding: 8px 16px; border: none; background: #002060; color: white; cursor: pointer; }
+        .blue-input { 
+          width: 100%; padding: 8px 12px; border: 1px solid #002060 !important; border-radius: 4px; 
+          font-size: 12px; color: #002060; font-family: 'Poppins', sans-serif; font-weight: 300; margin-bottom: 10px;
+        }
+        .table-scroll-container { flex: 1; overflow-y: auto; max-height: 250px; border: 1px solid #002060; border-radius: 4px; margin-bottom: 15px; }
+        .table-scroll-container::-webkit-scrollbar { width: 4px; }
+        .table-scroll-container::-webkit-scrollbar-thumb { background: #002060; border-radius: 2px; }
+
+        table { width: 100%; border-collapse: collapse; }
+        th { 
+          padding: 6px 10px; text-align: left; border-bottom: 1px solid #002060; 
+          font-size: 9px; font-weight: 300; color: #002060; text-transform: uppercase; background: #f9fbff;
+        }
+        td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #e1e8f5; font-size: 12px; font-weight: 300; }
+        
+        .user-item:hover { background: #f4f7fe; }
+        .user-item.selected { background: #e6f0ff !important; color: #002060; font-weight: bold; }
+
+        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; padding-top: 15px; border-top: 1px solid #e1e8f5; }
+        .cancel-btn { padding: 8px 16px; border: none; background: #E9EEF5; color: #002060; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
+        .save-btn { padding: 8px 16px; border: none; background: #002060; color: white; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
       `}</style>
         </div>
     );

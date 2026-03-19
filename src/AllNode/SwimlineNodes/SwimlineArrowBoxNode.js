@@ -46,6 +46,13 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
     }
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      document.execCommand("insertLineBreak");
+    }
+  };
+
   const handleFocus = (e) => {
     // Prevent focus event from bubbling up and triggering parent handlers unnecessarily
     e.stopPropagation();
@@ -107,6 +114,7 @@ const ArrowBoxNode = ({ data, onTitleChange }) => {
           onFocus={handleFocus}
           onChange={(e) => handleChange({ target: { value: e.target.value } })}
           onBlur={handleBlur}
+          onKeyDown={handleKeyDown}
           placeholder=""
           style={styles.label}
           className="nodrag"
@@ -167,6 +175,7 @@ const styles = {
     lineHeight: "1.1",
     fontFamily: "'Poppins', sans-serif",
     color: "white",
+    whiteSpace: "pre-wrap",
     background: "transparent",
     border: "none",
     outline: "none",

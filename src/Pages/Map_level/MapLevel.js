@@ -495,6 +495,7 @@ const MapLevel = () => {
           onNext={handlers.handleNext}
           revisionresponse={revisionresponse}
           selectedLanguage={processDefaultlanguage_id}
+          supportedLanguages={supportedLanguages}
         />
         <EditorialChangePopup
           isOpen={showEditorialPopup}

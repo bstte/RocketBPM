@@ -1559,7 +1559,7 @@ const SwimlaneModel = () => {
     ...item,
     data: typeof item.data === "string" ? JSON.parse(item.data) : item.data, // safety check
   }));
-
+  console.log("parsedDataExistingrole", parsedDataExistingrole)
   const filteredDataExistingrole = parsedDataExistingrole.filter(
     (item) =>
       item.data?.details?.title &&
@@ -1698,7 +1698,8 @@ const SwimlaneModel = () => {
     const payload = {
       process_id: processId,
       level: Level,
-      revision_text: revisionData?.revisionText,
+      revision_text: revisionData?.translations ? revisionData.translations : revisionData?.revisionText,
+      selected_language: revisionData?.selectedLanguage,
       requested_by: LoginUser ? LoginUser.id : null,
       schedule_type: data.scheduleType,
       scheduled_date: data.date
@@ -1736,7 +1737,8 @@ const SwimlaneModel = () => {
     const payload = {
       process_id: processId,
       level: Level,
-      revision_text: revisionData?.revisionText,
+      revision_text: revisionData?.translations ? revisionData.translations : revisionData?.revisionText,
+      selected_language: revisionData?.selectedLanguage,
       requested_by: LoginUser ? LoginUser.id : null,
       owner_id: data.owner.id,
       cc_architect: data.ccRoles.architect,
@@ -1903,7 +1905,7 @@ const SwimlaneModel = () => {
     try {
       const response = await api.createRole({
         Process_id: id,
-        user_id: LoginUser?.id,
+        user_id: user && user.id,
         name: name,
         translations: translations,
         login_user_id: LoginUser?.id
@@ -1911,7 +1913,7 @@ const SwimlaneModel = () => {
 
       if (response.status) {
         // Refresh existing roles list
-        const rolesData = await api.getexistingrole(null, LoginUser?.id, id);
+        const rolesData = await api.getexistingrole(null, user?.id, id);
         const parsedData = Array.isArray(rolesData.AllexistingRole) ? rolesData.AllexistingRole : [];
         setLinkexistingRole(parsedData); // 🔥 Fixed setter name
         CustomAlert.toast(t("role_created_successfully"));
@@ -2020,7 +2022,7 @@ const SwimlaneModel = () => {
               onNext={handleNext}
               revisionresponse={revisionresponse}
               selectedLanguage={processDefaultlanguage_id}
-
+              supportedLanguages={supportedLanguages}
             />
 
             <EditorialChangePopup

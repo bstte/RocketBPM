@@ -512,12 +512,13 @@ export const useMapLevelHandlers = ({
     }, [setrevisionData, setShowPublishPopup, setShowEditorialPopup, setShowContentPopup]);
 
     const editorialPublish = useCallback(async (data) => {
+        console.log("state.revisionData.translations", state.revisionData.translations)
         setShowEditorialPopup(false);
         const Level = `level${currentLevel}${currentParentId ? `_${currentParentId}` : ""}`;
         const payload = {
             process_id: processId,
             level: Level,
-            revision_text: state.revisionData?.revisionText,
+            revision_text: state.revisionData?.translations ? state.revisionData.translations : state.revisionData?.revisionText,
             requested_by: LoginUser ? LoginUser.id : null,
             schedule_type: data.scheduleType,
             scheduled_date: data.date
@@ -559,7 +560,8 @@ export const useMapLevelHandlers = ({
         const payload = {
             process_id: processId,
             level: Level,
-            revision_text: state.revisionData?.revisionText,
+            revision_text: state.revisionData?.translations ? state.revisionData.translations : state.revisionData?.revisionText,
+            selected_language: state.revisionData?.selectedLanguage,
             requested_by: LoginUser ? LoginUser.id : null,
             owner_id: data.owner.id,
             cc_architect: data.ccRoles.architect,

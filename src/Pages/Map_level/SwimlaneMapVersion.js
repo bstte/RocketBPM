@@ -22,6 +22,7 @@ import YesNode from "../../AllNode/YesNode";
 import NoNode from "../../AllNode/NoNode";
 import VersionPopupView from "../../components/VersionPopupView";
 import { useSelector } from "react-redux";
+import { usePageGroupIdViewer } from "../../hooks/usePageGroupIdViewer";
 
 const SwimlaneMapVersion = () => {
   const user = useSelector((state) => state.user.user);
@@ -327,7 +328,9 @@ const SwimlaneMapVersion = () => {
             >
               <Background color="#fff" gap={16} />
             </ReactFlow>
+            {usePageGroupIdViewer(ChildNodes)}
           </div>
+
         </ReactFlowProvider>
       </div>
     </div>

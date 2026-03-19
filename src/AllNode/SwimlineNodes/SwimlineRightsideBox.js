@@ -47,6 +47,12 @@ const SwimlineRightsideBox = ({ data, processDefaultlanguage_id, langMap }) => {
     }
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      document.execCommand("insertLineBreak");
+    }
+  };
 
   const handleBoxClick = (e) => {
     // If the click is already on the ContentEditable, don't do anything
@@ -99,6 +105,7 @@ const SwimlineRightsideBox = ({ data, processDefaultlanguage_id, langMap }) => {
           onFocus={handleFocus}
           onChange={(e) => handleChange({ target: { value: e.target.value } })}
           onBlur={handleBlur}
+          onKeyDown={handleKeyDown}
           placeholder="Type ..."
           style={styles.contentEditable}
           className="nodrag"
@@ -113,6 +120,7 @@ const SwimlineRightsideBox = ({ data, processDefaultlanguage_id, langMap }) => {
         >
           <RoleGroupTooltip
             roles={data.roles}
+            groupName={title}
             langMap={langMap}
             processDefaultlanguage_id={processDefaultlanguage_id}
           />
