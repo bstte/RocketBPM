@@ -512,7 +512,7 @@ export const useMapLevelHandlers = ({
     }, [setrevisionData, setShowPublishPopup, setShowEditorialPopup, setShowContentPopup]);
 
     const editorialPublish = useCallback(async (data) => {
-        console.log("state.revisionData.translations", state.revisionData.translations)
+        // console.log("state.revisionData.translations", state.revisionData.translations)
         setShowEditorialPopup(false);
         const Level = `level${currentLevel}${currentParentId ? `_${currentParentId}` : ""}`;
         const payload = {
@@ -525,19 +525,22 @@ export const useMapLevelHandlers = ({
         };
         await editorialPublishAPI(payload);
 
-        await CustomAlert.success(
-            t("success"),
-            t("editorial_change_submitted_successfully")
-        );
+
+        const msgT = t("editorial_change_submitted_successfully");
+        const event = new CustomEvent('modelSaved', { detail: { message: msgT || "Editorial change submitted" } });
+        window.dispatchEvent(event);
+
         await handleBack();
 
-        goToProcess({
-            mode: "draft",
-            view: "map",
-            processId,
-            level: currentLevel,
-            parentId: currentLevel === 0 ? undefined : currentParentId,
-        });
+        setTimeout(() => {
+            goToProcess({
+                mode: "draft",
+                view: "map",
+                processId,
+                level: currentLevel,
+                parentId: currentLevel === 0 ? undefined : currentParentId,
+            });
+        }, 2000);
 
     }, [currentLevel, currentParentId, processId, state.revisionData, LoginUser, setShowEditorialPopup]);
 
@@ -573,19 +576,22 @@ export const useMapLevelHandlers = ({
         };
         await contentChangeRequest(payload);
 
-        await CustomAlert.success(
-            t("success"),
-            t("content_submitted_successfully")
-        );
+
+        const msgT = t("content_submitted_successfully");
+        const event = new CustomEvent('modelSaved', { detail: { message: msgT || "Content change requested" } });
+        window.dispatchEvent(event);
+
         await handleBack();
 
-        goToProcess({
-            mode: "draft",
-            view: "map",
-            processId,
-            level: currentLevel,
-            parentId: currentLevel === 0 ? undefined : currentParentId,
-        });
+        setTimeout(() => {
+            goToProcess({
+                mode: "draft",
+                view: "map",
+                processId,
+                level: currentLevel,
+                parentId: currentLevel === 0 ? undefined : currentParentId,
+            });
+        }, 2000);
 
     }, [currentLevel, currentParentId, processId, state.revisionData, LoginUser, setShowContentPopup, state.title, goToProcess, handleBack]);
 

@@ -1706,19 +1706,22 @@ const SwimlaneModel = () => {
     };
     await editorialPublishAPI(payload);
 
-    await CustomAlert.success(
-      t("success"),
-      t("editorial_change_submitted_successfully")
-    );
+
+    const msgT = t("editorial_change_submitted_successfully");
+    const event = new CustomEvent('modelSaved', { detail: { message: msgT || "Editorial change submitted" } });
+    window.dispatchEvent(event);
+
     await handleExitBack();
 
-    goToProcess({
-      mode: "draft",
-      view: "swimlane",
-      processId,
-      level: currentLevel,
-      parentId: currentLevel === 0 ? undefined : currentParentId,
-    });
+    setTimeout(() => {
+        goToProcess({
+          mode: "draft",
+          view: "swimlane",
+          processId,
+          level: currentLevel,
+          parentId: currentLevel === 0 ? undefined : currentParentId,
+        });
+    }, 2000);
   };
 
   const handleContentSubmit = async (data) => {
@@ -1750,20 +1753,23 @@ const SwimlaneModel = () => {
     };
     await contentChangeRequest(payload);
 
-    await CustomAlert.success(
-      t("success"),
-      t("content_submitted_successfully")
-    );
+
+    const msgT = t("content_submitted_successfully");
+    const event = new CustomEvent('modelSaved', { detail: { message: msgT || "Content change requested" } });
+    window.dispatchEvent(event);
+
 
     await handleExitBack();
 
-    goToProcess({
-      mode: "draft",
-      view: "swimlane",
-      processId,
-      level: currentLevel,
-      parentId: currentLevel === 0 ? undefined : currentParentId,
-    });
+    setTimeout(() => {
+        goToProcess({
+          mode: "draft",
+          view: "swimlane",
+          processId,
+          level: currentLevel,
+          parentId: currentLevel === 0 ? undefined : currentParentId,
+        });
+    }, 2000);
   };
 
   const { responseData: revisionresponse, refetch } = useFetchVersions({

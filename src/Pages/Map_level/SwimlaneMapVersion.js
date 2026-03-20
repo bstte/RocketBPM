@@ -41,6 +41,10 @@ const SwimlaneMapVersion = () => {
   const [contactInfo, setContactInfo] = useState(null);
   const [revisionInfo, setRevisionInfo] = useState(null);
   const [assignedUsers, setAssignedUsers] = useState([]);
+  const [versionStatus, setVersionStatus] = useState(null);
+  const [versionDate, setVersionDate] = useState(null);
+  const [processImg, setProcessImg] = useState(null);
+
 
   const { nodes: initialNodes } = useMemo(
     () =>
@@ -109,6 +113,10 @@ const SwimlaneMapVersion = () => {
       setContactInfo(contact_info);
       setRevisionInfo(revision_info);
       setAssignedUsers(assigned_users || []);
+      setVersionStatus(response.status);
+      setVersionDate(response.created_at);
+      setProcessImg(response.Process_img);
+
 
       const nodebgwidth = document.querySelector(".react-flow__node");
       const nodebgwidths = nodebgwidth
@@ -298,7 +306,13 @@ const SwimlaneMapVersion = () => {
         selectedLanguage={processDefaultlanguage_id}
         OriginalDefaultlanguge_id={originalDefaultLanguageId}
         handleSupportViewlangugeId={handleLanguageSwitch}
+        getPublishedDate={versionStatus === "Published" ? versionDate : null}
+        getDraftedDate={versionStatus !== "Published" ? versionDate : null}
+        Process_img={processImg}
+        status={versionStatus}
+        processId={processId}
       />
+
       <div
         class="maincontainer"
         style={{ ...styles.appContainer, height: safeRemainingHeight }}

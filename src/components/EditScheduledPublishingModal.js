@@ -54,7 +54,7 @@ const EditScheduledPublishingModal = ({
                 <div className="esp-field">
                     <label>{t("publishing_date")}</label>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '5px' }}>
-                        <span>{newDate ? new Date(newDate).toLocaleString() : 'Not scheduled'}</span>
+                        <span>{newDate ? new Date(newDate).toLocaleString([], {hour: '2-digit', minute:'2-digit', year: 'numeric', month: 'numeric', day: 'numeric'}) : 'Not scheduled'}</span>
                         <button
                             className="esp-btn-small"
                             style={{ marginLeft: "10px", padding: "3px 8px", background: "#007bff", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "12px" }}
@@ -68,11 +68,13 @@ const EditScheduledPublishingModal = ({
                 <DateTimePickerModal
                     isOpen={isCalendarOpen}
                     onClose={() => setIsCalendarOpen(false)}
+                    minDate={new Date()}
                     onSave={(value) => {
                         setNewDate(value);
                         setIsCalendarOpen(false);
                     }}
                 />
+
 
                 <div className="esp-field" style={{ marginTop: '20px' }}>
                     <p style={{ fontSize: '0.9em', color: '#666' }}>

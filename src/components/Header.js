@@ -38,8 +38,10 @@ const Header = ({
   onEditScheduled,
   onApproveProcess,
   onRequestChange,
-  onCancelApproval
+  onCancelApproval,
+  status
 }) => {
+
   const user = useSelector((state) => state.user.user);
   const [imageSrc, setImageSrc] = useState(null);
 
@@ -402,7 +404,14 @@ const Header = ({
                     </g>
                   </svg>
                 </div>
-                {Page !== "ViewProcessmapVersion" && (
+                {Page === "ViewProcessmapVersion" ? (
+                  <ShareDropdown
+                    processId={processId}
+                    processName={title}
+                    t={t}
+                    iconClass="headericons_1"
+                  />
+                ) : (
                   <>
                     {isFavorite ? (
                       <div className="headericons active">
@@ -432,6 +441,7 @@ const Header = ({
                     />
                   </>
                 )}
+
               </>
             )}
 
@@ -452,7 +462,7 @@ const Header = ({
                         backgroundColor: "red", // User requested Red
                       }}
                     >
-                      {t("EDIT SCHEDULED PUBLISHING")}
+                      {t("edit_scheduled_publishing")}
                     </button>
                   </div>
                 )}
@@ -811,6 +821,26 @@ const Header = ({
               </div>
             </>
           )}
+
+          {Page === "ViewProcessmapVersion" && (
+            <>
+              <div style={styles.pdate} className="ss_box_hed_right_2">
+                <div>
+                  {status === "Published" ? t("Published") : t("Draft")}
+                  <br />
+                  {status === "Published" ? formattedDate : formattedDatedraft}
+                </div>
+              </div>
+              <div style={styles.mhcolleft} className="ss_box_hed_right_img">
+                {isLoading ? (
+                  <p>{t("image_loading")}</p>
+                ) : (
+                  <img src={imageSrc} alt="RocketBPM" style={styles.mainlogo} />
+                )}
+              </div>
+            </>
+          )}
+
         </div>
       </header>
     </>

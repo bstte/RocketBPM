@@ -199,6 +199,7 @@ const ContentChangePopup = ({
             <DateTimePickerModal
                 isOpen={showCalendar}
                 onClose={() => setShowCalendar(false)}
+                minDate={new Date()}
                 onSave={(value) => {
                     const iso = toLocalISO(value);
                     setSelectedDate(iso);

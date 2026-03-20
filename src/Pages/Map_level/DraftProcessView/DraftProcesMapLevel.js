@@ -159,9 +159,15 @@ const DraftProcesMapLevel = () => {
                     };
                     const res = await contentapproveProcess(payload);
                     if (res.status) {
-                        await CustomAlert.success(t("approved"), t("process_approved_and_published_successfully"));
-                        window.location.reload();
-                    } else {
+                        const msgT = t("process_approved_and_published_successfully");
+                        const event = new CustomEvent('modelSaved', { detail: { message: msgT } });
+                        window.dispatchEvent(event);
+
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 2000);
+                    }
+ else {
                         CustomAlert.error("Error", res.message);
                     }
                 } catch (e) {
@@ -201,10 +207,16 @@ const DraftProcesMapLevel = () => {
                     };
                     const res = await contectCancelPublishing(payload);
                     if (res.status) {
-                        await CustomAlert.success(t("cancelled"), t("publishing_cancelled"));
+                        const msgT = t("publishing_cancelled");
+                        const event = new CustomEvent('modelSaved', { detail: { message: msgT } });
+                        window.dispatchEvent(event);
+
                         setEditScheduledModalOpen(false);
-                        window.location.reload();
-                    } else {
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 2000);
+                    }
+ else {
                         CustomAlert.error("Error", res.message);
                     }
                 } catch (e) { console.error(e); CustomAlert.error("Error", "Failed to cancel"); }
@@ -233,11 +245,16 @@ const DraftProcesMapLevel = () => {
             };
             const res = await contentreschedulePublishing(payload);
             if (res.status) {
-                setEditScheduledModalOpen(false);
-                await CustomAlert.success(t("rescheduled"), t("publishing_rescheduled"));
+                const msgT = t("publishing_rescheduled");
+                const event = new CustomEvent('modelSaved', { detail: { message: msgT } });
+                window.dispatchEvent(event);
 
-                window.location.reload();
-            } else {
+                setEditScheduledModalOpen(false);
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            }
+ else {
                 CustomAlert.error("Error", res.message);
             }
         } catch (e) { console.error(e); CustomAlert.error("Error", "Failed to reschedule"); }
@@ -265,10 +282,16 @@ const DraftProcesMapLevel = () => {
             // Call the correct API for "Request Change" (Rejection)
             const res = await contentRequestChange(payload);
             if (res.status) {
-                await CustomAlert.success(t("requested"), t("change_request_sent_successfully"));
+                const msgT = t("change_request_sent_successfully");
+                const event = new CustomEvent('modelSaved', { detail: { message: msgT } });
+                window.dispatchEvent(event);
+
                 setRequestChangeModalOpen(false);
-                window.location.reload();
-            } else {
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            }
+ else {
                 CustomAlert.error("Error", res.message);
             }
         } catch (e) { console.error(e); CustomAlert.error("Error", "Failed to request change"); }
@@ -367,8 +390,12 @@ const DraftProcesMapLevel = () => {
                             process_title: title,
                             process_link: window.location.href,
                         });
-                        CustomAlert.success(t("success"), t("approval_cancelled_successfully"));
+                        const msgT = t("approval_cancelled_successfully");
+                        const event = new CustomEvent('modelSaved', { detail: { message: msgT } });
+                        window.dispatchEvent(event);
+
                         if (refetchApprovalStatus) refetchApprovalStatus();
+
                     } catch (error) {
                         console.error("Cancel approval error:", error);
                         CustomAlert.error(t("error"), t("Failed to cancel approval"));

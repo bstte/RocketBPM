@@ -32,6 +32,10 @@ const DraftProcessMapVersion = () => {
   const [contactInfo, setContactInfo] = useState(null);
   const [revisionInfo, setRevisionInfo] = useState(null);
   const [assignedUsers, setAssignedUsers] = useState([]);
+  const [versionStatus, setVersionStatus] = useState(null);
+  const [versionDate, setVersionDate] = useState(null);
+  const [processImg, setProcessImg] = useState(null);
+
 
   // const windowHeight = window.innerHeight;
   // const totalHeight = 0;
@@ -98,6 +102,10 @@ const DraftProcessMapVersion = () => {
       setContactInfo(contact_info);
       setRevisionInfo(revision_info);
       setAssignedUsers(assigned_users || []);
+      setVersionStatus(response.status);
+      setVersionDate(response.created_at);
+      setProcessImg(response.Process_img);
+
 
       const parsedNodes = nodes.map((node) => ({
         ...node,
@@ -215,7 +223,13 @@ const DraftProcessMapVersion = () => {
         selectedLanguage={selectedLanguage}
         OriginalDefaultlanguge_id={originalDefaultLanguageId}
         handleSupportViewlangugeId={handleLanguageSwitch}
+        getPublishedDate={versionStatus === "Published" ? versionDate : null}
+        getDraftedDate={versionStatus !== "Published" ? versionDate : null}
+        Process_img={processImg}
+        status={versionStatus}
+        processId={processId}
       />
+
       <ReactFlowProvider>
         <div
           className="app-container"

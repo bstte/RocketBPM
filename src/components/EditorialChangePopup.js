@@ -104,6 +104,7 @@ const EditorialChangePopup = ({ isOpen, onBack, onPublish }) => {
                 isOpen={showCalendar}
                 onClose={() => setShowCalendar(false)}
                 onSave={handleSaveDateTime}
+                minDate={new Date()}
             />
 
             <div style={styles.footer}>

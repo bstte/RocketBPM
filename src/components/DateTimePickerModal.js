@@ -3,7 +3,7 @@ import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import Modal from "./Modal";
 
-const DateTimePickerModal = ({ isOpen, onClose, onSave }) => {
+const DateTimePickerModal = ({ isOpen, onClose, onSave, minDate }) => {
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [selectedTime, setSelectedTime] = useState("12:00");
 
@@ -12,8 +12,18 @@ const DateTimePickerModal = ({ isOpen, onClose, onSave }) => {
     const handleSave = () => {
         const [hours, minutes] = selectedTime.split(":").map(Number);
         const finalDate = new Date(selectedDate);
-        finalDate.setHours(hours);
-        finalDate.setMinutes(minutes);
+        finalDate.setHours(hours, minutes, 0, 0); // Force seconds and ms to 0
+        
+        const compareMin = minDate ? new Date(minDate) : null;
+        if (compareMin) {
+            compareMin.setSeconds(0, 0); // Normalize to minute precision
+        }
+
+        if (compareMin && finalDate < compareMin) {
+            alert("Selected date/time cannot be in the past!");
+            return;
+        }
+
         onSave(finalDate);
     };
 
@@ -28,7 +38,9 @@ const DateTimePickerModal = ({ isOpen, onClose, onSave }) => {
             <Calendar
                 onChange={setSelectedDate}
                 value={selectedDate}
+                minDate={minDate}
             />
+
 
             {/* Time Section */}
             <div style={styles.timeRow}>
